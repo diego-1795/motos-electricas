@@ -23,12 +23,11 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
 
 <div class="catalog" data-catalog>
   <form class="filters" data-filters aria-label="Filtros del catálogo">
-    <details class="filters__mobile" open>
-      <summary class="filters__summary">
-        <span>Filtros</span>
-        <span class="filters__count muted" data-count>{products.length} modelos</span>
-      </summary>
-      <div class="filters__body">
+    <button type="button" class="filters__summary" aria-expanded="false" aria-controls="filters-body" data-filters-toggle>
+      <span>Filtros</span>
+      <span class="filters__count muted" data-count>{products.length} modelos</span>
+    </button>
+    <div class="filters__body" id="filters-body">
         {
           !lockedType && (
             <div class="field">
@@ -87,8 +86,7 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
           </select>
         </div>
         <button type="reset" class="btn btn--ghost btn--sm">Limpiar filtros</button>
-      </div>
-    </details>
+    </div>
   </form>
 
   <div class="results">
@@ -122,7 +120,7 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
               data-featured={p.featured}
               data-fecha={p.publishedAt}
             >
-              <ProductCard product={p} priority={i === 0} />
+              <ProductCard product={p} priority={i === 0} headingLevel="h2" />
             </li>
           );
         })
@@ -197,7 +195,8 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
             return num(b, 'featured') - num(a, 'featured');
         }
       });
-      sorted.forEach((el) => grid.appendChild(el));
+      const current = Array.from(grid.children);
+      if (sorted.some((el, i) => el !== current[i])) sorted.forEach((el) => grid.appendChild(el));
       empty.hidden = visible > 0;
       counts.forEach((c) => (c.textContent = c.hasAttribute('data-count') ? `${visible} modelos` : String(visible)));
 
@@ -210,11 +209,12 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
 
       // URL compartible (sin recargar)
       const params = new URLSearchParams();
-      for (const [k, v] of Object.entries(f)) {
-        const el = form.elements.namedItem(k) as HTMLInputElement | null;
-        const isDefault = el ? (el.type === 'range' ? String(v) === (k === 'precio' ? el.max : el.min) : v === '') : v === 'recomendados';
-        if (!isDefault && v !== '' && v !== Infinity) params.set(k, String(v));
+      for (const el of Array.from(form.elements) as HTMLInputElement[]) {
+        if (!el.name || el.type === 'reset' || el.type === 'button') continue;
+        const def = el.type === 'range' ? (el.name === 'precio' ? el.max : el.min) : '';
+        if (el.value !== def && el.value !== '') params.set(el.name, el.value);
       }
+      if (sort.value !== 'recomendados') params.set('orden', sort.value);
       const qs = params.toString();
       history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
     }
@@ -230,10 +230,12 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
     form.addEventListener('reset', () => requestAnimationFrame(apply));
     sort.addEventListener('change', apply);
     root.querySelector('[data-reset]')?.addEventListener('click', () => form.reset());
-
-    const mq = matchMedia('(max-width: 1023px)');
-    const details = form.querySelector<HTMLDetailsElement>('details');
-    if (details && mq.matches) details.open = false;
+    const toggle = form.querySelector<HTMLButtonElement>('[data-filters-toggle]');
+    toggle?.addEventListener('click', () => {
+      const open = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!open));
+      form.classList.toggle('is-open', !open);
+    });
 
     apply();
   }
@@ -245,6 +247,7 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
     gap: var(--s-6);
   }
   .filters__summary {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -254,13 +257,17 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
     background: var(--bg-elev);
     font-weight: 600;
     cursor: pointer;
-    list-style: none;
   }
-  .filters__summary::-webkit-details-marker {
-    display: none;
+  .filters.is-open .filters__summary {
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
   }
   .filters__body {
+    display: none;
+  }
+  .filters.is-open .filters__body {
     display: grid;
+  }
+  .filters__body {
     gap: var(--s-4);
     padding: var(--s-4);
     border: 1px solid var(--border);
@@ -305,6 +312,9 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
     .filters__summary {
       pointer-events: none;
       border-radius: var(--r-lg) var(--r-lg) 0 0;
+    }
+    .filters__body {
+      display: grid;
     }
   }
 </style>

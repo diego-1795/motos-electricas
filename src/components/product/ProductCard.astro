@@ -12,8 +12,11 @@ interface Props {
   /** Primera tarjeta visible: prioriza carga (LCP) */
   priority?: boolean;
   showCompare?: boolean;
+  /** Nivel de encabezado según el contexto (h2 en listados bajo h1, h3 bajo secciones) */
+  headingLevel?: 'h2' | 'h3';
 }
-const { product: p, priority = false, showCompare = true } = Astro.props;
+const { product: p, priority = false, showCompare = true, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
 const specs = effectiveSpecs(p);
 const img = p.images[0]!;
 const href = `/motos-electricas/${p.slug}`;
@@ -29,7 +32,7 @@ const badge = avail === 'en-stock' ? 'badge--stock' : avail === 'bajo-pedido' ? 
   </a>
   <div class="pc__body">
     <div class="pc__head">
-      <h3 class="pc__name"><a href={href}>{p.name}</a></h3>
+      <Heading class="pc__name"><a href={href} data-astro-prefetch>{p.name}</a></Heading>
       <p class="pc__sub muted">{p.subtitle}</p>
     </div>
     <dl class="specs-inline pc__specs">

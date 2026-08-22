@@ -3,13 +3,13 @@ import { parsePrice } from './helpers';
 
 const visibleItems = (page: Page) => page.locator('[data-catalog] [data-item]:not([hidden])');
 
-/** En móvil el script cierra el <details> de filtros: lo abrimos si hace falta. */
+/** En móvil el panel de filtros está plegado (CSS): lo abrimos con el botón si hace falta. */
 async function openFilters(page: Page) {
-  const details = page.locator('[data-filters] details');
-  if (!(await details.evaluate((d) => (d as HTMLDetailsElement).open))) {
-    await details.locator('summary').click();
+  const field = page.locator('#f-velocidad');
+  if (!(await field.isVisible())) {
+    await page.locator('[data-filters-toggle]').click();
   }
-  await expect(page.locator('#f-velocidad')).toBeVisible();
+  await expect(field).toBeVisible();
 }
 
 test.describe('Catálogo', () => {

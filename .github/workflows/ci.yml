@@ -73,6 +73,8 @@ jobs:
       # sharp necesita su binario nativo (postinstall); por eso aquí no se usa --ignore-scripts.
       - run: npm ci
       - run: npm run build
+      - name: Presupuestos de rendimiento (JS/CSS/HTML gzip por página)
+        run: npm run perf:budget
       - name: Comprobar ficheros de hosting y ausencia de secretos en dist
         run: |
           set -euo pipefail

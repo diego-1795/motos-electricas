@@ -30,3 +30,4 @@ pnpm-debug.log*
 # tests
 test-results/
 playwright-report/
+.lighthouseci/
