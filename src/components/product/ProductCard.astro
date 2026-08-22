@@ -1,9 +1,9 @@
 ---
-import { Image } from 'astro:assets';
+import Pic from '../ui/Pic.astro';
 import type { Product } from '../../domain/types';
 import { defaultVariant, effectiveSpecs, fromPrice, kw, maxRange, productAvailability, availabilityLabel } from '../../domain/product';
 import { formatMoney } from '../../domain/money';
-import { resolveImage, publicSrc } from '../../lib/images';
+import { publicSrc } from '../../lib/images';
 import QuickAdd from '../../islands/QuickAdd';
 import CompareToggle from '../../islands/CompareToggle';
 
@@ -24,18 +24,7 @@ const badge = avail === 'en-stock' ? 'badge--stock' : avail === 'bajo-pedido' ? 
 
 <article class="pc card card--interactive" data-product-card={p.slug}>
   <a href={href} class="pc__media" tabindex="-1" aria-hidden="true">
-    <Image
-      src={resolveImage(img) as any}
-      alt=""
-      width={800}
-      height={500}
-      widths={[400, 640, 800]}
-      sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 92vw"
-      loading={priority ? 'eager' : 'lazy'}
-      fetchpriority={priority ? 'high' : 'auto'}
-      decoding="async"
-      format="avif"
-    />
+    <Pic image={img} alt="" width={800} height={500} widths={[400, 640, 800]} sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 92vw" priority={priority} />
     {p.isNew && <span class="badge badge--new pc__new">Nuevo</span>}
   </a>
   <div class="pc__body">

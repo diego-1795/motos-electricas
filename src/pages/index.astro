@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import Pic from '../components/ui/Pic.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProductCard from '../components/product/ProductCard.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
@@ -8,7 +8,7 @@ import { repos } from '../data';
 import { site } from '../config/site';
 import { effectiveSpecs, fromPrice, kw, maxRange } from '../domain/product';
 import { formatMoney } from '../domain/money';
-import { resolveImage, publicSrc } from '../lib/images';
+import { publicSrc } from '../lib/images';
 
 const hero = (await repos.products.hero())!;
 const featured = (await repos.products.featured(6)).filter((p) => p.slug !== hero.slug).slice(0, 3);
@@ -50,18 +50,7 @@ const steps = [
         </div>
       </div>
       <div class="hero__media">
-        <Image
-          src={resolveImage(heroImg) as any}
-          alt={heroImg.alt}
-          width={1200}
-          height={750}
-          widths={[640, 960, 1200, 1600]}
-          sizes="(min-width: 1024px) 58vw, 100vw"
-          loading="eager"
-          fetchpriority="high"
-          decoding="sync"
-          format="avif"
-        />
+        <Pic image={heroImg} width={1200} height={750} widths={[640, 960, 1200, 1600]} sizes="(min-width: 1024px) 58vw, 100vw" priority />
       </div>
     </div>
   </section>
@@ -76,17 +65,7 @@ const steps = [
             <li class:list={['cats__item', { 'cats__item--wide': i === 0 }]}>
               <a href={`/${c.slug}`} class="cats__link">
                 {c.image && (
-                  <Image
-                    src={resolveImage(c.image) as any}
-                    alt=""
-                    width={800}
-                    height={533}
-                    widths={[480, 800]}
-                    sizes="(min-width: 768px) 45vw, 92vw"
-                    loading="lazy"
-                    decoding="async"
-                    format="avif"
-                  />
+                  <Pic image={c.image} alt="" width={800} height={533} widths={[480, 800]} sizes="(min-width: 768px) 45vw, 92vw" />
                 )}
                 <span class="cats__text">
                   <span class="cats__name">{c.name}</span>

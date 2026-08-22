@@ -1,0 +1,347 @@
+---
+import Pic from '../../components/ui/Pic.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import SpecTiles from '../../components/product/SpecTiles.astro';
+import ProductCard from '../../components/product/ProductCard.astro';
+import WhatsAppLink from '../../components/ui/WhatsAppLink.astro';
+import ProductConfigurator from '../../islands/ProductConfigurator';
+import CompareToggle from '../../islands/CompareToggle';
+import { repos } from '../../data';
+import type { Product } from '../../domain/types';
+import { effectiveSpecs, fromPrice, licenseLabel, productAvailability, availabilityLabel } from '../../domain/product';
+import { formatMoney } from '../../domain/money';
+import { publicSrc } from '../../lib/images';
+import { breadcrumbSchema, faqSchema, productSchema } from '../../lib/seo/jsonld';
+import { canonical } from '../../lib/seo/meta';
+
+export async function getStaticPaths() {
+  const products = await repos.products.all();
+  return products.map((p) => ({ params: { slug: p.slug }, props: { product: p } }));
+}
+
+const { product: p } = Astro.props as { product: Product };
+const category = await repos.categories.bySlug(p.category);
+const accessories = await repos.accessories.bySlugs(p.accessories);
+const related = await repos.products.bySlugs(p.related);
+const specs = effectiveSpecs(p);
+const path = `/motos-electricas/${p.slug}`;
+const url = canonical(path);
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: category?.name ?? 'Catálogo', url: category && category.slug !== 'motos-electricas' ? `/${category.slug}` : '/motos-electricas' },
+  { name: p.name, url: path },
+];
+const imageUrls = p.images.map((i) => `${Astro.site?.origin ?? ''}${publicSrc(i)}`);
+const avail = productAvailability(p);
+const specRows: [string, string][] = [
+  ['Autonomía (declarada)', `${specs.rangeKm} km`],
+  ['Velocidad máxima', `${specs.topSpeedKmh} km/h`],
+  ['Potencia nominal', `${specs.powerW} W`],
+  ...(specs.peakPowerW ? ([['Potencia pico', `${specs.peakPowerW} W`]] as [string, string][]) : []),
+  ['Batería', `${specs.battery.voltage}V ${specs.battery.capacityAh}Ah (${specs.battery.capacityKwh} kWh) ${specs.battery.chemistry}`],
+  ['Batería extraíble', specs.battery.removable ? 'Sí' : 'No'],
+  ['Tiempo de carga', `${specs.battery.chargeHours[0]}-${specs.battery.chargeHours[1]} h`],
+  ['Motor', specs.motorType],
+  ['Frenos', specs.brakes],
+  ['Suspensión', specs.suspension],
+  ['Iluminación', specs.lighting],
+  ['Pantalla', specs.display],
+  ['Modos de conducción', specs.drivingModes.join(', ')],
+  ['Plazas', String(specs.seats)],
+  ['Carga máxima', `${specs.maxLoadKg} kg`],
+  ['Peso', `${specs.weightKg} kg`],
+  ['Dimensiones (L×An×Al)', `${specs.dimensionsMm.join(' × ')} mm`],
+  ...(specs.wheelInches ? ([['Ruedas', `${specs.wheelInches}"`]] as [string, string][]) : []),
+  ...(specs.ipRating ? ([['Protección', specs.ipRating]] as [string, string][]) : []),
+  ['Carnet', licenseLabel[specs.license]],
+  ['Garantía', `${specs.warrantyMonths} meses (batería: ${specs.batteryWarrantyMonths} meses)`],
+];
+---
+
+<BaseLayout
+  title={p.seo?.title ?? `${p.name}: ${p.subtitle.toLowerCase()}`}
+  description={p.seo?.description ?? p.description}
+  path={path}
+  image={publicSrc(p.images[0]!)}
+  type="product"
+  jsonLd={[breadcrumbSchema(crumbs), productSchema(p, url, imageUrls), ...(p.faqs.length ? [faqSchema(p.faqs)] : [])]}
+>
+  <article class="pdp">
+    <div class="container">
+      <Breadcrumbs items={crumbs} />
+    </div>
+
+    <!-- ABOVE THE FOLD -->
+    <section class="container pdp__top">
+      <div class="pdp__gallery">
+        <div class="pdp__main">
+          <Pic image={p.images[0]!} width={1200} height={750} widths={[640, 960, 1200, 1600]} sizes="(min-width: 1024px) 58vw, 100vw" priority />
+        </div>
+        {
+          p.images.length > 1 && (
+            <ul role="list" class="pdp__thumbs">
+              {p.images.slice(1).map((img) => (
+                <li>
+                  <Pic image={img} width={600} height={375} widths={[400, 600]} sizes="(min-width: 1024px) 28vw, 48vw" />
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      <div class="pdp__buy">
+        <p class="eyebrow">{p.subtitle}</p>
+        <h1 class="pdp__title">{p.name}</h1>
+        <p class="pdp__claim">{p.claim}</p>
+        <p class="muted">{p.description}</p>
+        <ul class="pdp__highlights" role="list">
+          {p.highlights.map((h) => <li>{h}</li>)}
+        </ul>
+
+        <ProductConfigurator
+          client:load
+          slug={p.slug}
+          name={p.name}
+          variants={p.variants}
+          colors={p.colors}
+          accessories={accessories}
+          image={{ ...p.images[0]!, src: publicSrc(p.images[0]!) }}
+        />
+
+        <div class="pdp__secondary">
+          <WhatsAppLink source="product" slug={p.slug} productName={p.name} class="btn btn--secondary">Consultar por WhatsApp</WhatsAppLink>
+          <CompareToggle client:idle slug={p.slug} name={p.name} />
+        </div>
+      </div>
+    </section>
+
+    <!-- ESPECIFICACIONES VISUALES -->
+    <section class="container section pdp__section" aria-labelledby="specs-h">
+      <h2 id="specs-h">Especificaciones</h2>
+      <div class="pdp__tiles"><SpecTiles specs={specs} /></div>
+      <details class="accordion pdp__fullspecs">
+        <summary>Ficha técnica completa</summary>
+        <div class="table-wrap">
+          <table class="table">
+            <tbody>
+              {
+                specRows.map(([k, v]) => (
+                  <tr>
+                    <th scope="row">{k}</th>
+                    <td>{v}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <!-- TECNOLOGÍA -->
+    <section class="section surface-dark pdp__tech" aria-labelledby="tech-h">
+      <div class="container">
+        <p class="eyebrow">Tecnología</p>
+        <h2 id="tech-h">Lo que hay debajo</h2>
+        <ul role="list" class="pdp__techgrid">
+          {
+            p.technology.map((t) => (
+              <li>
+                <h3>{t.title}</h3>
+                <p class="muted">{t.text}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- COMPARACIÓN -->
+    {
+      related.length > 0 && (
+        <section class="container section pdp__section" aria-labelledby="rel-h">
+          <div class="pdp__relhead">
+            <h2 id="rel-h">Modelos similares</h2>
+            <a href="/comparar" class="btn btn--ghost">Abrir comparador →</a>
+          </div>
+          <div class="grid-products">
+            {related.map((r) => (
+              <ProductCard product={r} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- GARANTÍA -->
+    <section class="container section pdp__section pdp__warranty" aria-labelledby="war-h">
+      <div class="card pdp__warcard">
+        <h2 id="war-h">Garantía y servicio</h2>
+        <ul>
+          <li><strong>{specs.warrantyMonths} meses</strong> de garantía en el vehículo frente a defectos de fabricación.</li>
+          <li><strong>{specs.batteryWarrantyMonths} meses</strong> de garantía en batería{specs.battery.cycles ? ` (${specs.battery.cycles} ciclos estimados)` : ''}.</li>
+          <li>Asistencia técnica y recambios gestionados por nuestro equipo. Las condiciones completas están en <a href="/garantia">garantía</a>.</li>
+        </ul>
+        <p class="muted">
+          Precio desde {formatMoney(fromPrice(p))}, IVA incluido. Disponibilidad actual: {availabilityLabel[avail]}. El transporte y la matriculación se confirman en la
+          solicitud por WhatsApp.
+        </p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    {
+      p.faqs.length > 0 && (
+        <section class="container section pdp__section pdp__faq" aria-labelledby="faq-h">
+          <h2 id="faq-h">Preguntas frecuentes sobre {p.name}</h2>
+          <div class="pdp__faqlist">
+            {p.faqs.map((f) => (
+              <details class="accordion">
+                <summary>{f.question}</summary>
+                <div>{f.answer}</div>
+              </details>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .pdp > .container:first-child {
+    padding-top: var(--s-6);
+  }
+  .pdp__top {
+    display: grid;
+    gap: var(--s-8);
+    padding-block: var(--s-6) var(--s-10);
+  }
+  .pdp__main {
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    background: var(--n-950);
+    aspect-ratio: 16 / 10;
+  }
+  .pdp__main img,
+  .pdp__thumbs img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .pdp__thumbs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--s-3);
+    margin-top: var(--s-3);
+  }
+  .pdp__thumbs li {
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background: var(--n-950);
+  }
+  .pdp__buy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .pdp__title {
+    font-size: var(--fs-3xl);
+    font-weight: 700;
+  }
+  .pdp__claim {
+    font-size: var(--fs-lg);
+  }
+  .pdp__highlights {
+    display: grid;
+    gap: var(--s-2);
+    font-size: var(--fs-sm);
+  }
+  .pdp__highlights li::before {
+    content: '—';
+    color: var(--fg-subtle);
+    margin-right: var(--s-2);
+  }
+  .pdp__secondary {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--border);
+  }
+  .pdp__section h2 {
+    margin-bottom: var(--s-6);
+  }
+  .pdp__fullspecs {
+    margin-top: var(--s-6);
+  }
+  .pdp__fullspecs .table th {
+    width: 40%;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--fs-sm);
+  }
+  .pdp__tech h2 {
+    margin-bottom: var(--s-8);
+  }
+  .pdp__techgrid {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .pdp__techgrid li {
+    padding: var(--s-5);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--bg-elev);
+  }
+  .pdp__techgrid h3 {
+    font-size: var(--fs-md);
+    margin-bottom: var(--s-2);
+  }
+  .pdp__techgrid p {
+    font-size: var(--fs-sm);
+  }
+  .pdp__relhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+  .pdp__warcard {
+    padding: var(--s-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .pdp__warcard h2 {
+    margin-bottom: 0;
+  }
+  .pdp__warcard ul {
+    display: grid;
+    gap: var(--s-2);
+  }
+  .pdp__warcard a {
+    text-decoration: underline;
+  }
+  .pdp__faqlist {
+    max-width: var(--container-narrow);
+  }
+  @media (min-width: 1024px) {
+    .pdp__top {
+      grid-template-columns: 7fr 5fr;
+      gap: var(--s-12);
+      align-items: start;
+    }
+    .pdp__buy {
+      position: sticky;
+      top: 5rem;
+    }
+    .pdp__techgrid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

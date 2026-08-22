@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import CompareTable, { type CompareRow } from '../islands/CompareTable';
+import { repos } from '../data';
+import { site } from '../config/site';
+import { availabilityLabel, batteryLabel, chargeLabel, effectiveSpecs, fromPrice, licenseLabel, maxRange, productAvailability } from '../domain/product';
+import { publicSrc } from '../lib/images';
+
+const products = (await repos.products.all()).filter((p) => p.category !== 'accesorios');
+const rows: CompareRow[] = products.map((p) => {
+  const s = effectiveSpecs(p);
+  return {
+    slug: p.slug,
+    name: p.name,
+    subtitle: p.subtitle,
+    image: publicSrc(p.images[0]!),
+    priceFrom: fromPrice(p).amount,
+    rangeKm: maxRange(p),
+    topSpeedKmh: s.topSpeedKmh,
+    powerW: s.powerW,
+    battery: batteryLabel(s),
+    chargeHours: chargeLabel(s),
+    weightKg: s.weightKg,
+    dimensions: `${s.dimensionsMm.join(' × ')} mm`,
+    seats: s.seats,
+    license: licenseLabel[s.license],
+    warranty: `${s.warrantyMonths} meses`,
+    availability: availabilityLabel[productAvailability(p)],
+  };
+});
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Comparador', url: '/comparar' },
+];
+---
+
+<BaseLayout
+  title="Comparador de motos eléctricas"
+  description={`Compara hasta ${site.compareLimit} motos eléctricas lado a lado: precio, autonomía, velocidad, potencia, batería, carga, peso y garantía.`}
+  path="/comparar"
+  noindex
+>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading as="h1" title="Comparador" text={`Hasta ${site.compareLimit} modelos lado a lado. Los mejores valores de cada fila se resaltan.`} />
+    <CompareTable client:load products={rows} />
+  </div>
+</BaseLayout>

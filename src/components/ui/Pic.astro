@@ -1,0 +1,44 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageRef } from '../../domain/types';
+import { resolveImage } from '../../lib/images';
+
+/**
+ * Imagen optimizada del catálogo.
+ * - Fotos (jpg/png/webp): AVIF + srcset responsive + dimensiones explícitas.
+ * - SVG (placeholders actuales): passthrough sin rasterizar.
+ * - URLs remotas: <img> plano con dimensiones (sin procesado en build).
+ */
+interface Props {
+  image: ImageRef;
+  width: number;
+  height: number;
+  widths?: number[];
+  sizes?: string;
+  priority?: boolean;
+  alt?: string;
+  class?: string;
+}
+const { image, width, height, widths, sizes, priority = false, alt, class: cls } = Astro.props;
+const src = resolveImage(image);
+const isSvg = typeof src !== 'string' && src.format === 'svg';
+const common = {
+  alt: alt ?? image.alt,
+  width,
+  height,
+  loading: priority ? ('eager' as const) : ('lazy' as const),
+  decoding: priority ? ('sync' as const) : ('async' as const),
+  fetchpriority: priority ? ('high' as const) : ('auto' as const),
+  class: cls,
+};
+---
+
+{
+  typeof src === 'string' ? (
+    <img src={src} {...common} />
+  ) : isSvg ? (
+    <Image src={src} format="svg" {...common} />
+  ) : (
+    <Image src={src} format="avif" widths={widths} sizes={sizes} {...common} />
+  )
+}

@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import CartPage from '../islands/CartPage';
+
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Carrito', url: '/carrito' },
+];
+---
+
+<BaseLayout title="Tu solicitud de compra" description="Revisa tu selección y envía la solicitud de compra por WhatsApp." path="/carrito" noindex>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading as="h1" title="Tu solicitud de compra" text="Revisa modelos, versiones y accesorios. Cuando esté todo, la enviamos por WhatsApp." />
+    <CartPage client:load />
+  </div>
+</BaseLayout>

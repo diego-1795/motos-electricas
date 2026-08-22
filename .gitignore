@@ -22,3 +22,11 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# env
+.env
+.env.*
+!.env.example
+# tests
+test-results/
+playwright-report/
