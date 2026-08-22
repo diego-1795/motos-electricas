@@ -236,28 +236,6 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
           </div>
         </section>
       )}
-      <style>{`
-        .bf{display:flex;flex-direction:column;gap:var(--s-8)}
-        .bf__progress{display:flex;gap:var(--s-6);font-size:var(--fs-sm);color:var(--fg-subtle)}
-        .bf__progress li.is-current{color:var(--fg);font-weight:600}
-        .bf__progress li.is-done{color:var(--fg-muted)}
-        .bf__step{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--s-6)}
-        .bf__step legend{display:contents}
-        .bf__group{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--s-3)}
-        .bf__choices{display:flex;flex-wrap:wrap;gap:var(--s-2)}
-        .bf__nav{display:flex;gap:var(--s-3);flex-wrap:wrap;align-items:center}
-        .bf__results{display:flex;flex-direction:column;gap:var(--s-4);outline:none}
-        .bf__list{display:grid;gap:var(--s-4);margin-block:var(--s-4)}
-        .bf__card{display:grid;grid-template-columns:1fr}
-        .bf__card img{width:100%;aspect-ratio:8/5;object-fit:cover;background:var(--n-950)}
-        .bf__cardbody{padding:var(--s-5);display:flex;flex-direction:column;gap:var(--s-2)}
-        .bf__score{display:flex;align-items:center;gap:var(--s-3);font-size:var(--fs-sm)}
-        .bf__score span{flex:1;height:6px;border-radius:999px;background:var(--bg-sunken);position:relative;overflow:hidden}
-        .bf__score span::after{content:"";position:absolute;inset:0;width:var(--w);background:var(--success);border-radius:999px}
-        .bf__reasons{font-size:var(--fs-sm);color:var(--fg-muted);padding-left:1.1em}
-        .bf__cardfoot{display:flex;justify-content:space-between;align-items:center;gap:var(--s-3);margin-top:var(--s-2);flex-wrap:wrap}
-        @media(min-width:768px){.bf__card{grid-template-columns:18rem 1fr}.bf__card img{height:100%;aspect-ratio:auto}}
-      `}</style>
     </div>
   );
 }

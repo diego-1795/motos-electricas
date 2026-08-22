@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
+import { repos } from '../data';
+import { breadcrumbSchema, faqSchema } from '../lib/seo/jsonld';
+
+const groups = await repos.faqs.groups();
+const allItems = groups.flatMap((g) => g.items);
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Preguntas frecuentes', url: '/faq' },
+];
+const slug = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
+---
+
+<BaseLayout
+  title="Preguntas frecuentes sobre motos eléctricas"
+  description="Resolvemos las dudas más habituales sobre compra, garantía, autonomía, baterías, carnets y entrega de motos y scooters eléctricos."
+  path="/faq"
+  jsonLd={[breadcrumbSchema(crumbs), faqSchema(allItems)]}
+>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading as="h1" eyebrow="Ayuda" title="Preguntas frecuentes" text="Si no encuentras tu respuesta, escríbenos por WhatsApp y te contestamos en el día." />
+    <div class="faq">
+      {
+        groups.map((g) => (
+          <section class="faq__group" aria-labelledby={`faq-${slug(g.group)}`}>
+            <h2 id={`faq-${slug(g.group)}`}>{g.group}</h2>
+            {g.items.map((f) => (
+              <details class="accordion">
+                <summary>{f.question}</summary>
+                <div>{f.answer}</div>
+              </details>
+            ))}
+          </section>
+        ))
+      }
+      <div class="faq__cta">
+        <p class="muted">¿Sigues con dudas?</p>
+        <WhatsAppLink source="product" class="btn btn--whatsapp">Preguntar por WhatsApp</WhatsAppLink>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .faq {
+    max-width: var(--container-narrow);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-12);
+  }
+  .faq__group h2 {
+    font-size: var(--fs-xl);
+    margin-bottom: var(--s-4);
+  }
+  .faq__cta {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+</style>

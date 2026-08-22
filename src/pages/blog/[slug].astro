@@ -1,0 +1,126 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import ProductCard from '../../components/product/ProductCard.astro';
+import WhatsAppLink from '../../components/ui/WhatsAppLink.astro';
+import { repos } from '../../data';
+import type { BlogPost } from '../../domain/types';
+import { site } from '../../config/site';
+import { publicSrc } from '../../lib/images';
+import { articleSchema, breadcrumbSchema } from '../../lib/seo/jsonld';
+import { canonical } from '../../lib/seo/meta';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('blog');
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props as { entry: CollectionEntry<'blog'> };
+const { Content } = await render(entry);
+const post: BlogPost = { slug: entry.id, ...entry.data };
+const related = await repos.products.bySlugs(post.relatedProducts);
+const categoryLabel: Record<BlogPost['category'], string> = {
+  guias: 'Guías',
+  comparativas: 'Comparativas',
+  autonomia: 'Autonomía',
+  baterias: 'Baterías',
+  mantenimiento: 'Mantenimiento',
+  legislacion: 'Legislación',
+  movilidad: 'Movilidad eléctrica',
+  compra: 'Consejos de compra',
+};
+const fmtDate = new Intl.DateTimeFormat(site.locale, { day: 'numeric', month: 'long', year: 'numeric' });
+const path = `/blog/${post.slug}`;
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Blog', url: '/blog' },
+  { name: post.title, url: path },
+];
+---
+
+<BaseLayout
+  title={post.title}
+  description={post.description}
+  path={path}
+  type="article"
+  image={post.image ? publicSrc(post.image) : undefined}
+  jsonLd={[breadcrumbSchema(crumbs), articleSchema(post, canonical(path))]}
+>
+  <article class="container section post">
+    <Breadcrumbs items={crumbs} />
+    <header class="post__head">
+      <p class="eyebrow">{categoryLabel[post.category]}</p>
+      <h1>{post.title}</h1>
+      <p class="muted post__lead">{post.description}</p>
+      <p class="muted post__meta">
+        <time datetime={post.publishedAt}>{fmtDate.format(new Date(post.publishedAt))}</time> · {post.readingMinutes} min de lectura · {post.author}
+      </p>
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {
+      related.length > 0 && (
+        <section class="post__related" aria-labelledby="rel-h">
+          <h2 id="rel-h">Modelos relacionados</h2>
+          <div class="grid-products">
+            {related.map((p) => (
+              <ProductCard product={p} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <aside class="card post__cta">
+      <h2>¿Dudas sobre qué modelo elegir?</h2>
+      <p class="muted">Te asesoramos sin compromiso por WhatsApp o usa nuestro buscador guiado para acotar opciones en dos minutos.</p>
+      <div class="post__ctabtns">
+        <WhatsAppLink source="product" class="btn btn--whatsapp">Pedir asesoramiento</WhatsAppLink>
+        <a href="/encuentra-tu-moto" class="btn btn--secondary">Encuentra tu moto</a>
+      </div>
+    </aside>
+  </article>
+</BaseLayout>
+
+<style>
+  .post__head {
+    max-width: var(--container-narrow);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    margin-block: var(--s-6) var(--s-10);
+  }
+  .post__head h1 {
+    font-size: var(--fs-3xl);
+    font-weight: 700;
+  }
+  .post__lead {
+    font-size: var(--fs-lg);
+  }
+  .post__meta {
+    font-size: var(--fs-sm);
+  }
+  .post__related {
+    margin-top: var(--s-16);
+  }
+  .post__related h2 {
+    margin-bottom: var(--s-6);
+  }
+  .post__cta {
+    margin-top: var(--s-12);
+    padding: var(--s-8);
+    max-width: var(--container-narrow);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .post__ctabtns {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+</style>

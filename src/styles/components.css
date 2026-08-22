@@ -202,6 +202,10 @@
   background: var(--fg);
   color: var(--bg);
 }
+.choice:has(input:checked) .muted {
+  color: inherit;
+  opacity: 0.8;
+}
 .choice:has(input:focus-visible) {
   outline: 3px solid var(--focus);
   outline-offset: 2px;

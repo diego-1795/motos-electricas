@@ -1,0 +1,166 @@
+---
+import Pic from '../../components/ui/Pic.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import WhatsAppLink from '../../components/ui/WhatsAppLink.astro';
+import QuickAdd from '../../islands/QuickAdd';
+import { repos } from '../../data';
+import type { Accessory } from '../../domain/types';
+import { formatMoney } from '../../domain/money';
+import { availabilityLabel } from '../../domain/product';
+import { publicSrc } from '../../lib/images';
+import { accessorySchema, breadcrumbSchema } from '../../lib/seo/jsonld';
+import { canonical } from '../../lib/seo/meta';
+
+export async function getStaticPaths() {
+  const accessories = await repos.accessories.all();
+  return accessories.map((a) => ({ params: { slug: a.slug }, props: { accessory: a } }));
+}
+
+const { accessory: a } = Astro.props as { accessory: Accessory };
+const compatible = await repos.products.bySlugs(a.compatibleWith);
+const kinds: Record<Accessory['kind'], string> = { bateria: 'Batería', casco: 'Casco', baul: 'Baúl', cargador: 'Cargador', seguridad: 'Seguridad', otro: 'Accesorio' };
+const path = `/accesorios/${a.slug}`;
+const url = canonical(path);
+const imageSrc = a.image ? publicSrc(a.image) : undefined;
+const imageUrl = imageSrc ? `${Astro.site?.origin ?? ''}${imageSrc}` : undefined;
+const badge = a.availability === 'en-stock' ? 'badge--stock' : a.availability === 'bajo-pedido' ? 'badge--order' : a.availability === 'proximamente' ? 'badge--soon' : '';
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Accesorios', url: '/accesorios' },
+  { name: a.name, url: path },
+];
+---
+
+<BaseLayout
+  title={`${a.name}: ${kinds[a.kind].toLowerCase()} para moto eléctrica`}
+  description={a.description}
+  path={path}
+  image={imageSrc}
+  type="product"
+  jsonLd={[breadcrumbSchema(crumbs), accessorySchema(a, url, imageUrl)]}
+>
+  <article class="container section acc">
+    <Breadcrumbs items={crumbs} />
+    <div class="acc__top">
+      <div class="acc__media">
+        {a.image && <Pic image={a.image} width={800} height={800} widths={[480, 800, 1200]} sizes="(min-width: 1024px) 50vw, 100vw" priority />}
+      </div>
+
+      <div class="acc__buy">
+        <p class="eyebrow">{kinds[a.kind]}</p>
+        <h1 class="acc__title">{a.name}</h1>
+        <p class="muted">{a.description}</p>
+        <div class="acc__price">
+          <strong>{formatMoney(a.price)}</strong>
+          <span class:list={['badge', badge]}>{availabilityLabel[a.availability]}</span>
+        </div>
+        <p class="muted acc__iva">IVA incluido. Se añade a tu solicitud de compra; no se realizan pagos online.</p>
+
+        <div class="acc__actions">
+          <QuickAdd
+            client:load
+            kind="accessory"
+            slug={a.slug}
+            name={a.name}
+            unitPrice={a.price}
+            image={a.image ? { ...a.image, src: publicSrc(a.image) } : undefined}
+            disabled={a.availability === 'agotado'}
+            label="Añadir a la solicitud"
+          />
+          <WhatsAppLink source="product" slug={a.slug} productName={a.name} class="btn btn--secondary">Consultar por WhatsApp</WhatsAppLink>
+        </div>
+
+        <section class="acc__compat" aria-labelledby="compat-h">
+          <h2 id="compat-h">Compatible con</h2>
+          {
+            compatible.length > 0 ? (
+              <ul role="list" class="acc__compatlist">
+                {compatible.map((p) => (
+                  <li>
+                    <a href={`/motos-electricas/${p.slug}`}>{p.name}</a>
+                    <span class="muted">{p.subtitle}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="muted">Compatible con todos los modelos.</p>
+            )
+          }
+        </section>
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .acc__top {
+    display: grid;
+    gap: var(--s-8);
+    margin-top: var(--s-6);
+  }
+  .acc__media {
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    background: var(--n-950);
+    aspect-ratio: 1;
+  }
+  .acc__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .acc__buy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .acc__title {
+    font-size: var(--fs-3xl);
+    font-weight: 700;
+  }
+  .acc__price {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    font-size: var(--fs-2xl);
+  }
+  .acc__iva {
+    font-size: var(--fs-sm);
+  }
+  .acc__actions {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+  .acc__compat {
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--border);
+  }
+  .acc__compat h2 {
+    font-size: var(--fs-lg);
+    margin-bottom: var(--s-3);
+  }
+  .acc__compatlist {
+    display: grid;
+    gap: var(--s-2);
+  }
+  .acc__compatlist li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-4);
+    font-size: var(--fs-sm);
+  }
+  .acc__compatlist a {
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  @media (min-width: 1024px) {
+    .acc__top {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s-12);
+      align-items: start;
+    }
+  }
+</style>

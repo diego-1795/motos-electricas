@@ -1,0 +1,144 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
+import { site } from '../config/site';
+import { breadcrumbSchema } from '../lib/seo/jsonld';
+
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Contacto', url: '/contacto' },
+];
+const socialLabel: Record<keyof typeof site.social, string> = { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube' };
+const socials = (Object.keys(site.social) as (keyof typeof site.social)[]).map((k) => ({ name: socialLabel[k], url: site.social[k] }));
+---
+
+<BaseLayout
+  title="Contacto"
+  description="Habla con un asesor de Voltia por WhatsApp o email. Resolvemos dudas sobre modelos, autonomía, entrega y garantía de lunes a viernes."
+  path="/contacto"
+  jsonLd={[breadcrumbSchema(crumbs)]}
+>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading as="h1" eyebrow="Contacto" title="Hablemos" text="Sin formularios ni esperas: te atiende una persona del equipo." />
+
+    <ul role="list" class="contact__grid">
+      <li class="card contact__card contact__card--wa">
+        <p class="eyebrow">Canal principal</p>
+        <h2>WhatsApp</h2>
+        <p class="muted">Asesoramiento, presupuestos y solicitudes de compra. Respondemos en minutos en horario de atención.</p>
+        <WhatsAppLink source="product" class="btn btn--whatsapp btn--lg">Abrir WhatsApp</WhatsAppLink>
+      </li>
+
+      <li class="card contact__card">
+        <p class="eyebrow">Email</p>
+        <h2>Escríbenos</h2>
+        <p class="muted">Para reclamaciones de garantía, documentación o consultas que necesiten adjuntos.</p>
+        <a href={`mailto:${site.contactEmail}`} class="contact__link">{site.contactEmail}</a>
+      </li>
+
+      <li class="card contact__card">
+        <p class="eyebrow">Horario</p>
+        <h2>Atención</h2>
+        <dl class="contact__hours">
+          <div>
+            <dt>Lunes a viernes</dt>
+            <dd>9:00 – 18:00</dd>
+          </div>
+          <div>
+            <dt>Sábados y domingos</dt>
+            <dd>Cerrado</dd>
+          </div>
+        </dl>
+        <p class="muted contact__note">Los mensajes recibidos fuera de horario se responden el siguiente día laborable.</p>
+      </li>
+
+      <li class="card contact__card">
+        <p class="eyebrow">Redes</p>
+        <h2>Síguenos</h2>
+        <ul role="list" class="contact__social">
+          {
+            socials.map((s) => (
+              <li>
+                <a href={s.url} target="_blank" rel="noopener">
+                  {s.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </li>
+    </ul>
+
+    <p class="muted contact__disclaimer">
+      No se realizan pagos online. Toda compra se gestiona como solicitud por WhatsApp y se confirma con nuestro equipo antes de cualquier pago.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .contact__grid {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  }
+  .contact__card {
+    padding: var(--s-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+  .contact__card h2 {
+    font-size: var(--fs-xl);
+  }
+  .contact__card .btn {
+    align-self: flex-start;
+    margin-top: auto;
+  }
+  .contact__card--wa {
+    grid-column: 1 / -1;
+  }
+  .contact__link {
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    word-break: break-all;
+  }
+  .contact__hours {
+    display: grid;
+    gap: var(--s-2);
+  }
+  .contact__hours div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-4);
+  }
+  .contact__hours dd {
+    font-weight: 600;
+  }
+  .contact__note {
+    font-size: var(--fs-sm);
+  }
+  .contact__social {
+    display: flex;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+  .contact__social a {
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .contact__disclaimer {
+    margin-top: var(--s-8);
+    font-size: var(--fs-sm);
+    max-width: var(--container-narrow);
+  }
+  @media (min-width: 768px) {
+    .contact__grid {
+      gap: var(--s-6);
+    }
+  }
+</style>

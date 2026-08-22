@@ -128,22 +128,6 @@ export default function CartDrawer() {
             </a>
           </footer>
         )}
-        <style>{`
-          .cd__head{display:flex;align-items:center;justify-content:space-between;padding:var(--s-4) var(--s-5);border-bottom:1px solid var(--border)}
-          .cd__body{flex:1;overflow-y:auto;padding:var(--s-4) var(--s-5)}
-          .cd__empty{display:flex;flex-direction:column;gap:var(--s-4);align-items:flex-start;padding-top:var(--s-6)}
-          .cd__list{display:flex;flex-direction:column;gap:var(--s-4)}
-          .cd__item{display:grid;grid-template-columns:4rem 1fr auto;gap:var(--s-3);align-items:start}
-          .cd__thumb{width:4rem;height:4rem;border-radius:var(--r-md);background:var(--bg-sunken);overflow:hidden}
-          .cd__thumb img{width:100%;height:100%;object-fit:cover}
-          .cd__info{display:flex;flex-direction:column;gap:var(--s-1);min-width:0}
-          .cd__row{display:flex;align-items:center;justify-content:space-between;gap:var(--s-3);margin-top:var(--s-2);flex-wrap:wrap}
-          .cd__price{font-weight:600}
-          .cd__remove{color:var(--fg-muted);padding:var(--s-2);border-radius:var(--r-md)}
-          .cd__remove:hover{color:var(--danger);background:var(--bg-sunken)}
-          .cd__foot{padding:var(--s-4) var(--s-5) calc(var(--s-5) + env(safe-area-inset-bottom));border-top:1px solid var(--border);display:flex;flex-direction:column;gap:var(--s-3)}
-          .cd__total{display:flex;justify-content:space-between;align-items:baseline;font-size:var(--fs-lg)}
-        `}</style>
       </div>
     </>
   );

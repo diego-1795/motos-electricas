@@ -1,4 +1,4 @@
-import type { BlogPost, FAQ, Product } from '../../domain/types';
+import type { Accessory, BlogPost, FAQ, Product } from '../../domain/types';
 import { site } from '../../config/site';
 import { availabilityLabel, fromPrice, productAvailability } from '../../domain/product';
 
@@ -86,6 +86,27 @@ export function productSchema(p: Product, url: string, imageUrls: string[]) {
           aggregateRating: { '@type': 'AggregateRating', ratingValue: rating.toFixed(1), reviewCount: reviews.length },
         }
       : {}),
+  };
+}
+
+export function accessorySchema(a: Accessory, url: string, imageUrl?: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: a.name,
+    description: a.description,
+    sku: a.id,
+    brand: { '@type': 'Brand', name: site.name },
+    category: 'Accesorios',
+    ...(imageUrl ? { image: [imageUrl] } : {}),
+    url,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'EUR',
+      price: (a.price.amount / 100).toFixed(2),
+      availability: schemaAvailability[a.availability],
+      url,
+    },
   };
 }
 

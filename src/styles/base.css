@@ -158,6 +158,9 @@ table {
   --border-strong: var(--n-700);
   --accent: var(--volt);
   --accent-fg: var(--volt-ink);
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --electric: #7aa7ff;
   color-scheme: dark;
 }
 .eyebrow {

@@ -1,4 +1,5 @@
 import { useStore } from '@nanostores/preact';
+import { useEffect, useState } from 'preact/hooks';
 import { $cart, $cartTotal, clearCart, removeFromCart, setNotes, setQuantity } from '../stores/cart';
 import { formatMoney } from '../domain/money';
 import { lineTotal } from '../domain/cart';
@@ -10,9 +11,17 @@ import CartRequestButton from './CartRequestButton';
 export default function CartPage() {
   const cart = useStore($cart);
   const total = useStore($cartTotal);
+  // Raíz estable + render del estado real solo tras montar (SSR no conoce localStorage).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return <div class="cp" data-cart-page aria-busy="true" />;
+  }
 
   if (cart.items.length === 0) {
     return (
+      <div class="cp" data-cart-page>
       <div class="cp__empty card">
         <h2>Tu solicitud está vacía</h2>
         <p class="muted">Añade una moto desde el catálogo o deja que te recomendemos una.</p>
@@ -20,7 +29,7 @@ export default function CartPage() {
           <a href="/motos-electricas" class="btn btn--primary">Ver catálogo</a>
           <a href="/encuentra-tu-moto" class="btn btn--secondary">Encuentra tu moto</a>
         </div>
-        <style>{`.cp__empty{padding:var(--s-10);display:flex;flex-direction:column;gap:var(--s-4);align-items:flex-start}.cp__actions{display:flex;gap:var(--s-3);flex-wrap:wrap}`}</style>
+      </div>
       </div>
     );
   }
@@ -100,21 +109,6 @@ export default function CartPage() {
           </div>
         </details>
       </aside>
-      <style>{`
-        .cp{display:grid;gap:var(--s-8)}
-        .cp__items ul{display:flex;flex-direction:column;gap:var(--s-3);margin-bottom:var(--s-4)}
-        .cp__item{display:grid;grid-template-columns:5rem 1fr;gap:var(--s-4);padding:var(--s-4);align-items:start}
-        .cp__thumb{width:5rem;height:5rem;border-radius:var(--r-md);background:var(--bg-sunken);overflow:hidden}
-        .cp__thumb img{width:100%;height:100%;object-fit:cover}
-        .cp__info{display:flex;flex-direction:column;gap:var(--s-1);min-width:0}
-        .cp__controls{grid-column:1/-1;display:flex;align-items:center;gap:var(--s-4);flex-wrap:wrap;justify-content:space-between}
-        .cp__line{font-size:var(--fs-lg)}
-        .cp__summary{padding:var(--s-6);display:flex;flex-direction:column;gap:var(--s-4);align-self:start}
-        .cp__total{display:flex;justify-content:space-between;align-items:baseline;font-size:var(--fs-lg);padding-bottom:var(--s-4);border-bottom:1px solid var(--border)}
-        .cp__total strong{font-size:var(--fs-2xl)}
-        .cp__preview{white-space:pre-wrap;font-family:var(--font-sans);font-size:var(--fs-sm);background:var(--bg-sunken);padding:var(--s-4);border-radius:var(--r-md)}
-        @media(min-width:1024px){.cp{grid-template-columns:1fr 24rem;gap:var(--s-12)}.cp__item{grid-template-columns:6rem 1fr auto}.cp__controls{grid-column:auto;flex-direction:column;align-items:flex-end}.cp__summary{position:sticky;top:5rem}}
-      `}</style>
     </div>
   );
 }

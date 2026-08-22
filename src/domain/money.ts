@@ -13,11 +13,12 @@ const formatter = new Intl.NumberFormat('es-ES', {
   currency: 'EUR',
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
+  useGrouping: 'always',
 });
 
 /** "4.999 €" — sin decimales para precios comerciales redondos; con ellos si aplica */
 export function formatMoney(m: Money): string {
   const euros = m.amount / 100;
   if (Number.isInteger(euros)) return formatter.format(euros);
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(euros);
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', useGrouping: 'always' }).format(euros);
 }

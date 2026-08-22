@@ -153,20 +153,6 @@ export default function ProductConfigurator({ slug, name, variants, colors, acce
         </button>
       </div>
       <p class="hint">Sin pago online. Tras revisar el carrito, enviarás la solicitud por WhatsApp.</p>
-      <style>{`
-        .cfg{display:flex;flex-direction:column;gap:var(--s-5)}
-        .cfg__price{display:flex;align-items:center;gap:var(--s-3);flex-wrap:wrap}
-        .cfg__amount{font-size:var(--fs-2xl);font-weight:600;letter-spacing:var(--tracking-tight)}
-        .cfg__group{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--s-3)}
-        .cfg__choices{display:flex;flex-wrap:wrap;gap:var(--s-2)}
-        .cfg__swatches{display:flex;gap:var(--s-3)}
-        .cfg__extras{display:flex;flex-direction:column;gap:var(--s-2)}
-        .cfg__extra{display:grid;grid-template-columns:auto 1fr auto;gap:var(--s-3);align-items:center;padding:var(--s-3) var(--s-4);border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg-elev);cursor:pointer;font-size:var(--fs-sm)}
-        .cfg__extra:has(input:checked){border-color:var(--fg)}
-        .cfg__extra input{width:1.125rem;height:1.125rem;accent-color:var(--fg)}
-        .cfg__actions{display:flex;gap:var(--s-3);flex-wrap:wrap}
-        .cfg__actions .btn{flex:1}
-      `}</style>
     </form>
   );
 }

@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../../components/ui/SectionHeading.astro';
+import { site } from '../../config/site';
+import { breadcrumbSchema } from '../../lib/seo/jsonld';
+
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Política de cookies', url: '/legal/cookies' },
+];
+---
+
+<BaseLayout
+  title="Política de cookies"
+  description={`${site.name} no utiliza cookies de seguimiento. Información sobre el almacenamiento local y la analítica sin cookies.`}
+  path="/legal/cookies"
+  noindex
+  jsonLd={[breadcrumbSchema(crumbs)]}
+>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading as="h1" eyebrow="Legal" title="Política de cookies" />
+    <div class="prose">
+      <h2>1. Este sitio no usa cookies de seguimiento</h2>
+      <p>
+        {site.name} <strong>no instala cookies de seguimiento, publicidad ni perfilado</strong> por defecto. No utilizamos píxeles de terceros ni herramientas que
+        identifiquen al usuario entre sitios. Por ese motivo no mostramos un banner de consentimiento de cookies.
+      </p>
+
+      <h2>2. Almacenamiento local (localStorage)</h2>
+      <p>
+        Para que el sitio funcione, guardamos en el almacenamiento local de tu navegador (<code>localStorage</code>) dos elementos estrictamente funcionales:
+      </p>
+      <ul>
+        <li>
+          <strong><code>{site.cartStorageKey}</code></strong>: el contenido de tu carrito (referencias a modelos, variantes, colores, cantidades y notas). Sin datos
+          personales.
+        </li>
+        <li>
+          <strong><code>{site.compareStorageKey}</code></strong>: los modelos que has añadido al comparador.
+        </li>
+      </ul>
+      <p>
+        Esta información nunca se envía a nuestros servidores ni a terceros; permanece en tu dispositivo hasta que la borres o vacíes el carrito. Al tratarse de
+        almacenamiento técnico necesario para el servicio que solicitas, <strong>no requiere consentimiento</strong> conforme al artículo 22.2 de la LSSI-CE.
+      </p>
+
+      <h2>3. Analítica sin cookies (opcional)</h2>
+      <p>
+        Podemos utilizar una herramienta de medición de audiencia <strong>sin cookies</strong> y sin identificadores persistentes, que recoge únicamente datos
+        agregados y anónimos (páginas vistas, país, tipo de dispositivo). No permite identificarte ni hacer seguimiento entre sitios, por lo que tampoco requiere
+        consentimiento. Si en el futuro incorporamos analítica basada en cookies, actualizaremos esta política y solicitaremos tu consentimiento previo.
+      </p>
+
+      <h2>4. Enlaces a terceros</h2>
+      <p>
+        Al pulsar los enlaces a WhatsApp o a nuestras redes sociales abandonas este sitio y pasas a plataformas de terceros, que aplican sus propias políticas de
+        cookies y privacidad.
+      </p>
+
+      <h2>5. Cómo borrar el almacenamiento local</h2>
+      <p>
+        Puedes eliminar los datos guardados desde la configuración de privacidad de tu navegador (borrar datos de sitios web) o vaciando el carrito y el comparador
+        dentro del propio sitio.
+      </p>
+
+      <h2>6. Contacto</h2>
+      <p>
+        Para cualquier duda sobre esta política escribe a <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

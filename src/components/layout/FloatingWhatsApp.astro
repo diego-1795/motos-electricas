@@ -1,0 +1,64 @@
+---
+import WhatsAppLink from '../ui/WhatsAppLink.astro';
+
+/**
+ * Botón flotante de WhatsApp solo en móvil/tablet (< 1024px).
+ * En escritorio el CTA ya es visible en cabecera y pie.
+ * Se coloca a la derecha para no tapar el toast (centrado).
+ */
+---
+
+<div class="fab">
+  <WhatsAppLink source="floating" class="btn btn--whatsapp fab__btn">
+    <span class="fab__sr">Hablar por </span><span class="fab__label">WhatsApp</span>
+  </WhatsAppLink>
+</div>
+
+<style>
+  .fab {
+    position: fixed;
+    right: var(--s-4);
+    bottom: calc(var(--s-4) + env(safe-area-inset-bottom));
+    z-index: var(--z-header);
+  }
+  .fab__btn {
+    min-height: 3.25rem;
+    padding-inline: var(--s-4);
+    border-radius: var(--r-full);
+    box-shadow: var(--sh-3);
+  }
+  .fab__btn svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .fab__label {
+    font-size: var(--fs-sm);
+  }
+  .fab__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  @media (max-width: 479px) {
+    .fab__btn {
+      width: 3.25rem;
+      padding: 0;
+    }
+    .fab__label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  }
+  @media (min-width: 1024px) {
+    .fab {
+      display: none;
+    }
+  }
+</style>

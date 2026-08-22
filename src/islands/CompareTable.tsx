@@ -142,16 +142,6 @@ export default function CompareTable({ products }: { products: CompareRow[] }) {
           </table>
         </div>
       )}
-      <style>{`
-        .cmp__toolbar{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--s-4);flex-wrap:wrap;margin-bottom:var(--s-6)}
-        .cmp__add{display:flex;flex-direction:column;gap:var(--s-2);min-width:min(100%,18rem)}
-        .cmp__empty{padding:var(--s-8);border:1px dashed var(--border-strong);border-radius:var(--r-lg)}
-        .cmp__table th[scope=row]{min-width:8rem}
-        .cmp__table td,.cmp__table th{min-width:9rem}
-        .cmp__head{display:flex;flex-direction:column;gap:var(--s-2);align-items:flex-start;text-transform:none;letter-spacing:0;font-size:var(--fs-md);color:var(--fg)}
-        .cmp__head img{width:10rem;height:auto;border-radius:var(--r-md);background:var(--n-950)}
-        .cmp__best{font-weight:600;color:var(--success)}
-      `}</style>
     </div>
   );
 }

@@ -193,3 +193,15 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 **Consecuencias.** El cambio de nombre es una edición de `site.ts`, del dominio y de los assets de logotipo; la clave de `localStorage` se conserva para no vaciar carritos. Pendiente: registro de dominio y marca, responsabilidad del cliente.
 
 **Estado.** Provisional, pendiente de decisión del cliente.
+
+## ADR-013 — CSP por cabecera con hashes explícitos (no `security.csp` de Astro)
+
+**Contexto.** Astro 7 incluye `security.csp`, que emite una `<meta http-equiv>` con hashes de `script-src` **y** `style-src`. Las islas usan atributos `style` dinámicos (swatches de color, barra de compatibilidad del finder) que un `style-src` con hashes bloquea (los navegadores ignoran `'unsafe-inline'` cuando hay hashes).
+
+**Decisión.** CSP en `public/_headers` (y `vercel.json`): `script-src 'self'` + hashes sha256 de los 6 scripts inline que genera Astro (runtime de islas + `<script>` de `Header.astro` y `CatalogView.astro`), `style-src 'self' 'unsafe-inline'`. La CI (`build` job) recalcula los hashes de `dist/` y falla mostrando los nuevos si cambian. El CSS de las islas vive en `src/styles/islands.css` (no en JSX) para reducir la superficie inline.
+
+**Alternativas.** `security.csp` nativo (descartado por lo anterior); nonces (requiere SSR); `'unsafe-inline'` en scripts (inaceptable).
+
+**Consecuencias.** Mantenimiento manual de hashes al actualizar Astro o esos dos scripts; detectado automáticamente en CI. Revisar cuando se eliminen los atributos `style` (p. ej. swatches vía clases generadas en build).
+
+**Estado.** Aceptada (2026-08-22).

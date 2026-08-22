@@ -24,7 +24,7 @@ export default function CartRequestButton({ source }: { source: 'cart' }) {
       href={disabled ? undefined : req.url}
       class="btn btn--whatsapp btn--lg btn--block"
       target="_blank"
-      rel="noopener"
+      rel="noopener noreferrer"
       aria-disabled={disabled}
       onClick={onClick}
       data-cart-request

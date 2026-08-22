@@ -1,0 +1,132 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
+import { site } from '../config/site';
+import { breadcrumbSchema } from '../lib/seo/jsonld';
+
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Garantía', url: '/garantia' },
+];
+const message = 'Hola 👋 Quiero iniciar una reclamación de garantía. Modelo: [modelo]. Número de bastidor/pedido: [número]. Descripción del problema: [descripción].';
+---
+
+<BaseLayout
+  title="Garantía y servicio posventa"
+  description="24 meses de garantía en el vehículo y 12 a 24 meses en batería según modelo. Qué cubre, qué no cubre y cómo gestionar una reclamación."
+  path="/garantia"
+  jsonLd={[breadcrumbSchema(crumbs)]}
+>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading as="h1" eyebrow="Posventa" title="Garantía" text="Condiciones claras, sin letra pequeña. Así protegemos tu vehículo y tu batería." />
+
+    <div class="prose">
+      <ul role="list" class="war__summary">
+        <li class="card">
+          <strong>24 meses</strong>
+          <span class="muted">Garantía del vehículo frente a defectos de fabricación</span>
+        </li>
+        <li class="card">
+          <strong>12–24 meses</strong>
+          <span class="muted">Garantía de la batería, según modelo (ver ficha técnica)</span>
+        </li>
+        <li class="card">
+          <strong>Recambios</strong>
+          <span class="muted">Disponibilidad garantizada durante la vida útil del modelo</span>
+        </li>
+      </ul>
+
+      <h2>Plazos de garantía</h2>
+      <p>
+        Todos los vehículos cuentan con <strong>24 meses de garantía</strong> desde la fecha de entrega, conforme a la legislación vigente de garantías en bienes
+        de consumo. La <strong>batería</strong> tiene una garantía específica de <strong>entre 12 y 24 meses</strong> según el modelo y la química de la celda; el
+        plazo exacto aparece en la ficha técnica de cada producto.
+      </p>
+      <p>
+        La garantía de batería cubre la pérdida de capacidad por debajo del <strong>70 % de la capacidad nominal</strong> dentro del periodo de garantía, con un uso
+        y una carga conformes al manual.
+      </p>
+
+      <h2>Qué cubre</h2>
+      <ul>
+        <li>Defectos de fabricación o de materiales en motor, controlador, batería, cargador, chasis y componentes eléctricos.</li>
+        <li>Fallos de la pantalla, iluminación y sistema de frenado no derivados del desgaste.</li>
+        <li>Mano de obra y piezas necesarias para la reparación, o sustitución del componente si no es reparable.</li>
+        <li>Recogida y devolución del vehículo cuando la reparación no pueda realizarse a domicilio.</li>
+      </ul>
+
+      <h2>Qué no cubre</h2>
+      <ul>
+        <li><strong>Desgaste normal:</strong> neumáticos, pastillas y discos de freno, cables, bombillas, fusibles, asiento y elementos estéticos.</li>
+        <li><strong>Mal uso o negligencia:</strong> caídas, accidentes, sobrecarga por encima del peso máximo, uso fuera de vía o competición.</li>
+        <li><strong>Agua:</strong> daños por inmersión o por exposición superior al grado de protección IP indicado en la ficha (por ejemplo, limpieza con agua a presión).</li>
+        <li><strong>Modificaciones:</strong> cambios en el controlador, el motor, la batería o el software, y la instalación de piezas no homologadas.</li>
+        <li>Uso de cargadores no originales o almacenamiento prolongado de la batería descargada.</li>
+        <li>Daños derivados de un mantenimiento no realizado según el manual.</li>
+      </ul>
+
+      <h2>Cómo reclamar</h2>
+      <ol>
+        <li>
+          Escríbenos por <strong>WhatsApp</strong> o por correo a <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a> indicando el modelo, el número de
+          bastidor o de pedido y una descripción del problema. Si es posible, adjunta fotos o vídeo.
+        </li>
+        <li>Nuestro equipo técnico responde en un plazo máximo de 2 días laborables con el diagnóstico inicial y los siguientes pasos.</li>
+        <li>Si hace falta intervención, organizamos la reparación a domicilio o la recogida del vehículo sin coste para ti cuando el fallo está cubierto.</li>
+        <li>Te devolvemos el vehículo reparado o el componente sustituido, con el informe de la intervención.</li>
+      </ol>
+
+      <h2>Recambios y mantenimiento</h2>
+      <p>
+        Disponemos de recambios originales (baterías, cargadores, controladores, pantallas, frenos y carrocería) durante toda la vida útil del modelo. Fuera de
+        garantía, te enviamos un presupuesto cerrado antes de intervenir. Las revisiones recomendadas están en el manual de cada vehículo y no son obligatorias
+        para mantener la garantía, siempre que se sigan las indicaciones de uso y carga.
+      </p>
+
+      <div class="card war__cta">
+        <h2>¿Necesitas iniciar una reclamación?</h2>
+        <p class="muted">Ten a mano el modelo y el número de pedido. Te respondemos en el día.</p>
+        <div class="war__ctabtns">
+          <WhatsAppLink source="product" message={message} class="btn btn--whatsapp">Reclamar por WhatsApp</WhatsAppLink>
+          <a href={`mailto:${site.contactEmail}`} class="btn btn--secondary">Escribir un email</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .war__summary {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  }
+  .war__summary li {
+    padding: var(--s-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
+    font-size: var(--fs-sm);
+  }
+  .war__summary strong {
+    font-size: var(--fs-xl);
+  }
+  .war__cta {
+    margin-top: var(--s-12);
+    padding: var(--s-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .war__cta h2 {
+    margin-top: 0;
+  }
+  .war__ctabtns {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+</style>

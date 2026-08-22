@@ -282,6 +282,9 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
   .results__sort .select {
     min-width: 12rem;
   }
+  .results__empty[hidden] {
+    display: none;
+  }
   .results__empty {
     margin-top: var(--s-6);
     display: flex;

@@ -1,0 +1,40 @@
+# Cabeceras HTTP para Cloudflare Pages / Netlify (mismo formato).
+# Equivalente para Vercel en /vercel.json. Ver docs/10-security.md y docs/13-cloudflare.md.
+#
+# CSP: sin 'unsafe-inline' en script-src. Los módulos grandes van a /_astro/ ('self'), pero Astro inlina
+# el runtime de islas (astro-island, client:load/idle/visible) y los <script> pequeños de componentes
+# (Header.astro, CatalogView.astro). Esos 6 scripts inline se autorizan por hash sha256.
+# Los hashes del runtime cambian al actualizar Astro; los de componentes, al editar su <script>.
+# CI (ci.yml, job build, paso "CSP: hashes de scripts inline") comprueba que todo script inline de dist/
+# tiene su hash aquí y, si falta alguno, imprime los hashes a añadir (también en vercel.json).
+# Los <script type="application/ld+json"> son datos, no se ejecutan y no necesitan hash.
+# style-src necesita 'unsafe-inline' por los estilos scoped de Astro (inlineStylesheets: 'auto') e islas Preact.
+# Los orígenes cloudflareinsights solo se usan si PUBLIC_CF_BEACON_TOKEN está definido; son inofensivos si no.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-BF0290pkb3jxQsE7z00xR8Imp8X34FLC88L0lkMnrGw=' 'sha256-Ya0pUYrC7nM5Cn/056TyVuEiz6dFGrzmkWzgON0pF0U=' 'sha256-QzWFZi+FLIx23tnm9SBU4aEgx4x8DsuASP07mfqol/c=' 'sha256-Q2BPg90ZMplYY+FSdApNErhpWafg2hcRRbndmvxuL/Q=' 'sha256-G7QOT9222VDpfpmx89dJmbOQ+GqY4RK7H9Il/cWyHBQ=' 'sha256-E8senDbd4BWm0cAaNn84h8aeWZOIToorrsKuV+Qc5vI=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  X-Permitted-Cross-Domain-Policies: none
+
+# Activos con hash en el nombre: caché inmutable de un año.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Sitemaps: caché corta para que los cambios de catálogo se reflejen pronto.
+/sitemap*.xml
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/robots.txt
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/favicon.*
+  Cache-Control: public, max-age=604800
+
+/og-default.png
+  Cache-Control: public, max-age=604800

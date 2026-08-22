@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../../components/ui/SectionHeading.astro';
+import { site } from '../../config/site';
+import { breadcrumbSchema } from '../../lib/seo/jsonld';
+
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Política de privacidad', url: '/legal/privacidad' },
+];
+---
+
+<BaseLayout
+  title="Política de privacidad"
+  description={`Cómo trata ${site.name} los datos personales de los usuarios que contactan por WhatsApp o email.`}
+  path="/legal/privacidad"
+  noindex
+  jsonLd={[breadcrumbSchema(crumbs)]}
+>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading as="h1" eyebrow="Legal" title="Política de privacidad" />
+    <div class="prose">
+      <p class="muted">Los campos entre corchetes son marcadores pendientes de completar por el titular antes de la puesta en producción.</p>
+
+      <h2>1. Responsable del tratamiento</h2>
+      <ul>
+        <li><strong>Razón social:</strong> <mark>[RAZÓN SOCIAL]</mark></li>
+        <li><strong>NIF:</strong> <mark>[NIF]</mark></li>
+        <li><strong>Domicilio:</strong> <mark>[DIRECCIÓN]</mark></li>
+        <li><strong>Contacto:</strong> <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></li>
+      </ul>
+
+      <h2>2. Qué datos tratamos y cómo los obtenemos</h2>
+      <p>
+        Este sitio web <strong>no contiene formularios</strong> ni recoge datos personales durante la navegación. Los únicos datos que tratamos son los que tú nos
+        facilitas voluntariamente al contactar por <strong>WhatsApp</strong> o <strong>correo electrónico</strong>: nombre, número de teléfono o dirección de
+        correo, localidad y el contenido de tu consulta o solicitud de compra.
+      </p>
+      <p>
+        El carrito y el comparador se guardan únicamente en el almacenamiento local de tu navegador (<code>localStorage</code>) y no se envían a ningún servidor.
+        Contienen solo referencias a productos, nunca datos personales.
+      </p>
+
+      <h2>3. Finalidad y base jurídica</h2>
+      <ul>
+        <li><strong>Atender consultas y solicitudes de compra:</strong> ejecución de medidas precontractuales a petición del interesado (art. 6.1.b RGPD).</li>
+        <li><strong>Gestionar la garantía y el servicio posventa:</strong> ejecución del contrato y cumplimiento de obligaciones legales (art. 6.1.b y 6.1.c RGPD).</li>
+        <li><strong>Comunicaciones comerciales:</strong> solo con tu consentimiento expreso (art. 6.1.a RGPD), que puedes retirar en cualquier momento.</li>
+      </ul>
+
+      <h2>4. Conservación</h2>
+      <p>
+        Conservamos los datos mientras dure la relación comercial y, después, durante los plazos de prescripción legal aplicables (por regla general, 5 años para
+        obligaciones contractuales y los plazos fiscales correspondientes).
+      </p>
+
+      <h2>5. Destinatarios</h2>
+      <p>
+        No cedemos datos a terceros salvo obligación legal. Al contactar por WhatsApp, tus datos son tratados también por WhatsApp Ireland Ltd. conforme a su
+        propia política de privacidad. Para entregas y matriculación podremos comunicar los datos estrictamente necesarios a transportistas y gestorías, que actúan
+        como encargados del tratamiento.
+      </p>
+
+      <h2>6. Derechos</h2>
+      <p>
+        Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a
+        <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>, indicando el derecho que deseas ejercer y acompañando un documento que acredite tu
+        identidad. También puedes presentar una reclamación ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" rel="noopener">www.aepd.es</a>).
+      </p>
+
+      <h2>7. Seguridad</h2>
+      <p>Aplicamos medidas técnicas y organizativas adecuadas para proteger los datos frente a accesos no autorizados, pérdida o alteración.</p>
+
+      <h2>8. Cambios en esta política</h2>
+      <p>Podemos actualizar esta política para adaptarla a cambios legales o del servicio. La versión vigente es la publicada en esta página.</p>
+    </div>
+  </div>
+</BaseLayout>

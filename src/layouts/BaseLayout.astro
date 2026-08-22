@@ -2,9 +2,11 @@
 import '../styles/tokens.css';
 import '../styles/base.css';
 import '../styles/components.css';
+import '../styles/islands.css';
 import SeoHead from '../components/seo/SeoHead.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
+import FloatingWhatsApp from '../components/layout/FloatingWhatsApp.astro';
 import CartDrawer from '../islands/CartDrawer';
 import Toaster from '../islands/Toaster';
 import type { PageMeta } from '../lib/seo/meta';
@@ -17,6 +19,7 @@ interface Props extends PageMeta {
   dark?: boolean;
 }
 const { jsonLd = [], dark = false, ...meta } = Astro.props;
+const showFab = Astro.url.pathname.replace(/\/+$/, '') !== '/carrito';
 const schemas = meta.path === '/' ? [organizationSchema(), websiteSchema(), ...jsonLd] : jsonLd;
 ---
 
@@ -38,6 +41,7 @@ const schemas = meta.path === '/' ? [organizationSchema(), websiteSchema(), ...j
     <main id="main" tabindex="-1">
       <slot />
     </main>
+    {showFab && <FloatingWhatsApp />}
     <Footer />
     <CartDrawer client:idle />
     <Toaster client:idle />

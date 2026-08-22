@@ -1,0 +1,62 @@
+# Despliegue OPCIONAL a Cloudflare Pages desde GitHub Actions.
+#
+# Por defecto Voltia se despliega con la integración Git de Cloudflare Pages (zero-config:
+# push a main → build en Cloudflare → producción; ver docs/13-cloudflare.md y docs/19-deployment.md).
+# Este workflow es la alternativa "Direct Upload" para cuando se quiera desplegar SOLO lo que CI ha
+# validado, o si se desactiva el build automático de Cloudflare. Se lanza a mano (workflow_dispatch).
+#
+# Requisitos (GitHub → Settings → Secrets and variables → Actions):
+#   - Secret CLOUDFLARE_API_TOKEN  : token con permiso "Cloudflare Pages: Edit" únicamente.
+#   - Secret CLOUDFLARE_ACCOUNT_ID : ID de la cuenta.
+#   - Variables (no secretas) PUBLIC_SITE_URL y PUBLIC_WHATSAPP_NUMBER del entorno "production".
+#
+# Portabilidad: el único paso específico de Cloudflare es el último (wrangler pages deploy).
+# En Vercel/Netlify se sustituye por `vercel deploy --prebuilt` / `netlify deploy --dir=dist`.
+name: deploy-cloudflare-pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Rama de Pages a la que desplegar (main = producción; otra = preview)
+        required: false
+        default: main
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deploy-${{ github.event.inputs.branch || 'main' }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: ${{ github.event.inputs.branch == 'main' && 'production' || 'preview' }}
+    env:
+      PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
+      PUBLIC_WHATSAPP_NUMBER: ${{ vars.PUBLIC_WHATSAPP_NUMBER }}
+      PUBLIC_CONTACT_EMAIL: ${{ vars.PUBLIC_CONTACT_EMAIL }}
+      PUBLIC_ANALYTICS: ${{ vars.PUBLIC_ANALYTICS }}
+      PUBLIC_CF_BEACON_TOKEN: ${{ vars.PUBLIC_CF_BEACON_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npx astro check
+      - run: npm run build
+      - name: Verificar artefacto
+        run: test -f dist/_headers && test -f dist/index.html
+      - name: Deploy a Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name voltia --branch ${{ github.event.inputs.branch || 'main' }} --commit-dirty=true
