@@ -1,0 +1,14 @@
+{
+  "slug": "bicimotos",
+  "name": "Bicimotos",
+  "title": "Bicimotos eléctricas ligeras",
+  "description": "Bicimotos eléctricas ligeras para trayectos urbanos cortos: pedales, batería extraíble y precio ajustado. Ideales como primer vehículo eléctrico.",
+  "tagline": "Ligera, práctica y sin complicaciones",
+  "image": {
+    "src": "~/assets/categories/bicimotos.svg",
+    "alt": "Bicimotos eléctricas ligeras Voltia",
+    "width": 1200,
+    "height": 800
+  },
+  "order": 3
+}

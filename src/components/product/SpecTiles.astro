@@ -1,0 +1,29 @@
+---
+import type { Specs } from '../../domain/types';
+import { batteryLabel, chargeLabel, kw } from '../../domain/product';
+
+interface Props {
+  specs: Specs;
+  compact?: boolean;
+}
+const { specs, compact = false } = Astro.props;
+const tiles = [
+  { label: 'Autonomía', value: `${specs.rangeKm} km` },
+  { label: 'Velocidad', value: `${specs.topSpeedKmh} km/h` },
+  { label: 'Potencia', value: kw(specs.powerW) },
+  { label: 'Batería', value: batteryLabel(specs) },
+  { label: 'Carga', value: chargeLabel(specs) },
+  ...(compact ? [] : [{ label: 'Peso', value: `${specs.weightKg} kg` }]),
+];
+---
+
+<dl class="spec-grid">
+  {
+    tiles.map((t) => (
+      <div class="spec-tile">
+        <dt class="spec-tile__label">{t.label}</dt>
+        <dd class="spec-tile__value">{t.value}</dd>
+      </div>
+    ))
+  }
+</dl>

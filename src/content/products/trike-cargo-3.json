@@ -1,0 +1,213 @@
+{
+  "id": "a3f1c2d4-0000-4008-8b1e-000000000008",
+  "slug": "trike-cargo-3",
+  "name": "TRIKE CARGO 3",
+  "subtitle": "Trimoto eléctrica de reparto",
+  "claim": "Tres ruedas, cero emisiones y reparto sin interrupciones",
+  "description": "La TRIKE CARGO 3 es la trimoto eléctrica de Voltia para reparto y pequeños negocios: caja trasera de 400 litros, 150 kg de carga útil y motor de 3 kW. Estable en parado, ágil en marcha y sin coste de combustible.",
+  "category": "trimotos",
+  "brand": "Voltia",
+  "images": [
+    {
+      "src": "~/assets/products/trike-cargo-3-1.svg",
+      "alt": "TRIKE CARGO 3, trimoto eléctrica de reparto Voltia, vista lateral",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "src": "~/assets/products/trike-cargo-3-2.svg",
+      "alt": "TRIKE CARGO 3 en color blanco perla, vista tres cuartos",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "src": "~/assets/products/trike-cargo-3-3.svg",
+      "alt": "Detalle del TRIKE CARGO 3: panel, faro y batería",
+      "width": 1600,
+      "height": 1000
+    }
+  ],
+  "specs": {
+    "rangeKm": 90,
+    "topSpeedKmh": 45,
+    "powerW": 3000,
+    "peakPowerW": 4500,
+    "battery": {
+      "voltage": 72,
+      "capacityAh": 45,
+      "capacityKwh": 3.24,
+      "chemistry": "LiFePO4",
+      "removable": false,
+      "chargeHours": [
+        6,
+        8
+      ],
+      "cycles": 2000
+    },
+    "weightKg": 185,
+    "maxLoadKg": 250,
+    "seats": 1,
+    "license": "AM",
+    "dimensionsMm": [
+      2350,
+      1000,
+      1250
+    ],
+    "wheelInches": 12,
+    "brakes": "Disco hidráulico delantero y tambor trasero, freno de estacionamiento",
+    "suspension": "Horquilla hidráulica delantera y eje trasero con ballestas y amortiguadores",
+    "lighting": "Full LED",
+    "display": "Pantalla LCD",
+    "drivingModes": [
+      "Eco",
+      "Normal",
+      "Carga"
+    ],
+    "motorType": "Motor central con diferencial",
+    "ipRating": "IP65",
+    "warrantyMonths": 24,
+    "batteryWarrantyMonths": 24
+  },
+  "variants": [
+    {
+      "id": "bat-72v-45ah",
+      "name": "Batería 72V 45Ah",
+      "description": "72V 45Ah LiFePO4 · 90 km",
+      "price": {
+        "amount": 549900,
+        "currency": "EUR"
+      },
+      "availability": "en-stock",
+      "sku": "VT-TC3-7245",
+      "isDefault": true
+    },
+    {
+      "id": "bat-72v-70ah",
+      "name": "Batería 72V 70Ah",
+      "description": "72V 70Ah LiFePO4 · 130 km",
+      "price": {
+        "amount": 619900,
+        "currency": "EUR"
+      },
+      "availability": "bajo-pedido",
+      "sku": "VT-TC3-7270",
+      "specsOverride": {
+        "rangeKm": 130,
+        "battery": {
+          "voltage": 72,
+          "capacityAh": 70,
+          "capacityKwh": 5.04,
+          "chemistry": "LiFePO4",
+          "removable": false,
+          "chargeHours": [
+            8,
+            10
+          ],
+          "cycles": 2000
+        },
+        "weightKg": 205
+      }
+    }
+  ],
+  "colors": [
+    {
+      "id": "blanco-perla",
+      "name": "Blanco perla",
+      "hex": "#F2F2F0"
+    },
+    {
+      "id": "negro-mate",
+      "name": "Negro mate",
+      "hex": "#111315"
+    },
+    {
+      "id": "rojo-volt",
+      "name": "Rojo volt",
+      "hex": "#D92B2B"
+    }
+  ],
+  "accessories": [
+    "cargador-rapido-10a",
+    "casco-jet-urbano",
+    "candado-disco-alarma"
+  ],
+  "related": [
+    "cargo-van-e",
+    "urban-s2-pro"
+  ],
+  "useCases": [
+    "reparto",
+    "trabajo",
+    "carga"
+  ],
+  "highlights": [
+    "Caja de 400 litros con cierre",
+    "150 kg de carga útil",
+    "Batería LiFePO4 de 2.000 ciclos",
+    "Freno de estacionamiento y marcha atrás"
+  ],
+  "technology": [
+    {
+      "title": "Motor",
+      "text": "Motor central de 3 kW con diferencial y transmisión por eje. Par suficiente para arrancar cargado en rampa del 12 % sin esfuerzo."
+    },
+    {
+      "title": "Batería",
+      "text": "Batería LiFePO4 de 72V 45Ah (3,24 kWh) fija bajo la caja, con más de 2.000 ciclos de vida útil. Ideal para flotas que cargan cada noche."
+    },
+    {
+      "title": "Frenos",
+      "text": "Disco hidráulico delantero y tambor trasero sobre eje, con freno de estacionamiento mecánico. Frenada regenerativa en modo Carga."
+    },
+    {
+      "title": "Suspensión",
+      "text": "Horquilla hidráulica delantera y eje trasero sobre ballestas con amortiguadores hidráulicos. Estabilidad total incluso con la caja llena."
+    },
+    {
+      "title": "Iluminación",
+      "text": "Faro Full LED, luces de posición laterales en la caja y luz de marcha atrás. Visibilidad pensada para trabajar de noche."
+    },
+    {
+      "title": "Pantalla y modos de conducción",
+      "text": "Pantalla LCD con odómetro parcial para rutas y avisos de mantenimiento. Modos Eco, Normal y Carga, que adapta la entrega al peso transportado."
+    }
+  ],
+  "faqs": [
+    {
+      "question": "¿Cuál es la autonomía real del TRIKE CARGO 3?",
+      "answer": "La autonomía declarada es de 90 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 63 y 77 km. La variante Batería 72V 70Ah amplía la autonomía."
+    },
+    {
+      "question": "¿Qué carnet necesito para conducir el TRIKE CARGO 3?",
+      "answer": "Necesitas el carnet AM (ciclomotor, a partir de 15 años) o cualquier carnet superior, incluido el carnet B de coche. Se matricula como ciclomotor con su placa amarilla."
+    },
+    {
+      "question": "¿Qué garantía tiene?",
+      "answer": "El TRIKE CARGO 3 tiene 2 años de garantía en vehículo y 24 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+    },
+    {
+      "question": "¿Cuál es el plazo de entrega?",
+      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+    }
+  ],
+  "reviews": [
+    {
+      "author": "Panadería El Horno",
+      "rating": 5,
+      "text": "Repartimos cada mañana a 12 puntos de venta y gastamos unos 30 céntimos de luz al día. Amortizada en menos de un año.",
+      "date": "2026-05-07"
+    },
+    {
+      "author": "Javier O.",
+      "rating": 4,
+      "text": "Muy estable y con mucha caja. Para cuestas fuertes conviene la batería grande.",
+      "date": "2026-06-30"
+    }
+  ],
+  "featured": 55,
+  "publishedAt": "2026-03-25T09:00:00.000Z",
+  "seo": {
+    "title": "TRIKE CARGO 3 | Trimoto eléctrica de reparto | Voltia",
+    "description": "TRIKE CARGO 3: trimoto eléctrica de reparto con caja de 400 L, 150 kg de carga, 3 kW y batería LiFePO4. Carnet AM. Desde 5.499 € con 2 años de garantía."
+  }
+}

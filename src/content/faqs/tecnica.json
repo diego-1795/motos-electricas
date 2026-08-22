@@ -1,0 +1,26 @@
+{
+  "group": "Técnica y autonomía",
+  "order": 3,
+  "items": [
+    {
+      "question": "¿La autonomía anunciada es real?",
+      "answer": "La autonomía de la ficha se mide en modo Eco, a velocidad constante y con un conductor de unos 75 kg. En uso real urbano espera entre un 70 y un 85 % de esa cifra. El frío, las cuestas, el peso y el modo Sport la reducen."
+    },
+    {
+      "question": "¿Puedo cargar la batería en casa?",
+      "answer": "Sí. Todas las baterías extraíbles se cargan en un enchufe doméstico normal de 230 V con el cargador incluido, igual que un portátil. Las baterías fijas de los vehículos de carga se cargan conectando el vehículo directamente."
+    },
+    {
+      "question": "¿Cuánto dura la batería?",
+      "answer": "Las baterías NMC están diseñadas para unos 800-1.000 ciclos completos manteniendo más del 80 % de capacidad; las LiFePO4, para más de 2.000. En uso diario normal, hablamos de entre 5 y 8 años de vida útil."
+    },
+    {
+      "question": "¿Qué significa carnet AM, A1 o A2?",
+      "answer": "AM es el carnet de ciclomotor (hasta 45 km/h). A1 permite motos de hasta 11 kW (equivalentes a 125 cc) y también vale el carnet B con más de 3 años. A2 permite motos de hasta 35 kW. Cada ficha indica el carnet necesario."
+    },
+    {
+      "question": "¿Se pueden usar con lluvia?",
+      "answer": "Sí. Todos los vehículos tienen protección IP65 o superior en motor, batería y electrónica, suficiente para circular con lluvia. Evita lavar a presión directamente sobre conectores y pantalla."
+    }
+  ]
+}

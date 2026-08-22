@@ -1,0 +1,14 @@
+{
+  "slug": "vehiculos-carga",
+  "name": "Vehículos de carga",
+  "title": "Vehículos eléctricos de carga ligera",
+  "description": "Vehículos eléctricos de carga ligera para última milla, reparto urbano y logística de proximidad. Hasta 300 kg de carga útil y coste por km mínimo.",
+  "tagline": "Carga más, gasta menos",
+  "image": {
+    "src": "~/assets/categories/vehiculos-carga.svg",
+    "alt": "Vehículos eléctricos de carga ligera Voltia",
+    "width": 1200,
+    "height": 800
+  },
+  "order": 5
+}

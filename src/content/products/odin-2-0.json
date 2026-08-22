@@ -1,0 +1,218 @@
+{
+  "id": "a3f1c2d4-0000-4005-8b1e-000000000005",
+  "slug": "odin-2-0",
+  "name": "ODIN 2.0",
+  "subtitle": "Moto eléctrica deportiva A2",
+  "claim": "Ocho kilovatios de silencio puro para salir de la ciudad",
+  "description": "La ODIN 2.0 eleva la plataforma ODIN a carnet A2: 8 kW nominales, 110 km/h y hasta 150 km de autonomía. Una moto eléctrica para quien quiere carretera sin renunciar a la agilidad urbana.",
+  "category": "motos-electricas",
+  "brand": "Voltia",
+  "images": [
+    {
+      "src": "~/assets/products/odin-2-0-1.svg",
+      "alt": "ODIN 2.0, moto eléctrica deportiva a2 Voltia, vista lateral",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "src": "~/assets/products/odin-2-0-2.svg",
+      "alt": "ODIN 2.0 en color negro mate, vista tres cuartos",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "src": "~/assets/products/odin-2-0-3.svg",
+      "alt": "Detalle del ODIN 2.0: panel, faro y batería",
+      "width": 1600,
+      "height": 1000
+    }
+  ],
+  "specs": {
+    "rangeKm": 150,
+    "topSpeedKmh": 110,
+    "powerW": 8000,
+    "peakPowerW": 12000,
+    "battery": {
+      "voltage": 72,
+      "capacityAh": 60,
+      "capacityKwh": 4.32,
+      "chemistry": "NMC",
+      "removable": true,
+      "chargeHours": [
+        6,
+        8
+      ],
+      "cycles": 1000
+    },
+    "weightKg": 142,
+    "maxLoadKg": 180,
+    "seats": 2,
+    "license": "A2",
+    "dimensionsMm": [
+      2040,
+      770,
+      1110
+    ],
+    "wheelInches": 17,
+    "brakes": "Disco hidráulico delantero y trasero, ABS",
+    "suspension": "Horquilla invertida delantera y monoamortiguador trasero regulable",
+    "lighting": "Full LED",
+    "display": "Pantalla TFT a color",
+    "drivingModes": [
+      "Eco",
+      "Normal",
+      "Sport",
+      "Custom"
+    ],
+    "motorType": "Motor central con transmisión por correa",
+    "ipRating": "IP67",
+    "warrantyMonths": 24,
+    "batteryWarrantyMonths": 24
+  },
+  "variants": [
+    {
+      "id": "bat-72v-60ah",
+      "name": "Batería 72V 60Ah",
+      "description": "72V 60Ah · 150 km",
+      "price": {
+        "amount": 699900,
+        "currency": "EUR"
+      },
+      "availability": "en-stock",
+      "sku": "VT-OD2-7260",
+      "isDefault": true
+    },
+    {
+      "id": "doble-bateria",
+      "name": "Doble batería 72V 2x40Ah",
+      "description": "2x72V 40Ah · 200 km",
+      "price": {
+        "amount": 779900,
+        "currency": "EUR"
+      },
+      "availability": "bajo-pedido",
+      "sku": "VT-OD2-72D",
+      "specsOverride": {
+        "rangeKm": 200,
+        "battery": {
+          "voltage": 72,
+          "capacityAh": 80,
+          "capacityKwh": 5.76,
+          "chemistry": "NMC",
+          "removable": true,
+          "chargeHours": [
+            8,
+            10
+          ],
+          "cycles": 1000
+        },
+        "weightKg": 156
+      }
+    }
+  ],
+  "colors": [
+    {
+      "id": "negro-mate",
+      "name": "Negro mate",
+      "hex": "#111315"
+    },
+    {
+      "id": "gris-titanio",
+      "name": "Gris titanio",
+      "hex": "#6B6F76"
+    },
+    {
+      "id": "rojo-volt",
+      "name": "Rojo volt",
+      "hex": "#D92B2B"
+    }
+  ],
+  "accessories": [
+    "cargador-rapido-10a",
+    "casco-integral-voltia",
+    "candado-disco-alarma",
+    "funda-exterior-impermeable"
+  ],
+  "related": [
+    "odin-1-0",
+    "trail-x",
+    "city-gt"
+  ],
+  "useCases": [
+    "ciudad",
+    "ocio",
+    "trayectos-largos",
+    "dos-personas"
+  ],
+  "highlights": [
+    "8 kW nominales, 12 kW de pico",
+    "110 km/h: autovía sin problemas",
+    "ABS de serie en ambas ruedas",
+    "Hasta 200 km con doble batería"
+  ],
+  "technology": [
+    {
+      "title": "Motor",
+      "text": "Motor central de 8 kW nominales y 12 kW de pico refrigerado por líquido, con transmisión por correa de carbono. 0-100 km/h en menos de 9 segundos."
+    },
+    {
+      "title": "Batería",
+      "text": "Batería NMC de 72V 60Ah (4,32 kWh) extraíble en dos módulos. Opción de doble batería de 2x40Ah para superar los 200 km."
+    },
+    {
+      "title": "Frenos",
+      "text": "ABS de doble canal con discos de 280 mm y 240 mm y pinzas radiales de cuatro pistones. Frenada regenerativa de tres niveles."
+    },
+    {
+      "title": "Suspensión",
+      "text": "Horquilla invertida de 43 mm regulable y monoamortiguador trasero con depósito separado. Geometría pensada para curvas de montaña."
+    },
+    {
+      "title": "Iluminación",
+      "text": "Faro Full LED adaptativo con luz de curva, DRL y luz de freno de emergencia. Intermitentes con autocancelación."
+    },
+    {
+      "title": "Pantalla y modos de conducción",
+      "text": "Pantalla TFT de 7\" con navegación, telemetría y actualizaciones OTA. Modo Custom para configurar entrega, regeneración y límite de velocidad."
+    }
+  ],
+  "faqs": [
+    {
+      "question": "¿Cuál es la autonomía real del ODIN 2.0?",
+      "answer": "La autonomía declarada es de 150 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 105 y 128 km. La variante Doble batería 72V 2x40Ah amplía la autonomía."
+    },
+    {
+      "question": "¿Qué carnet necesito para conducir el ODIN 2.0?",
+      "answer": "Necesitas carnet A2 o A. No es válida con el carnet B al superar los 11 kW de potencia equivalente a una 125 cc."
+    },
+    {
+      "question": "¿Qué garantía tiene?",
+      "answer": "El ODIN 2.0 tiene 2 años de garantía en vehículo y 24 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+    },
+    {
+      "question": "¿Cuál es el plazo de entrega?",
+      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+    }
+  ],
+  "reviews": [
+    {
+      "author": "Iván B.",
+      "rating": 5,
+      "text": "Hago 60 km diarios con tramos de autovía y llego con un 40 % de batería. El ABS da mucha tranquilidad.",
+      "date": "2026-06-22"
+    },
+    {
+      "author": "Elena C.",
+      "rating": 4,
+      "text": "Muy rápida y cómoda. La doble batería tarda en llegar, pero merece la pena para viajar.",
+      "date": "2026-07-04"
+    }
+  ],
+  "featured": 95,
+  "isNew": true,
+  "publishedAt": "2026-05-15T09:00:00.000Z",
+  "seo": {
+    "title": "ODIN 2.0 | Moto eléctrica deportiva A2 | Voltia",
+    "description": "ODIN 2.0: moto eléctrica A2 de 8 kW, 110 km/h, ABS y hasta 200 km de autonomía. Desde 6.999 € con 2 años de garantía y servicio técnico en España."
+  }
+}

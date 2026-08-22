@@ -1,0 +1,23 @@
+{
+  "id": "b7e2d9c1-0000-4002-9c2f-000000000002",
+  "slug": "bateria-adicional-72v-50ah",
+  "name": "Batería adicional 72V 50Ah",
+  "description": "Batería NMC extraíble de 72V 50Ah (3,6 kWh) de alta capacidad, compatible con la plataforma 72V de Voltia. Incluye cargador de 5 A.",
+  "price": {
+    "amount": 89900,
+    "currency": "EUR"
+  },
+  "image": {
+    "src": "~/assets/accessories/bateria-adicional-72v-50ah.svg",
+    "alt": "Batería adicional 72V 50Ah Voltia",
+    "width": 800,
+    "height": 800
+  },
+  "availability": "bajo-pedido",
+  "kind": "bateria",
+  "compatibleWith": [
+    "urban-s2-pro",
+    "city-gt",
+    "odin-1-0"
+  ]
+}

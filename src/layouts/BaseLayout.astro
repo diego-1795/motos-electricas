@@ -1,0 +1,49 @@
+---
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+import SeoHead from '../components/seo/SeoHead.astro';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import CartDrawer from '../islands/CartDrawer';
+import Toaster from '../islands/Toaster';
+import type { PageMeta } from '../lib/seo/meta';
+import { site } from '../config/site';
+import { organizationSchema, websiteSchema } from '../lib/seo/jsonld';
+
+interface Props extends PageMeta {
+  jsonLd?: object[];
+  /** Fondo oscuro de showroom en el body (home) */
+  dark?: boolean;
+}
+const { jsonLd = [], dark = false, ...meta } = Astro.props;
+const schemas = meta.path === '/' ? [organizationSchema(), websiteSchema(), ...jsonLd] : jsonLd;
+---
+
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content={dark ? '#0b0c0f' : '#f7f7f5'} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="generator" content={Astro.generator} />
+    <SeoHead {...meta} jsonLd={schemas} />
+    <slot name="head" />
+  </head>
+  <body class:list={{ 'surface-dark': dark }}>
+    <a href="#main" class="skip-link">Saltar al contenido</a>
+    <Header />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <CartDrawer client:idle />
+    <Toaster client:idle />
+    <script>
+      import { initAnalytics } from '../lib/analytics-init';
+      initAnalytics();
+    </script>
+  </body>
+</html>

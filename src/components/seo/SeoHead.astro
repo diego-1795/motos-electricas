@@ -1,0 +1,30 @@
+---
+import { site } from '../../config/site';
+import { absolute, buildTitle, canonical, clampDescription, type PageMeta } from '../../lib/seo/meta';
+
+interface Props extends PageMeta {
+  jsonLd?: object[];
+}
+const { title, description, path, image, type = 'website', noindex = false, jsonLd = [] } = Astro.props;
+const fullTitle = buildTitle(title);
+const desc = clampDescription(description);
+const url = canonical(path);
+const ogImage = absolute(image ?? '/og-default.png');
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={desc} />
+<link rel="canonical" href={url} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+<meta property="og:type" content={type === 'product' ? 'website' : type} />
+<meta property="og:site_name" content={site.name} />
+<meta property="og:locale" content="es_ES" />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={desc} />
+<meta property="og:url" content={url} />
+<meta property="og:image" content={ogImage} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={desc} />
+<meta name="twitter:image" content={ogImage} />
+{jsonLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj).replace(/</g, '\\u003c')} />)}

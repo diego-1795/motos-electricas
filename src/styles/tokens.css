@@ -1,0 +1,122 @@
+/* =====================================================================
+   VOLTIA DESIGN TOKENS — única fuente de verdad visual (docs/02-design-system.md)
+   Premium · tecnológico · minimalista · editorial. Sin glassmorphism, sin neón.
+   ===================================================================== */
+:root {
+  color-scheme: light;
+
+  /* Neutros (cálidos, papel → tinta) */
+  --n-0: #ffffff;
+  --n-50: #f7f7f5;
+  --n-100: #efefec;
+  --n-200: #e2e2de;
+  --n-300: #c9c9c4;
+  --n-400: #9b9b96;
+  --n-500: #6b6f76;
+  --n-600: #4a4e55;
+  --n-700: #2c2f35;
+  --n-800: #1c1f26;
+  --n-900: #111315;
+  --n-950: #0b0c0f;
+
+  /* Acentos */
+  --volt: #d6ff3f;          /* acento de marca: solo sobre fondos oscuros */
+  --volt-ink: #1f2a00;
+  --electric: #0b5fff;      /* enlaces, foco, estados interactivos en claro */
+  --electric-700: #0747bf;
+  --success: #1f8f5f;
+  --warning: #b7791f;
+  --danger: #c42b2b;
+
+  /* Semánticos (tema claro por defecto) */
+  --bg: var(--n-50);
+  --bg-elev: var(--n-0);
+  --bg-sunken: var(--n-100);
+  --fg: var(--n-900);
+  --fg-muted: var(--n-500);
+  --fg-subtle: var(--n-400);
+  --border: var(--n-200);
+  --border-strong: var(--n-300);
+  --accent: var(--electric);
+  --accent-fg: #ffffff;
+  --focus: var(--electric);
+
+  /* Superficie oscura (showroom) — se aplica con .surface-dark */
+  --dark-bg: var(--n-950);
+  --dark-bg-elev: var(--n-900);
+  --dark-fg: var(--n-50);
+  --dark-fg-muted: var(--n-400);
+  --dark-border: var(--n-800);
+
+  /* Tipografía */
+  --font-sans: 'Inter', 'SF Pro Text', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --fs-xs: 0.75rem;                                  /* 12 */
+  --fs-sm: 0.875rem;                                 /* 14 */
+  --fs-md: 1rem;                                     /* 16 */
+  --fs-lg: 1.125rem;                                 /* 18 */
+  --fs-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);   /* 20→24 */
+  --fs-2xl: clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem);  /* 24→36 */
+  --fs-3xl: clamp(2rem, 1.4rem + 2.6vw, 3.5rem);     /* 32→56 */
+  --fs-4xl: clamp(2.5rem, 1.6rem + 4vw, 4.5rem);     /* 40→72 */
+  --lh-tight: 1.1;
+  --lh-snug: 1.25;
+  --lh-base: 1.5;
+  --tracking-tight: -0.02em;
+  --tracking-caps: 0.08em;
+
+  /* Espaciado (base 4px) */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.25rem;
+  --s-6: 1.5rem;
+  --s-8: 2rem;
+  --s-10: 2.5rem;
+  --s-12: 3rem;
+  --s-16: 4rem;
+  --s-20: 5rem;
+  --s-24: 6rem;
+  --section: clamp(3rem, 2rem + 4vw, 6rem);
+  --gutter: clamp(1rem, 0.5rem + 2.5vw, 2.5rem);
+
+  /* Layout */
+  --container: 80rem;   /* 1280 */
+  --container-narrow: 48rem;
+  --container-wide: 96rem;
+
+  /* Radios */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 20px;
+  --r-full: 999px;
+
+  /* Sombras (suaves, sin halos) */
+  --sh-1: 0 1px 2px rgb(17 19 21 / 0.06);
+  --sh-2: 0 4px 12px rgb(17 19 21 / 0.08);
+  --sh-3: 0 16px 40px rgb(17 19 21 / 0.14);
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --t-fast: 120ms;
+  --t-base: 200ms;
+  --t-slow: 360ms;
+
+  /* Z-index */
+  --z-header: 50;
+  --z-drawer: 100;
+  --z-toast: 200;
+}
+
+/* Breakpoints de referencia (no son variables CSS, se usan en media queries):
+   xs 480 · sm 768 · md 1024 · lg 1280 · xl 1536 */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0ms;
+    --t-base: 0ms;
+    --t-slow: 0ms;
+  }
+}

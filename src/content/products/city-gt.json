@@ -1,0 +1,225 @@
+{
+  "id": "a3f1c2d4-0000-4003-8b1e-000000000003",
+  "slug": "city-gt",
+  "name": "CITY GT",
+  "subtitle": "Scooter eléctrico 125 equivalente",
+  "claim": "Velocidad de 125 con la elegancia de un scooter premium",
+  "description": "El CITY GT es el scooter eléctrico equivalente a 125 cc de Voltia: 80 km/h, motor de 5 kW y batería doble de 72V. Perfecto para quien combina ciudad con vías rápidas y quiere un scooter silencioso con presencia.",
+  "category": "scooters-electricos",
+  "brand": "Voltia",
+  "images": [
+    {
+      "src": "~/assets/products/city-gt-1.svg",
+      "alt": "CITY GT, scooter eléctrico 125 equivalente Voltia, vista lateral",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "src": "~/assets/products/city-gt-2.svg",
+      "alt": "CITY GT en color negro mate, vista tres cuartos",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "src": "~/assets/products/city-gt-3.svg",
+      "alt": "Detalle del CITY GT: panel, faro y batería",
+      "width": 1600,
+      "height": 1000
+    }
+  ],
+  "specs": {
+    "rangeKm": 100,
+    "topSpeedKmh": 80,
+    "powerW": 5000,
+    "peakPowerW": 7000,
+    "battery": {
+      "voltage": 72,
+      "capacityAh": 32,
+      "capacityKwh": 2.3,
+      "chemistry": "NMC",
+      "removable": true,
+      "chargeHours": [
+        5,
+        7
+      ],
+      "cycles": 800
+    },
+    "weightKg": 118,
+    "maxLoadKg": 170,
+    "seats": 2,
+    "license": "A1",
+    "dimensionsMm": [
+      1950,
+      740,
+      1180
+    ],
+    "wheelInches": 13,
+    "brakes": "Disco hidráulico delantero y trasero, CBS",
+    "suspension": "Horquilla telescópica invertida y doble amortiguador trasero regulable",
+    "lighting": "Full LED",
+    "display": "Pantalla TFT a color",
+    "drivingModes": [
+      "Eco",
+      "Normal",
+      "Sport",
+      "Boost"
+    ],
+    "motorType": "Motor brushless en rueda",
+    "ipRating": "IP65",
+    "warrantyMonths": 24,
+    "batteryWarrantyMonths": 24
+  },
+  "variants": [
+    {
+      "id": "bat-72v-32ah",
+      "name": "Batería 72V 32Ah",
+      "description": "72V 32Ah · 100 km",
+      "price": {
+        "amount": 429900,
+        "currency": "EUR"
+      },
+      "availability": "en-stock",
+      "sku": "VT-CGT-7232",
+      "isDefault": true
+    },
+    {
+      "id": "bat-72v-50ah",
+      "name": "Batería 72V 50Ah",
+      "description": "72V 50Ah · 140 km",
+      "price": {
+        "amount": 489900,
+        "currency": "EUR"
+      },
+      "availability": "bajo-pedido",
+      "sku": "VT-CGT-7250",
+      "specsOverride": {
+        "rangeKm": 140,
+        "battery": {
+          "voltage": 72,
+          "capacityAh": 50,
+          "capacityKwh": 3.6,
+          "chemistry": "NMC",
+          "removable": true,
+          "chargeHours": [
+            7,
+            9
+          ],
+          "cycles": 800
+        },
+        "weightKg": 126
+      }
+    }
+  ],
+  "colors": [
+    {
+      "id": "negro-mate",
+      "name": "Negro mate",
+      "hex": "#111315"
+    },
+    {
+      "id": "blanco-perla",
+      "name": "Blanco perla",
+      "hex": "#F2F2F0"
+    },
+    {
+      "id": "gris-titanio",
+      "name": "Gris titanio",
+      "hex": "#6B6F76"
+    },
+    {
+      "id": "verde-bosque",
+      "name": "Verde bosque",
+      "hex": "#2E7D5B"
+    }
+  ],
+  "accessories": [
+    "bateria-adicional-72v-32ah",
+    "bateria-adicional-72v-50ah",
+    "cargador-rapido-10a",
+    "casco-integral-voltia",
+    "baul-trasero-45l",
+    "candado-disco-alarma",
+    "funda-exterior-impermeable"
+  ],
+  "related": [
+    "urban-s2-pro",
+    "odin-1-0",
+    "odin-2-0"
+  ],
+  "useCases": [
+    "ciudad",
+    "trabajo",
+    "dos-personas",
+    "trayectos-largos"
+  ],
+  "highlights": [
+    "80 km/h: apto para vías rápidas",
+    "Carnet A1 o B con 3 años",
+    "Hasta 140 km con batería 50Ah",
+    "Garantía de batería de 2 años"
+  ],
+  "technology": [
+    {
+      "title": "Motor",
+      "text": "Motor brushless de 5.000 W nominales y 7.000 W de pico en rueda trasera. Alcanza los 80 km/h y mantiene ritmo en circunvalaciones con dos ocupantes."
+    },
+    {
+      "title": "Batería",
+      "text": "Batería NMC de 72V extraíble con BMS de alta corriente y carga a 10 A compatible. Garantía de batería ampliada a 24 meses."
+    },
+    {
+      "title": "Frenos",
+      "text": "Doble disco hidráulico con pinzas de dos pistones y CBS. Frenada regenerativa en dos niveles que recupera energía en cada bajada."
+    },
+    {
+      "title": "Suspensión",
+      "text": "Horquilla invertida de 37 mm y doble amortiguador trasero regulable en precarga. Ruedas de 13 pulgadas con neumáticos tubeless."
+    },
+    {
+      "title": "Iluminación",
+      "text": "Faro Full LED con luces de curva, intermitentes dinámicos y luz diurna DRL. Visibilidad total en ciudad y carretera."
+    },
+    {
+      "title": "Pantalla y modos de conducción",
+      "text": "Pantalla TFT de 7\" con navegación, llamadas y estado del vehículo vía app. Cuatro modos: Eco, Normal, Sport y Boost temporal para adelantamientos."
+    }
+  ],
+  "faqs": [
+    {
+      "question": "¿Cuál es la autonomía real del CITY GT?",
+      "answer": "La autonomía declarada es de 100 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 70 y 85 km. La variante Batería 72V 50Ah amplía la autonomía."
+    },
+    {
+      "question": "¿Qué carnet necesito para conducir el CITY GT?",
+      "answer": "Puedes conducirla con carnet A1, A2, A o con carnet B con más de tres años de antigüedad, ya que es equivalente a una 125 cc (potencia igual o inferior a 11 kW)."
+    },
+    {
+      "question": "¿Qué garantía tiene?",
+      "answer": "El CITY GT tiene 2 años de garantía en vehículo y 24 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+    },
+    {
+      "question": "¿Cuál es el plazo de entrega?",
+      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+    }
+  ],
+  "reviews": [
+    {
+      "author": "Andrés M.",
+      "rating": 5,
+      "text": "Hago 40 km diarios por la M-40 y va sobrado. Silencioso, estable y muy bien acabado.",
+      "date": "2026-04-28"
+    },
+    {
+      "author": "Paula F.",
+      "rating": 4,
+      "text": "Precioso y muy cómodo. La batería de 50Ah tardó unas semanas en llegar pero avisaron en todo momento.",
+      "date": "2026-06-15"
+    }
+  ],
+  "featured": 85,
+  "publishedAt": "2026-03-05T09:00:00.000Z",
+  "seo": {
+    "title": "CITY GT | Scooter eléctrico 125 equivalente | Voltia",
+    "description": "CITY GT: scooter eléctrico 125 equivalente de 5 kW, 80 km/h y hasta 140 km de autonomía. Carnet A1 o B. Desde 4.299 € con garantía de 2 años."
+  }
+}

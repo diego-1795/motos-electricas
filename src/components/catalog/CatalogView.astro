@@ -1,0 +1,307 @@
+---
+import type { Product, CategorySlug } from '../../domain/types';
+import { USE_CASES, TYPES, sortLabels, type SortKey } from '../../domain/catalog';
+import { effectiveSpecs, fromPrice, maxRange, productAvailability } from '../../domain/product';
+import { useCaseLabel } from '../../domain/recommendation';
+import ProductCard from '../product/ProductCard.astro';
+
+/**
+ * Vista de catálogo con filtros progresivos:
+ * - HTML completo de todos los productos (SEO, sin JS funciona como listado).
+ * - Un script ligero filtra/ordena en cliente leyendo data-* y sincroniza la URL.
+ */
+interface Props {
+  products: Product[];
+  /** Si se fija, oculta el filtro de tipo */
+  lockedType?: CategorySlug;
+  categoryNames: Record<string, string>;
+}
+const { products, lockedType, categoryNames } = Astro.props;
+const sortKeys = Object.keys(sortLabels) as SortKey[];
+const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount)) / 100 / 500) * 500;
+---
+
+<div class="catalog" data-catalog>
+  <form class="filters" data-filters aria-label="Filtros del catálogo">
+    <details class="filters__mobile" open>
+      <summary class="filters__summary">
+        <span>Filtros</span>
+        <span class="filters__count muted" data-count>{products.length} modelos</span>
+      </summary>
+      <div class="filters__body">
+        {
+          !lockedType && (
+            <div class="field">
+              <label class="label" for="f-tipo">Tipo</label>
+              <select id="f-tipo" name="tipo" class="select">
+                <option value="">Todos</option>
+                {TYPES.map((t) => (
+                  <option value={t}>{categoryNames[t] ?? t}</option>
+                ))}
+              </select>
+            </div>
+          )
+        }
+        <div class="field">
+          <label class="label" for="f-precio">Precio máximo: <output for="f-precio" data-out="precio">{maxPrice} €</output></label>
+          <input id="f-precio" name="precio" type="range" min="500" max={maxPrice} step="100" value={maxPrice} />
+        </div>
+        <div class="field">
+          <label class="label" for="f-autonomia">Autonomía mínima: <output for="f-autonomia" data-out="autonomia">0 km</output></label>
+          <input id="f-autonomia" name="autonomia" type="range" min="0" max="200" step="10" value="0" />
+        </div>
+        <div class="field">
+          <label class="label" for="f-velocidad">Velocidad mínima: <output for="f-velocidad" data-out="velocidad">0 km/h</output></label>
+          <input id="f-velocidad" name="velocidad" type="range" min="0" max="120" step="5" value="0" />
+        </div>
+        <div class="field">
+          <label class="label" for="f-potencia">Potencia mínima: <output for="f-potencia" data-out="potencia">0 kW</output></label>
+          <input id="f-potencia" name="potencia" type="range" min="0" max="10" step="0.5" value="0" />
+        </div>
+        <div class="field">
+          <label class="label" for="f-bateria">Batería mínima: <output for="f-bateria" data-out="bateria">0 kWh</output></label>
+          <input id="f-bateria" name="bateria" type="range" min="0" max="8" step="0.5" value="0" />
+        </div>
+        <div class="field">
+          <label class="label" for="f-plazas">Plazas</label>
+          <select id="f-plazas" name="plazas" class="select">
+            <option value="">Cualquiera</option>
+            <option value="1">1</option>
+            <option value="2">2 o más</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="f-uso">Uso</label>
+          <select id="f-uso" name="uso" class="select">
+            <option value="">Cualquiera</option>
+            {USE_CASES.map((u) => <option value={u}>{useCaseLabel(u)}</option>)}
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="f-disp">Disponibilidad</label>
+          <select id="f-disp" name="disponibilidad" class="select">
+            <option value="">Cualquiera</option>
+            <option value="en-stock">En stock</option>
+            <option value="bajo-pedido">Bajo pedido</option>
+            <option value="proximamente">Próximamente</option>
+          </select>
+        </div>
+        <button type="reset" class="btn btn--ghost btn--sm">Limpiar filtros</button>
+      </div>
+    </details>
+  </form>
+
+  <div class="results">
+    <div class="results__bar">
+      <p class="muted" aria-live="polite"><span data-count-inline>{products.length}</span> modelos</p>
+      <label class="results__sort">
+        <span class="visually-hidden">Ordenar por</span>
+        <select name="orden" class="select" data-sort form="">
+          {sortKeys.map((k) => <option value={k}>{sortLabels[k]}</option>)}
+        </select>
+      </label>
+    </div>
+
+    <ul role="list" class="grid-products" data-grid>
+      {
+        products.map((p, i) => {
+          const s = effectiveSpecs(p);
+          return (
+            <li
+              data-item
+              data-slug={p.slug}
+              data-tipo={p.category}
+              data-precio={fromPrice(p).amount / 100}
+              data-autonomia={maxRange(p)}
+              data-velocidad={s.topSpeedKmh}
+              data-potencia={s.powerW / 1000}
+              data-bateria={s.battery.capacityKwh}
+              data-plazas={s.seats}
+              data-uso={p.useCases.join(' ')}
+              data-disponibilidad={productAvailability(p)}
+              data-featured={p.featured}
+              data-fecha={p.publishedAt}
+            >
+              <ProductCard product={p} priority={i === 0} />
+            </li>
+          );
+        })
+      }
+    </ul>
+    <p class="results__empty" data-empty hidden>
+      No hay modelos con esos filtros. <button type="button" class="btn btn--secondary btn--sm" data-reset>Quitar filtros</button>
+    </p>
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-catalog]');
+  if (root) {
+    const form = root.querySelector<HTMLFormElement>('[data-filters]')!;
+    const sort = root.querySelector<HTMLSelectElement>('[data-sort]')!;
+    const grid = root.querySelector<HTMLElement>('[data-grid]')!;
+    const items = Array.from(grid.querySelectorAll<HTMLElement>('[data-item]'));
+    const empty = root.querySelector<HTMLElement>('[data-empty]')!;
+    const counts = root.querySelectorAll<HTMLElement>('[data-count], [data-count-inline]');
+    const units: Record<string, string> = { precio: ' €', autonomia: ' km', velocidad: ' km/h', potencia: ' kW', bateria: ' kWh' };
+
+    const num = (el: HTMLElement, k: string) => Number(el.dataset[k] ?? 0);
+
+    function read() {
+      const fd = new FormData(form);
+      const get = (k: string) => String(fd.get(k) ?? '');
+      return {
+        tipo: get('tipo'),
+        precio: Number(get('precio') || Infinity),
+        autonomia: Number(get('autonomia') || 0),
+        velocidad: Number(get('velocidad') || 0),
+        potencia: Number(get('potencia') || 0),
+        bateria: Number(get('bateria') || 0),
+        plazas: Number(get('plazas') || 0),
+        uso: get('uso'),
+        disponibilidad: get('disponibilidad'),
+        orden: sort.value,
+      };
+    }
+
+    function apply() {
+      const f = read();
+      let visible = 0;
+      for (const el of items) {
+        const ok =
+          (!f.tipo || el.dataset.tipo === f.tipo) &&
+          num(el, 'precio') <= f.precio &&
+          num(el, 'autonomia') >= f.autonomia &&
+          num(el, 'velocidad') >= f.velocidad &&
+          num(el, 'potencia') >= f.potencia &&
+          num(el, 'bateria') >= f.bateria &&
+          num(el, 'plazas') >= f.plazas &&
+          (!f.uso || (el.dataset.uso ?? '').split(' ').includes(f.uso)) &&
+          (!f.disponibilidad || el.dataset.disponibilidad === f.disponibilidad);
+        el.hidden = !ok;
+        if (ok) visible++;
+      }
+      const sorted = [...items].sort((a, b) => {
+        switch (f.orden) {
+          case 'precio-asc':
+            return num(a, 'precio') - num(b, 'precio');
+          case 'precio-desc':
+            return num(b, 'precio') - num(a, 'precio');
+          case 'autonomia':
+            return num(b, 'autonomia') - num(a, 'autonomia');
+          case 'potencia':
+            return num(b, 'potencia') - num(a, 'potencia');
+          case 'novedades':
+            return (b.dataset.fecha ?? '').localeCompare(a.dataset.fecha ?? '');
+          default:
+            return num(b, 'featured') - num(a, 'featured');
+        }
+      });
+      sorted.forEach((el) => grid.appendChild(el));
+      empty.hidden = visible > 0;
+      counts.forEach((c) => (c.textContent = c.hasAttribute('data-count') ? `${visible} modelos` : String(visible)));
+
+      // Outputs de rangos
+      form.querySelectorAll<HTMLOutputElement>('[data-out]').forEach((o) => {
+        const k = o.dataset.out!;
+        const input = form.elements.namedItem(k) as HTMLInputElement | null;
+        if (input) o.textContent = `${input.value}${units[k] ?? ''}`;
+      });
+
+      // URL compartible (sin recargar)
+      const params = new URLSearchParams();
+      for (const [k, v] of Object.entries(f)) {
+        const el = form.elements.namedItem(k) as HTMLInputElement | null;
+        const isDefault = el ? (el.type === 'range' ? String(v) === (k === 'precio' ? el.max : el.min) : v === '') : v === 'recomendados';
+        if (!isDefault && v !== '' && v !== Infinity) params.set(k, String(v));
+      }
+      const qs = params.toString();
+      history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+    }
+
+    // Restaurar desde URL
+    const initial = new URLSearchParams(location.search);
+    initial.forEach((v, k) => {
+      const el = (form.elements.namedItem(k) as HTMLInputElement | null) ?? (k === 'orden' ? sort : null);
+      if (el) el.value = v;
+    });
+
+    form.addEventListener('input', apply);
+    form.addEventListener('reset', () => requestAnimationFrame(apply));
+    sort.addEventListener('change', apply);
+    root.querySelector('[data-reset]')?.addEventListener('click', () => form.reset());
+
+    const mq = matchMedia('(max-width: 1023px)');
+    const details = form.querySelector<HTMLDetailsElement>('details');
+    if (details && mq.matches) details.open = false;
+
+    apply();
+  }
+</script>
+
+<style>
+  .catalog {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .filters__summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--bg-elev);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+  .filters__summary::-webkit-details-marker {
+    display: none;
+  }
+  .filters__body {
+    display: grid;
+    gap: var(--s-4);
+    padding: var(--s-4);
+    border: 1px solid var(--border);
+    border-top: 0;
+    border-radius: 0 0 var(--r-lg) var(--r-lg);
+    background: var(--bg-elev);
+  }
+  input[type='range'] {
+    width: 100%;
+    accent-color: var(--fg);
+  }
+  .results__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+    margin-bottom: var(--s-4);
+  }
+  .results__sort .select {
+    min-width: 12rem;
+  }
+  .results__empty {
+    margin-top: var(--s-6);
+    display: flex;
+    gap: var(--s-3);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  @media (min-width: 1024px) {
+    .catalog {
+      grid-template-columns: 17rem 1fr;
+      gap: var(--s-10);
+      align-items: start;
+    }
+    .filters {
+      position: sticky;
+      top: 4.75rem;
+    }
+    .filters__summary {
+      pointer-events: none;
+      border-radius: var(--r-lg) var(--r-lg) 0 0;
+    }
+  }
+</style>

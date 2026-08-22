@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CatalogView from '../components/catalog/CatalogView.astro';
+import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../components/ui/SectionHeading.astro';
+import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
+import { repos } from '../data';
+import { breadcrumbSchema, itemListSchema } from '../lib/seo/jsonld';
+import { publicSrc } from '../lib/images';
+import type { Category } from '../domain/types';
+
+/** Páginas de categoría: /scooters-electricos, /bicimotos, /trimotos, /vehiculos-carga, /cuatrimotos */
+export async function getStaticPaths() {
+  const cats = await repos.categories.all();
+  return cats
+    .filter((c) => c.slug !== 'motos-electricas' && c.slug !== 'accesorios')
+    .map((c) => ({ params: { categoria: c.slug }, props: { category: c } }));
+}
+
+const { category } = Astro.props as { category: Category };
+const products = await repos.products.byCategory(category.slug);
+const categories = await repos.categories.all();
+const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: category.name, url: `/${category.slug}` },
+];
+---
+
+<BaseLayout
+  title={category.title}
+  description={category.description}
+  path={`/${category.slug}`}
+  image={category.image ? publicSrc(category.image) : undefined}
+  jsonLd={[breadcrumbSchema(crumbs), itemListSchema(products.map((p) => ({ name: p.name, url: `/motos-electricas/${p.slug}` })))]}
+>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading as="h1" eyebrow={category.tagline} title={category.title} text={category.description} />
+    {
+      products.length > 0 ? (
+        <CatalogView products={products} lockedType={category.slug} categoryNames={categoryNames} />
+      ) : (
+        <div class="empty card">
+          <h2>Próximamente</h2>
+          <p class="muted">Estamos incorporando modelos de {category.name.toLowerCase()}. Si buscas uno concreto, cuéntanoslo y te avisamos.</p>
+          <div class="empty__actions">
+            <WhatsAppLink source="product" class="btn btn--whatsapp" message={`Hola 👋 Me interesan los modelos de ${category.name.toLowerCase()}. ¿Cuándo estarán disponibles?`}>
+              Preguntar disponibilidad
+            </WhatsAppLink>
+            <a href="/motos-electricas" class="btn btn--secondary">Ver catálogo completo</a>
+          </div>
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .empty {
+    padding: var(--s-10);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    align-items: flex-start;
+  }
+  .empty__actions {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+</style>

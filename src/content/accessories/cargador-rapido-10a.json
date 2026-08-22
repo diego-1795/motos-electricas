@@ -1,0 +1,27 @@
+{
+  "id": "b7e2d9c1-0000-4006-9c2f-000000000006",
+  "slug": "cargador-rapido-10a",
+  "name": "Cargador rápido 10 A",
+  "description": "Cargador de 72V y 10 A que reduce el tiempo de carga a la mitad respecto al cargador de serie. Ventilación activa, protección térmica y conector estándar Voltia.",
+  "price": {
+    "amount": 12900,
+    "currency": "EUR"
+  },
+  "image": {
+    "src": "~/assets/accessories/cargador-rapido-10a.svg",
+    "alt": "Cargador rápido 10 A Voltia",
+    "width": 800,
+    "height": 800
+  },
+  "availability": "en-stock",
+  "kind": "cargador",
+  "compatibleWith": [
+    "urban-s2-pro",
+    "city-gt",
+    "odin-1-0",
+    "odin-2-0",
+    "trail-x",
+    "trike-cargo-3",
+    "cargo-van-e"
+  ]
+}

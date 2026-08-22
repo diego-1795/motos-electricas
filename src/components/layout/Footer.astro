@@ -1,0 +1,96 @@
+---
+import { site } from '../../config/site';
+import Logo from '../ui/Logo.astro';
+import WhatsAppLink from '../ui/WhatsAppLink.astro';
+import { repos } from '../../data';
+
+const categories = (await repos.categories.all()).filter((c) => c.slug !== 'accesorios');
+const year = new Date().getFullYear();
+---
+
+<footer class="footer surface-dark">
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <Logo />
+      <p class="muted">{site.tagline}. Showroom digital de movilidad eléctrica. Asesoramiento personal por WhatsApp.</p>
+      <WhatsAppLink source="footer" class="btn btn--whatsapp">Hablar con un asesor</WhatsAppLink>
+    </div>
+
+    <nav aria-labelledby="f-cat">
+      <h2 id="f-cat" class="eyebrow">Vehículos</h2>
+      <ul role="list">
+        {categories.map((c) => <li><a href={`/${c.slug}`}>{c.name}</a></li>)}
+        <li><a href="/accesorios">Accesorios</a></li>
+      </ul>
+    </nav>
+
+    <nav aria-labelledby="f-help">
+      <h2 id="f-help" class="eyebrow">Ayuda</h2>
+      <ul role="list">
+        <li><a href="/encuentra-tu-moto">Encuentra tu moto</a></li>
+        <li><a href="/comparar">Comparador</a></li>
+        <li><a href="/garantia">Garantía</a></li>
+        <li><a href="/faq">Preguntas frecuentes</a></li>
+        <li><a href="/contacto">Contacto</a></li>
+        <li><a href="/blog">Blog</a></li>
+      </ul>
+    </nav>
+
+    <nav aria-labelledby="f-legal">
+      <h2 id="f-legal" class="eyebrow">Legal</h2>
+      <ul role="list">
+        <li><a href="/legal/aviso-legal">Aviso legal</a></li>
+        <li><a href="/legal/privacidad">Privacidad</a></li>
+        <li><a href="/legal/cookies">Cookies</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="container footer__bottom">
+    <small class="muted">© {year} {site.name}. Todos los precios incluyen IVA. Las solicitudes de compra se gestionan por WhatsApp; no se realizan pagos en esta web.</small>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    margin-top: var(--section);
+    padding-block: var(--s-16) var(--s-8);
+  }
+  .footer__grid {
+    display: grid;
+    gap: var(--s-10);
+    grid-template-columns: 1fr;
+  }
+  .footer__brand {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    align-items: flex-start;
+  }
+  .footer__brand p {
+    max-width: 36ch;
+    font-size: var(--fs-sm);
+  }
+  .footer nav ul {
+    margin-top: var(--s-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .footer nav a {
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .footer nav a:hover {
+    color: var(--fg);
+  }
+  .footer__bottom {
+    margin-top: var(--s-12);
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--border);
+  }
+  @media (min-width: 768px) {
+    .footer__grid {
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+    }
+  }
+</style>

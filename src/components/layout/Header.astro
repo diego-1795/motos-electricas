@@ -1,0 +1,162 @@
+---
+import { site } from '../../config/site';
+import CartButton from '../../islands/CartButton';
+import Logo from '../ui/Logo.astro';
+
+const nav = [
+  { href: '/motos-electricas', label: 'Catálogo' },
+  { href: '/scooters-electricos', label: 'Scooters' },
+  { href: '/comparar', label: 'Comparar' },
+  { href: '/encuentra-tu-moto', label: 'Encuentra tu moto' },
+  { href: '/accesorios', label: 'Accesorios' },
+  { href: '/blog', label: 'Blog' },
+];
+const current = Astro.url.pathname;
+---
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="/" class="header__brand" aria-label={`${site.name} — inicio`}>
+      <Logo />
+    </a>
+
+    <nav class="header__nav" aria-label="Principal">
+      <ul role="list">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} aria-current={current === item.href || current.startsWith(item.href + '/') ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      <CartButton client:idle />
+      <button class="header__menu btn btn--ghost btn--icon" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-toggle>
+        <span class="visually-hidden">Menú</span>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path class="icon-open" d="M4 7h16M4 12h16M4 17h16" />
+          <path class="icon-close" d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-nav" class="mobile-nav" aria-label="Principal móvil" hidden>
+    <ul role="list" class="container">
+      {
+        nav.map((item) => (
+          <li>
+            <a href={item.href}>{item.label}</a>
+          </li>
+        ))
+      }
+      <li>
+        <a href="/carrito">Carrito</a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const nav = document.getElementById('mobile-nav');
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    if (nav) nav.hidden = open;
+    document.documentElement.classList.toggle('nav-open', !open);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') toggle.click();
+  });
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: saturate(1.2) blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    height: 3.75rem;
+  }
+  .header__brand {
+    display: inline-flex;
+    align-items: center;
+  }
+  .header__brand:hover {
+    text-decoration: none;
+  }
+  .header__nav {
+    display: none;
+  }
+  .header__nav ul {
+    display: flex;
+    gap: var(--s-1);
+  }
+  .header__nav a {
+    display: inline-block;
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--r-md);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--fg-muted);
+  }
+  .header__nav a:hover,
+  .header__nav a[aria-current='page'] {
+    color: var(--fg);
+    text-decoration: none;
+    background: var(--bg-sunken);
+  }
+  .header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-1);
+  }
+  .icon-close {
+    display: none;
+  }
+  [aria-expanded='true'] .icon-open {
+    display: none;
+  }
+  [aria-expanded='true'] .icon-close {
+    display: block;
+  }
+  .mobile-nav {
+    border-top: 1px solid var(--border);
+    background: var(--bg-elev);
+  }
+  .mobile-nav ul {
+    display: flex;
+    flex-direction: column;
+    padding-block: var(--s-2);
+  }
+  .mobile-nav a {
+    display: block;
+    padding: var(--s-3) 0;
+    font-size: var(--fs-lg);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+  }
+  @media (min-width: 1024px) {
+    .header__nav {
+      display: block;
+    }
+    .header__menu,
+    .mobile-nav {
+      display: none !important;
+    }
+  }
+</style>

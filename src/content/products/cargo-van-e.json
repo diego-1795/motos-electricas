@@ -1,0 +1,196 @@
+{
+  "id": "a3f1c2d4-0000-4009-8b1e-000000000009",
+  "slug": "cargo-van-e",
+  "name": "CARGO VAN E",
+  "subtitle": "Vehículo eléctrico de carga ligera",
+  "claim": "Tu furgoneta eléctrica de última milla sin permisos especiales",
+  "description": "El CARGO VAN E es el vehículo eléctrico de carga ligera de Voltia: cabina cerrada, caja de 1,5 m³ y 300 kg de carga útil con motor de 4 kW. La solución de última milla más eficiente para negocios urbanos.",
+  "category": "vehiculos-carga",
+  "brand": "Voltia",
+  "images": [
+    {
+      "src": "~/assets/products/cargo-van-e-1.svg",
+      "alt": "CARGO VAN E, vehículo eléctrico de carga ligera Voltia, vista lateral",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "src": "~/assets/products/cargo-van-e-2.svg",
+      "alt": "CARGO VAN E en color blanco perla, vista tres cuartos",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "src": "~/assets/products/cargo-van-e-3.svg",
+      "alt": "Detalle del CARGO VAN E: panel, faro y batería",
+      "width": 1600,
+      "height": 1000
+    }
+  ],
+  "specs": {
+    "rangeKm": 100,
+    "topSpeedKmh": 45,
+    "powerW": 4000,
+    "peakPowerW": 6000,
+    "battery": {
+      "voltage": 72,
+      "capacityAh": 100,
+      "capacityKwh": 7.2,
+      "chemistry": "LiFePO4",
+      "removable": false,
+      "chargeHours": [
+        8,
+        10
+      ],
+      "cycles": 2000
+    },
+    "weightKg": 420,
+    "maxLoadKg": 450,
+    "seats": 2,
+    "license": "AM",
+    "dimensionsMm": [
+      3000,
+      1250,
+      1700
+    ],
+    "wheelInches": 12,
+    "brakes": "Disco hidráulico delantero y tambor trasero, freno de estacionamiento",
+    "suspension": "Suspensión delantera independiente y eje trasero con ballestas",
+    "lighting": "Full LED",
+    "display": "Pantalla LCD",
+    "drivingModes": [
+      "Eco",
+      "Normal",
+      "Carga"
+    ],
+    "motorType": "Motor central con diferencial",
+    "ipRating": "IP65",
+    "warrantyMonths": 24,
+    "batteryWarrantyMonths": 24
+  },
+  "variants": [
+    {
+      "id": "caja-cerrada",
+      "name": "Caja cerrada 1,5 m³",
+      "description": "72V 100Ah · caja cerrada",
+      "price": {
+        "amount": 799900,
+        "currency": "EUR"
+      },
+      "availability": "bajo-pedido",
+      "sku": "VT-CVE-BOX",
+      "isDefault": true
+    },
+    {
+      "id": "caja-abierta",
+      "name": "Caja abierta con laterales",
+      "description": "72V 100Ah · caja abierta",
+      "price": {
+        "amount": 759900,
+        "currency": "EUR"
+      },
+      "availability": "proximamente",
+      "sku": "VT-CVE-OPEN"
+    }
+  ],
+  "colors": [
+    {
+      "id": "blanco-perla",
+      "name": "Blanco perla",
+      "hex": "#F2F2F0"
+    },
+    {
+      "id": "gris-titanio",
+      "name": "Gris titanio",
+      "hex": "#6B6F76"
+    },
+    {
+      "id": "azul-electrico",
+      "name": "Azul eléctrico",
+      "hex": "#0B5FFF"
+    }
+  ],
+  "accessories": [
+    "cargador-rapido-10a",
+    "candado-disco-alarma"
+  ],
+  "related": [
+    "trike-cargo-3",
+    "urban-s2-pro"
+  ],
+  "useCases": [
+    "carga",
+    "reparto",
+    "trabajo"
+  ],
+  "highlights": [
+    "300 kg de carga útil y 1,5 m³",
+    "Cabina cerrada con calefacción",
+    "Batería LiFePO4 de 7,2 kWh",
+    "Marcha atrás con cámara"
+  ],
+  "technology": [
+    {
+      "title": "Motor",
+      "text": "Motor central de 4 kW nominales y 6 kW de pico con diferencial y reductora. Arranca a plena carga en rampas de garaje sin problema."
+    },
+    {
+      "title": "Batería",
+      "text": "Batería LiFePO4 de 72V 100Ah (7,2 kWh) con más de 2.000 ciclos y carga nocturna completa en 8-10 horas con el cargador de serie."
+    },
+    {
+      "title": "Frenos",
+      "text": "Disco hidráulico delantero y tambores traseros con freno de estacionamiento. Regeneración automática en modo Carga."
+    },
+    {
+      "title": "Suspensión",
+      "text": "Suspensión delantera independiente y eje trasero sobre ballestas reforzadas. Confort en cabina y estabilidad con carga completa."
+    },
+    {
+      "title": "Iluminación",
+      "text": "Faros Full LED, luz de trabajo en caja y luz de marcha atrás. Intermitentes laterales en retrovisores."
+    },
+    {
+      "title": "Pantalla y modos de conducción",
+      "text": "Pantalla LCD con cámara de marcha atrás, consumo instantáneo y mantenimiento. Modos Eco, Normal y Carga según el peso transportado."
+    }
+  ],
+  "faqs": [
+    {
+      "question": "¿Cuál es la autonomía real del CARGO VAN E?",
+      "answer": "La autonomía declarada es de 100 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 70 y 85 km. La variante Caja abierta con laterales amplía la autonomía."
+    },
+    {
+      "question": "¿Qué carnet necesito para conducir el CARGO VAN E?",
+      "answer": "Necesitas el carnet AM (ciclomotor, a partir de 15 años) o cualquier carnet superior, incluido el carnet B de coche. Se matricula como ciclomotor con su placa amarilla."
+    },
+    {
+      "question": "¿Qué garantía tiene?",
+      "answer": "El CARGO VAN E tiene 2 años de garantía en vehículo y 24 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+    },
+    {
+      "question": "¿Cuál es el plazo de entrega?",
+      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+    }
+  ],
+  "reviews": [
+    {
+      "author": "Floristería Petalo",
+      "rating": 5,
+      "text": "Sustituyó a una furgoneta diésel para entregas en el centro. Entramos en zona de bajas emisiones sin problema.",
+      "date": "2026-06-12"
+    },
+    {
+      "author": "Logística Ruiz",
+      "rating": 4,
+      "text": "Funciona muy bien en ruta urbana. La versión abierta la esperamos para verano.",
+      "date": "2026-07-18"
+    }
+  ],
+  "featured": 50,
+  "publishedAt": "2026-04-20T09:00:00.000Z",
+  "seo": {
+    "title": "CARGO VAN E | Vehículo eléctrico de carga ligera | Voltia",
+    "description": "CARGO VAN E: vehículo eléctrico de carga ligera con 300 kg de carga útil, caja de 1,5 m³ y batería LiFePO4 de 7,2 kWh. Carnet AM. Desde 7.599 €."
+  }
+}

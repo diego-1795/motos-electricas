@@ -1,0 +1,14 @@
+{
+  "slug": "motos-electricas",
+  "name": "Motos eléctricas",
+  "title": "Motos eléctricas homologadas A1 y A2",
+  "description": "Motos eléctricas deportivas y trail para carnet A1 y A2 con hasta 150 km de autonomía, carga rápida y garantía de 2 años. Descubre la gama Voltia.",
+  "tagline": "Potencia real, cero emisiones",
+  "image": {
+    "src": "~/assets/categories/motos-electricas.svg",
+    "alt": "Motos eléctricas homologadas A1 y A2 Voltia",
+    "width": 1200,
+    "height": 800
+  },
+  "order": 2
+}

@@ -1,0 +1,135 @@
+---
+import { Image } from 'astro:assets';
+import type { Product } from '../../domain/types';
+import { defaultVariant, effectiveSpecs, fromPrice, kw, maxRange, productAvailability, availabilityLabel } from '../../domain/product';
+import { formatMoney } from '../../domain/money';
+import { resolveImage, publicSrc } from '../../lib/images';
+import QuickAdd from '../../islands/QuickAdd';
+import CompareToggle from '../../islands/CompareToggle';
+
+interface Props {
+  product: Product;
+  /** Primera tarjeta visible: prioriza carga (LCP) */
+  priority?: boolean;
+  showCompare?: boolean;
+}
+const { product: p, priority = false, showCompare = true } = Astro.props;
+const specs = effectiveSpecs(p);
+const img = p.images[0]!;
+const href = `/motos-electricas/${p.slug}`;
+const variant = defaultVariant(p);
+const avail = productAvailability(p);
+const badge = avail === 'en-stock' ? 'badge--stock' : avail === 'bajo-pedido' ? 'badge--order' : avail === 'proximamente' ? 'badge--soon' : '';
+---
+
+<article class="pc card card--interactive" data-product-card={p.slug}>
+  <a href={href} class="pc__media" tabindex="-1" aria-hidden="true">
+    <Image
+      src={resolveImage(img) as any}
+      alt=""
+      width={800}
+      height={500}
+      widths={[400, 640, 800]}
+      sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 92vw"
+      loading={priority ? 'eager' : 'lazy'}
+      fetchpriority={priority ? 'high' : 'auto'}
+      decoding="async"
+      format="avif"
+    />
+    {p.isNew && <span class="badge badge--new pc__new">Nuevo</span>}
+  </a>
+  <div class="pc__body">
+    <div class="pc__head">
+      <h3 class="pc__name"><a href={href}>{p.name}</a></h3>
+      <p class="pc__sub muted">{p.subtitle}</p>
+    </div>
+    <dl class="specs-inline pc__specs">
+      <div><dt class="visually-hidden">Autonomía</dt><dd><strong>{maxRange(p)}</strong> km</dd></div>
+      <div><dt class="visually-hidden">Velocidad</dt><dd><strong>{specs.topSpeedKmh}</strong> km/h</dd></div>
+      <div><dt class="visually-hidden">Potencia</dt><dd><strong>{kw(specs.powerW)}</strong></dd></div>
+    </dl>
+    <div class="pc__price">
+      <span>Desde <strong>{formatMoney(fromPrice(p))}</strong></span>
+      <span class:list={['badge', badge]}>{availabilityLabel[avail]}</span>
+    </div>
+    <div class="pc__actions">
+      <a href={href} class="btn btn--secondary btn--sm">Ver modelo</a>
+      <QuickAdd
+        client:visible
+        kind="product"
+        slug={p.slug}
+        name={p.name}
+        unitPrice={variant.price}
+        variantId={variant.id}
+        variantName={variant.name}
+        colorId={p.colors[0]?.id}
+        colorName={p.colors[0]?.name}
+        image={{ ...img, src: publicSrc(img) }}
+        disabled={avail === 'agotado'}
+      />
+      {showCompare && <CompareToggle client:visible slug={p.slug} name={p.name} />}
+    </div>
+  </div>
+</article>
+
+<style>
+  .pc {
+    display: flex;
+    flex-direction: column;
+  }
+  .pc__media {
+    position: relative;
+    display: block;
+    aspect-ratio: 8 / 5;
+    background: var(--n-950);
+    overflow: hidden;
+  }
+  .pc__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .pc__new {
+    position: absolute;
+    top: var(--s-3);
+    left: var(--s-3);
+  }
+  .pc__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-4) var(--s-5) var(--s-5);
+  }
+  .pc__name {
+    font-size: var(--fs-lg);
+  }
+  .pc__name a:hover {
+    text-decoration: none;
+  }
+  .pc__sub {
+    font-size: var(--fs-sm);
+  }
+  .pc__specs div {
+    display: inline;
+  }
+  .pc__specs dd {
+    display: inline;
+    margin: 0;
+  }
+  .pc__price {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-2);
+    flex-wrap: wrap;
+  }
+  .pc__price strong {
+    font-size: var(--fs-lg);
+  }
+  .pc__actions {
+    display: flex;
+    gap: var(--s-2);
+    flex-wrap: wrap;
+    margin-top: var(--s-1);
+  }
+</style>

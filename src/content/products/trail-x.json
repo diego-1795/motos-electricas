@@ -1,0 +1,215 @@
+{
+  "id": "a3f1c2d4-0000-4006-8b1e-000000000006",
+  "slug": "trail-x",
+  "name": "TRAIL X",
+  "subtitle": "Moto eléctrica trail de ocio",
+  "claim": "Asfalto, pista y camino: una trail eléctrica sin límites",
+  "description": "La TRAIL X es la trail eléctrica de Voltia para disfrutar fuera del asfalto: 6 kW, suspensiones de largo recorrido, 19/17 pulgadas y protección IP67. Silenciosa para el monte y homologada para ciudad.",
+  "category": "motos-electricas",
+  "brand": "Voltia",
+  "images": [
+    {
+      "src": "~/assets/products/trail-x-1.svg",
+      "alt": "TRAIL X, moto eléctrica trail de ocio Voltia, vista lateral",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "src": "~/assets/products/trail-x-2.svg",
+      "alt": "TRAIL X en color verde bosque, vista tres cuartos",
+      "width": 1600,
+      "height": 1000
+    },
+    {
+      "src": "~/assets/products/trail-x-3.svg",
+      "alt": "Detalle del TRAIL X: panel, faro y batería",
+      "width": 1600,
+      "height": 1000
+    }
+  ],
+  "specs": {
+    "rangeKm": 110,
+    "topSpeedKmh": 90,
+    "powerW": 6000,
+    "peakPowerW": 9000,
+    "battery": {
+      "voltage": 72,
+      "capacityAh": 45,
+      "capacityKwh": 3.24,
+      "chemistry": "NMC",
+      "removable": true,
+      "chargeHours": [
+        5,
+        7
+      ],
+      "cycles": 1000
+    },
+    "weightKg": 128,
+    "maxLoadKg": 170,
+    "seats": 2,
+    "license": "A1",
+    "dimensionsMm": [
+      2100,
+      820,
+      1250
+    ],
+    "wheelInches": 19,
+    "brakes": "Disco hidráulico delantero y trasero, CBS",
+    "suspension": "Horquilla invertida de largo recorrido y monoamortiguador trasero regulable",
+    "lighting": "Full LED",
+    "display": "Pantalla LCD",
+    "drivingModes": [
+      "Eco",
+      "Normal",
+      "Sport",
+      "Off-road"
+    ],
+    "motorType": "Motor central con transmisión por cadena",
+    "ipRating": "IP67",
+    "warrantyMonths": 24,
+    "batteryWarrantyMonths": 12
+  },
+  "variants": [
+    {
+      "id": "bat-72v-45ah",
+      "name": "Batería 72V 45Ah",
+      "description": "72V 45Ah · 110 km",
+      "price": {
+        "amount": 579900,
+        "currency": "EUR"
+      },
+      "availability": "en-stock",
+      "sku": "VT-TRX-7245",
+      "isDefault": true
+    },
+    {
+      "id": "bat-72v-60ah",
+      "name": "Batería 72V 60Ah",
+      "description": "72V 60Ah · 145 km",
+      "price": {
+        "amount": 639900,
+        "currency": "EUR"
+      },
+      "availability": "bajo-pedido",
+      "sku": "VT-TRX-7260",
+      "specsOverride": {
+        "rangeKm": 145,
+        "battery": {
+          "voltage": 72,
+          "capacityAh": 60,
+          "capacityKwh": 4.32,
+          "chemistry": "NMC",
+          "removable": true,
+          "chargeHours": [
+            6,
+            8
+          ],
+          "cycles": 1000
+        },
+        "weightKg": 134
+      }
+    }
+  ],
+  "colors": [
+    {
+      "id": "verde-bosque",
+      "name": "Verde bosque",
+      "hex": "#2E7D5B"
+    },
+    {
+      "id": "negro-mate",
+      "name": "Negro mate",
+      "hex": "#111315"
+    },
+    {
+      "id": "gris-titanio",
+      "name": "Gris titanio",
+      "hex": "#6B6F76"
+    }
+  ],
+  "accessories": [
+    "cargador-rapido-10a",
+    "casco-integral-voltia",
+    "candado-disco-alarma",
+    "funda-exterior-impermeable"
+  ],
+  "related": [
+    "odin-1-0",
+    "odin-2-0"
+  ],
+  "useCases": [
+    "ocio",
+    "ciudad",
+    "trabajo"
+  ],
+  "highlights": [
+    "Suspensiones de 200 mm de recorrido",
+    "Modo Off-road con control de tracción",
+    "Protección IP67 contra agua y barro",
+    "Carnet A1 o B con 3 años"
+  ],
+  "technology": [
+    {
+      "title": "Motor",
+      "text": "Motor central de 6 kW nominales y 9 kW de pico con transmisión por cadena reforzada. Par instantáneo para subir pendientes técnicas sin embrague."
+    },
+    {
+      "title": "Batería",
+      "text": "Batería NMC de 72V 45Ah (3,24 kWh) extraíble con carcasa reforzada e IP67. Soporta inmersión accidental y lavados a presión."
+    },
+    {
+      "title": "Frenos",
+      "text": "Discos flotantes de 260 mm y 220 mm con pinzas de dos pistones y CBS desconectable para off-road. Regeneración en descensos."
+    },
+    {
+      "title": "Suspensión",
+      "text": "Horquilla invertida de 200 mm de recorrido y monoamortiguador trasero de 190 mm con regulación de precarga y rebote. Ruedas de 19\" y 17\" con radios."
+    },
+    {
+      "title": "Iluminación",
+      "text": "Faro Full LED de alta potencia con máscara protectora, intermitentes flexibles antirrotura y luz trasera integrada en el guardabarros."
+    },
+    {
+      "title": "Pantalla y modos de conducción",
+      "text": "Pantalla LCD antirreflejos con brújula y altímetro. Cuatro modos: Eco, Normal, Sport y Off-road, este último con control de tracción suavizado."
+    }
+  ],
+  "faqs": [
+    {
+      "question": "¿Cuál es la autonomía real del TRAIL X?",
+      "answer": "La autonomía declarada es de 110 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 77 y 94 km. La variante Batería 72V 60Ah amplía la autonomía."
+    },
+    {
+      "question": "¿Qué carnet necesito para conducir el TRAIL X?",
+      "answer": "Puedes conducirla con carnet A1, A2, A o con carnet B con más de tres años de antigüedad, ya que es equivalente a una 125 cc (potencia igual o inferior a 11 kW)."
+    },
+    {
+      "question": "¿Qué garantía tiene?",
+      "answer": "El TRAIL X tiene 2 años de garantía en vehículo y 12 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+    },
+    {
+      "question": "¿Cuál es el plazo de entrega?",
+      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+    }
+  ],
+  "reviews": [
+    {
+      "author": "Roberto S.",
+      "rating": 5,
+      "text": "La uso para ir a la finca por caminos y luego por carretera. No hace ruido, no asusta a los animales y aguanta el barro.",
+      "date": "2026-05-29"
+    },
+    {
+      "author": "Aitor Z.",
+      "rating": 4,
+      "text": "Divertidísima en pista. En autovía se queda algo justa de velocidad, pero no es para eso.",
+      "date": "2026-07-10"
+    }
+  ],
+  "featured": 90,
+  "publishedAt": "2026-04-02T09:00:00.000Z",
+  "seo": {
+    "title": "TRAIL X | Moto eléctrica trail de ocio | Voltia",
+    "description": "TRAIL X: moto eléctrica trail de 6 kW, 90 km/h, suspensiones de largo recorrido e IP67. Carnet A1 o B. Desde 5.799 € con 2 años de garantía."
+  }
+}
