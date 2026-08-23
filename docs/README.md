@@ -81,3 +81,4 @@ Roles del equipo con responsabilidades, límites y criterios de aceptación. El 
 1. Toda decisión de arquitectura nueva se registra como ADR en [21-decisions.md](./21-decisions.md) antes de implementarse.
 2. Cada documento se actualiza en el mismo PR que cambia el comportamiento que describe.
 3. Los archivos de `/agents` son la fuente de verdad de responsabilidades; si cambia un límite, cambia también la matriz de gobernanza en [agents/tech-lead.md](../agents/tech-lead.md).
+- [23 — Edición del catálogo](./23-catalog-editing.md)

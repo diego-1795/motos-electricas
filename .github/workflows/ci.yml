@@ -72,6 +72,8 @@ jobs:
           cache: npm
       # sharp necesita su binario nativo (postinstall); por eso aquí no se usa --ignore-scripts.
       - run: npm ci
+      - name: Validar integridad del catálogo (git como CMS)
+        run: npm run validate:content
       - run: npm run build
       - name: Presupuestos de rendimiento (JS/CSS/HTML gzip por página)
         run: npm run perf:budget
