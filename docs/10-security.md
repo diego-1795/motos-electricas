@@ -1,6 +1,6 @@
 # 10 — Seguridad
 
-Voltia en MVP es un sitio estático sin backend propio, sin cuentas de usuario y sin pagos. La superficie de ataque es pequeña, pero no nula: el carrito vive en el navegador, el mensaje de WhatsApp se construye con entradas del usuario y la cadena de suministro (npm, GitHub Actions, Cloudflare) es compartida. Este documento fija el modelo de amenazas y los controles obligatorios. Ver [01-architecture](./01-architecture.md), [13-cloudflare](./13-cloudflare.md), [16-whatsapp-commerce](./16-whatsapp-commerce.md) y [05-backend](./05-backend.md) para el futuro con Supabase.
+Raiden en MVP es un sitio estático sin backend propio, sin cuentas de usuario y sin pagos. La superficie de ataque es pequeña, pero no nula: el carrito vive en el navegador, el mensaje de WhatsApp se construye con entradas del usuario y la cadena de suministro (npm, GitHub Actions, Cloudflare) es compartida. Este documento fija el modelo de amenazas y los controles obligatorios. Ver [01-architecture](./01-architecture.md), [13-cloudflare](./13-cloudflare.md), [16-whatsapp-commerce](./16-whatsapp-commerce.md) y [05-backend](./05-backend.md) para el futuro con Supabase.
 
 ## 1. Modelo de amenazas
 
@@ -8,7 +8,7 @@ Voltia en MVP es un sitio estático sin backend propio, sin cuentas de usuario y
 |---|---|---|---|
 | HTML/JS servido | Inyección de script por XSS (notas del carrito, parámetros URL) | Robo de sesión futura, defacement | Escape por defecto de Astro/Preact, sin `set:html`/`dangerouslySetInnerHTML` con entrada de usuario, CSP estricta |
 | Enlace wa.me | Manipulación del mensaje (inyección de texto, URL larga, número cambiado) | Fraude, phishing al equipo de ventas | Número desde `site.ts`, `encodeURIComponent`, límite de longitud, sanitización de notas |
-| localStorage `voltia:cart:v1` | Lectura/alteración por extensión o XSS | Carrito alterado (bajo impacto) | Sin datos personales ni sensibles; validación al hidratar; precios recalculados desde catálogo |
+| localStorage `raiden:cart:v1` | Lectura/alteración por extensión o XSS | Carrito alterado (bajo impacto) | Sin datos personales ni sensibles; validación al hidratar; precios recalculados desde catálogo |
 | Catálogo JSON en repo | Commit malicioso o erróneo | Precios/datos falsos publicados | Revisión de PR obligatoria, validación de esquema en test, rama `main` protegida |
 | Dependencias npm | Paquete comprometido (typosquatting, versión maliciosa) | Código malicioso en el build | Lockfile, `npm ci`, `npm audit`, Renovate con revisión, sin postinstall de terceros desconocidos |
 | GitHub Actions | Action comprometida o secreto filtrado | Despliegue malicioso | Actions fijadas por SHA, permisos mínimos, secretos solo en Cloudflare |
@@ -61,9 +61,9 @@ Validadores manuales en `src/domain/validation.ts`, funciones puras con tests en
 | `productId`, `variantId`, `colorId` | Isla AddToCart, localStorage | Deben existir en el catálogo serializado; si no, se descarta el ítem |
 | `quantity` | QuantityStepper, localStorage | Entero 1–10; fuera de rango se recorta |
 | `notes` | Textarea del carrito | Máximo 300 caracteres; se eliminan caracteres de control; sin URLs (se rechazan `http://`, `https://`, `wa.me`) |
-| Respuestas del finder | Isla Finder | Solo valores del enum definido (`uso`, `presupuesto`, `carnet`, `distancia`) |
+| Respuestas del finder | Isla Finder | Solo valores del enum definido (`uso`, `presupuesto`, `licencia`, `distancia`) |
 | Parámetros URL (`?marca=`, `?ids=`) | Comparador, filtros | Lista blanca de slugs existentes; máximo 4 ids en comparador |
-| Estado persistido | `voltia:cart:v1` | Validación completa al hidratar; si la versión del esquema no coincide se reinicia el carrito |
+| Estado persistido | `raiden:cart:v1` | Validación completa al hidratar; si la versión del esquema no coincide se reinicia el carrito |
 
 Los precios nunca se leen del estado persistido: el total se recalcula con `pricing.ts` a partir del catálogo en cada render.
 
@@ -90,7 +90,7 @@ export function sanitizeNotes(raw: string): string {
 
 ## 6. localStorage
 
-Clave `voltia:cart:v1` contiene solo `{ version, items: [{productId, variantId, colorId, quantity}], updatedAt }`. Nunca nombre, teléfono, email, dirección ni notas (las notas viven en memoria y se descartan al cerrar). Si se necesita guardar contacto en el futuro, requiere decisión explícita y aviso al usuario.
+Clave `raiden:cart:v1` contiene solo `{ version, items: [{productId, variantId, colorId, quantity}], updatedAt }`. Nunca nombre, teléfono, email, dirección ni notas (las notas viven en memoria y se descartan al cerrar). Si se necesita guardar contacto en el futuro, requiere decisión explícita y aviso al usuario.
 
 ## 7. Dependencias y cadena de suministro
 

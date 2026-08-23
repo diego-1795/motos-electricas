@@ -4,12 +4,12 @@
   "name": "Casco jet urbano",
   "description": "Casco jet homologado ECE 22.06, ligero y ventilado, con pantalla larga antiarañazos y cierre micrométrico. Ideal para ciudad y scooters de 45 km/h.",
   "price": {
-    "amount": 8900,
-    "currency": "EUR"
+    "amount": 17900,
+    "currency": "PEN"
   },
   "image": {
     "src": "~/assets/accessories/casco-jet-urbano.svg",
-    "alt": "Casco jet urbano Voltia",
+    "alt": "Casco jet urbano Raiden",
     "width": 800,
     "height": 800
   },

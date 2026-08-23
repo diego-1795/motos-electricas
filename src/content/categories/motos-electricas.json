@@ -1,12 +1,12 @@
 {
   "slug": "motos-electricas",
   "name": "Motos eléctricas",
-  "title": "Motos eléctricas homologadas A1 y A2",
-  "description": "Motos eléctricas deportivas y trail para carnet A1 y A2 con hasta 150 km de autonomía, carga rápida y garantía de 2 años. Descubre la gama Voltia.",
+  "title": "Motos eléctricas homologadas",
+  "description": "Motos eléctricas deportivas y trail con hasta 150 km de autonomía, carga rápida y garantía de 2 años. Para licencia B-IIb (motocicletas). Descubre la gama Raiden, desde S/ 11,990.",
   "tagline": "Potencia real, cero emisiones",
   "image": {
     "src": "~/assets/categories/motos-electricas.svg",
-    "alt": "Motos eléctricas homologadas A1 y A2 Voltia",
+    "alt": "Motos eléctricas homologadas Raiden",
     "width": 1200,
     "height": 800
   },

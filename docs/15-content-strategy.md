@@ -1,6 +1,6 @@
 # 15 — Estrategia de contenidos
 
-Voltia (nombre provisional) vende movilidad eléctrica con un showroom digital cuya conversión termina en WhatsApp. El contenido tiene tres funciones: posicionar en buscadores ([08-seo](./08-seo.md)), resolver dudas antes de que lleguen a ventas y dar la información técnica necesaria para que el cliente configure bien su pedido ([16-whatsapp-commerce](./16-whatsapp-commerce.md)). En el MVP el contenido se gestiona como ficheros JSON en el repositorio (git como CMS, ver [17-admin-panel](./17-admin-panel.md)).
+Raiden (nombre provisional) vende movilidad eléctrica con un showroom digital cuya conversión termina en WhatsApp. El contenido tiene tres funciones: posicionar en buscadores ([08-seo](./08-seo.md)), resolver dudas antes de que lleguen a ventas y dar la información técnica necesaria para que el cliente configure bien su pedido ([16-whatsapp-commerce](./16-whatsapp-commerce.md)). En el MVP el contenido se gestiona como ficheros JSON en el repositorio (git como CMS, ver [17-admin-panel](./17-admin-panel.md)).
 
 ## 1. Tono y voz de marca
 
@@ -10,8 +10,10 @@ Voltia (nombre provisional) vende movilidad eléctrica con un showroom digital c
 | Precisión | Cifras con unidad y condición ("hasta 120 km a 45 km/h") | "Gran autonomía" |
 | Honestidad | Indicar que la autonomía declarada depende de peso y vía | Promesas absolutas |
 | Longitud | Frases cortas, un dato por frase | Párrafos de marketing |
-| Vocabulario | Moto eléctrica, scooter eléctrico, batería extraíble, carnet AM/A1 | Anglicismos innecesarios ("e-bike" salvo en bicimotos) |
+| Vocabulario | Moto eléctrica, scooter eléctrico, batería extraíble, licencia B-IIa/B-IIb, SOAT | Anglicismos innecesarios ("e-bike" salvo en bicimotos) |
 | Llamada a la acción | "Pide tu presupuesto por WhatsApp" | "Compra ahora" (no hay pago online) |
+
+Keywords de referencia (Perú): "moto eléctrica Perú", "scooter eléctrico Lima", "precio en soles", "licencia B-IIa", "SOAT". Detalle por página en [08-seo](./08-seo.md).
 
 Claim provisional: "Movilidad eléctrica sin complicaciones." Se usa en `<title>` de la home y en Open Graph hasta que el cliente confirme el nombre.
 
@@ -19,12 +21,12 @@ Claim provisional: "Movilidad eléctrica sin complicaciones." Se usa en `<title>
 
 | Categoría | Slug | Descripción | Carnet habitual |
 |---|---|---|---|
-| Scooters eléctricos | `scooters-electricos` | Ciclomotores y scooters de 45–120 km/h de uso urbano | AM / A1 |
-| Motos eléctricas urbanas | `motos-electricas-urbanas` | Motos tipo naked o trail ligera con homologación L3e | A1 / A2 |
-| Bicimotos | `bicimotos` | Bicicletas con motor y pedales, estilo retro o cargo ligero | Sin carnet (L1e-A) o AM |
-| Trimotos | `trimotos` | Vehículos de tres ruedas para pasajeros o reparto | AM / B |
-| Vehículos de carga | `vehiculos-carga` | Triciclos y motocarros con caja o furgón | AM / B |
-| Cuatrimotos | `cuatrimotos` | Quads y cuadriciclos ligeros eléctricos | AM / B1 |
+| Scooters eléctricos | `scooters-electricos` | Scooters de 45–120 km/h de uso urbano | B-I / B-IIa |
+| Motos eléctricas urbanas | `motos-electricas-urbanas` | Motos tipo naked o trail ligera | B-IIa / B-IIb |
+| Bicimotos | `bicimotos` | Bicicletas con motor y pedales, estilo retro o cargo ligero | Sin licencia o B-I según potencia (normativa MTC) |
+| Trimotos | `trimotos` | Vehículos de tres ruedas para pasajeros o reparto | B-IIb / B-IIc |
+| Vehículos de carga | `vehiculos-carga` | Triciclos y motocarros con caja o furgón | B-IIb / B-IIc |
+| Cuatrimotos | `cuatrimotos` | Quads y cuadriciclos ligeros eléctricos | B-IIb / B-IIc |
 | Accesorios | `accesorios` | Cascos, baterías adicionales, cargadores, baúles, candados | — |
 
 La página `/motos-electricas` agrupa todas las categorías de vehículo. Las marcas (`Brand`) son entidad propia para filtros y JSON-LD, pero no generan páginas en el MVP.
@@ -41,12 +43,12 @@ La página `/motos-electricas` agrupa todas las categorías de vehículo. Las ma
 | `category` | slug de categoría | — |
 | `summary` | string ≤ 160 caracteres | Usado en ProductCard y meta description |
 | `description` | string (Markdown simple) | 2–4 párrafos |
-| `priceFrom` | número (EUR, sin IVA incluido indicado en `priceNote`) | Precio de la variante más barata |
+| `priceFrom` | número (céntimos de sol, PEN; IGV incluido indicado en `priceNote`) | Precio de la variante más barata |
 | `variants[]` | ProductVariant | Al menos una |
 | `colors[]` | ProductColor | Al menos uno |
 | `specs` | objeto | Ver estructura siguiente |
 | `images[]` | rutas en `src/assets/products/` | Primera = principal |
-| `licence` | `"none" \| "AM" \| "A1" \| "A2" \| "B"` | — |
+| `license` | `"sin-licencia" \| "B-I" \| "B-IIa" \| "B-IIb" \| "B-IIc"` | Clases MTC |
 | `warrantyMonths` | número | Vehículo; batería en `specs.battery.warrantyMonths` |
 | `status` | `"draft" \| "published" \| "discontinued"` | Solo `published` se construye |
 | `seo` | `{ title?, description? }` | Opcional, sobrescribe los generados |
@@ -61,10 +63,10 @@ La página `/motos-electricas` agrupa todas las categorías de vehículo. Las ma
 | `speed` | `maxKmh`, `limited` | 45, true |
 | `charging` | `hoursFull`, `chargerW`, `plug` | 6, 900, "Schuko" |
 | `weight` | `kg`, `maxLoadKg` | 95, 150 |
-| `licence` | `required`, `homologation` | "AM", "L1e-B" |
+| `license` | `required`, `homologation` | "B-IIa", "L3e" |
 | `warranty` | `vehicleMonths`, `batteryMonths` | 24, 24 |
 
-Los valores se almacenan como números sin unidad; `SpecTile` formatea con `Intl.NumberFormat('es-ES')` y la unidad. El comparador ([03-ux](./03-ux.md)) usa las mismas claves.
+Los valores se almacenan como números sin unidad; `SpecTile` formatea con `Intl.NumberFormat('es-PE')` y la unidad. El comparador ([03-ux](./03-ux.md)) usa las mismas claves.
 
 ## 4. Nomenclatura de variantes y colores
 
@@ -95,12 +97,12 @@ Pilares de contenido: (1) Guías de compra y normativa, (2) Mantenimiento y bate
 
 | Mes | Título | Pilar | Enlaza a |
 |---|---|---|---|
-| 1 | Qué carnet necesitas para conducir una moto eléctrica en España | 1 | Scooters, urbanas |
+| 1 | Qué licencia (B-I, B-IIa, B-IIb, B-IIc) necesitas para conducir una moto eléctrica en el Perú | 1 | Scooters, urbanas |
 | 1 | Autonomía real de un scooter eléctrico: qué influye y cómo calcularla | 2 | Encuentra tu moto |
 | 2 | Batería extraíble o fija: cuál te conviene si vives en piso | 2 | Accesorios (batería) |
 | 2 | Cuánto cuesta cargar una moto eléctrica en casa | 4 | Scooters |
 | 3 | Scooter eléctrico de 45 km/h frente a 80 km/h: guía de decisión | 3 | Comparar |
-| 3 | Plan MOVES y ayudas municipales a la moto eléctrica | 4 | Contacto |
+| 3 | SOAT, placa e inscripción en SUNARP de una moto eléctrica: guía paso a paso | 4 | Contacto |
 | 4 | Mantenimiento de una moto eléctrica: qué revisar cada mes | 2 | Garantía |
 | 4 | Bicimotos: qué son y cuándo tienen sentido frente a una bici eléctrica | 1 | Bicimotos |
 | 5 | Vehículos eléctricos de carga para reparto de última milla | 5 | Vehículos de carga |
@@ -112,7 +114,7 @@ Formato: 900–1.500 palabras, H2 cada 200–300 palabras, una tabla o lista de 
 
 ## 7. FAQ inicial
 
-1. ¿Necesito carnet para conducir un scooter eléctrico?
+1. ¿Necesito licencia de conducir (clase B) para un scooter eléctrico?
 2. ¿Cuánta autonomía tiene realmente una moto eléctrica?
 3. ¿Se puede cargar la batería en casa con un enchufe normal?
 4. ¿Cuánto tarda en cargarse la batería?
@@ -120,13 +122,13 @@ Formato: 900–1.500 palabras, H2 cada 200–300 palabras, una tabla o lista de 
 6. ¿Cuánto dura la batería y qué garantía tiene?
 7. ¿Puedo llevar pasajero?
 8. ¿Puede circular por autovía o autopista?
-9. ¿Cómo hago el pedido si no hay pago online?
+9. ¿Cómo hago el pedido si no hay pago online? (El asesor puede ofrecer transferencia, Yape o Plin; nunca se cobra desde la web.)
 10. ¿Qué ocurre después de enviar la solicitud por WhatsApp?
-11. ¿Hacéis envíos a toda España? ¿Y a Baleares y Canarias?
-12. ¿Viene matriculada o la matriculo yo?
+11. ¿Hacen envíos a todo el Perú? ¿Y a provincias (Arequipa, Trujillo, Cusco)?
+12. ¿Viene con placa e inscrita en SUNARP o la inscribo yo? ¿Incluye SOAT?
 13. ¿Qué garantía tiene el vehículo y dónde se repara?
 14. ¿Puedo probar la moto antes de comprarla?
-15. ¿Existen ayudas o subvenciones para comprar una moto eléctrica?
+15. ¿Existen ayudas o beneficios para comprar una moto eléctrica en el Perú?
 
 Fichero `src/content/faqs/<slug>.json` con `question`, `answer` (Markdown), `category` (`compra`, `tecnica`, `legal`, `postventa`), `order`. Se renderizan en `/faq` y, filtradas, en fichas de producto, con JSON-LD `FAQPage` ([08-seo](./08-seo.md)).
 
@@ -160,7 +162,7 @@ Tiempo objetivo de alta de producto completo: menos de 2 horas desde que se reci
 - [ ] Todas las claves de `specs` con valor numérico y condiciones de autonomía indicadas.
 - [ ] Al menos una variante con precio y un color con hex.
 - [ ] Imagen principal 4:3, ≥ 2000 px, fondo blanco, `alt` descriptivo, nombre de fichero normalizado.
-- [ ] Precio en EUR, IVA indicado en `priceNote`.
+- [ ] Precio en PEN (céntimos de sol), IGV indicado en `priceNote`.
 - [ ] Garantía de vehículo y batería informadas.
 - [ ] Carnet requerido coherente con velocidad y homologación.
 - [ ] Enlaces internos: categoría, 2 productos relacionados, 1 artículo de blog si existe.

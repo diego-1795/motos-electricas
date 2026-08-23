@@ -7,7 +7,7 @@ import { glob } from 'astro/loaders';
  * El repositorio (src/data) es la única capa que los consume.
  */
 
-const money = z.object({ amount: z.number().int().nonnegative(), currency: z.literal('EUR') });
+const money = z.object({ amount: z.number().int().nonnegative(), currency: z.literal('PEN') });
 
 const image = z.object({
   src: z.string(),
@@ -47,7 +47,7 @@ const specs = z.object({
   weightKg: z.number(),
   maxLoadKg: z.number(),
   seats: z.union([z.literal(1), z.literal(2), z.literal(3)]),
-  license: z.enum(['sin-carnet', 'AM', 'A1', 'A2', 'B']),
+  license: z.enum(['sin-licencia', 'B-I', 'B-IIa', 'B-IIb', 'B-IIc']),
   dimensionsMm: z.tuple([z.number(), z.number(), z.number()]),
   wheelInches: z.number().optional(),
   brakes: z.string(),

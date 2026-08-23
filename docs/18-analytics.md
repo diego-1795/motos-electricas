@@ -1,6 +1,6 @@
 # 18 — Analítica
 
-Documento de referencia para la medición de Voltia. Define qué se mide, cómo se abstrae el proveedor y qué garantías de rendimiento y privacidad se respetan. Relacionado con [09-performance](./09-performance.md), [10-security](./10-security.md), [16-whatsapp-commerce](./16-whatsapp-commerce.md) y [11-testing](./11-testing.md).
+Documento de referencia para la medición de Raiden. Define qué se mide, cómo se abstrae el proveedor y qué garantías de rendimiento y privacidad se respetan. Relacionado con [09-performance](./09-performance.md), [10-security](./10-security.md), [16-whatsapp-commerce](./16-whatsapp-commerce.md) y [11-testing](./11-testing.md).
 
 ## 1. Objetivos de medición
 
@@ -145,7 +145,7 @@ Las secuencias "previo" se calculan por sesión en el panel del proveedor; el fr
 
 ## 7. Privacidad
 
-- Sin cookies ni `localStorage` de analítica. El único `localStorage` del sitio es `voltia:cart:v1`, ajeno a la medición.
+- Sin cookies ni `localStorage` de analítica. El único `localStorage` del sitio es `raiden:cart:v1`, ajeno a la medición.
 - Sin PII: nunca se envían nombre, teléfono, email, notas del pedido ni el texto del mensaje de WhatsApp.
 - Sin identificador de usuario ni fingerprinting. La sesión la infiere el proveedor (Cloudflare Web Analytics no rastrea entre sitios).
 - Con `noop`, `console` o `cloudflare` no se necesita banner de consentimiento (RGPD/LSSI: no hay tratamiento con cookies ni identificadores). Si se activa `datalayer` con GA4, el DevOps y el Tech Lead deben añadir gestión de consentimiento antes del despliegue.

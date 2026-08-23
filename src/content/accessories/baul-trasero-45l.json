@@ -4,12 +4,12 @@
   "name": "Baúl trasero 45 L",
   "description": "Baúl trasero de 45 litros con capacidad para un casco integral y cierre con llave. Incluye parrilla universal y respaldo acolchado para pasajero.",
   "price": {
-    "amount": 7900,
-    "currency": "EUR"
+    "amount": 24900,
+    "currency": "PEN"
   },
   "image": {
     "src": "~/assets/accessories/baul-trasero-45l.svg",
-    "alt": "Baúl trasero 45 L Voltia",
+    "alt": "Baúl trasero 45 L Raiden",
     "width": 800,
     "height": 800
   },

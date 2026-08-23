@@ -1,6 +1,6 @@
 # 21 — Registro de decisiones de arquitectura (ADR)
 
-Decisiones tomadas por el Tech Lead para el MVP de Voltia. Cada ADR sigue el formato Contexto, Decisión, Alternativas consideradas, Consecuencias, Estado. Las migraciones asociadas se describen en [20-migration](./20-migration.md). Un ADR solo cambia de estado mediante otro ADR que lo sustituya.
+Decisiones tomadas por el Tech Lead para el MVP de Raiden. Cada ADR sigue el formato Contexto, Decisión, Alternativas consideradas, Consecuencias, Estado. Las migraciones asociadas se describen en [20-migration](./20-migration.md). Un ADR solo cambia de estado mediante otro ADR que lo sustituya.
 
 ## Índice
 
@@ -17,7 +17,7 @@ Decisiones tomadas por el Tech Lead para el MVP de Voltia. Cada ADR sigue el for
 | [009](#adr-009--cloudflare-pages) | Cloudflare Pages | Aceptada | 2026-08 |
 | [010](#adr-010--fuentes-de-sistema) | Fuentes de sistema | Aceptada | 2026-08 |
 | [011](#adr-011--sin-cdn-de-imágenes) | Sin CDN de imágenes | Aceptada | 2026-08 |
-| [012](#adr-012--nombre-provisional-voltia) | Nombre provisional "Voltia" | Provisional | 2026-08 |
+| [012](#adr-012--nombre-provisional-raiden) | Nombre provisional "Raiden" | Provisional | 2026-08 |
 
 Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Revertida.
 
@@ -99,7 +99,7 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 
 **Contexto.** El carrito y el comparador deben compartirse entre islas independientes y persistir entre visitas.
 
-**Decisión.** `nanostores` + `@nanostores/persistent` (clave `voltia:cart:v1`) + `@nanostores/preact`. Reducer puro en `src/domain/cart.ts`, testado con Vitest.
+**Decisión.** `nanostores` + `@nanostores/persistent` (clave `raiden:cart:v1`) + `@nanostores/preact`. Reducer puro en `src/domain/cart.ts`, testado con Vitest.
 
 **Alternativas consideradas.**
 - Context de Preact: no cruza islas sin un padre común.
@@ -126,7 +126,7 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 
 ## ADR-008 — Sin pagos online
 
-**Contexto.** Vehículos de ticket alto (miles de euros), con financiación, matriculación y entrega que se negocian persona a persona. Integrar pasarela implica PCI, devoluciones y legal de venta a distancia.
+**Contexto.** Vehículos de ticket alto (miles de soles), con financiación, inscripción en SUNARP/placa y entrega que se negocian persona a persona. Integrar pasarela implica PCI, devoluciones y legal de venta a distancia.
 
 **Decisión.** El sitio produce solicitudes de pedido, no ventas. No hay pasarela, ni checkout, ni almacenamiento de datos de pago.
 
@@ -180,11 +180,11 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 
 **Estado.** Aceptada.
 
-## ADR-012 — Nombre provisional "Voltia"
+## ADR-012 — Nombre provisional "Raiden"
 
 **Contexto.** El cliente no ha confirmado la marca. El código, los dominios de ejemplo y los textos necesitan un nombre para avanzar.
 
-**Decisión.** Usar "Voltia" como nombre provisional, centralizado en `src/config/site.ts` (`siteName`), en la clave `voltia:cart:v1` y en `PUBLIC_SITE_URL`. Ningún componente escribe el nombre literal.
+**Decisión.** Usar "Raiden" como nombre provisional, centralizado en `src/config/site.ts` (`siteName`), en la clave `raiden:cart:v1` y en `PUBLIC_SITE_URL`. Ningún componente escribe el nombre literal.
 
 **Alternativas consideradas.**
 - Esperar al nombre definitivo: bloquea SEO, contenido y diseño.
@@ -203,5 +203,17 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 **Alternativas.** `security.csp` nativo (descartado por lo anterior); nonces (requiere SSR); `'unsafe-inline'` en scripts (inaceptable).
 
 **Consecuencias.** Mantenimiento manual de hashes al actualizar Astro o esos dos scripts; detectado automáticamente en CI. Revisar cuando se eliminen los atributos `style` (p. ej. swatches vía clases generadas en build).
+
+**Estado.** Aceptada (2026-08-22).
+
+## ADR-014 — Mercado Perú: moneda PEN y licencias MTC
+
+**Contexto.** El brief inicial asumía España (EUR, formato `es-ES`, carnets AM/A1, prefijo +34, envío peninsular). El cliente opera en el Perú: precios en soles, IGV, licencias de conducir MTC clase B y ventas por WhatsApp con prefijo +51.
+
+**Decisión.** Moneda `PEN` con formato manual `S/ 4,999` (coma de miles, punto decimal) en `src/domain/money.ts`, porque `Intl.NumberFormat('es-PE')` produce resultados inconsistentes entre runtimes (Node, Workers, navegadores). Locale `es-PE` en `site.ts`, JSON-LD y `og:locale`. `LicenseType` pasa a las clases MTC: `sin-licencia`, `B-I`, `B-IIa`, `B-IIb`, `B-IIc`. Número de WhatsApp por defecto `51987654321`; envío "a todo el Perú (Lima y provincias)". Pagos siguen fuera de la web; el asesor puede ofrecer transferencia, Yape o Plin.
+
+**Alternativas.** Mantener EUR y adaptar solo el número (incoherente para el comprador); `Intl` con `es-PE` (descartado por inconsistencia entre runtimes); mantener licencias europeas (no aplican en el Perú).
+
+**Consecuencias.** Contenido, documentación y tests migrados a PEN/es-PE/MTC. Los precios del catálogo son placeholders (×4 sobre los valores originales en euros) pendientes de validación del cliente. Un eventual multi-país queda en el roadmap como i18n de moneda y licencias ([22-roadmap](./22-roadmap.md)).
 
 **Estado.** Aceptada (2026-08-22).

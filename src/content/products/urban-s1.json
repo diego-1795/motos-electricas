@@ -2,15 +2,15 @@
   "id": "a3f1c2d4-0000-4001-8b1e-000000000001",
   "slug": "urban-s1",
   "name": "URBAN S1",
-  "subtitle": "Scooter eléctrico sin carnet",
+  "subtitle": "Scooter eléctrico urbano de 45 km/h",
   "claim": "El scooter eléctrico que cabe en tu vida urbana",
-  "description": "El URBAN S1 es el scooter eléctrico más accesible de Voltia: 45 km/h, batería extraíble de 60V y un coste por kilómetro casi nulo. Pensado para quien se mueve cada día por ciudad y quiere olvidarse de la gasolina y de buscar aparcamiento.",
+  "description": "El URBAN S1 es el scooter eléctrico más accesible de Raiden: 45 km/h, batería extraíble de 60V y un coste por kilómetro casi nulo. Pensado para quien se mueve cada día por ciudad y quiere olvidarse de la gasolina y de buscar aparcamiento.",
   "category": "scooters-electricos",
-  "brand": "Voltia",
+  "brand": "Raiden",
   "images": [
     {
       "src": "~/assets/products/urban-s1-1.svg",
-      "alt": "URBAN S1, scooter eléctrico sin carnet Voltia, vista lateral",
+      "alt": "URBAN S1, scooter eléctrico urbano Raiden, vista lateral",
       "width": 1600,
       "height": 1000
     },
@@ -47,7 +47,7 @@
     "weightKg": 78,
     "maxLoadKg": 150,
     "seats": 2,
-    "license": "AM",
+    "license": "B-IIa",
     "dimensionsMm": [
       1780,
       700,
@@ -74,8 +74,8 @@
       "name": "Batería 60V 20Ah",
       "description": "60V 20Ah · 60 km",
       "price": {
-        "amount": 219900,
-        "currency": "EUR"
+        "amount": 499000,
+        "currency": "PEN"
       },
       "availability": "en-stock",
       "sku": "VT-S1-6020",
@@ -86,8 +86,8 @@
       "name": "Batería 60V 32Ah",
       "description": "60V 32Ah · 90 km",
       "price": {
-        "amount": 259900,
-        "currency": "EUR"
+        "amount": 569000,
+        "currency": "PEN"
       },
       "availability": "en-stock",
       "sku": "VT-S1-6032",
@@ -133,7 +133,7 @@
   ],
   "accessories": [
     "casco-jet-urbano",
-    "casco-integral-voltia",
+    "casco-integral-raiden",
     "baul-trasero-45l",
     "candado-disco-alarma",
     "funda-exterior-impermeable"
@@ -149,7 +149,7 @@
     "dos-personas"
   ],
   "highlights": [
-    "45 km/h, carnet AM o B",
+    "45 km/h, licencia B-IIa",
     "Batería extraíble de 60V: carga en casa",
     "Hasta 90 km de autonomía",
     "Solo 78 kg, fácil de manejar"
@@ -186,23 +186,23 @@
       "answer": "La autonomía declarada es de 60 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 42 y 51 km. La variante Batería 60V 32Ah amplía la autonomía."
     },
     {
-      "question": "¿Qué carnet necesito para conducir el URBAN S1?",
-      "answer": "Necesitas el carnet AM (ciclomotor, a partir de 15 años) o cualquier carnet superior, incluido el carnet B de coche. Se matricula como ciclomotor con su placa amarilla."
+      "question": "¿Qué licencia necesito para conducir el URBAN S1?",
+      "answer": "El URBAN S1 es un scooter de 45 km/h: según la normativa vigente del MTC requiere licencia de conducir clase B (categoría B-IIa o superior). Además debe contar con placa (inscripción en SUNARP), SOAT vigente y casco homologado. Nuestro asesor te orienta sobre los trámites."
     },
     {
       "question": "¿Qué garantía tiene?",
-      "answer": "El URBAN S1 tiene 2 años de garantía en vehículo y 12 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+      "answer": "El URBAN S1 tiene 2 años de garantía en vehículo y 12 meses en batería, con servicio técnico propio en Lima y repuestos en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
     },
     {
       "question": "¿Cuál es el plazo de entrega?",
-      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+      "answer": "Las unidades en stock salen de nuestro almacén en Lima en 24-48 h hábiles y llegan montadas y revisadas en 3-7 días hábiles en Lima Metropolitana y en 7-15 días hábiles en provincias (plazos referenciales, vía courier o agencia según destino). Los productos bajo pedido tienen un plazo referencial de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
     }
   ],
   "reviews": [
     {
       "author": "Marta G.",
       "rating": 5,
-      "text": "Lo uso a diario para ir al trabajo en Valencia. Cargo la batería en casa dos veces por semana y no he vuelto a pisar una gasolinera.",
+      "text": "Lo uso a diario para ir al trabajo en Miraflores. Cargo la batería en casa dos veces por semana y no he vuelto a pisar una gasolinera.",
       "date": "2026-04-12"
     },
     {
@@ -215,7 +215,7 @@
   "featured": 70,
   "publishedAt": "2026-02-10T09:00:00.000Z",
   "seo": {
-    "title": "URBAN S1 | Scooter eléctrico sin carnet | Voltia",
-    "description": "Scooter eléctrico URBAN S1: 45 km/h, carnet AM, batería extraíble y hasta 90 km de autonomía. Desde 2.199 €. Envío a toda España con garantía de 2 años."
+    "title": "URBAN S1 | Scooter eléctrico urbano de 45 km/h | Raiden",
+    "description": "Scooter eléctrico URBAN S1: 45 km/h, licencia B-IIa, batería extraíble y hasta 90 km de autonomía. Desde S/ 4,990. Envío a todo el Perú con garantía de 2 años."
   }
 }

@@ -4,13 +4,13 @@
   "name": "TRIKE CARGO 3",
   "subtitle": "Trimoto eléctrica de reparto",
   "claim": "Tres ruedas, cero emisiones y reparto sin interrupciones",
-  "description": "La TRIKE CARGO 3 es la trimoto eléctrica de Voltia para reparto y pequeños negocios: caja trasera de 400 litros, 150 kg de carga útil y motor de 3 kW. Estable en parado, ágil en marcha y sin coste de combustible.",
+  "description": "La TRIKE CARGO 3 es la trimoto eléctrica de Raiden para reparto y pequeños negocios: caja trasera de 400 litros, 150 kg de carga útil y motor de 3 kW. Estable en parado, ágil en marcha y sin coste de combustible.",
   "category": "trimotos",
-  "brand": "Voltia",
+  "brand": "Raiden",
   "images": [
     {
       "src": "~/assets/products/trike-cargo-3-1.svg",
-      "alt": "TRIKE CARGO 3, trimoto eléctrica de reparto Voltia, vista lateral",
+      "alt": "TRIKE CARGO 3, trimoto eléctrica de reparto Raiden, vista lateral",
       "width": 1600,
       "height": 1000
     },
@@ -47,7 +47,7 @@
     "weightKg": 185,
     "maxLoadKg": 250,
     "seats": 1,
-    "license": "AM",
+    "license": "B-I",
     "dimensionsMm": [
       2350,
       1000,
@@ -74,8 +74,8 @@
       "name": "Batería 72V 45Ah",
       "description": "72V 45Ah LiFePO4 · 90 km",
       "price": {
-        "amount": 549900,
-        "currency": "EUR"
+        "amount": 569000,
+        "currency": "PEN"
       },
       "availability": "en-stock",
       "sku": "VT-TC3-7245",
@@ -86,8 +86,8 @@
       "name": "Batería 72V 70Ah",
       "description": "72V 70Ah LiFePO4 · 130 km",
       "price": {
-        "amount": 619900,
-        "currency": "EUR"
+        "amount": 649000,
+        "currency": "PEN"
       },
       "availability": "bajo-pedido",
       "sku": "VT-TC3-7270",
@@ -178,23 +178,23 @@
       "answer": "La autonomía declarada es de 90 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 63 y 77 km. La variante Batería 72V 70Ah amplía la autonomía."
     },
     {
-      "question": "¿Qué carnet necesito para conducir el TRIKE CARGO 3?",
-      "answer": "Necesitas el carnet AM (ciclomotor, a partir de 15 años) o cualquier carnet superior, incluido el carnet B de coche. Se matricula como ciclomotor con su placa amarilla."
+      "question": "¿Qué licencia necesito para conducir el TRIKE CARGO 3?",
+      "answer": "La TRIKE CARGO 3 es un vehículo de tres ruedas: según la normativa vigente del MTC, los vehículos menores de tres ruedas se conducen con licencia clase B categoría B-I o la que corresponda a su clasificación. Requiere placa (inscripción en SUNARP), SOAT vigente y casco. Te confirmamos la categoría exacta con nuestro asesor."
     },
     {
       "question": "¿Qué garantía tiene?",
-      "answer": "El TRIKE CARGO 3 tiene 2 años de garantía en vehículo y 24 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+      "answer": "El TRIKE CARGO 3 tiene 2 años de garantía en vehículo y 24 meses en batería, con servicio técnico propio en Lima y repuestos en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
     },
     {
       "question": "¿Cuál es el plazo de entrega?",
-      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+      "answer": "Las unidades en stock salen de nuestro almacén en Lima en 24-48 h hábiles y llegan montadas y revisadas en 3-7 días hábiles en Lima Metropolitana y en 7-15 días hábiles en provincias (plazos referenciales, vía courier o agencia según destino). Los productos bajo pedido tienen un plazo referencial de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
     }
   ],
   "reviews": [
     {
       "author": "Panadería El Horno",
       "rating": 5,
-      "text": "Repartimos cada mañana a 12 puntos de venta y gastamos unos 30 céntimos de luz al día. Amortizada en menos de un año.",
+      "text": "Repartimos cada mañana a 12 puntos de venta y gastamos menos de un sol de luz al día. Amortizada en menos de un año.",
       "date": "2026-05-07"
     },
     {
@@ -207,7 +207,7 @@
   "featured": 55,
   "publishedAt": "2026-03-25T09:00:00.000Z",
   "seo": {
-    "title": "TRIKE CARGO 3 | Trimoto eléctrica de reparto | Voltia",
-    "description": "TRIKE CARGO 3: trimoto eléctrica de reparto con caja de 400 L, 150 kg de carga, 3 kW y batería LiFePO4. Carnet AM. Desde 5.499 € con 2 años de garantía."
+    "title": "TRIKE CARGO 3 | Trimoto eléctrica de reparto | Raiden",
+    "description": "TRIKE CARGO 3: trimoto eléctrica de reparto con caja de 400 L, 150 kg de carga, 3 kW y batería LiFePO4. Licencia clase B. Desde S/ 5,690 con 2 años de garantía."
   }
 }

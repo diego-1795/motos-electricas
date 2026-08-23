@@ -48,7 +48,7 @@ src/
 │   ├── home/                # Hero, CategoryGrid, FeaturedProducts, FinderCta
 │   └── seo/                 # Head, JsonLd
 ├── config/
-│   └── site.ts              # marca, PUBLIC_WHATSAPP_NUMBER, URLs, EUR, es-ES
+│   └── site.ts              # marca, PUBLIC_WHATSAPP_NUMBER, URLs, PEN, es-PE
 ├── content/
 │   ├── config.ts            # definición de colecciones
 │   ├── products/*.json
@@ -116,7 +116,7 @@ src/
 **Runtime (navegador)**
 
 1. La página se pinta sin JS. Las islas se hidratan según su directiva.
-2. `cartStore` (`@nanostores/persistent`, clave `voltia:cart:v1`) se rehidrata desde `localStorage`.
+2. `cartStore` (`@nanostores/persistent`, clave `raiden:cart:v1`) se rehidrata desde `localStorage`.
 3. `AddToCart` → `CartService.add()` → store → `CartDrawer` se actualiza y `AnalyticsService.track('add_to_cart')`.
 4. `CartPage` → `WhatsAppMessageBuilder.build(orderRequest)` → `whatsappUrl()` → `wa.me` con `encodeURIComponent`.
 5. El comparador usa `compareStore` (sesión, no persistente) con los productos pasados por props o leídos de un JSON estático por categoría generado en build (`/data/compare/<category>.json`).
@@ -177,8 +177,8 @@ export const productRepository: ProductRepository = new JsonProductRepository();
 
 | Variable | Obligatoria | Ejemplo | Uso |
 |---|---|---|---|
-| `PUBLIC_SITE_URL` | Sí en producción | `https://voltia.es` | `site` en `astro.config.mjs`, canónicas, sitemap |
-| `PUBLIC_WHATSAPP_NUMBER` | Sí | `34600000000` (sin `+`) | Enlace `wa.me` |
+| `PUBLIC_SITE_URL` | Sí en producción | `https://raiden.pe` | `site` en `astro.config.mjs`, canónicas, sitemap |
+| `PUBLIC_WHATSAPP_NUMBER` | Sí | `51987654321` (sin `+`) | Enlace `wa.me` |
 | `PUBLIC_ANALYTICS_ADAPTER` | No | `noop` \| `console` \| `cloudflare` \| `datalayer` | Selección del adaptador |
 | `PUBLIC_CF_ANALYTICS_TOKEN` | No | token del beacon | Solo si adapter = `cloudflare` |
 | `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` | No (futuro) | — | `SupabaseProductRepository` |

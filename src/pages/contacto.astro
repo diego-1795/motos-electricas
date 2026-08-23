@@ -16,7 +16,7 @@ const socials = (Object.keys(site.social) as (keyof typeof site.social)[]).map((
 
 <BaseLayout
   title="Contacto"
-  description="Habla con un asesor de Voltia por WhatsApp o email. Resolvemos dudas sobre modelos, autonomía, entrega y garantía de lunes a viernes."
+  description="Habla con un asesor de Raiden por WhatsApp o email. Resolvemos dudas sobre modelos, autonomía, envío a todo el Perú y garantía, de lunes a sábado en horario de Lima."
   path="/contacto"
   jsonLd={[breadcrumbSchema(crumbs)]}
 >
@@ -28,7 +28,7 @@ const socials = (Object.keys(site.social) as (keyof typeof site.social)[]).map((
       <li class="card contact__card contact__card--wa">
         <p class="eyebrow">Canal principal</p>
         <h2>WhatsApp</h2>
-        <p class="muted">Asesoramiento, presupuestos y solicitudes de compra. Respondemos en minutos en horario de atención.</p>
+        <p class="muted">Asesoría, cotizaciones (precios en soles, IGV incluido) y solicitudes de compra con envío a todo el Perú. Respondemos en minutos en horario de atención.</p>
         <WhatsAppLink source="product" class="btn btn--whatsapp btn--lg">Abrir WhatsApp</WhatsAppLink>
       </li>
 
@@ -48,11 +48,15 @@ const socials = (Object.keys(site.social) as (keyof typeof site.social)[]).map((
             <dd>9:00 – 18:00</dd>
           </div>
           <div>
-            <dt>Sábados y domingos</dt>
+            <dt>Sábados</dt>
+            <dd>9:00 – 13:00</dd>
+          </div>
+          <div>
+            <dt>Domingos y feriados</dt>
             <dd>Cerrado</dd>
           </div>
         </dl>
-        <p class="muted contact__note">Los mensajes recibidos fuera de horario se responden el siguiente día laborable.</p>
+        <p class="muted contact__note">Horario de Lima (GMT-5). Los mensajes recibidos fuera de horario se responden el siguiente día hábil.</p>
       </li>
 
       <li class="card contact__card">
@@ -73,7 +77,7 @@ const socials = (Object.keys(site.social) as (keyof typeof site.social)[]).map((
     </ul>
 
     <p class="muted contact__disclaimer">
-      No se realizan pagos online. Toda compra se gestiona como solicitud por WhatsApp y se confirma con nuestro equipo antes de cualquier pago.
+      No se realizan pagos online. Toda compra se gestiona como solicitud por WhatsApp y se confirma con nuestro equipo antes de cualquier pago; el asesor te indica los medios de pago disponibles. Enviamos a Lima y a todo el Perú vía courier o agencia.
     </p>
   </div>
 </BaseLayout>

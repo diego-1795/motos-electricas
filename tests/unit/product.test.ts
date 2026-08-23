@@ -12,18 +12,18 @@ import {
   productAvailability,
   variantPrice,
 } from '../../src/domain/product';
-import { eur } from '../../src/domain/money';
+import { pen } from '../../src/domain/money';
 import { baseSpecs, makeProduct, norm, variant } from './fixtures';
 
-const v40 = variant({ id: 'v40', name: '40Ah', price: eur(499900), isDefault: false });
+const v40 = variant({ id: 'v40', name: '40Ah', price: pen(499900), isDefault: false });
 const v50 = variant({
   id: 'v50',
   name: '50Ah',
-  price: eur(549900),
+  price: pen(549900),
   isDefault: true,
   specsOverride: { rangeKm: 150, weightKg: 130 },
 });
-const v32 = variant({ id: 'v32', name: '32Ah', price: eur(459900), specsOverride: { rangeKm: 80 } });
+const v32 = variant({ id: 'v32', name: '32Ah', price: pen(459900), specsOverride: { rangeKm: 80 } });
 const p = makeProduct({ variants: [v40, v50, v32] });
 
 describe('defaultVariant', () => {
@@ -37,25 +37,25 @@ describe('defaultVariant', () => {
 
 describe('fromPrice', () => {
   it('elige la variante más barata, no la default ni la primera', () => {
-    expect(fromPrice(p)).toEqual(eur(459900));
+    expect(fromPrice(p)).toEqual(pen(459900));
   });
   it('con una sola variante devuelve su precio', () => {
-    expect(fromPrice(makeProduct({ variants: [v50] }))).toEqual(eur(549900));
+    expect(fromPrice(makeProduct({ variants: [v50] }))).toEqual(pen(549900));
   });
 });
 
 describe('variantPrice', () => {
   it('sin color devuelve el precio de la variante', () => {
-    expect(variantPrice(v40)).toEqual(eur(499900));
+    expect(variantPrice(v40)).toEqual(pen(499900));
   });
   it('color sin priceDelta no altera el precio', () => {
-    expect(variantPrice(v40, { id: 'c', name: 'C', hex: '#fff' })).toEqual(eur(499900));
+    expect(variantPrice(v40, { id: 'c', name: 'C', hex: '#fff' })).toEqual(pen(499900));
   });
   it('color con priceDelta lo suma', () => {
-    expect(variantPrice(v40, { id: 'c', name: 'C', hex: '#fff', priceDelta: eur(10000) })).toEqual(eur(509900));
+    expect(variantPrice(v40, { id: 'c', name: 'C', hex: '#fff', priceDelta: pen(10000) })).toEqual(pen(509900));
   });
   it('priceDelta 0 se ignora sin romper', () => {
-    expect(variantPrice(v40, { id: 'c', name: 'C', hex: '#fff', priceDelta: eur(0) })).toEqual(eur(499900));
+    expect(variantPrice(v40, { id: 'c', name: 'C', hex: '#fff', priceDelta: pen(0) })).toEqual(pen(499900));
   });
 });
 
@@ -102,13 +102,13 @@ describe('labels', () => {
   it('availabilityLabel y licenseLabel cubren todos los valores', () => {
     expect(availabilityLabel['en-stock']).toBe('En stock');
     expect(availabilityLabel.agotado).toBe('Agotado');
-    expect(licenseLabel['sin-carnet']).toBe('Sin carnet');
-    expect(licenseLabel.A1).toBe('Carnet A1');
+    expect(licenseLabel['sin-licencia']).toBe('Sin licencia');
+    expect(licenseLabel['B-IIb']).toBe('Licencia B-IIb');
   });
-  it('kw formatea con coma decimal es-ES y máx 1 decimal', () => {
+  it('kw formatea con punto decimal es-PE y máx 1 decimal', () => {
     expect(norm(kw(5000))).toBe('5 kW');
-    expect(norm(kw(2500))).toBe('2,5 kW');
-    expect(norm(kw(1250))).toBe('1,3 kW');
+    expect(norm(kw(2500))).toBe('2.5 kW');
+    expect(norm(kw(1250))).toBe('1.3 kW');
   });
   it('batteryLabel y chargeLabel', () => {
     expect(batteryLabel(baseSpecs())).toBe('72V 40Ah');

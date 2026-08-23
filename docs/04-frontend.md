@@ -1,6 +1,6 @@
 # 04 — Frontend
 
-Guía de implementación del frontend de Voltia. Complementa [01-architecture](./01-architecture.md) (capas), [02-design-system](./02-design-system.md) (tokens y componentes) y [09-performance](./09-performance.md) (presupuestos).
+Guía de implementación del frontend de Raiden. Complementa [01-architecture](./01-architecture.md) (capas), [02-design-system](./02-design-system.md) (tokens y componentes) y [09-performance](./09-performance.md) (presupuestos).
 
 ## 1. Stack y convenciones base
 
@@ -54,7 +54,7 @@ Las islas reciben DTOs planos (`ProductDTO`), nunca instancias ni funciones. El 
 
 ## 3. Store del carrito
 
-Ubicación: `src/stores/cart.ts`. Clave de persistencia `voltia:cart:v1`. El esquema se versiona con `schemaVersion`; cualquier cambio incompatible incrementa la clave (`v2`) y se migra en la lectura.
+Ubicación: `src/stores/cart.ts`. Clave de persistencia `raiden:cart:v1`. El esquema se versiona con `schemaVersion`; cualquier cambio incompatible incrementa la clave (`v2`) y se migra en la lectura.
 
 ```ts
 // src/stores/cart.ts
@@ -63,7 +63,7 @@ import { computed } from 'nanostores';
 import type { Cart, CartItem } from '@/domain/cart';
 import { computeCartTotal } from '@/domain/pricing';
 
-export const CART_STORAGE_KEY = 'voltia:cart:v1';
+export const CART_STORAGE_KEY = 'raiden:cart:v1';
 export const CART_SCHEMA_VERSION = 1;
 
 const EMPTY_CART: Cart = { schemaVersion: CART_SCHEMA_VERSION, items: [], updatedAt: 0 };
@@ -142,14 +142,14 @@ Colecciones: `products`, `categories`, `brands`, `accessories`, `blog` (Markdown
   "id": "odin-1-0",
   "slug": "odin-1-0",
   "name": "ODIN 1.0",
-  "brandId": "voltia",
+  "brandId": "raiden",
   "categoryId": "motos-electricas-urbanas",
   "status": "published",
   "summary": "Moto eléctrica urbana equivalente a 125 cc con batería extraíble.",
   "description": "Texto largo en Markdown.",
-  "licence": "A1",
+  "license": "B-IIa",
   "priceFromCents": 449900,
-  "currency": "EUR",
+  "currency": "PEN",
   "heroImage": "odin-1-0/hero.jpg",
   "gallery": ["odin-1-0/lateral.jpg", "odin-1-0/detalle-bateria.jpg"],
   "variants": [
@@ -171,7 +171,7 @@ Colecciones: `products`, `categories`, `brands`, `accessories`, `blog` (Markdown
     "warrantyMonths": 24
   },
   "useCases": ["ciudad", "interurbano"],
-  "compatibleAccessoryIds": ["casco-voltia", "bateria-72v-50ah"],
+  "compatibleAccessoryIds": ["casco-raiden", "bateria-72v-50ah"],
   "seo": { "title": "ODIN 1.0 — moto eléctrica 125 equivalente", "description": "..." },
   "publishedAt": "2026-03-01"
 }
@@ -216,7 +216,7 @@ Acceso desde páginas: siempre a través de `JsonProductRepository` (`src/data/j
 |---|---|
 | `Base.astro` | Sin scripts de terceros; analítica vía `AnalyticsService` cargada con `client:idle` como máximo |
 | `Header.astro` | Menú móvil con `<details>` + CSS; el contador del carrito es un `<span>` que actualiza `CartDrawer` |
-| `ProductCard.astro` | Una sola imagen lazy; precio formateado en build con `Intl.NumberFormat('es-ES')` |
+| `ProductCard.astro` | Una sola imagen lazy; precio formateado en build con `formatMoney` de `money.ts` (`S/ 4,999`) |
 | `AddToCart` | < 12 KB gz incluyendo Preact compartido; sin dependencias adicionales |
 | `Comparator` | Máximo 4 productos; la tabla HTML se renderiza en servidor |
 | `Finder` | Scoring en `src/domain/finder.ts` (función pura); sin fetch |
@@ -231,7 +231,7 @@ Acceso desde páginas: siempre a través de `JsonProductRepository` (`src/data/j
 - [ ] Props de islas serializables y < 8 KB.
 - [ ] Imágenes con `<Image>`/`<Picture>`, `width`/`height` y `sizes`.
 - [ ] Solo tokens CSS; sin valores mágicos; estados `:focus-visible` presentes.
-- [ ] Textos visibles en español de España; nada hardcodeado que pertenezca a `src/config/site.ts`.
+- [ ] Textos visibles en español del Perú; nada hardcodeado que pertenezca a `src/config/site.ts`.
 - [ ] Tests Vitest para lógica nueva en `domain`/`services`; E2E si cambia el flujo de carrito.
 - [ ] Lighthouse CI dentro de presupuesto en la página afectada.
 - [ ] Sin dependencias nuevas en `package.json` sin revisión Frontend + Performance.

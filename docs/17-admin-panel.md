@@ -47,11 +47,11 @@ En el MVP no existe panel: el catálogo, el blog y las FAQ se editan como ficher
 
 ### Dónde corre el panel
 
-| Criterio | A. `/admin` en el mismo proyecto con adapter SSR | B. Aplicación separada (`admin.voltia.es`) |
+| Criterio | A. `/admin` en el mismo proyecto con adapter SSR | B. Aplicación separada (`admin.raiden.pe`) |
 |---|---|---|
 | Cambios en `astro.config` | `output: 'static'` + `prerender = false` solo en `/admin/*`, adapter `@astrojs/cloudflare`, `@astrojs/node` o `@astrojs/vercel` | Ninguno en el sitio público |
 | Riesgo para el sitio público | Medio: comparte dependencias, CSP y presupuesto de bundle | Nulo |
-| Coste | 0 € en Pages Functions / Workers Free | 0 € en Pages (SPA estática con Preact) o Vercel Hobby |
+| Coste | S/ 0 en Pages Functions / Workers Free | S/ 0 en Pages (SPA estática con Preact) o Vercel Hobby |
 | Reutilización de `src/domain` y `src/services` | Directa | Mediante workspace npm (`packages/domain`) |
 | Seguridad | CSP más permisiva en `/admin`; misma superficie de dominio | Dominio y CSP propios; cookies de sesión aisladas |
 | Portabilidad | Depende del adapter elegido | SPA + Supabase: sin dependencia de hosting |

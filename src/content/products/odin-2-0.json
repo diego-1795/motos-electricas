@@ -2,15 +2,15 @@
   "id": "a3f1c2d4-0000-4005-8b1e-000000000005",
   "slug": "odin-2-0",
   "name": "ODIN 2.0",
-  "subtitle": "Moto eléctrica deportiva A2",
+  "subtitle": "Moto eléctrica deportiva de alta potencia",
   "claim": "Ocho kilovatios de silencio puro para salir de la ciudad",
-  "description": "La ODIN 2.0 eleva la plataforma ODIN a carnet A2: 8 kW nominales, 110 km/h y hasta 150 km de autonomía. Una moto eléctrica para quien quiere carretera sin renunciar a la agilidad urbana.",
+  "description": "La ODIN 2.0 eleva la plataforma ODIN al siguiente nivel: 8 kW nominales, 110 km/h y hasta 150 km de autonomía. Una moto eléctrica para quien quiere carretera sin renunciar a la agilidad urbana.",
   "category": "motos-electricas",
-  "brand": "Voltia",
+  "brand": "Raiden",
   "images": [
     {
       "src": "~/assets/products/odin-2-0-1.svg",
-      "alt": "ODIN 2.0, moto eléctrica deportiva a2 Voltia, vista lateral",
+      "alt": "ODIN 2.0, moto eléctrica deportiva de alta potencia Raiden, vista lateral",
       "width": 1600,
       "height": 1000
     },
@@ -47,7 +47,7 @@
     "weightKg": 142,
     "maxLoadKg": 180,
     "seats": 2,
-    "license": "A2",
+    "license": "B-IIb",
     "dimensionsMm": [
       2040,
       770,
@@ -75,8 +75,8 @@
       "name": "Batería 72V 60Ah",
       "description": "72V 60Ah · 150 km",
       "price": {
-        "amount": 699900,
-        "currency": "EUR"
+        "amount": 1499000,
+        "currency": "PEN"
       },
       "availability": "en-stock",
       "sku": "VT-OD2-7260",
@@ -87,8 +87,8 @@
       "name": "Doble batería 72V 2x40Ah",
       "description": "2x72V 40Ah · 200 km",
       "price": {
-        "amount": 779900,
-        "currency": "EUR"
+        "amount": 1699000,
+        "currency": "PEN"
       },
       "availability": "bajo-pedido",
       "sku": "VT-OD2-72D",
@@ -129,7 +129,7 @@
   ],
   "accessories": [
     "cargador-rapido-10a",
-    "casco-integral-voltia",
+    "casco-integral-raiden",
     "candado-disco-alarma",
     "funda-exterior-impermeable"
   ],
@@ -146,7 +146,7 @@
   ],
   "highlights": [
     "8 kW nominales, 12 kW de pico",
-    "110 km/h: autovía sin problemas",
+    "110 km/h: carretera sin problemas",
     "ABS de serie en ambas ruedas",
     "Hasta 200 km con doble batería"
   ],
@@ -165,7 +165,7 @@
     },
     {
       "title": "Suspensión",
-      "text": "Horquilla invertida de 43 mm regulable y monoamortiguador trasero con depósito separado. Geometría pensada para curvas de montaña."
+      "text": "Horquilla invertida de 43 mm regulable y monoamortiguador trasero con depósito separado. Geometría pensada para curvas de sierra."
     },
     {
       "title": "Iluminación",
@@ -182,23 +182,23 @@
       "answer": "La autonomía declarada es de 150 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 105 y 128 km. La variante Doble batería 72V 2x40Ah amplía la autonomía."
     },
     {
-      "question": "¿Qué carnet necesito para conducir el ODIN 2.0?",
-      "answer": "Necesitas carnet A2 o A. No es válida con el carnet B al superar los 11 kW de potencia equivalente a una 125 cc."
+      "question": "¿Qué licencia necesito para conducir el ODIN 2.0?",
+      "answer": "La ODIN 2.0 es una motocicleta de 8 kW y 110 km/h: según la normativa vigente del MTC requiere licencia clase B categoría B-IIb (motocicletas) o superior. Necesita placa (inscripción en SUNARP), SOAT vigente y casco homologado. Confirma tu caso con nuestro asesor."
     },
     {
       "question": "¿Qué garantía tiene?",
-      "answer": "El ODIN 2.0 tiene 2 años de garantía en vehículo y 24 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+      "answer": "El ODIN 2.0 tiene 2 años de garantía en vehículo y 24 meses en batería, con servicio técnico propio en Lima y repuestos en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
     },
     {
       "question": "¿Cuál es el plazo de entrega?",
-      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+      "answer": "Las unidades en stock salen de nuestro almacén en Lima en 24-48 h hábiles y llegan montadas y revisadas en 3-7 días hábiles en Lima Metropolitana y en 7-15 días hábiles en provincias (plazos referenciales, vía courier o agencia según destino). Los productos bajo pedido tienen un plazo referencial de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
     }
   ],
   "reviews": [
     {
       "author": "Iván B.",
       "rating": 5,
-      "text": "Hago 60 km diarios con tramos de autovía y llego con un 40 % de batería. El ABS da mucha tranquilidad.",
+      "text": "Hago 60 km diarios con tramos de Panamericana y llego con un 40 % de batería. El ABS da mucha tranquilidad.",
       "date": "2026-06-22"
     },
     {
@@ -212,7 +212,7 @@
   "isNew": true,
   "publishedAt": "2026-05-15T09:00:00.000Z",
   "seo": {
-    "title": "ODIN 2.0 | Moto eléctrica deportiva A2 | Voltia",
-    "description": "ODIN 2.0: moto eléctrica A2 de 8 kW, 110 km/h, ABS y hasta 200 km de autonomía. Desde 6.999 € con 2 años de garantía y servicio técnico en España."
+    "title": "ODIN 2.0 | Moto eléctrica deportiva de alta potencia | Raiden",
+    "description": "ODIN 2.0: moto eléctrica de 8 kW, 110 km/h, ABS y hasta 200 km de autonomía. Desde S/ 14,990 con 2 años de garantía y servicio técnico en Lima."
   }
 }

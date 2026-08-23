@@ -1,16 +1,16 @@
 # 16 — Comercio por WhatsApp
 
-El carrito de Voltia no cobra: construye una solicitud de pedido y la entrega al equipo de ventas como mensaje de WhatsApp pre-rellenado. Este documento fija cómo se genera ese mensaje, cómo se integra en la interfaz, qué hace ventas al recibirlo y qué implicaciones tiene en protección de datos. Flujo global en [00-product-overview](./00-product-overview.md); UX del carrito en [03-ux](./03-ux.md).
+El carrito de Raiden no cobra: construye una solicitud de pedido y la entrega al equipo de ventas como mensaje de WhatsApp pre-rellenado. Este documento fija cómo se genera ese mensaje, cómo se integra en la interfaz, qué hace ventas al recibirlo y qué implicaciones tiene en protección de datos. Flujo global en [00-product-overview](./00-product-overview.md); UX del carrito en [03-ux](./03-ux.md).
 
 ## 1. Enlace `wa.me` frente a Business API
 
 | Criterio | Enlace `wa.me` (MVP) | WhatsApp Business API (futuro) |
 |---|---|---|
-| Coste | 0 € | Proveedor BSP + coste por conversación |
+| Coste | S/ 0 | Proveedor BSP + coste por conversación |
 | Backend necesario | No | Sí (webhooks, almacenamiento, verificación de Meta) |
 | Tiempo de puesta en marcha | Minutos | Semanas (verificación de empresa) |
 | Quién inicia | El cliente, desde su propio WhatsApp | La empresa o el cliente |
-| Datos que procesa Voltia | Ninguno (el mensaje viaja cliente → WhatsApp) | Conversaciones completas en sistemas propios |
+| Datos que procesa Raiden | Ninguno (el mensaje viaja cliente → WhatsApp) | Conversaciones completas en sistemas propios |
 | Automatización | Ninguna | Plantillas, bots, CRM |
 | Portabilidad | Total, es una URL | Dependencia del BSP |
 
@@ -22,7 +22,7 @@ Decisión: `wa.me` hasta que el volumen (> 150 solicitudes/mes) o la necesidad d
 https://wa.me/<número E.164 sin +>?text=<encodeURIComponent(mensaje)>
 ```
 
-- Número: solo dígitos, con prefijo de país y sin `+`, espacios ni guiones. España: `34` + 9 dígitos. Ejemplo: `34612345678`.
+- Número: solo dígitos, con prefijo de país y sin `+`, espacios ni guiones. Perú: `51` + 9 dígitos (móviles empiezan por 9). Ejemplo: `51987654321`.
 - `text`: mensaje completo codificado con `encodeURIComponent`. Los saltos de línea se codifican como `%0A`; los emojis quedan como secuencias UTF-8 percent-encoded.
 - Se usa `wa.me` y no `api.whatsapp.com/send`: es el dominio oficial corto y redirige correctamente a app, escritorio o web según el dispositivo.
 - Longitud: los navegadores aceptan URLs de más de 8.000 caracteres, pero WhatsApp recorta textos pre-rellenados largos en algunas versiones. Se limita el mensaje a **1.500 caracteres** antes de codificar.
@@ -35,8 +35,8 @@ https://wa.me/<número E.164 sin +>?text=<encodeURIComponent(mensaje)>
 export interface WhatsAppMessageInput {
   items: CartItem[];          // producto o accesorio, variante, color, cantidad, precio unitario
   total: number;              // calculado por pricing.ts; nunca se recibe del cliente
-  currency: 'EUR';
-  locale: 'es-ES';
+  currency: 'PEN';
+  locale: 'es-PE';
   notes?: string;             // texto libre del cliente
   source?: 'cart' | 'product' | 'compare';
 }
@@ -66,7 +66,7 @@ Es una función pura: sin acceso a `window`, a nanostores ni a `import.meta.env`
    - `Color: …` solo si tiene más de un color.
    - `Cantidad: N`
    - Línea en blanco.
-5. `💰 Total estimado: 5.499 €`
+5. `💰 Total estimado: S/ 21,980`
 6. Línea en blanco y `Notas: …` solo si el cliente escribió notas.
 7. Línea en blanco y cierre fijo: `¿Podéis confirmarme disponibilidad y condiciones de compra?`
 
@@ -87,7 +87,7 @@ Cantidad: 1
 🪖 Casco
 Cantidad: 1
 
-💰 Total estimado: 5.499 €
+💰 Total estimado: S/ 21,980
 
 Notas: Recogida en tienda si es posible
 
@@ -96,7 +96,7 @@ Notas: Recogida en tienda si es posible
 
 ### Reglas de formato
 
-- Precios con `Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })`: `5.499 €`. Con decimales solo si el total no es entero (`1.234,50 €`).
+- Precios con `formatMoney` de `src/domain/money.ts` (formato manual, `Intl` es-PE es inconsistente entre runtimes): `S/ 21,980`. Con decimales solo si el total no es entero (`S/ 1,234.50`).
 - No se incluyen precios unitarios por ítem: el total es "estimado" y ventas confirma condiciones. Evita discusiones por desfase entre web y tarifa.
 - Los nombres de producto se usan tal cual del catálogo; no se añaden SKU.
 - Saltos de línea `\n` (no `\r\n`).
@@ -162,7 +162,7 @@ Plantillas de respuesta (guardadas como respuestas rápidas en WhatsApp Business
 
 ```
 Acuse: ¡Hola! Gracias por tu solicitud. Te confirmo disponibilidad y condiciones en menos de 4 horas. ¿Desde qué provincia nos escribes?
-Disponible: Tenemos la ODIN 1.0 72V 50Ah en negro en stock. Precio final 5.499 € IVA incluido, envío a domicilio 120 € o recogida gratuita. ¿Te preparo el presupuesto?
+Disponible: Tenemos la ODIN 1.0 72V 50Ah en negro en stock. Precio final S/ 21,980 IGV incluido, envío a domicilio en Lima S/ 120 (provincias según cotización) o recojo gratuito. Puedes pagar por transferencia, Yape o Plin. ¿Te preparo el presupuesto?
 Sin stock: Ese color llega la semana del 15. Puedo reservártela sin compromiso o proponerte el gris, disponible ya.
 ```
 
@@ -180,7 +180,7 @@ Objetivo inicial: tasa de solicitud > 8 % sobre carritos y primera respuesta < 1
 
 ## 9. RGPD
 
-- Voltia no recibe ni almacena datos del cliente en el MVP: el mensaje viaja desde el dispositivo del cliente a WhatsApp; el sitio solo genera una URL. El carrito en `localStorage` contiene ítems y notas, sin datos personales, y nunca sale del navegador.
+- Raiden no recibe ni almacena datos del cliente en el MVP: el mensaje viaja desde el dispositivo del cliente a WhatsApp; el sitio solo genera una URL. El carrito en `localStorage` contiene ítems y notas, sin datos personales, y nunca sale del navegador.
 - En el momento del clic, el cliente comparte con la empresa su número de teléfono y nombre de perfil a través de WhatsApp (Meta Platforms Ireland). La política de privacidad ([15-content-strategy](./15-content-strategy.md)) lo declara como finalidad "gestión de solicitudes de pedido", base legal "medidas precontractuales", con mención a la transferencia internacional que implica el uso de WhatsApp.
 - Junto al botón se muestra el texto: "Al continuar se abrirá WhatsApp y compartirás tu número con nuestro equipo de ventas. Más información en la política de privacidad." No es un consentimiento con casilla: la base legal es precontractual.
 - El campo de notas advierte: "No incluyas datos bancarios ni documentos de identidad".

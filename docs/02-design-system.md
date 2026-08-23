@@ -113,7 +113,7 @@ Las custom properties no funcionan en `@media`; los valores se fijan por convenc
 
 ## 2. Modo oscuro y claro
 
-- El tema se controla con `data-theme="light|dark"` en `<html>`. **Por defecto: oscuro** (identidad showroom: `#0B0C0F` + volt). Un script inline de 200 bytes en `BaseLayout` lee `localStorage['voltia:theme']` o `prefers-color-scheme` antes del primer pintado para evitar parpadeo.
+- El tema se controla con `data-theme="light|dark"` en `<html>`. **Por defecto: oscuro** (identidad showroom: `#0B0C0F` + volt). Un script inline de 200 bytes en `BaseLayout` lee `localStorage['raiden:theme']` o `prefers-color-scheme` antes del primer pintado para evitar parpadeo.
 - El acento cambia de semántica: **volt** solo sobre fondos oscuros (contraste 15,8:1 sobre `#0B0C0F`); en claro el acento es **blue** (`#0B5FFF` sobre paper: 6,1:1). Volt sobre paper no cumple AA y está prohibido.
 - Los enlaces usan `--blue` en claro y `--volt-200`/`--volt` en oscuro; el anillo de foco usa `--focus` con `outline: 2px solid; outline-offset: 2px`.
 - Las imágenes de producto se sirven sobre `--bg-raised` con un borde `--line` para no depender de fondos de fotografía.

@@ -3,24 +3,24 @@
   "order": 1,
   "items": [
     {
-      "question": "¿Cómo se compra en Voltia?",
+      "question": "¿Cómo se compra en Raiden?",
       "answer": "Eliges el modelo, la batería y el color en la web, añades los accesorios que quieras y envías tu solicitud por WhatsApp. Un asesor confirma disponibilidad, plazo y precio final y te guía hasta la entrega. Sin formularios interminables."
     },
     {
       "question": "¿Se paga online?",
-      "answer": "No. No hay pago online: una vez confirmado tu pedido por WhatsApp, te enviamos la factura proforma y pagas por transferencia bancaria o Bizum. Solo se cobra cuando confirmamos stock y fecha de entrega."
+      "answer": "No. No hay pago online: una vez confirmado tu pedido por WhatsApp, tu asesor te indica los medios de pago disponibles (transferencia bancaria, Yape/Plin, efectivo en tienda y opciones de financiamiento, si aplican; consultar). Solo se cobra cuando confirmamos stock y fecha de entrega."
     },
     {
       "question": "¿Cuál es el plazo de entrega?",
-      "answer": "Los modelos en stock se entregan en 3-5 días laborables en península y 7-10 días en Baleares. Los productos bajo pedido tienen un plazo orientativo de 4 a 8 semanas, que confirmamos antes del pago."
+      "answer": "Los modelos en stock se entregan en 3-7 días hábiles en Lima Metropolitana y en 7-15 días hábiles en provincias (plazos referenciales según destino). Los productos bajo pedido tienen un plazo referencial de 4 a 8 semanas, que confirmamos antes del pago."
     },
     {
       "question": "¿Cómo se envía el vehículo?",
-      "answer": "Enviamos con transporte especializado en vehículos, montado, revisado y con la batería cargada al 60 % para el transporte. El envío a península está incluido en el precio; Baleares, Canarias, Ceuta y Melilla se presupuestan aparte."
+      "answer": "Enviamos a todo el Perú vía courier o agencia de transporte especializada, con el vehículo montado, revisado y con la batería cargada al 60 % para el traslado. El envío en Lima Metropolitana está incluido en el precio; para provincias te cotizamos el flete según ciudad y agencia."
     },
     {
-      "question": "¿Recibo factura y documentación para matricular?",
-      "answer": "Sí. Con cada vehículo recibes factura con IVA, certificado de conformidad (COC) y ficha técnica para matricular en Tráfico. Si quieres, gestionamos la matriculación por ti con un coste adicional."
+      "question": "¿Recibo comprobante y documentación para sacar la placa?",
+      "answer": "Sí. Con cada vehículo recibes boleta o factura electrónica (SUNAT) con IGV y la documentación del fabricante necesaria para la inscripción en SUNARP y la obtención de la placa. Si quieres, te orientamos con el trámite de placa y SOAT; consulta con tu asesor las condiciones."
     }
   ]
 }

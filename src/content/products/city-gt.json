@@ -3,14 +3,14 @@
   "slug": "city-gt",
   "name": "CITY GT",
   "subtitle": "Scooter eléctrico 125 equivalente",
-  "claim": "Velocidad de 125 con la elegancia de un scooter premium",
-  "description": "El CITY GT es el scooter eléctrico equivalente a 125 cc de Voltia: 80 km/h, motor de 5 kW y batería doble de 72V. Perfecto para quien combina ciudad con vías rápidas y quiere un scooter silencioso con presencia.",
+  "claim": "Prestaciones de 125 con la elegancia de un scooter premium",
+  "description": "El CITY GT es el scooter eléctrico equivalente a 125 cc de Raiden: 80 km/h, motor de 5 kW y batería doble de 72V. Perfecto para quien combina ciudad con vías rápidas y quiere un scooter silencioso con presencia.",
   "category": "scooters-electricos",
-  "brand": "Voltia",
+  "brand": "Raiden",
   "images": [
     {
       "src": "~/assets/products/city-gt-1.svg",
-      "alt": "CITY GT, scooter eléctrico 125 equivalente Voltia, vista lateral",
+      "alt": "CITY GT, scooter eléctrico 125 equivalente Raiden, vista lateral",
       "width": 1600,
       "height": 1000
     },
@@ -47,7 +47,7 @@
     "weightKg": 118,
     "maxLoadKg": 170,
     "seats": 2,
-    "license": "A1",
+    "license": "B-IIb",
     "dimensionsMm": [
       1950,
       740,
@@ -75,8 +75,8 @@
       "name": "Batería 72V 32Ah",
       "description": "72V 32Ah · 100 km",
       "price": {
-        "amount": 429900,
-        "currency": "EUR"
+        "amount": 899000,
+        "currency": "PEN"
       },
       "availability": "en-stock",
       "sku": "VT-CGT-7232",
@@ -87,8 +87,8 @@
       "name": "Batería 72V 50Ah",
       "description": "72V 50Ah · 140 km",
       "price": {
-        "amount": 489900,
-        "currency": "EUR"
+        "amount": 999000,
+        "currency": "PEN"
       },
       "availability": "bajo-pedido",
       "sku": "VT-CGT-7250",
@@ -136,7 +136,7 @@
     "bateria-adicional-72v-32ah",
     "bateria-adicional-72v-50ah",
     "cargador-rapido-10a",
-    "casco-integral-voltia",
+    "casco-integral-raiden",
     "baul-trasero-45l",
     "candado-disco-alarma",
     "funda-exterior-impermeable"
@@ -154,14 +154,14 @@
   ],
   "highlights": [
     "80 km/h: apto para vías rápidas",
-    "Carnet A1 o B con 3 años",
+    "Licencia B-IIb (motocicletas)",
     "Hasta 140 km con batería 50Ah",
     "Garantía de batería de 2 años"
   ],
   "technology": [
     {
       "title": "Motor",
-      "text": "Motor brushless de 5.000 W nominales y 7.000 W de pico en rueda trasera. Alcanza los 80 km/h y mantiene ritmo en circunvalaciones con dos ocupantes."
+      "text": "Motor brushless de 5.000 W nominales y 7.000 W de pico en rueda trasera. Alcanza los 80 km/h y mantiene ritmo en vías rápidas con dos ocupantes."
     },
     {
       "title": "Batería",
@@ -190,23 +190,23 @@
       "answer": "La autonomía declarada es de 100 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 70 y 85 km. La variante Batería 72V 50Ah amplía la autonomía."
     },
     {
-      "question": "¿Qué carnet necesito para conducir el CITY GT?",
-      "answer": "Puedes conducirla con carnet A1, A2, A o con carnet B con más de tres años de antigüedad, ya que es equivalente a una 125 cc (potencia igual o inferior a 11 kW)."
+      "question": "¿Qué licencia necesito para conducir el CITY GT?",
+      "answer": "El CITY GT es un scooter equivalente a 125 cc que alcanza 80 km/h: según la normativa vigente del MTC requiere licencia clase B categoría B-IIb (motocicletas) o superior. Necesita placa (inscripción en SUNARP), SOAT vigente y casco homologado. Confirma tu caso con nuestro asesor."
     },
     {
       "question": "¿Qué garantía tiene?",
-      "answer": "El CITY GT tiene 2 años de garantía en vehículo y 24 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+      "answer": "El CITY GT tiene 2 años de garantía en vehículo y 24 meses en batería, con servicio técnico propio en Lima y repuestos en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
     },
     {
       "question": "¿Cuál es el plazo de entrega?",
-      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+      "answer": "Las unidades en stock salen de nuestro almacén en Lima en 24-48 h hábiles y llegan montadas y revisadas en 3-7 días hábiles en Lima Metropolitana y en 7-15 días hábiles en provincias (plazos referenciales, vía courier o agencia según destino). Los productos bajo pedido tienen un plazo referencial de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
     }
   ],
   "reviews": [
     {
       "author": "Andrés M.",
       "rating": 5,
-      "text": "Hago 40 km diarios por la M-40 y va sobrado. Silencioso, estable y muy bien acabado.",
+      "text": "Hago 40 km diarios por la Panamericana y la Vía Expresa y va sobrado. Silencioso, estable y muy bien acabado.",
       "date": "2026-04-28"
     },
     {
@@ -219,7 +219,7 @@
   "featured": 85,
   "publishedAt": "2026-03-05T09:00:00.000Z",
   "seo": {
-    "title": "CITY GT | Scooter eléctrico 125 equivalente | Voltia",
-    "description": "CITY GT: scooter eléctrico 125 equivalente de 5 kW, 80 km/h y hasta 140 km de autonomía. Carnet A1 o B. Desde 4.299 € con garantía de 2 años."
+    "title": "CITY GT | Scooter eléctrico 125 equivalente | Raiden",
+    "description": "CITY GT: scooter eléctrico 125 equivalente de 5 kW, 80 km/h y hasta 140 km de autonomía. Licencia B-IIb. Desde S/ 8,990 con garantía de 2 años."
   }
 }

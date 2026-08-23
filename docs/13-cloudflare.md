@@ -1,10 +1,10 @@
 # 13 — Cloudflare Pages
 
-Voltia se despliega en Cloudflare Pages (plan Free) como hosting estático. Cloudflare es el proveedor elegido para el MVP, no una dependencia: la salida de `astro build` es HTML/CSS/JS plano y puede servirse desde cualquier CDN (ver [20-migration](./20-migration.md)). Todo lo descrito aquí que sea específico de Cloudflare está marcado como tal y tiene equivalente documentado.
+Raiden se despliega en Cloudflare Pages (plan Free) como hosting estático. Cloudflare es el proveedor elegido para el MVP, no una dependencia: la salida de `astro build` es HTML/CSS/JS plano y puede servirse desde cualquier CDN (ver [20-migration](./20-migration.md)). Todo lo descrito aquí que sea específico de Cloudflare está marcado como tal y tiene equivalente documentado.
 
 ## 1. Plan Free: límites y encaje
 
-| Concepto | Límite Free | Uso previsto Voltia |
+| Concepto | Límite Free | Uso previsto Raiden |
 |---|---|---|
 | Builds | 500 / mes | < 100 (CI filtra ramas, ver [14-devops](./14-devops.md)) |
 | Builds concurrentes | 1 | Suficiente; los previews se encolan |
@@ -12,8 +12,8 @@ Voltia se despliega en Cloudflare Pages (plan Free) como hosting estático. Clou
 | Peticiones | Ilimitadas | — |
 | Ficheros por deploy | 20.000 | ~300 páginas + ~1.500 imágenes derivadas (AVIF/WebP) |
 | Tamaño por fichero | 25 MB | Imagen más grande < 1 MB tras sharp |
-| Proyectos | Sin límite práctico | 1 (`voltia`) |
-| Dominios personalizados | 100 por proyecto | 2 (`voltia.es`, `www.voltia.es`, provisional) |
+| Proyectos | Sin límite práctico | 1 (`raiden`) |
+| Dominios personalizados | 100 por proyecto | 2 (`raiden.pe`, `www.raiden.pe`, provisional) |
 | Retención de deploys | Sin caducidad | Rollback instantáneo a cualquier deploy |
 
 Riesgo a vigilar: el límite de 20.000 ficheros. Cada `<Image>` con `widths` múltiples y dos formatos genera N×2 ficheros. El presupuesto se controla en [09-performance](./09-performance.md): máximo 4 anchos por imagen de producto.
@@ -41,7 +41,7 @@ Solo se exponen variables con prefijo `PUBLIC_`; no existen secretos en el front
 | Variable | Producción | Preview | Uso |
 |---|---|---|---|
 | `NODE_VERSION` | `22.12.0` | `22.12.0` | Versión de Node en el builder |
-| `PUBLIC_SITE_URL` | `https://voltia.es` | `https://voltia-preview.pages.dev` | `site` de Astro: canonicals, sitemap, JSON-LD |
+| `PUBLIC_SITE_URL` | `https://raiden.pe` | `https://raiden-preview.pages.dev` | `site` de Astro: canonicals, sitemap, JSON-LD |
 | `PUBLIC_WHATSAPP_NUMBER` | Número real E.164 sin `+` | Número de pruebas del equipo | `src/config/site.ts` |
 | `PUBLIC_ANALYTICS_ADAPTER` | `cloudflare` o `noop` | `console` | Selección de adaptador de `AnalyticsService` |
 
@@ -79,7 +79,7 @@ Notas:
 
 ```
 # Canonical: www -> apex
-https://www.voltia.es/*  https://voltia.es/:splat  301
+https://www.raiden.pe/*  https://raiden.pe/:splat  301
 
 # Rutas antiguas (mantener al renombrar categorías)
 /scooters            /scooters-electricos        301
@@ -93,8 +93,8 @@ Cloudflare Pages soporta hasta 2.000 redirecciones estáticas y 100 dinámicas p
 
 ## 4. Dominios y DNS
 
-1. Añadir el dominio en el proyecto: Custom domains → Set up a custom domain → `voltia.es` y `www.voltia.es`.
-2. Si la zona DNS está en Cloudflare, se crean automáticamente registros `CNAME` hacia `voltia.pages.dev` (apex mediante CNAME flattening). Si el DNS está en otro registrador, se crea manualmente `CNAME www → voltia.pages.dev` y para el apex se usa ALIAS/ANAME o se traslada la zona.
+1. Añadir el dominio en el proyecto: Custom domains → Set up a custom domain → `raiden.pe` y `www.raiden.pe`.
+2. Si la zona DNS está en Cloudflare, se crean automáticamente registros `CNAME` hacia `raiden.pages.dev` (apex mediante CNAME flattening). Si el DNS está en otro registrador, se crea manualmente `CNAME www → raiden.pages.dev` y para el apex se usa ALIAS/ANAME o se traslada la zona.
 3. Certificado TLS: emitido automáticamente (Universal SSL). Modo SSL/TLS en "Full (strict)".
 4. Activar "Always Use HTTPS" y HSTS solo tras confirmar que todos los subdominios sirven TLS.
 5. Verificación de propiedad en Google Search Console mediante registro TXT ([08-seo](./08-seo.md)).
@@ -103,7 +103,7 @@ El dominio `*.pages.dev` sigue activo tras añadir el dominio propio. Para evita
 
 ## 5. Preview deployments por rama
 
-- Cada push a una rama distinta de `main` genera un deploy en `https://<hash>.voltia.pages.dev` y un alias estable `https://<rama>.voltia.pages.dev`.
+- Cada push a una rama distinta de `main` genera un deploy en `https://<hash>.raiden.pages.dev` y un alias estable `https://<rama>.raiden.pages.dev`.
 - Configuración recomendada en Settings → Builds: "Preview branches: Custom" incluyendo `feat/*`, `fix/*`, `content/*` y excluyendo `renovate/*` y `dependabot/*` para no agotar builds.
 - Los previews leen las variables del entorno Preview: número de WhatsApp de pruebas y `noindex`.
 - Protección de acceso a previews (Cloudflare Access) es de pago por encima de 50 usuarios; no se usa. Los previews son públicos pero no indexables.
@@ -149,12 +149,12 @@ Regla: si una funcionalidad no se puede reproducir con un fichero del repositori
 
 | Partida | Coste mensual |
 |---|---|
-| Cloudflare Pages Free | 0 € |
-| Cloudflare Web Analytics | 0 € |
-| Dominio `.es` (registrador externo o Cloudflare Registrar) | ~1 €/mes (≈ 10–12 €/año) |
-| GitHub (repositorio privado, Actions 2.000 min/mes) | 0 € |
-| Supabase Free (fase posterior) | 0 € |
-| **Total MVP** | **≈ 1 €/mes** |
+| Cloudflare Pages Free | S/ 0 |
+| Cloudflare Web Analytics | S/ 0 |
+| Dominio `.pe` / `.com.pe` (registrador externo) o `.com` (Cloudflare Registrar) | ~S/ 4–15/mes (≈ S/ 40–180/año según extensión) |
+| GitHub (repositorio privado, Actions 2.000 min/mes) | S/ 0 |
+| Supabase Free (fase posterior) | S/ 0 |
+| **Total MVP** | **≈ S/ 4–15/mes (solo dominio)** |
 
 Escenario de crecimiento: Pages Pro (20 USD/mes) solo aporta 5.000 builds y builds concurrentes; no se prevé necesitarlo. El primer coste real aparecería con Workers Paid (5 USD/mes) si se implementa backend en Cloudflare, opción descartada frente a Supabase por portabilidad.
 

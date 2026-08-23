@@ -15,9 +15,12 @@ test.describe('Encuentra tu moto', () => {
 
     // Paso 2: preferencias
     await expect(finder.getByRole('heading', { name: 'Tus preferencias' })).toBeVisible();
-    await finder.getByRole('radio', { name: 'Hasta 5.000 €' }).check();
+    // Presupuesto en soles: la etiqueta exacta depende del catálogo, elegimos la tercera opción "Hasta S/ …"
+    const budgets = finder.getByRole('radio', { name: /^Hasta S\/ [\d,]+$/ });
+    expect(await budgets.count()).toBeGreaterThanOrEqual(3);
+    await budgets.nth(2).check();
     await finder.getByRole('radio', { name: '60-100 km' }).check();
-    await finder.getByRole('radio', { name: '80 km/h (125cc eq.)' }).check();
+    await finder.getByRole('radio', { name: /^80 km\/h/ }).check();
     await finder.getByRole('button', { name: 'Continuar' }).click();
 
     // Paso 3: tipo (opcional) → finalizar

@@ -7,26 +7,29 @@ import { breadcrumbSchema } from '../../lib/seo/jsonld';
 
 const crumbs = [
   { name: 'Inicio', url: '/' },
-  { name: 'Aviso legal', url: '/legal/aviso-legal' },
+  { name: 'Términos y condiciones', url: '/legal/aviso-legal' },
 ];
 ---
 
-<BaseLayout title="Aviso legal" description={`Aviso legal e información del titular del sitio web ${site.name}.`} path="/legal/aviso-legal" noindex jsonLd={[breadcrumbSchema(crumbs)]}>
+<BaseLayout
+  title="Términos y condiciones"
+  description={`Términos y condiciones de uso e información del titular del sitio web ${site.name}.`}
+  path="/legal/aviso-legal"
+  noindex
+  jsonLd={[breadcrumbSchema(crumbs)]}
+>
   <div class="container section">
     <Breadcrumbs items={crumbs} />
-    <SectionHeading as="h1" eyebrow="Legal" title="Aviso legal" />
+    <SectionHeading as="h1" eyebrow="Legal" title="Términos y condiciones" />
     <div class="prose">
       <p class="muted">Los campos entre corchetes son marcadores pendientes de completar por el titular antes de la puesta en producción.</p>
 
-      <h2>1. Datos identificativos</h2>
-      <p>
-        En cumplimiento de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se informa de que el
-        titular de este sitio web, accesible en <a href={site.url}>{site.url}</a>, es:
-      </p>
+      <h2>1. Datos del titular</h2>
+      <p>El titular de este sitio web, accesible en <a href={site.url}>{site.url}</a>, es:</p>
       <ul>
         <li><strong>Razón social:</strong> <mark>[RAZÓN SOCIAL]</mark></li>
-        <li><strong>NIF:</strong> <mark>[NIF]</mark></li>
-        <li><strong>Domicilio:</strong> <mark>[DIRECCIÓN]</mark></li>
+        <li><strong>RUC:</strong> <mark>[RUC]</mark></li>
+        <li><strong>Domicilio fiscal:</strong> <mark>[DIRECCIÓN]</mark>, <mark>[CIUDAD]</mark>, Perú</li>
         <li><strong>Correo electrónico:</strong> <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></li>
         <li><strong>Nombre comercial:</strong> {site.name}</li>
       </ul>
@@ -35,13 +38,13 @@ const crumbs = [
       <p>
         Este sitio web tiene como finalidad mostrar el catálogo de vehículos eléctricos y accesorios de {site.name} y facilitar el contacto comercial con el
         usuario. <strong>No se realizan pagos online</strong>: las solicitudes de compra se tramitan por WhatsApp o correo electrónico y se confirman con nuestro
-        equipo antes de cualquier transacción.
+        equipo antes de cualquier transacción. Los medios de pago disponibles se indican al confirmar cada pedido.
       </p>
 
       <h2>3. Condiciones de uso</h2>
       <p>
-        El acceso y la navegación por el sitio atribuyen la condición de usuario e implican la aceptación de este aviso legal. El usuario se compromete a hacer un
-        uso adecuado de los contenidos y a no emplearlos para actividades ilícitas o contrarias a la buena fe.
+        El acceso y la navegación por el sitio atribuyen la condición de usuario e implican la aceptación de estos términos y condiciones. El usuario se compromete
+        a hacer un uso adecuado de los contenidos y a no emplearlos para actividades ilícitas o contrarias a la buena fe.
       </p>
 
       <h2>4. Propiedad intelectual e industrial</h2>
@@ -52,20 +55,36 @@ const crumbs = [
 
       <h2>5. Información sobre precios y disponibilidad</h2>
       <p>
-        Los precios mostrados incluyen IVA y son orientativos; pueden variar según configuración, transporte y matriculación. La disponibilidad indicada se confirma
-        en el momento de la solicitud. Las imágenes pueden no corresponder exactamente con el producto entregado.
+        Los precios se expresan en soles (S/), incluyen IGV y son referenciales; pueden variar según configuración, flete a provincias y trámites de inscripción en
+        SUNARP, placa y SOAT. La disponibilidad indicada se confirma en el momento de la solicitud. Las imágenes pueden no corresponder exactamente con el producto
+        entregado. Por cada venta se emite boleta o factura electrónica conforme a la normativa de SUNAT.
       </p>
 
-      <h2>6. Exclusión de responsabilidad</h2>
+      <h2>6. Garantía y atención al cliente</h2>
+      <p>
+        Las condiciones de garantía se detallan en la página de <a href="/garantia">garantía</a>. Los vehículos cuentan con 24 meses de garantía contra defectos de
+        fabricación y la batería con el plazo indicado en la ficha de cada producto, sin perjuicio de los derechos que reconoce al consumidor el Código de Protección
+        y Defensa del Consumidor.
+      </p>
+
+      <h2>7. Libro de Reclamaciones</h2>
+      <p>
+        Conforme a la normativa de protección al consumidor supervisada por INDECOPI, {site.name} pone a disposición de los usuarios un <strong>Libro de
+        Reclamaciones</strong>, tanto en su establecimiento físico como en formato virtual. Puedes solicitarlo escribiendo a
+        <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a> o en <mark>[ENLACE AL LIBRO DE RECLAMACIONES VIRTUAL]</mark>.
+      </p>
+
+      <h2>8. Exclusión de responsabilidad</h2>
       <p>
         {site.name} no garantiza la ausencia de errores en los contenidos ni la disponibilidad ininterrumpida del sitio, y no se hace responsable de los daños
-        derivados del uso de la información publicada o de enlaces a sitios de terceros.
+        derivados del uso de la información publicada o de enlaces a sitios de terceros. La información sobre licencias de conducir, categorías vehiculares y
+        trámites es referencial y está sujeta a la normativa vigente del MTC y demás autoridades competentes.
       </p>
 
-      <h2>7. Legislación aplicable</h2>
+      <h2>9. Legislación aplicable</h2>
       <p>
-        Este aviso legal se rige por la legislación española. Para cualquier controversia, las partes se someten a los juzgados y tribunales del domicilio del
-        usuario cuando sea consumidor, o a los de <mark>[CIUDAD]</mark> en el resto de casos.
+        Estos términos y condiciones se rigen por la legislación de la República del Perú. Para cualquier controversia, las partes se someten a la competencia de
+        los jueces y tribunales de <mark>[CIUDAD]</mark>, sin perjuicio de los derechos que la normativa de protección al consumidor reconoce al usuario.
       </p>
     </div>
   </div>

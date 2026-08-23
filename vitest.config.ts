@@ -12,8 +12,8 @@ export default getViteConfig({
     include: ['tests/unit/**/*.test.ts'],
     environment: 'node',
     env: {
-      PUBLIC_SITE_URL: 'https://voltia.test',
-      PUBLIC_WHATSAPP_NUMBER: '34600000000',
+      PUBLIC_SITE_URL: 'https://raiden.test',
+      PUBLIC_WHATSAPP_NUMBER: '51987654321',
     },
   },
 });

@@ -68,7 +68,7 @@ export function productSchema(p: Product, url: string, imageUrls: string[]) {
     url,
     offers: {
       '@type': 'AggregateOffer',
-      priceCurrency: 'EUR',
+      priceCurrency: 'PEN',
       lowPrice: (price.amount / 100).toFixed(2),
       highPrice: (Math.max(...p.variants.map((v) => v.price.amount)) / 100).toFixed(2),
       offerCount: p.variants.length,
@@ -102,7 +102,7 @@ export function accessorySchema(a: Accessory, url: string, imageUrl?: string) {
     url,
     offers: {
       '@type': 'Offer',
-      priceCurrency: 'EUR',
+      priceCurrency: 'PEN',
       price: (a.price.amount / 100).toFixed(2),
       availability: schemaAvailability[a.availability],
       url,

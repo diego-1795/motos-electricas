@@ -27,7 +27,7 @@ const crumbs = [
 
 <BaseLayout
   title="Blog: guías sobre motos eléctricas"
-  description="Guías, comparativas y consejos sobre autonomía, baterías, carnets y mantenimiento de motos y scooters eléctricos."
+  description="Guías, comparativas y consejos sobre autonomía, baterías, licencias y mantenimiento de motos y scooters eléctricos."
   path="/blog"
   jsonLd={[breadcrumbSchema(crumbs), itemListSchema(posts.map((p) => ({ name: p.title, url: `/blog/${p.slug}` })))]}
 >

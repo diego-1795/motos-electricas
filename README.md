@@ -1,10 +1,12 @@
-# Voltia — Digital Electric Mobility Showroom
+# Raiden — Digital Electric Mobility Showroom
 
-Showroom digital de motos eléctricas (scooters, motos, bicimotos, trimotos, cuatrimotos y vehículos de carga). El visitante compara, configura y **solicita su compra por WhatsApp**: no hay pagos online, cuentas de usuario ni backend propio en el MVP.
+Showroom digital de motos eléctricas para el **Perú** (scooters, motos, bicimotos, trimotos, cuatrimotos y vehículos de carga). El visitante compara, configura y **solicita su compra por WhatsApp**: no hay pagos online, cuentas de usuario ni backend propio en el MVP.
 
 - Sitio **100 % estático** (`astro build` → `dist/`), desplegable en cualquier CDN.
-- **Coste de infraestructura: 0 €/mes** (Cloudflare Pages Free + GitHub Actions Free; solo el dominio se paga).
+- **Coste de infraestructura: S/ 0/mes** (Cloudflare Pages Free + GitHub Actions Free; solo el dominio se paga).
 - Sin cookies, sin trackers, sin datos personales almacenados.
+- **Mercado Perú:** precios en soles (`PEN`, formato `S/ 4,999`, IGV incluido), locale `es-PE`, licencias MTC clase B, WhatsApp `+51`. Los precios del catálogo actual son placeholders pendientes de validación del cliente ([ADR-014](./docs/21-decisions.md)).
+- **Marca placeholder:** "Raiden" es un nombre provisional; todas las referencias de marca viven en `src/config/site.ts` ([ADR-012](./docs/21-decisions.md)).
 
 Documentación completa en [`/docs`](./docs/README.md) y perfiles de cada rol en [`/agents`](./agents).
 
@@ -59,17 +61,17 @@ Solo existen variables con prefijo `PUBLIC_` (se leen en build y llegan al bundl
 
 | Variable | Ejemplo | Uso |
 |---|---|---|
-| `PUBLIC_SITE_URL` | `https://voltia.es` | URL canónica: canonicals, sitemap, JSON-LD, OG |
+| `PUBLIC_SITE_URL` | `https://raiden.pe` | URL canónica: canonicals, sitemap, JSON-LD, OG |
 | `PUBLIC_WHATSAPP_NUMBER` | `34612345678` | Número de ventas, formato internacional sin `+` |
-| `PUBLIC_CONTACT_EMAIL` | `hola@voltia.es` | Email del pie y del JSON-LD |
+| `PUBLIC_CONTACT_EMAIL` | `hola@raiden.pe` | Email del pie y del JSON-LD |
 | `PUBLIC_ANALYTICS` | `console` \| `datalayer` \| vacío | Adaptador de analítica (vacío = noop) |
 | `PUBLIC_CF_BEACON_TOKEN` | vacío | Token del beacon de Cloudflare Web Analytics (solo producción) |
 
-Copia `.env.example` a `.env` para desarrollo local (`.env` está ignorado por git).
+Copia `.env.example` a `.env` para desarrollo local (`.env` está ignorado por git). Ejemplo: `PUBLIC_WHATSAPP_NUMBER=51987654321` (formato internacional sin `+`).
 
 ### Cómo se configura el número de WhatsApp
 
-El número vive **solo** en [`src/config/site.ts`](./src/config/site.ts), que lee `PUBLIC_WHATSAPP_NUMBER` con un valor por defecto de pruebas (`34600000000`). Ningún componente lo hardcodea; [`src/services/whatsapp/WhatsAppMessageBuilder.ts`](./src/services/whatsapp/WhatsAppMessageBuilder.ts) construye `https://wa.me/<número>?text=<mensaje codificado con encodeURIComponent>`. Para cambiarlo en producción: actualizar la variable en el hosting y relanzar el build (se lee en tiempo de build). Runbook en [docs/14-devops §9](./docs/14-devops.md).
+El número vive **solo** en [`src/config/site.ts`](./src/config/site.ts), que lee `PUBLIC_WHATSAPP_NUMBER` con un valor por defecto de pruebas (`51987654321`). Ningún componente lo hardcodea; [`src/services/whatsapp/WhatsAppMessageBuilder.ts`](./src/services/whatsapp/WhatsAppMessageBuilder.ts) construye `https://wa.me/<número>?text=<mensaje codificado con encodeURIComponent>`. Para cambiarlo en producción: actualizar la variable en el hosting y relanzar el build (se lee en tiempo de build). Runbook en [docs/14-devops §9](./docs/14-devops.md).
 
 ## Estructura
 
@@ -107,7 +109,7 @@ El número vive **solo** en [`src/config/site.ts`](./src/config/site.ts), que le
 ## Cómo añadir un producto
 
 1. Crea `src/content/products/<slug>.json` (el nombre del fichero es el `slug` de la URL `/motos-electricas/<slug>` o la categoría correspondiente).
-2. Rellena los campos del esquema de [`src/content.config.ts`](./src/content.config.ts): `id` (UUID), `slug`, `name`, `subtitle`, `claim`, `description`, `category` (uno de los slugs de categoría), `brand`, `images[]` (`src` apuntando a `~/assets/products/...`, `alt`, `width`, `height`), `specs` (autonomía, velocidad, potencia, batería, carnet…), `variants[]`, colores, precio (`{ amount: céntimos, currency: "EUR" }`), `availability` y `useCases`.
+2. Rellena los campos del esquema de [`src/content.config.ts`](./src/content.config.ts): `id` (UUID), `slug`, `name`, `subtitle`, `claim`, `description`, `category` (uno de los slugs de categoría), `brand`, `images[]` (`src` apuntando a `~/assets/products/...`, `alt`, `width`, `height`), `specs` (autonomía, velocidad, potencia, batería, licencia…), `variants[]`, colores, precio (`{ amount: céntimos de sol, currency: "PEN" }`), `availability` y `useCases`.
 3. Añade las imágenes en `src/assets/products/` (máximo 4 anchos por imagen, ver [docs/09-performance](./docs/09-performance.md)).
 4. `npm run build`: el esquema valida en build; un JSON inválido rompe la compilación con el campo exacto.
 5. Abre una PR desde una rama `content/<tema>`; la preview de Cloudflare Pages se publica en la PR.
@@ -127,7 +129,7 @@ Integración Git (zero-config), sin adapter ni `wrangler.toml`:
 | `NODE_VERSION` | `22.12.0` |
 | Variables | `PUBLIC_SITE_URL`, `PUBLIC_WHATSAPP_NUMBER` (+ opcionales) en Production y Preview |
 
-Cada push a `main` despliega producción; cualquier otra rama genera una preview `https://<rama>.voltia.pages.dev`. `public/_headers` se copia a `dist/` y Cloudflare aplica las cabeceras. Rollback: Pages → Deployments → "Rollback to this deployment".
+Cada push a `main` despliega producción; cualquier otra rama genera una preview `https://<rama>.raiden.pages.dev`. `public/_headers` se copia a `dist/` y Cloudflare aplica las cabeceras. Rollback: Pages → Deployments → "Rollback to this deployment".
 
 Alternativa (despliegue solo tras CI verde): workflow manual [`deploy-cloudflare-pages.yml`](./.github/workflows/deploy-cloudflare-pages.yml) con `cloudflare/wrangler-action` y los secrets `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`.
 

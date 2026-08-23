@@ -4,13 +4,13 @@
   "name": "VOLT BIKE 500",
   "subtitle": "Bicimoto eléctrica ligera",
   "claim": "Lo más ligero de la gama para moverte sin complicaciones",
-  "description": "La VOLT BIKE 500 es la bicimoto eléctrica de Voltia: 47 kg, pedales, batería extraíble de 48V y limitación a 25 km/h sin carnet o 45 km/h como ciclomotor. Perfecta para trayectos cortos y recados.",
+  "description": "La VOLT BIKE 500 es la bicimoto eléctrica de Raiden: 47 kg, pedales, batería extraíble de 48V y limitación a 25 km/h sin licencia o 45 km/h como ciclomotor (licencia B-IIa). Perfecta para trayectos cortos y recados.",
   "category": "bicimotos",
-  "brand": "Voltia",
+  "brand": "Raiden",
   "images": [
     {
       "src": "~/assets/products/volt-bike-500-1.svg",
-      "alt": "VOLT BIKE 500, bicimoto eléctrica ligera Voltia, vista lateral",
+      "alt": "VOLT BIKE 500, bicimoto eléctrica ligera Raiden, vista lateral",
       "width": 1600,
       "height": 1000
     },
@@ -47,7 +47,7 @@
     "weightKg": 47,
     "maxLoadKg": 120,
     "seats": 1,
-    "license": "sin-carnet",
+    "license": "sin-licencia",
     "dimensionsMm": [
       1650,
       640,
@@ -70,11 +70,11 @@
   "variants": [
     {
       "id": "v25",
-      "name": "Versión 25 km/h (sin carnet)",
+      "name": "Versión 25 km/h (sin licencia)",
       "description": "500 W · 25 km/h · 50 km",
       "price": {
-        "amount": 149900,
-        "currency": "EUR"
+        "amount": 249000,
+        "currency": "PEN"
       },
       "availability": "en-stock",
       "sku": "VT-VB5-25",
@@ -82,11 +82,11 @@
     },
     {
       "id": "v45",
-      "name": "Versión 45 km/h (carnet AM)",
+      "name": "Versión 45 km/h (licencia B-IIa)",
       "description": "1.000 W · 45 km/h · 45 km",
       "price": {
-        "amount": 169900,
-        "currency": "EUR"
+        "amount": 299000,
+        "currency": "PEN"
       },
       "availability": "en-stock",
       "sku": "VT-VB5-45",
@@ -129,7 +129,7 @@
   ],
   "highlights": [
     "Solo 47 kg con batería",
-    "Versión 25 km/h sin carnet",
+    "Versión 25 km/h sin licencia",
     "Batería de 48V extraíble de 5 kg",
     "Pedales de asistencia y arranque"
   ],
@@ -162,19 +162,19 @@
   "faqs": [
     {
       "question": "¿Cuál es la autonomía real del VOLT BIKE 500?",
-      "answer": "La autonomía declarada es de 50 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 35 y 43 km. La variante Versión 45 km/h (carnet AM) amplía la autonomía."
+      "answer": "La autonomía declarada es de 50 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 35 y 43 km. La variante Versión 45 km/h (licencia B-IIa) amplía la autonomía."
     },
     {
-      "question": "¿Qué carnet necesito para conducir el VOLT BIKE 500?",
-      "answer": "No necesitas carnet de conducir: al estar limitado a 25 km/h se considera ciclomotor ligero. Sí es obligatorio el uso de casco homologado y circular por la vía correspondiente."
+      "question": "¿Qué licencia necesito para conducir el VOLT BIKE 500?",
+      "answer": "En su versión de 25 km/h, la VOLT BIKE 500 es una bicimoto de baja velocidad que, según la normativa vigente del MTC, no requiere licencia de conducir. La versión de 45 km/h se considera ciclomotor y requiere licencia de clase B (categoría B-IIa o superior). En ambos casos el casco es obligatorio. Consulta con nuestro asesor tu caso concreto."
     },
     {
       "question": "¿Qué garantía tiene?",
-      "answer": "El VOLT BIKE 500 tiene 2 años de garantía en vehículo y 12 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+      "answer": "El VOLT BIKE 500 tiene 2 años de garantía en vehículo y 12 meses en batería, con servicio técnico propio en Lima y repuestos en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
     },
     {
       "question": "¿Cuál es el plazo de entrega?",
-      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+      "answer": "Las unidades en stock salen de nuestro almacén en Lima en 24-48 h hábiles y llegan montadas y revisadas en 3-7 días hábiles en Lima Metropolitana y en 7-15 días hábiles en provincias (plazos referenciales, vía courier o agencia según destino). Los productos bajo pedido tienen un plazo referencial de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
     }
   ],
   "reviews": [
@@ -194,7 +194,7 @@
   "featured": 60,
   "publishedAt": "2026-03-12T09:00:00.000Z",
   "seo": {
-    "title": "VOLT BIKE 500 | Bicimoto eléctrica ligera | Voltia",
-    "description": "VOLT BIKE 500: bicimoto eléctrica de 47 kg, 25 km/h sin carnet o 45 km/h AM, batería extraíble y 50 km. Desde 1.499 € con 2 años de garantía."
+    "title": "VOLT BIKE 500 | Bicimoto eléctrica ligera | Raiden",
+    "description": "VOLT BIKE 500: bicimoto eléctrica de 47 kg, 25 km/h sin licencia o 45 km/h con B-IIa, batería extraíble y 50 km. Desde S/ 2,490 con 2 años de garantía."
   }
 }

@@ -4,12 +4,12 @@
   "name": "Funda exterior impermeable",
   "description": "Funda impermeable y transpirable con protección UV para aparcar en la calle. Ojales para candado y bolsa de transporte. Talla única para scooters y motos.",
   "price": {
-    "amount": 2900,
-    "currency": "EUR"
+    "amount": 7900,
+    "currency": "PEN"
   },
   "image": {
     "src": "~/assets/accessories/funda-exterior-impermeable.svg",
-    "alt": "Funda exterior impermeable Voltia",
+    "alt": "Funda exterior impermeable Raiden",
     "width": 800,
     "height": 800
   },

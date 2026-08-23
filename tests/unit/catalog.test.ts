@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { applyFilters, parseFilters, sortProducts, AVAILABILITIES, TYPES, USE_CASES, sortLabels } from '../../src/domain/catalog';
-import { eur } from '../../src/domain/money';
+import { pen } from '../../src/domain/money';
 import { baseSpecs, makeProduct, variant } from './fixtures';
 
 const cheap = makeProduct({
@@ -9,7 +9,7 @@ const cheap = makeProduct({
   featured: 10,
   publishedAt: '2024-01-01',
   useCases: ['ciudad'],
-  variants: [variant({ price: eur(150000), availability: 'en-stock' })],
+  variants: [variant({ price: pen(150000), availability: 'en-stock' })],
   specs: baseSpecs({ rangeKm: 50, topSpeedKmh: 25, powerW: 500, seats: 1, battery: { ...baseSpecs().battery, capacityKwh: 1 } }),
 });
 const mid = makeProduct({
@@ -18,7 +18,7 @@ const mid = makeProduct({
   featured: 80,
   publishedAt: '2025-03-01',
   useCases: ['ciudad', 'trabajo'],
-  variants: [variant({ price: eur(300000), availability: 'bajo-pedido' }), variant({ id: 'v2', price: eur(350000), availability: 'agotado' })],
+  variants: [variant({ price: pen(300000), availability: 'bajo-pedido' }), variant({ id: 'v2', price: pen(350000), availability: 'agotado' })],
   specs: baseSpecs({ rangeKm: 90, topSpeedKmh: 45, powerW: 3000, seats: 2, battery: { ...baseSpecs().battery, capacityKwh: 2.5 } }),
 });
 const big = makeProduct({
@@ -27,7 +27,7 @@ const big = makeProduct({
   featured: 100,
   publishedAt: '2025-01-01',
   useCases: ['trayectos-largos', 'dos-personas'],
-  variants: [variant({ price: eur(600000), availability: 'proximamente' }), variant({ id: 'v2', price: eur(550000), availability: 'proximamente', specsOverride: { rangeKm: 160 } })],
+  variants: [variant({ price: pen(600000), availability: 'proximamente' }), variant({ id: 'v2', price: pen(550000), availability: 'proximamente', specsOverride: { rangeKm: 160 } })],
   specs: baseSpecs({ rangeKm: 120, topSpeedKmh: 110, powerW: 8000, seats: 2, battery: { ...baseSpecs().battery, capacityKwh: 4 } }),
 });
 const all = [mid, big, cheap];
@@ -110,7 +110,7 @@ describe('parseFilters', () => {
     for (const k of Object.keys(sortLabels)) expect(parse(`orden=${k}`).sort).toBe(k);
     expect(parse('orden=hack').sort).toBe('recomendados');
   });
-  it('precio en euros → céntimos; potencia en kW → W', () => {
+  it('precio en soles → céntimos; potencia en kW → W', () => {
     expect(parse('precio=4000').priceMax).toBe(400000);
     expect(parse('potencia=2.5').powerMin).toBe(2500);
   });

@@ -21,7 +21,7 @@ Consult these guides before working on related tasks:
 - [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
 - [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
 
-## Proyecto Voltia — convenciones
+## Proyecto Raiden — convenciones
 
 - Lee `/docs/01-architecture.md` y el rol correspondiente en `/agents/*.md` antes de tocar código.
 - Capas: `src/domain` (puro) → `src/services` → `src/data` (repositorios) → `src/components|islands|pages`. Nada de lógica de negocio en componentes.

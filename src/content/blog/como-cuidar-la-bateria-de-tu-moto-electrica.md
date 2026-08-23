@@ -3,7 +3,7 @@ title: "Cómo cuidar la batería de tu moto eléctrica"
 description: "Consejos prácticos para alargar la vida de la batería de litio de tu scooter o moto eléctrica: carga, temperatura, almacenamiento y errores que conviene evitar."
 category: "baterias"
 publishedAt: "2026-04-28T08:00:00.000Z"
-author: "Equipo Voltia"
+author: "Equipo Raiden"
 readingMinutes: 6
 relatedProducts: ["odin-1-0", "urban-s2-pro", "trike-cargo-3"]
 ---
@@ -12,7 +12,7 @@ La batería es el componente más valioso de una moto eléctrica y el que más d
 
 ## Entender los ciclos
 
-La vida de una batería se mide en ciclos completos: una descarga del 100 al 0 % y su carga posterior. Dos cargas del 50 % cuentan como un ciclo. Las baterías NMC que montan los scooters y motos de Voltia están diseñadas para unos 800-1.000 ciclos conservando más del 80 % de capacidad; las LiFePO4 de los vehículos de carga superan los 2.000.
+La vida de una batería se mide en ciclos completos: una descarga del 100 al 0 % y su carga posterior. Dos cargas del 50 % cuentan como un ciclo. Las baterías NMC que montan los scooters y motos de Raiden están diseñadas para unos 800-1.000 ciclos conservando más del 80 % de capacidad; las LiFePO4 de los vehículos de carga superan los 2.000.
 
 Para un uso diario de 30 km con una batería de 100 km de autonomía real, eso equivale a entre 7 y 10 años de uso antes de notar una pérdida apreciable. Lo que hagas en el día a día puede acortar o alargar ese plazo.
 
@@ -26,10 +26,10 @@ No hace falta obsesionarse: el sistema de gestión de batería (BMS) ya deja má
 
 El calor extremo acelera el envejecimiento químico de las celdas, y el frío reduce temporalmente su rendimiento. Algunos consejos:
 
-- **No cargues la batería justo después de rodar** en verano; deja que se enfríe 20-30 minutos.
-- **En invierno, carga en interior** a temperatura ambiente. Cargar por debajo de 0 °C puede dañar las celdas, y muchos BMS lo impiden directamente.
-- **Aparca a la sombra** en verano siempre que puedas, o usa una funda exterior que refleje el sol.
-- Si la batería es extraíble, **guárdala en casa** en los días de frío o calor intenso.
+- **No cargues la batería justo después de rodar** en el verano de la costa o en la selva; deja que se enfríe 20-30 minutos.
+- **En la sierra, carga bajo techo** a temperatura ambiente. Cargar por debajo de 0 °C, como en las heladas de Puno o Cusco, puede dañar las celdas, y muchos BMS lo impiden directamente.
+- **Estaciona a la sombra** siempre que puedas, o usa una funda exterior que refleje el sol. La altura no afecta al motor eléctrico, pero el sol de sierra es más intenso.
+- Si la batería es extraíble, **guárdala en casa** en los días de frío o calor intenso. En Lima, la humedad y el salitre no dañan una batería cerrada, pero conviene mantener secos los conectores.
 
 ## Cargadores y carga rápida
 
@@ -39,7 +39,7 @@ Desconecta el cargador una vez completada la carga. No pasa nada por dejarlo con
 
 ## Almacenamiento prolongado
 
-Si vas a estar un mes o más sin usar la moto (vacaciones, invierno), deja la batería entre el 40 y el 60 % de carga, en un lugar fresco y seco, y revisa el nivel cada cuatro o seis semanas. Las baterías de litio se autodescargan muy lentamente, pero llegar al 0 % y permanecer ahí mucho tiempo puede dejarlas inservibles. Nunca guardes una batería completamente descargada.
+Si vas a estar un mes o más sin usar la moto (viajes, temporada de lluvias en la sierra), deja la batería entre el 40 y el 60 % de carga, en un lugar fresco y seco, y revisa el nivel cada cuatro o seis semanas. Las baterías de litio se autodescargan muy lentamente, pero llegar al 0 % y permanecer ahí mucho tiempo puede dejarlas inservibles. Nunca guardes una batería completamente descargada.
 
 ## Conducción y frenada regenerativa
 

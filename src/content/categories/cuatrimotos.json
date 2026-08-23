@@ -2,11 +2,11 @@
   "slug": "cuatrimotos",
   "name": "Cuatrimotos",
   "title": "Cuatrimotos eléctricas",
-  "description": "Cuatrimotos eléctricas para ocio, fincas y uso rural. Próximamente en Voltia: nuevos modelos con tracción eléctrica silenciosa y sin mantenimiento.",
+  "description": "Cuatrimotos eléctricas para ocio, chacras y uso rural. Próximamente en Raiden: nuevos modelos con tracción eléctrica silenciosa y sin mantenimiento.",
   "tagline": "Cuatro ruedas, cero emisiones",
   "image": {
     "src": "~/assets/categories/cuatrimotos.svg",
-    "alt": "Cuatrimotos eléctricas Voltia",
+    "alt": "Cuatrimotos eléctricas Raiden",
     "width": 1200,
     "height": 800
   },

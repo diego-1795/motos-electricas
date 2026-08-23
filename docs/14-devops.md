@@ -1,6 +1,6 @@
 # 14 — DevOps
 
-Define cómo se desarrolla, integra y despliega Voltia. El principio es el mismo que en [01-architecture](./01-architecture.md): todo vive en el repositorio (configuración, cabeceras, contenido), y el proveedor de hosting es intercambiable. Despliegue en detalle en [19-deployment](./19-deployment.md); hosting en [13-cloudflare](./13-cloudflare.md).
+Define cómo se desarrolla, integra y despliega Raiden. El principio es el mismo que en [01-architecture](./01-architecture.md): todo vive en el repositorio (configuración, cabeceras, contenido), y el proveedor de hosting es intercambiable. Despliegue en detalle en [19-deployment](./19-deployment.md); hosting en [13-cloudflare](./13-cloudflare.md).
 
 ## 1. Flujo git
 
@@ -32,7 +32,7 @@ perf(images): limitar widths a 4 por imagen de producto
 ci: cachear node_modules en el job de build
 ```
 
-`BREAKING CHANGE:` en el pie solo para cambios de esquema de contenido o de clave de localStorage (`voltia:cart:v1` → `v2`).
+`BREAKING CHANGE:` en el pie solo para cambios de esquema de contenido o de clave de localStorage (`raiden:cart:v1` → `v2`).
 
 ### Plantilla de PR (`.github/pull_request_template.md`)
 
@@ -74,8 +74,8 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 env:
-  PUBLIC_SITE_URL: https://ci.voltia.invalid
-  PUBLIC_WHATSAPP_NUMBER: "34600000000"
+  PUBLIC_SITE_URL: https://ci.raiden.invalid
+  PUBLIC_WHATSAPP_NUMBER: "51987654321"
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -140,8 +140,8 @@ El despliegue no lo hace Actions: Cloudflare Pages construye desde el push a `ma
 | Entorno | Origen | URL | WhatsApp | Analítica | Indexable |
 |---|---|---|---|---|---|
 | Local | `npm run dev` | `http://localhost:4321` | Número de pruebas en `.env` | `console` | No |
-| Preview | Rama `feat/*`, `fix/*`, `content/*` | `https://<rama>.voltia.pages.dev` | Número de pruebas | `console` | No (`noindex`) |
-| Producción | `main` | `https://voltia.es` | Número real | `cloudflare` | Sí |
+| Preview | Rama `feat/*`, `fix/*`, `content/*` | `https://<rama>.raiden.pages.dev` | Número de pruebas | `console` | No (`noindex`) |
+| Producción | `main` | `https://raiden.pe` | Número real | `cloudflare` | Sí |
 
 `.env.example` versionado con todas las `PUBLIC_*` documentadas; `.env` en `.gitignore`.
 
@@ -179,7 +179,7 @@ El formato se verifica en CI con `npx prettier --check .` dentro del job `check`
 
 ## 8. Observabilidad mínima
 
-- Disponibilidad: un monitor HTTP externo gratuito (UptimeRobot o similar) contra `https://voltia.es/` y `/motos-electricas` cada 5 min, alerta por correo.
+- Disponibilidad: un monitor HTTP externo gratuito (UptimeRobot o similar) contra `https://raiden.pe/` y `/motos-electricas` cada 5 min, alerta por correo.
 - Rendimiento real: Cloudflare Web Analytics (Core Web Vitals RUM) y Search Console para errores de rastreo.
 - Errores de cliente: no se instala Sentry en MVP. `AnalyticsService` expone `trackError` con adaptador `noop`; se conecta a un servicio cuando haya backend.
 - Builds: notificaciones de fallo de Cloudflare Pages y de Actions al correo del Tech Lead.
@@ -195,7 +195,7 @@ El formato se verifica en CI con `npx prettier --check .` dentro del job `check`
 
 ### Incidencia (sitio caído o flujo de WhatsApp roto)
 
-1. Confirmar con el monitor externo y con `curl -I https://voltia.es` desde otra red.
+1. Confirmar con el monitor externo y con `curl -I https://raiden.pe` desde otra red.
 2. Clasificar: DNS/TLS (panel Cloudflare), build (último deploy), aplicación (E2E contra producción con `PLAYWRIGHT_BASE_URL`).
 3. Si el último deploy es sospechoso: rollback (runbook anterior).
 4. Si es DNS/TLS: revisar registros y modo SSL "Full (strict)"; no tocar reglas fuera del repositorio.

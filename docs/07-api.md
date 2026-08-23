@@ -35,9 +35,9 @@ El `slug` del fichero debe coincidir con el campo `slug`; el build falla en caso
 | `status` | `draft` \| `published` \| `archived` | Sí | Solo `published` genera página |
 | `summary` | string ≤ 200 | Sí | Tarjeta y meta description por defecto |
 | `description` | string Markdown | No | |
-| `licence` | `none` \| `AM` \| `A1` \| `A2` \| `A` \| `B` | Sí | Carnet mínimo |
+| `license` | `sin-licencia` \| `B-I` \| `B-IIa` \| `B-IIb` \| `B-IIc` | Sí | Licencia MTC mínima |
 | `priceFromCents` | integer | No | Si existe, debe coincidir con el mínimo de variantes |
-| `currency` | `EUR` | Sí | |
+| `currency` | `PEN` | Sí | |
 | `heroImage` | string | Sí | Relativa a `src/assets/products/` |
 | `gallery` | string[] | No | Máx. 8 |
 | `variants` | Variant[] | Sí (≥ 1) | Ver tabla |
@@ -69,7 +69,7 @@ Color: `id`, `name`, `hex` (`#RRGGBB`), `image?`.
 | `blog` | `cover` | string | Sí |
 | `blog` | `publishedAt` | fecha ISO | Sí |
 | `blog` | `tags` | string[] | No |
-| `blog` | `author` | string | No (por defecto `Voltia`) |
+| `blog` | `author` | string | No (por defecto `Raiden`) |
 | `blog` | `draft` | boolean | No |
 | `faqs` | `question` | string | Sí |
 | `faqs` | `answer` | string Markdown | Sí |
@@ -105,7 +105,7 @@ Respuesta de lista:
 {
   "data": [
     { "slug": "odin-1-0", "name": "ODIN 1.0", "categorySlug": "motos-electricas-urbanas",
-      "priceFromCents": 449900, "currency": "EUR", "licence": "A1",
+      "priceFromCents": 1799600, "currency": "PEN", "licence": "B-IIa",
       "heroImage": "https://.../products/odin-1-0/hero.jpg", "useCases": ["ciudad", "interurbano"] }
   ],
   "page": { "cursor": "eyJpZCI6Ii4uLiJ9", "nextCursor": null, "limit": 24, "total": 37 }
@@ -116,10 +116,10 @@ Respuesta de lista:
 
 ```json
 {
-  "customer": { "name": "Laura Pérez", "phone": "+34 600 000 000", "email": "laura@example.com", "city": "Valencia", "consent": true },
+  "customer": { "name": "Laura Pérez", "phone": "+51 987 654 321", "email": "laura@example.com", "city": "Arequipa", "consent": true },
   "items": [
     { "productSlug": "odin-1-0", "variantCode": "72v-50ah", "colorCode": "negro", "quantity": 1 },
-    { "accessorySlug": "casco-voltia", "quantity": 1 }
+    { "accessorySlug": "casco-raiden", "quantity": 1 }
   ],
   "notes": "¿Tenéis financiación?",
   "sourcePath": "/carrito"
@@ -130,7 +130,7 @@ Response `201`:
 
 ```json
 { "data": { "id": "0d2c…", "publicRef": "7F3A9C1E", "status": "new", "totalCents": 579800,
-            "currency": "EUR", "whatsappUrl": "https://wa.me/34600000000?text=Hola%20%F0%9F%91%8B…" } }
+            "currency": "PEN", "whatsappUrl": "https://wa.me/51987654321?text=Hola%20%F0%9F%91%8B…" } }
 ```
 
 El servidor recalcula `totalCents` con precios de base de datos; ignora cualquier precio enviado por el cliente.

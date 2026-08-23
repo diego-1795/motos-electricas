@@ -1,8 +1,8 @@
-# Documentación — Voltia
+# Documentación — Raiden
 
 Showroom digital de movilidad eléctrica. Plataforma web premium de motos eléctricas (scooters, motos urbanas, bicimotos, trimotos, vehículos de carga, cuatrimotos y accesorios) construida con Astro 7 en modo estático, islas Preact y solicitud de pedido por WhatsApp. Sin pagos online. MVP de coste cero, arquitectura agnóstica del proveedor.
 
-> "Voltia" es un nombre provisional pendiente de decisión del cliente (ver [ADR-012](./21-decisions.md)).
+> "Raiden" es un nombre provisional pendiente de decisión del cliente (ver [ADR-012](./21-decisions.md)).
 
 ## Flujo de negocio
 
@@ -14,7 +14,7 @@ DESCUBRIMIENTO → PRODUCTO → COMPARAR → CONFIGURAR → CARRITO → SOLICITU
 
 | Nº | Documento | Qué responde |
 |----|-----------|--------------|
-| 00 | [Visión de producto](./00-product-overview.md) | Qué es Voltia, público, catálogo, alcance MVP, KPIs |
+| 00 | [Visión de producto](./00-product-overview.md) | Qué es Raiden, público, catálogo, alcance MVP, KPIs |
 | 01 | [Arquitectura](./01-architecture.md) | Capas, estructura de `src/`, islas, repositorios, portabilidad |
 | 02 | [Design System](./02-design-system.md) | Tokens CSS (color, tipografía, espaciado, radios, sombras), componentes |
 | 03 | [UX](./03-ux.md) | Navegación, wireframes de páginas clave, microinteracciones, carrito → WhatsApp |
@@ -68,7 +68,7 @@ Roles del equipo con responsabilidades, límites y criterios de aceptación. El 
 |-------|-------|
 | Framework | Astro ^7.2 (`output: 'static'`, `trailingSlash: 'never'`) |
 | UI interactiva | Preact ^10.29 (`@astrojs/preact`, `compat: false`) |
-| Estado | nanostores ^1.5 + `@nanostores/persistent` (`voltia:cart:v1`) |
+| Estado | nanostores ^1.5 + `@nanostores/persistent` (`raiden:cart:v1`) |
 | SEO | `@astrojs/sitemap` (excluye `/carrito` y `/comparar`) |
 | Tests | Vitest ^4, Playwright ^1.62 |
 | Node | >= 22.12 |

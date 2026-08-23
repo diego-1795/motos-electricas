@@ -1,14 +1,16 @@
-# 00 — Visión de producto: Voltia
+# 00 — Visión de producto: Raiden
 
-> "Voltia" es un nombre provisional pendiente de decisión del cliente. Todas las referencias de marca se centralizan en `src/config/site.ts` para que el cambio de nombre sea un commit de una línea.
+> "Raiden" es un nombre provisional pendiente de decisión del cliente. Todas las referencias de marca se centralizan en `src/config/site.ts` para que el cambio de nombre sea un commit de una línea.
 
 ## 1. Visión
 
-Voltia es un **showroom digital de movilidad eléctrica**: una web premium, rápida y mobile-first para descubrir, comparar y configurar motos eléctricas, y convertir esa intención en una **solicitud de pedido por WhatsApp** que cierra el equipo de ventas. No es una tienda con pasarela de pago; es el escaparate y el embudo previo a la venta asistida.
+Raiden es un **showroom digital de movilidad eléctrica**: una web premium, rápida y mobile-first para descubrir, comparar y configurar motos eléctricas, y convertir esa intención en una **solicitud de pedido por WhatsApp** que cierra el equipo de ventas. No es una tienda con pasarela de pago; es el escaparate y el embudo previo a la venta asistida.
+
+**Mercado: Perú.** Precios en soles (`PEN`, formato `S/ 4,999`, IGV incluido), locale `es-PE`, licencias de conducir MTC clase B (B-I, B-IIa, B-IIb, B-IIc), WhatsApp con prefijo `+51` y envío a todo el Perú (Lima y provincias). Ver [ADR-014](./21-decisions.md).
 
 ## 2. Propuesta de valor
 
-| Para quién | Qué obtiene | Por qué Voltia y no otro |
+| Para quién | Qué obtiene | Por qué Raiden y no otro |
 |---|---|---|
 | Comprador particular urbano | Catálogo claro, fichas con especificaciones reales (autonomía, potencia, batería), comparador y buscador guiado | Decide en minutos desde el móvil sin registrarse ni pagar online |
 | Negocio de reparto / flota | Vehículos de carga, trimotos y cuatrimotos con datos de carga útil y autonomía | Solicitud de pedido con varias unidades y accesorios en un solo mensaje |
@@ -47,7 +49,7 @@ Cada producto tiene **variantes** (p. ej. batería 72V 30Ah / 72V 50Ah), **color
 | 7. WhatsApp | Botón "Enviar pedido por WhatsApp" | Abre `https://wa.me/<número>?text=<mensaje URL-encoded>` con el mensaje autogenerado | `whatsapp_click` |
 | 8. Ventas | Fuera de la web | El equipo confirma disponibilidad, condiciones, entrega y cobro por sus canales | — |
 
-Alternativa al paso 1–2: el buscador **"Encuentra tu moto"** (`/encuentra-tu-moto`) hace 4–5 preguntas (uso, distancia diaria, presupuesto, carnet, necesidad de carga) y ordena el catálogo por puntuación de compatibilidad (`finder_complete`). El detalle del mensaje y del enlace está en [16-whatsapp-commerce](./16-whatsapp-commerce.md); la UX paso a paso en [03-ux](./03-ux.md).
+Alternativa al paso 1–2: el buscador **"Encuentra tu moto"** (`/encuentra-tu-moto`) hace 4–5 preguntas (uso, distancia diaria, presupuesto, licencia, necesidad de carga) y ordena el catálogo por puntuación de compatibilidad (`finder_complete`). El detalle del mensaje y del enlace está en [16-whatsapp-commerce](./16-whatsapp-commerce.md); la UX paso a paso en [03-ux](./03-ux.md).
 
 ## 6. Alcance del MVP
 
@@ -64,7 +66,7 @@ Alternativa al paso 1–2: el buscador **"Encuentra tu moto"** (`/encuentra-tu-m
 - Pagos online, cuentas de usuario, favoritos sincronizados, reseñas enviadas por usuarios.
 - Panel de administración (futuro con Supabase Auth + RLS; ver [17-admin-panel](./17-admin-panel.md)).
 - Stock en tiempo real, financiación, reserva de citas, chat en vivo.
-- Multi-idioma y multi-moneda (locale fijo `es-ES`, moneda `EUR`).
+- Multi-idioma y multi-moneda (locale fijo `es-PE`, moneda `PEN`; mercado: Perú).
 
 ## 7. KPIs
 

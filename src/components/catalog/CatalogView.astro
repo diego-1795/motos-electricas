@@ -18,7 +18,7 @@ interface Props {
 }
 const { products, lockedType, categoryNames } = Astro.props;
 const sortKeys = Object.keys(sortLabels) as SortKey[];
-const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount)) / 100 / 500) * 500;
+const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount)) / 100 / 1000) * 1000;
 ---
 
 <div class="catalog" data-catalog>
@@ -42,8 +42,8 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
           )
         }
         <div class="field">
-          <label class="label" for="f-precio">Precio máximo: <output for="f-precio" data-out="precio">{maxPrice} €</output></label>
-          <input id="f-precio" name="precio" type="range" min="500" max={maxPrice} step="100" value={maxPrice} />
+          <label class="label" for="f-precio">Precio máximo: <output for="f-precio" data-out="precio">S/ {maxPrice}</output></label>
+          <input id="f-precio" name="precio" type="range" min="1000" max={maxPrice} step="500" value={maxPrice} />
         </div>
         <div class="field">
           <label class="label" for="f-autonomia">Autonomía mínima: <output for="f-autonomia" data-out="autonomia">0 km</output></label>
@@ -141,7 +141,7 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
     const items = Array.from(grid.querySelectorAll<HTMLElement>('[data-item]'));
     const empty = root.querySelector<HTMLElement>('[data-empty]')!;
     const counts = root.querySelectorAll<HTMLElement>('[data-count], [data-count-inline]');
-    const units: Record<string, string> = { precio: ' €', autonomia: ' km', velocidad: ' km/h', potencia: ' kW', bateria: ' kWh' };
+    const units: Record<string, string> = { autonomia: ' km', velocidad: ' km/h', potencia: ' kW', bateria: ' kWh' };
 
     const num = (el: HTMLElement, k: string) => Number(el.dataset[k] ?? 0);
 
@@ -204,7 +204,7 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
       form.querySelectorAll<HTMLOutputElement>('[data-out]').forEach((o) => {
         const k = o.dataset.out!;
         const input = form.elements.namedItem(k) as HTMLInputElement | null;
-        if (input) o.textContent = `${input.value}${units[k] ?? ''}`;
+        if (input) o.textContent = k === 'precio' ? `S/ ${input.value}` : `${input.value}${units[k] ?? ''}`;
       });
 
       // URL compartible (sin recargar)

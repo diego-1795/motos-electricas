@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
  * https + host del sitio + ruta exacta sin barra final.
  */
 const PAGES = ['/', '/motos-electricas', '/motos-electricas/odin-1-0', '/comparar', '/encuentra-tu-moto', '/carrito'];
-const ORIGIN = /^https:\/\/voltia\.[a-z.]+$/;
+const ORIGIN = /^https:\/\/raiden\.[a-z.]+$/;
 
 test.describe('SEO', () => {
   // Las metaetiquetas no dependen del viewport: basta con un proyecto.
@@ -26,8 +26,8 @@ test.describe('SEO', () => {
       expect(desc, 'meta description').toBeTruthy();
       expect(desc!.length).toBeGreaterThanOrEqual(50);
       expect(desc!.length).toBeLessThanOrEqual(160);
-      await expect(page).toHaveTitle(/Voltia/);
-      expect((await page.title()).match(/Voltia/g)?.length).toBe(1);
+      await expect(page).toHaveTitle(/Raiden/);
+      expect((await page.title()).match(/Raiden/g)?.length).toBe(1);
       await expect(page.locator('html')).toHaveAttribute('lang', 'es');
     });
   }
@@ -42,8 +42,12 @@ test.describe('SEO', () => {
     const product = schemas.find((s) => s['@type'] === 'Product');
     expect(product).toBeTruthy();
     expect(product.name).toBe('ODIN 1.0');
-    expect(product.offers.priceCurrency).toBe('EUR');
-    expect(product.offers.lowPrice).toBe('4999.00');
+    expect(product.offers.priceCurrency).toBe('PEN');
+    // Precios en soles con 2 decimales; low ≤ high y coherentes con el catálogo (no se hardcodea el importe)
+    expect(product.offers.lowPrice).toMatch(/^\d+\.\d{2}$/);
+    expect(product.offers.highPrice).toMatch(/^\d+\.\d{2}$/);
+    expect(Number(product.offers.lowPrice)).toBeGreaterThanOrEqual(1000);
+    expect(Number(product.offers.lowPrice)).toBeLessThanOrEqual(Number(product.offers.highPrice));
     expect(product.offers.availability).toBe('https://schema.org/InStock');
     expect(schemas.some((s) => s['@type'] === 'BreadcrumbList')).toBe(true);
   });

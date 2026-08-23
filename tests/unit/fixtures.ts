@@ -1,5 +1,5 @@
 import type { Cart, CartItem, Product, ProductVariant, Specs } from '../../src/domain/types';
-import { eur } from '../../src/domain/money';
+import { pen } from '../../src/domain/money';
 
 /** Fixtures sintéticas: sin datos reales. */
 
@@ -11,7 +11,7 @@ export const baseSpecs = (over: Partial<Specs> = {}): Specs => ({
   weightKg: 120,
   maxLoadKg: 180,
   seats: 2,
-  license: 'A1',
+  license: 'B-IIb',
   dimensionsMm: [2000, 760, 1100],
   brakes: 'Disco',
   suspension: 'Telescópica',
@@ -27,7 +27,7 @@ export const baseSpecs = (over: Partial<Specs> = {}): Specs => ({
 export const variant = (over: Partial<ProductVariant> = {}): ProductVariant => ({
   id: 'v1',
   name: 'Batería 72V 40Ah',
-  price: eur(499900),
+  price: pen(499900),
   availability: 'en-stock',
   ...over,
 });
@@ -41,7 +41,7 @@ export function makeProduct(over: Partial<Product> = {}): Product {
     claim: 'Claim',
     description: 'Descripción de prueba',
     category: 'motos-electricas',
-    brand: 'Voltia',
+    brand: 'Raiden',
     images: [{ src: '~/assets/test.svg', alt: 'test', width: 800, height: 500 }],
     specs: baseSpecs(),
     variants: [variant()],
@@ -66,7 +66,7 @@ export const odinItem = (over: Partial<CartItem> = {}): Omit<CartItem, 'key'> =>
   variantName: 'Batería 72V 50Ah',
   colorId: 'negro-mate',
   colorName: 'Negro mate',
-  unitPrice: eur(549900),
+  unitPrice: pen(549900),
   quantity: 1,
   ...over,
 });
@@ -75,7 +75,7 @@ export const accessoryItem = (slug: string, name: string, amount: number, quanti
   kind: 'accessory',
   slug,
   name,
-  unitPrice: eur(amount),
+  unitPrice: pen(amount),
   quantity,
 });
 

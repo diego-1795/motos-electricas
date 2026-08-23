@@ -4,13 +4,13 @@
   "name": "TRAIL X",
   "subtitle": "Moto eléctrica trail de ocio",
   "claim": "Asfalto, pista y camino: una trail eléctrica sin límites",
-  "description": "La TRAIL X es la trail eléctrica de Voltia para disfrutar fuera del asfalto: 6 kW, suspensiones de largo recorrido, 19/17 pulgadas y protección IP67. Silenciosa para el monte y homologada para ciudad.",
+  "description": "La TRAIL X es la trail eléctrica de Raiden para disfrutar fuera del asfalto: 6 kW, suspensiones de largo recorrido, 19/17 pulgadas y protección IP67. Silenciosa para el monte y homologada para ciudad.",
   "category": "motos-electricas",
-  "brand": "Voltia",
+  "brand": "Raiden",
   "images": [
     {
       "src": "~/assets/products/trail-x-1.svg",
-      "alt": "TRAIL X, moto eléctrica trail de ocio Voltia, vista lateral",
+      "alt": "TRAIL X, moto eléctrica trail de ocio Raiden, vista lateral",
       "width": 1600,
       "height": 1000
     },
@@ -47,7 +47,7 @@
     "weightKg": 128,
     "maxLoadKg": 170,
     "seats": 2,
-    "license": "A1",
+    "license": "B-IIb",
     "dimensionsMm": [
       2100,
       820,
@@ -75,8 +75,8 @@
       "name": "Batería 72V 45Ah",
       "description": "72V 45Ah · 110 km",
       "price": {
-        "amount": 579900,
-        "currency": "EUR"
+        "amount": 1349000,
+        "currency": "PEN"
       },
       "availability": "en-stock",
       "sku": "VT-TRX-7245",
@@ -87,8 +87,8 @@
       "name": "Batería 72V 60Ah",
       "description": "72V 60Ah · 145 km",
       "price": {
-        "amount": 639900,
-        "currency": "EUR"
+        "amount": 1499000,
+        "currency": "PEN"
       },
       "availability": "bajo-pedido",
       "sku": "VT-TRX-7260",
@@ -129,7 +129,7 @@
   ],
   "accessories": [
     "cargador-rapido-10a",
-    "casco-integral-voltia",
+    "casco-integral-raiden",
     "candado-disco-alarma",
     "funda-exterior-impermeable"
   ],
@@ -146,7 +146,7 @@
     "Suspensiones de 200 mm de recorrido",
     "Modo Off-road con control de tracción",
     "Protección IP67 contra agua y barro",
-    "Carnet A1 o B con 3 años"
+    "Licencia B-IIb (motocicletas)"
   ],
   "technology": [
     {
@@ -180,36 +180,36 @@
       "answer": "La autonomía declarada es de 110 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 77 y 94 km. La variante Batería 72V 60Ah amplía la autonomía."
     },
     {
-      "question": "¿Qué carnet necesito para conducir el TRAIL X?",
-      "answer": "Puedes conducirla con carnet A1, A2, A o con carnet B con más de tres años de antigüedad, ya que es equivalente a una 125 cc (potencia igual o inferior a 11 kW)."
+      "question": "¿Qué licencia necesito para conducir el TRAIL X?",
+      "answer": "La TRAIL X es una motocicleta que alcanza 90 km/h: según la normativa vigente del MTC requiere licencia clase B categoría B-IIb (motocicletas) o superior. Necesita placa (inscripción en SUNARP), SOAT vigente y casco homologado. Confirma tu caso con nuestro asesor."
     },
     {
       "question": "¿Qué garantía tiene?",
-      "answer": "El TRAIL X tiene 2 años de garantía en vehículo y 12 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+      "answer": "El TRAIL X tiene 2 años de garantía en vehículo y 12 meses en batería, con servicio técnico propio en Lima y repuestos en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
     },
     {
       "question": "¿Cuál es el plazo de entrega?",
-      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+      "answer": "Las unidades en stock salen de nuestro almacén en Lima en 24-48 h hábiles y llegan montadas y revisadas en 3-7 días hábiles en Lima Metropolitana y en 7-15 días hábiles en provincias (plazos referenciales, vía courier o agencia según destino). Los productos bajo pedido tienen un plazo referencial de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
     }
   ],
   "reviews": [
     {
       "author": "Roberto S.",
       "rating": 5,
-      "text": "La uso para ir a la finca por caminos y luego por carretera. No hace ruido, no asusta a los animales y aguanta el barro.",
+      "text": "La uso para ir a la chacra por trochas y luego por carretera. No hace ruido, no asusta a los animales y aguanta el barro.",
       "date": "2026-05-29"
     },
     {
-      "author": "Aitor Z.",
+      "author": "Renzo Q.",
       "rating": 4,
-      "text": "Divertidísima en pista. En autovía se queda algo justa de velocidad, pero no es para eso.",
+      "text": "Divertidísima en trocha. En carretera se queda algo justa de velocidad, pero no es para eso.",
       "date": "2026-07-10"
     }
   ],
   "featured": 90,
   "publishedAt": "2026-04-02T09:00:00.000Z",
   "seo": {
-    "title": "TRAIL X | Moto eléctrica trail de ocio | Voltia",
-    "description": "TRAIL X: moto eléctrica trail de 6 kW, 90 km/h, suspensiones de largo recorrido e IP67. Carnet A1 o B. Desde 5.799 € con 2 años de garantía."
+    "title": "TRAIL X | Moto eléctrica trail de ocio | Raiden",
+    "description": "TRAIL X: moto eléctrica trail de 6 kW, 90 km/h, suspensiones de largo recorrido e IP67. Licencia B-IIb. Desde S/ 13,490 con 2 años de garantía."
   }
 }

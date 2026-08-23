@@ -17,10 +17,10 @@ interface Props {
 }
 
 const BUDGETS = [
-  { label: 'Hasta 2.000 €', value: 200000 },
-  { label: 'Hasta 3.500 €', value: 350000 },
-  { label: 'Hasta 5.000 €', value: 500000 },
-  { label: 'Hasta 8.000 €', value: 800000 },
+  { label: 'Hasta S/ 3,000', value: 300000 },
+  { label: 'Hasta S/ 6,000', value: 600000 },
+  { label: 'Hasta S/ 10,000', value: 1000000 },
+  { label: 'Hasta S/ 15,000', value: 1500000 },
   { label: 'Sin límite', value: undefined },
 ];
 const RANGES = [
@@ -30,9 +30,9 @@ const RANGES = [
   { label: 'Más de 150 km', value: 150 },
 ];
 const SPEEDS = [
-  { label: '25 km/h (sin carnet)', value: 25 },
-  { label: '45 km/h (ciclomotor)', value: 45 },
-  { label: '80 km/h (125cc eq.)', value: 80 },
+  { label: '25 km/h (sin licencia)', value: 25 },
+  { label: '45 km/h (urbana)', value: 45 },
+  { label: '80 km/h (125 cc eq.)', value: 80 },
   { label: '100+ km/h', value: 100 },
 ];
 

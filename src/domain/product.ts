@@ -1,5 +1,5 @@
 import type { Availability, Product, ProductColor, ProductVariant, Specs } from './types';
-import { add, eur } from './money';
+import { add, pen } from './money';
 import type { Money } from './types';
 
 export function defaultVariant(p: Product): ProductVariant {
@@ -40,15 +40,15 @@ export const availabilityLabel: Record<Availability, string> = {
 };
 
 export const licenseLabel = {
-  'sin-carnet': 'Sin carnet',
-  AM: 'Carnet AM',
-  A1: 'Carnet A1',
-  A2: 'Carnet A2',
-  B: 'Carnet B',
+  'sin-licencia': 'Sin licencia',
+  'B-I': 'Licencia B-I',
+  'B-IIa': 'Licencia B-IIa',
+  'B-IIb': 'Licencia B-IIb',
+  'B-IIc': 'Licencia B-IIc',
 } as const;
 
 export function kw(powerW: number): string {
-  return `${(powerW / 1000).toLocaleString('es-ES', { maximumFractionDigits: 1 })} kW`;
+  return `${(powerW / 1000).toLocaleString('es-PE', { maximumFractionDigits: 1 })} kW`;
 }
 
 export function batteryLabel(s: Specs): string {
@@ -60,4 +60,4 @@ export function chargeLabel(s: Specs): string {
   return a === b ? `${a} h` : `${a}-${b} h`;
 }
 
-export const zeroMoney = eur(0);
+export const zeroMoney = pen(0);

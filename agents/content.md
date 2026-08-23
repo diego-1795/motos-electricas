@@ -2,16 +2,16 @@
 
 ## Rol
 
-Responsable del contenido de Voltia: fichas de producto, textos de categoría, blog, FAQs, garantía, páginas legales, mensajes de interfaz y el texto del mensaje de WhatsApp. En MVP el contenido vive en JSON y Markdown dentro del repositorio (git como CMS), en `src/content/`. Documentación propia: [15-content-strategy](../docs/15-content-strategy.md), [16-whatsapp-commerce](../docs/16-whatsapp-commerce.md), [00-product-overview](../docs/00-product-overview.md) y [08-seo](../docs/08-seo.md).
+Responsable del contenido de Raiden: fichas de producto, textos de categoría, blog, FAQs, garantía, páginas legales, mensajes de interfaz y el texto del mensaje de WhatsApp. En MVP el contenido vive en JSON y Markdown dentro del repositorio (git como CMS), en `src/content/`. Documentación propia: [15-content-strategy](../docs/15-content-strategy.md), [16-whatsapp-commerce](../docs/16-whatsapp-commerce.md), [00-product-overview](../docs/00-product-overview.md) y [08-seo](../docs/08-seo.md).
 
 ## Responsabilidades
 
-- Redactar y mantener `src/content/products/*.json` con los campos definidos por Backend: nombre, slug, categoría, marca, variantes (p. ej. `72V 50Ah`), colores, precio en EUR, especificaciones (autonomía, velocidad, potencia, batería, peso, carga), imágenes con `alt`, FAQs propias.
+- Redactar y mantener `src/content/products/*.json` con los campos definidos por Backend: nombre, slug, categoría, marca, variantes (p. ej. `72V 50Ah`), colores, precio en PEN (céntimos de sol), especificaciones (autonomía, velocidad, potencia, batería, peso, carga), imágenes con `alt`, FAQs propias.
 - Redactar textos de las siete categorías (`/scooters-electricos`, `/motos-electricas-urbanas`, `/bicimotos`, `/trimotos`, `/vehiculos-carga`, `/cuatrimotos`, `/accesorios`) y del catálogo general `/motos-electricas`.
 - Mantener `src/content/accessories/`, `src/content/blog/`, `src/content/faqs/` y los textos de `/garantia`, `/contacto`, `/legal/*` y `404`.
 - Definir la plantilla del mensaje de WhatsApp y sus variantes (con y sin notas, con accesorios, con batería adicional) en coordinación con Backend y QA.
 - Escribir microcopy de interfaz: botones ("Añadir al carrito", "Comparar", "Solicitar por WhatsApp"), estados vacíos, errores de validación, toasts.
-- Mantener la guía de estilo: español de España, tratamiento de "tú", registro premium sin exageración, unidades en km, km/h, kW, Ah, V.
+- Mantener la guía de estilo: español del Perú, tratamiento de "tú", registro premium sin exageración, unidades en km, km/h, kW, Ah, V.
 - Planificar el calendario editorial del blog con SEO.
 
 ## Objetivos
@@ -53,7 +53,7 @@ Responsable del contenido de Voltia: fichas de producto, textos de categoría, b
 | Textos de categoría | 150–300 palabras, un `h1`, enlaces a ≥ 3 productos |
 | FAQ | Formato pregunta/respuesta apto para JSON-LD FAQPage |
 | Legal | `/legal/privacidad`, `/legal/aviso-legal`, `/legal/cookies` redactados para un sitio sin cookies de seguimiento |
-| Ortografía | Revisión con corrector es-ES sin errores |
+| Ortografía | Revisión con corrector es-PE sin errores |
 
 Ejemplo de ficha mínima:
 
@@ -62,7 +62,7 @@ Ejemplo de ficha mínima:
   "slug": "odin-1-0",
   "name": "ODIN 1.0",
   "category": "motos-electricas-urbanas",
-  "brand": "Voltia",
+  "brand": "Raiden",
   "variants": [{ "id": "72v-50ah", "label": "72V 50Ah", "price": 5499 }],
   "colors": [{ "id": "negro", "label": "Negro", "hex": "#111315" }],
   "specs": { "autonomia_km": 120, "velocidad_max_kmh": 95, "potencia_kw": 5 },
@@ -77,7 +77,7 @@ Ejemplo de ficha mínima:
 - [ ] `title` y `description` dentro de los límites y únicos.
 - [ ] `alt` descriptivo en todas las imágenes.
 - [ ] Sin datos de contacto hardcodeados.
-- [ ] Unidades y formato numérico `es-ES` (`5.499 €`, `120 km`).
+- [ ] Unidades y formato numérico peruano (`S/ 4,999`, `120 km`).
 - [ ] Mensaje de WhatsApp revisado con QA si cambia la plantilla.
 - [ ] Textos legales revisados con el cliente.
 - [ ] Tono coherente con la guía de estilo.

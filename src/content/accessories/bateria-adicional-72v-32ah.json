@@ -4,12 +4,12 @@
   "name": "Batería adicional 72V 32Ah",
   "description": "Batería NMC extraíble de 72V 32Ah (2,3 kWh) con BMS inteligente y asa de transporte. Duplica tu autonomía o mantén una siempre cargada en casa.",
   "price": {
-    "amount": 59900,
-    "currency": "EUR"
+    "amount": 229000,
+    "currency": "PEN"
   },
   "image": {
     "src": "~/assets/accessories/bateria-adicional-72v-32ah.svg",
-    "alt": "Batería adicional 72V 32Ah Voltia",
+    "alt": "Batería adicional 72V 32Ah Raiden",
     "width": 800,
     "height": 800
   },

@@ -2,7 +2,7 @@
 
 ## Rol
 
-Garantiza la calidad funcional, de accesibilidad y de rendimiento de Voltia mediante pruebas automatizadas y revisión manual. Es propietario de la suite Vitest, de los tests Playwright, de la integración axe-core y de Lighthouse CI. Documentación propia: [11-testing](../docs/11-testing.md), con apoyo en [12-accessibility](../docs/12-accessibility.md) y [09-performance](../docs/09-performance.md).
+Garantiza la calidad funcional, de accesibilidad y de rendimiento de Raiden mediante pruebas automatizadas y revisión manual. Es propietario de la suite Vitest, de los tests Playwright, de la integración axe-core y de Lighthouse CI. Documentación propia: [11-testing](../docs/11-testing.md), con apoyo en [12-accessibility](../docs/12-accessibility.md) y [09-performance](../docs/09-performance.md).
 
 ## Responsabilidades
 
@@ -10,7 +10,7 @@ Garantiza la calidad funcional, de accesibilidad y de rendimiento de Voltia medi
 - Mantener tests E2E Playwright del flujo crítico: catálogo → filtro → producto → variante → carrito → cantidad → eliminar → enlace WhatsApp, en viewport móvil (360 × 640) y escritorio (1280 × 800).
 - Ejecutar axe-core en cada página del flujo E2E y en `/encuentra-tu-moto`, `/comparar`, `/faq`.
 - Configurar Lighthouse CI con presupuesto: LCP < 2,0 s, INP < 200 ms, CLS < 0,1, JS < 60 KB gz en `/motos-electricas/[slug]`.
-- Verificar la persistencia del carrito en `voltia:cart:v1` tras recarga y navegación.
+- Verificar la persistencia del carrito en `raiden:cart:v1` tras recarga y navegación.
 - Validar que el `href` del enlace WhatsApp es `https://wa.me/<número>?text=<mensaje codificado>` y que el mensaje decodificado coincide con el formato del brief.
 - Reportar defectos con pasos de reproducción, viewport, navegador y captura.
 
@@ -47,7 +47,7 @@ Garantiza la calidad funcional, de accesibilidad y de rendimiento de Voltia medi
 |---|---|
 | Añadir producto con variante 72V 50Ah y color Negro | Drawer muestra línea con variante, color y cantidad 1; evento `add_to_cart` emitido |
 | Incrementar cantidad a 3 y decrementar a 0 | La línea desaparece; total recalculado |
-| Recargar `/carrito` | Estado restaurado desde `voltia:cart:v1` |
+| Recargar `/carrito` | Estado restaurado desde `raiden:cart:v1` |
 | Pulsar "Solicitar por WhatsApp" | `href` apunta a `wa.me` con el número de `PUBLIC_WHATSAPP_NUMBER`; evento `purchase_request` y `whatsapp_click` |
 | Decodificar `text` | Contiene `Estoy interesado en realizar el siguiente pedido`, bloques por ítem y `Total estimado` |
 | Añadir 2 productos al comparador | `/comparar` muestra CompareTable con ambas columnas; evento `compare_add` |

@@ -1,6 +1,6 @@
 # 11 — Testing
 
-La lógica de negocio de Voltia (carrito, precios, mensaje de WhatsApp, scoring del finder, SEO) son funciones puras en `src/domain/`, `src/services/` y `src/lib/seo/`: se prueban de forma unitaria, rápida y sin DOM. El flujo crítico de negocio (catálogo → WhatsApp) se prueba extremo a extremo con Playwright en viewport móvil. Accesibilidad y rendimiento se verifican en CI con axe-core y Lighthouse CI. Ver [01-architecture](./01-architecture.md), [09-performance](./09-performance.md), [12-accessibility](./12-accessibility.md) y [14-devops](./14-devops.md).
+La lógica de negocio de Raiden (carrito, precios, mensaje de WhatsApp, scoring del finder, SEO) son funciones puras en `src/domain/`, `src/services/` y `src/lib/seo/`: se prueban de forma unitaria, rápida y sin DOM. El flujo crítico de negocio (catálogo → WhatsApp) se prueba extremo a extremo con Playwright en viewport móvil. Accesibilidad y rendimiento se verifican en CI con axe-core y Lighthouse CI. Ver [01-architecture](./01-architecture.md), [09-performance](./09-performance.md), [12-accessibility](./12-accessibility.md) y [14-devops](./14-devops.md).
 
 ## 1. Pirámide
 
@@ -19,11 +19,11 @@ Proporción objetivo: ~70 % unitario, ~20 % componente/contenido, ~10 % E2E.
 
 | Módulo | Casos obligatorios |
 |---|---|
-| `WhatsAppMessageBuilder` | Mensaje con 1 moto; moto + accesorios; varias cantidades; notas vacías/largas; total formateado `5.499 €`; URL `wa.me/<num>?text=` con `encodeURIComponent`; truncado a 1.800 caracteres; sin número hardcodeado (lee `SITE`) |
+| `WhatsAppMessageBuilder` | Mensaje con 1 moto; moto + accesorios; varias cantidades; notas vacías/largas; total formateado `S/ 21,996`; URL `wa.me/<num>?text=` con `encodeURIComponent`; truncado a 1.800 caracteres; sin número hardcodeado (lee `SITE`) |
 | Reducer del carrito (`CartService`) | `add` nuevo ítem; `add` del mismo ítem suma cantidad; `setQuantity` 0 elimina; máximo 10; `remove`; `clear`; variante/color distintos son ítems distintos; hidratación con estado inválido → carrito vacío; versión de esquema distinta → reinicio |
-| `pricing.ts` | Precio base de variante; suplemento de color; accesorios; total por cantidad; redondeo a céntimos; formato `es-ES` con separador de miles y `€`; precio nunca negativo |
+| `pricing.ts` | Precio base de variante; suplemento de color; accesorios; total por cantidad; redondeo a céntimos; formato `S/ 4,999` (coma de miles, punto decimal); precio nunca negativo |
 | Scoring del finder (`RecommendationService`) | Cada respuesta suma el peso esperado; empate → orden por precio ascendente; sin respuestas → lista por popularidad; nunca recomienda productos sin stock; devuelve 3 resultados máximo |
-| Builders SEO | `buildMeta`: canonical absoluta, title truncado a 60, description a 155, `noindex`; JSON-LD `Product` con `offers.priceCurrency = 'EUR'` y `availability` correcta según stock; `BreadcrumbList` con posiciones consecutivas; `FAQPage` vacío → no se emite; `Article` con fechas ISO |
+| Builders SEO | `buildMeta`: canonical absoluta, title truncado a 60, description a 155, `noindex`; JSON-LD `Product` con `offers.priceCurrency = 'PEN'` y `availability` correcta según stock; `BreadcrumbList` con posiciones consecutivas; `FAQPage` vacío → no se emite; `Article` con fechas ISO |
 | Validadores (`validation.ts`) | `sanitizeNotes` elimina control chars, recorta a 300, rechaza URLs; `quantity` fuera de rango; ids inexistentes; enums del finder; `PUBLIC_WHATSAPP_NUMBER` con formato inválido lanza error |
 | Comparación (`compare.ts`) | Máximo 4 productos; diferencias resaltadas; unidades homogéneas (km, kW, kg) |
 | Esquema del catálogo | Todos los JSON tienen `slug` único, `category` válida, al menos una variante con precio > 0, imágenes existentes en `src/assets/` |
@@ -42,13 +42,13 @@ describe('WhatsAppMessageBuilder', () => {
     expect(msg).toContain('🏍️ ODIN 1.0');
     expect(msg).toContain('Variante: 72V 50Ah');
     expect(msg).toContain('🪖 Casco');
-    expect(msg).toContain('💰 Total estimado: 5.499 €');
+    expect(msg).toContain('💰 Total estimado: S/ 21,996');
     expect(msg).not.toContain('Notas:');
   });
 
   it('genera una URL wa.me codificada y limitada', () => {
     const url = buildWhatsAppUrl(cartOdinWithHelmet, 'a'.repeat(5000));
-    expect(url.startsWith('https://wa.me/34600000000?text=')).toBe(true);
+    expect(url.startsWith('https://wa.me/51987654321?text=')).toBe(true);
     expect(url).not.toContain(' ');
     expect(decodeURIComponent(url.split('text=')[1]).length).toBeLessThanOrEqual(1800);
   });
@@ -80,8 +80,8 @@ Flujo crítico `tests/e2e/critical-flow.spec.ts`, paso a paso:
 7. Ir a `/carrito`; incrementar cantidad a 2 con QuantityStepper; total actualizado.
 8. Añadir accesorio "Casco" desde "Accesorios compatibles"; aparece como segunda línea.
 9. Eliminar la línea del casco; queda una línea.
-10. Escribir notas "Entrega en Madrid"; el botón "Enviar pedido por WhatsApp" tiene `href` que empieza por `https://wa.me/` y contiene `ODIN%201.0`, `Cantidad%3A%202` y `Entrega%20en%20Madrid`.
-11. Recargar la página; el carrito persiste (localStorage `voltia:cart:v1`).
+10. Escribir notas "Entrega en Lima"; el botón "Enviar pedido por WhatsApp" tiene `href` que empieza por `https://wa.me/` y contiene `ODIN%201.0`, `Cantidad%3A%202` y `Entrega%20en%20Lima`.
+11. Recargar la página; el carrito persiste (localStorage `raiden:cart:v1`).
 12. Vaciar el carrito; estado vacío con enlace al catálogo.
 
 Otros specs: `navigation.spec.ts` (menú móvil, breadcrumbs, 404), `compare.spec.ts` (añadir 2 productos, tabla, máximo 4), `finder.spec.ts` (4 preguntas → 3 resultados), `seo.spec.ts` (title, canonical, JSON-LD válido por plantilla).
@@ -155,7 +155,7 @@ Dependencias de desarrollo a añadir cuando se implemente: `@axe-core/playwright
 - `tests/fixtures/carts.ts`: `emptyCart`, `cartOdin`, `cartOdinWithHelmet`, `cartMaxQuantity`, `cartInvalidPersisted` (ids inexistentes, cantidad -1, versión antigua).
 - `tests/fixtures/finder-answers.json`: combinaciones de respuestas con el resultado esperado.
 - Los tests unitarios inyectan un `ProductRepository` en memoria construido a partir de las fixtures; nunca leen `src/content/` directamente salvo el test de esquema.
-- `PUBLIC_WHATSAPP_NUMBER=34600000000` y `PUBLIC_SITE_URL=https://voltia.test` en `vitest.setup.ts` y en el job de CI.
+- `PUBLIC_WHATSAPP_NUMBER=51987654321` y `PUBLIC_SITE_URL=https://raiden.test` en `vitest.setup.ts` y en el job de CI.
 
 ## 10. CI en GitHub Actions
 

@@ -13,7 +13,7 @@ import {
   setNotes,
   setQuantity,
 } from '../../src/domain/cart';
-import { eur } from '../../src/domain/money';
+import { pen } from '../../src/domain/money';
 import { accessoryItem, odinItem } from './fixtures';
 
 const MAX = 10;
@@ -129,14 +129,14 @@ describe('totales', () => {
   const cart = addItem(addItem(emptyCart(), odinItem({ quantity: 2 }), MAX), accessoryItem('casco', 'Casco', 12900, 3), MAX);
 
   it('lineTotal = precio × cantidad', () => {
-    expect(lineTotal(cart.items[0]!)).toEqual(eur(1099800));
+    expect(lineTotal(cart.items[0]!)).toEqual(pen(1099800));
   });
   it('cartTotal suma líneas; cartCount suma unidades', () => {
-    expect(cartTotal(cart)).toEqual(eur(1099800 + 38700));
+    expect(cartTotal(cart)).toEqual(pen(1099800 + 38700));
     expect(cartCount(cart)).toBe(5);
   });
   it('carrito vacío → 0', () => {
-    expect(cartTotal(emptyCart())).toEqual(eur(0));
+    expect(cartTotal(emptyCart())).toEqual(pen(0));
     expect(cartCount(emptyCart())).toBe(0);
   });
 });
@@ -160,7 +160,7 @@ describe('sanitizeCart', () => {
         { slug: 'a', name: 'A', kind: 'product' }, // sin unitPrice
         { slug: 'a', name: 'A', kind: 'gift', unitPrice: { amount: 1 } },
         { slug: 'a', name: 'A', kind: 'product', unitPrice: { amount: '1' } },
-        { slug: 'ok', name: 'OK', kind: 'accessory', unitPrice: { amount: 100, currency: 'EUR' }, quantity: 2 },
+        { slug: 'ok', name: 'OK', kind: 'accessory', unitPrice: { amount: 100, currency: 'PEN' }, quantity: 2 },
       ],
     };
     const c = sanitizeCart(raw, MAX);

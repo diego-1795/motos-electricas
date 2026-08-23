@@ -2,11 +2,11 @@
   "slug": "scooters-electricos",
   "name": "Scooters",
   "title": "Scooters eléctricos para ciudad",
-  "description": "Scooters eléctricos homologados para moverte por la ciudad: sin carnet, AM o A1, hasta 80 km/h y baterías extraíbles. Envío a toda España.",
+  "description": "Scooters eléctricos homologados para moverte por la ciudad: de 45 a 80 km/h, licencia clase B (B-IIa o B-IIb) y baterías extraíbles. Desde S/ 4,990. Envío a todo el Perú.",
   "tagline": "Tu ciudad, sin ruido ni gasolina",
   "image": {
     "src": "~/assets/categories/scooters-electricos.svg",
-    "alt": "Scooters eléctricos para ciudad Voltia",
+    "alt": "Scooters eléctricos para ciudad Raiden",
     "width": 1200,
     "height": 800
   },

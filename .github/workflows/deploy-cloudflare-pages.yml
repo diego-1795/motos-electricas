@@ -1,6 +1,6 @@
 # Despliegue OPCIONAL a Cloudflare Pages desde GitHub Actions.
 #
-# Por defecto Voltia se despliega con la integración Git de Cloudflare Pages (zero-config:
+# Por defecto Raiden se despliega con la integración Git de Cloudflare Pages (zero-config:
 # push a main → build en Cloudflare → producción; ver docs/13-cloudflare.md y docs/19-deployment.md).
 # Este workflow es la alternativa "Direct Upload" para cuando se quiera desplegar SOLO lo que CI ha
 # validado, o si se desactiva el build automático de Cloudflare. Se lanza a mano (workflow_dispatch).
@@ -59,4 +59,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name voltia --branch ${{ github.event.inputs.branch || 'main' }} --commit-dirty=true
+          command: pages deploy dist --project-name raiden --branch ${{ github.event.inputs.branch || 'main' }} --commit-dirty=true

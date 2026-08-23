@@ -59,7 +59,7 @@ test.describe('Ficha de producto → carrito → WhatsApp', () => {
     await expect(cartPage.locator('[data-cart-item]')).toHaveCount(1);
     await expect(cartPage.locator('[data-cart-item]').first()).toContainText('ODIN 1.0');
 
-    const notes = 'Entrega en Madrid';
+    const notes = 'Entrega en Lima';
     await cartPage.getByRole('textbox').fill(notes);
     await page.getByText('Ver mensaje que se enviará').click();
     const preview = page.locator('[data-message-preview]');
@@ -67,7 +67,8 @@ test.describe('Ficha de producto → carrito → WhatsApp', () => {
     await expect(preview).toContainText('ODIN 1.0');
     await expect(preview).toContainText(variantName);
     await expect(preview).toContainText('Cantidad: 3');
-    await expect(preview).toContainText('Total estimado');
+    await expect(preview).toContainText('Total estimado: S/');
+    await expect(preview).not.toContainText('€');
     await expect(preview).toContainText(notes);
     const unit = parsePrice(await cartPage.locator('[data-cart-item] .muted', { hasText: '/ ud.' }).innerText());
     expect(parsePrice(await cartPage.locator('[data-cart-total]').innerText())).toBe(3 * unit);
@@ -76,13 +77,14 @@ test.describe('Ficha de producto → carrito → WhatsApp', () => {
     const link = cartPage.locator('[data-cart-request]');
     const href = await link.getAttribute('href');
     expect(href).toMatch(/^https:\/\/wa\.me\/\d+\?text=/);
-    expect(href!.startsWith('https://wa.me/34600000000?text=')).toBe(true);
+    expect(href!.startsWith('https://wa.me/51987654321?text=')).toBe(true);
     expect(href).not.toContain(' ');
     const decoded = decodeWaHref(href!);
     expect(decoded).toContain('Estoy interesado en realizar el siguiente pedido');
     expect(decoded).toContain('ODIN 1.0');
     expect(decoded).toContain('Cantidad: 3');
-    expect(decoded).toContain('Total estimado');
+    expect(decoded).toContain('Total estimado: S/');
+    expect(decoded).not.toContain('€');
     expect(decoded).toContain(notes);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', /noopener/);

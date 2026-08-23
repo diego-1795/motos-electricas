@@ -24,12 +24,13 @@ export type UseCase =
 
 export type Availability = 'en-stock' | 'bajo-pedido' | 'proximamente' | 'agotado';
 
-export type LicenseType = 'sin-carnet' | 'AM' | 'A1' | 'A2' | 'B';
+/** Licencias de conducir MTC (Perú). 'sin-licencia' = vehículo que no la requiere (p.ej. bicimoto ≤25 km/h). */
+export type LicenseType = 'sin-licencia' | 'B-I' | 'B-IIa' | 'B-IIb' | 'B-IIc';
 
 export interface Money {
-  /** Importe en céntimos para evitar errores de coma flotante */
+  /** Importe en céntimos de sol para evitar errores de coma flotante */
   amount: number;
-  currency: 'EUR';
+  currency: 'PEN';
 }
 
 export interface ImageRef {

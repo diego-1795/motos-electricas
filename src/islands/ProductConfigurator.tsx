@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'preact/hooks';
 import type { Accessory, ImageRef, ProductColor, ProductVariant } from '../domain/types';
 import { formatMoney } from '../domain/money';
-import { add, eur } from '../domain/money';
+import { add, pen } from '../domain/money';
 import { availabilityLabel } from '../domain/product';
 import { addToCart } from '../stores/cart';
 import { toast } from '../stores/toast';
@@ -38,10 +38,10 @@ export default function ProductConfigurator({ slug, name, variants, colors, acce
   const color = colors.find((c) => c.id === colorId);
   const unit = useMemo(() => (color?.priceDelta ? add(variant.price, color.priceDelta) : variant.price), [variant, color]);
   const extrasTotal = useMemo(
-    () => accessories.filter((a) => extras.has(a.slug)).reduce((m, a) => add(m, a.price), eur(0)),
+    () => accessories.filter((a) => extras.has(a.slug)).reduce((m, a) => add(m, a.price), pen(0)),
     [accessories, extras],
   );
-  const total = add(eur(unit.amount * qty), extrasTotal);
+  const total = add(pen(unit.amount * qty), extrasTotal);
   const unavailable = variant.availability === 'agotado';
 
   const submit = (e: Event) => {

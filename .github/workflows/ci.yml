@@ -1,4 +1,4 @@
-# CI de Voltia (docs/14-devops.md). Corre en cada PR y en push a main.
+# CI de Raiden (docs/14-devops.md). Corre en cada PR y en push a main.
 # No despliega: Cloudflare Pages construye desde el push a main (integración Git).
 # Política de seguridad (docs/10-security.md): permisos mínimos, sin secretos, npm ci con lockfile,
 # ignore-scripts en la instalación. Recomendado: fijar las actions por SHA completo al cerrar el MVP.
@@ -19,8 +19,8 @@ concurrency:
 env:
   NODE_VERSION: 22.12.0
   # Solo variables PUBLIC_*; ninguna es secreta.
-  PUBLIC_SITE_URL: https://ci.voltia.invalid
-  PUBLIC_WHATSAPP_NUMBER: "34600000000"
+  PUBLIC_SITE_URL: https://ci.raiden.invalid
+  PUBLIC_WHATSAPP_NUMBER: "51987654321"
   PUBLIC_ANALYTICS: ""
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
       - name: No hay teléfonos ni secretos hardcodeados
         run: |
           set -euo pipefail
-          hits=$(grep -rnE "\+?34[0-9]{9}|api[_-]?key|secret|service_role|sk_live" src public --include='*' \
+          hits=$(grep -rnE "\+51[0-9 ]{9,12}|\b51?9[0-9]{8}\b|api[_-]?key|secret|service_role|sk_live" src public --include='*' \
             | grep -v '^src/config/site.ts' || true)
           if [ -n "$hits" ]; then echo "$hits"; echo "::error::Posible secreto o número hardcodeado"; exit 1; fi
 

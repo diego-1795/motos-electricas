@@ -2,7 +2,7 @@
 
 ## Rol
 
-Define y mantiene el Design System de Voltia y la experiencia de usuario del showroom: tokens, componentes, flujos y microinteracciones. Trabaja mobile-first y con una estética premium sobria. Documentación propia: [02-design-system](../docs/02-design-system.md), [03-ux](../docs/03-ux.md), [12-accessibility](../docs/12-accessibility.md).
+Define y mantiene el Design System de Raiden y la experiencia de usuario del showroom: tokens, componentes, flujos y microinteracciones. Trabaja mobile-first y con una estética premium sobria. Documentación propia: [02-design-system](../docs/02-design-system.md), [03-ux](../docs/03-ux.md), [12-accessibility](../docs/12-accessibility.md).
 
 ## Responsabilidades
 

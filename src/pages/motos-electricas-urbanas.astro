@@ -30,16 +30,16 @@ const faqs = [
     answer: 'Sí. Muchos modelos tienen batería extraíble para cargar en cualquier enchufe doméstico en 4-6 horas. Las no extraíbles se cargan en garaje o plaza con toma.',
   },
   {
-    question: '¿Necesito carnet para una moto eléctrica urbana?',
+    question: '¿Necesito licencia para una moto eléctrica urbana?',
     answer:
-      'Depende de la potencia y velocidad: los modelos hasta 45 km/h requieren carnet AM (o B); los equivalentes a 125cc (hasta 11 kW) requieren A1, o B con tres años de antigüedad.',
+      'Depende del vehículo: las bicimotos de baja velocidad no requieren licencia; las motos eléctricas matriculables requieren licencia de la clase B (B-IIa, B-IIb o B-IIc según el modelo), placa y SOAT. Te lo confirmamos por WhatsApp para tu modelo y ciudad.',
   },
 ];
 ---
 
 <BaseLayout
   title="Motos eléctricas urbanas: las mejores para ciudad"
-  description="Selección de motos y scooters eléctricos para ciudad: ágiles, silenciosos y con batería extraíble. Autonomía real, carnet necesario y precios desde 1.499 €."
+  description="Selección de motos y scooters eléctricos para ciudad: ágiles, silenciosos y con batería extraíble. Autonomía real, licencia necesaria y precios en soles desde S/ 2,490."
   path="/motos-electricas-urbanas"
   jsonLd={[breadcrumbSchema(crumbs), itemListSchema(products.map((p) => ({ name: p.name, url: `/motos-electricas/${p.slug}` }))), faqSchema(faqs)]}
 >

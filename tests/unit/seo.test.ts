@@ -11,25 +11,25 @@ import {
   websiteSchema,
 } from '../../src/lib/seo/jsonld';
 import { site } from '../../src/config/site';
-import { eur } from '../../src/domain/money';
+import { pen } from '../../src/domain/money';
 import { makeProduct, variant } from './fixtures';
 
 const BASE = site.url;
 
 describe('config/site en tests', () => {
   it('lee PUBLIC_* desde vitest.config', () => {
-    expect(BASE).toBe('https://voltia.test');
-    expect(site.whatsappNumber).toBe('34600000000');
+    expect(BASE).toBe('https://raiden.test');
+    expect(site.whatsappNumber).toBe('51987654321');
   });
 });
 
 describe('meta.buildTitle', () => {
   it('añade la marca con separador', () => {
-    expect(buildTitle('Catálogo')).toBe('Catálogo · Voltia');
+    expect(buildTitle('Catálogo')).toBe('Catálogo · Raiden');
   });
   it('no duplica la marca si ya está incluida', () => {
-    expect(buildTitle('Voltia: motos eléctricas')).toBe('Voltia: motos eléctricas');
-    expect(buildTitle('Casco Voltia')).toBe('Casco Voltia');
+    expect(buildTitle('Raiden: motos eléctricas')).toBe('Raiden: motos eléctricas');
+    expect(buildTitle('Casco Raiden')).toBe('Casco Raiden');
   });
 });
 
@@ -79,16 +79,16 @@ describe('jsonld.productSchema', () => {
     slug: 'odin',
     name: 'ODIN',
     variants: [
-      variant({ id: 'a', price: eur(499900), availability: 'agotado', sku: 'SKU-A' }),
-      variant({ id: 'b', price: eur(549900), availability: 'bajo-pedido' }),
+      variant({ id: 'a', price: pen(499900), availability: 'agotado', sku: 'SKU-A' }),
+      variant({ id: 'b', price: pen(549900), availability: 'bajo-pedido' }),
     ],
   });
   const url = `${BASE}/motos-electricas/odin`;
 
-  it('precios low/high en euros con 2 decimales y offerCount', () => {
+  it('precios low/high en soles con 2 decimales y offerCount', () => {
     const s = productSchema(p, url, ['img1']);
     expect(s['@type']).toBe('Product');
-    expect(s.offers.priceCurrency).toBe('EUR');
+    expect(s.offers.priceCurrency).toBe('PEN');
     expect(s.offers.lowPrice).toBe('4999.00');
     expect(s.offers.highPrice).toBe('5499.00');
     expect(s.offers.offerCount).toBe(2);
@@ -153,12 +153,12 @@ describe('jsonld: otros esquemas', () => {
   it('organization/website usan site', () => {
     const o = organizationSchema();
     expect(o.url).toBe(BASE);
-    expect(o.contactPoint[0]!.telephone).toBe('+34600000000');
+    expect(o.contactPoint[0]!.telephone).toBe('+51987654321');
     expect(websiteSchema().url).toBe(BASE);
   });
   it('accessorySchema con precio y availability', () => {
     const s = accessorySchema(
-      { id: 'acc', slug: 'casco', name: 'Casco', description: 'd', price: eur(12900), availability: 'en-stock', kind: 'casco', compatibleWith: [] },
+      { id: 'acc', slug: 'casco', name: 'Casco', description: 'd', price: pen(12900), availability: 'en-stock', kind: 'casco', compatibleWith: [] },
       `${BASE}/accesorios/casco`,
       'img',
     );
@@ -167,7 +167,7 @@ describe('jsonld: otros esquemas', () => {
     expect(s.image).toEqual(['img']);
   });
   it('articleSchema usa publishedAt como dateModified si no hay updatedAt', () => {
-    const post = { slug: 's', title: 'T', description: 'D', category: 'guias' as const, publishedAt: '2025-01-01', author: 'Voltia', readingMinutes: 3, relatedProducts: [] };
+    const post = { slug: 's', title: 'T', description: 'D', category: 'guias' as const, publishedAt: '2025-01-01', author: 'Raiden', readingMinutes: 3, relatedProducts: [] };
     expect(articleSchema(post, 'u').dateModified).toBe('2025-01-01');
     expect(articleSchema({ ...post, updatedAt: '2025-02-01' }, 'u').dateModified).toBe('2025-02-01');
   });

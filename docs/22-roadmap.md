@@ -1,6 +1,6 @@
 # 22 — Roadmap
 
-Plan de ejecución del MVP de Voltia y evolución posterior. Los responsables son los agentes definidos en `/agents`; el Tech Lead coordina y resuelve dependencias cruzadas. Relacionado con [00-product-overview](./00-product-overview.md), [14-devops](./14-devops.md), [20-migration](./20-migration.md) y [21-decisions](./21-decisions.md).
+Plan de ejecución del MVP de Raiden y evolución posterior. Los responsables son los agentes definidos en `/agents`; el Tech Lead coordina y resuelve dependencias cruzadas. Relacionado con [00-product-overview](./00-product-overview.md), [14-devops](./14-devops.md), [20-migration](./20-migration.md) y [21-decisions](./21-decisions.md).
 
 ## 1. Fases del MVP
 
@@ -15,7 +15,7 @@ Las fases se ejecutan en el orden de la tabla; las que comparten dependencias pu
 | 5 | Catalog | Descubrimiento por categoría con filtros | Listados por categoría, `ProductCard`, filtros por precio/autonomía/potencia (query params, sin JS obligatorio), orden | frontend, backend | 3 | Filtros funcionan sin JS; E2E catálogo → filtro → producto |
 | 6 | Product | Ficha que resuelve dudas y lleva al carrito | `/motos-electricas/[slug]`, galería `<Picture>`, specs, selector de variante y color, precio calculado, accesorios compatibles, FAQ, JSON-LD Product | frontend, backend, seo | 5 | JS de la ficha < 60 KB gz; Rich Results válido; tests de pricing |
 | 7 | Compare | Ayuda a la decisión entre modelos | `CompareBar` (isla), `/comparar` con `CompareTable`, hasta 3 productos, persistencia en nanostores | frontend | 6 | Comparar 3 modelos en móvil sin scroll horizontal roto; evento `compare_add` |
-| 8 | Cart | Construir la solicitud de pedido | Reducer de carrito, `CartDrawer`, `/carrito`, cantidades, eliminar, notas, total estimado, persistencia `voltia:cart:v1` | frontend, backend | 6 | Tests del reducer al 100 %; E2E añadir → cantidad → eliminar; estado sobrevive a recarga |
+| 8 | Cart | Construir la solicitud de pedido | Reducer de carrito, `CartDrawer`, `/carrito`, cantidades, eliminar, notas, total estimado, persistencia `raiden:cart:v1` | frontend, backend | 6 | Tests del reducer al 100 %; E2E añadir → cantidad → eliminar; estado sobrevive a recarga |
 | 9 | WhatsApp | Entregar el pedido a ventas | `WhatsAppMessageBuilder`, enlace `wa.me` con `encodeURIComponent`, botón flotante, CTA en ficha y contacto | backend, frontend | 8 | Mensaje idéntico al formato de [16-whatsapp-commerce](./16-whatsapp-commerce.md); tests unitarios con emojis y tildes; número solo desde env |
 | 10 | SEO | Indexación y rich results | Metadatos por página, canonicals, JSON-LD (Organization, Product, BreadcrumbList, FAQPage, Article), sitemap, `robots.txt`, blog y FAQ iniciales | seo, content | 6 | Sitemap sin `/carrito` ni `/comparar`; 0 errores en validador de Schema; 10 artículos y 15 FAQ publicados |
 | 11 | Analytics | Medir el embudo | `AnalyticsService`, adaptadores noop/console/cloudflare/dataLayer, cola idle, eventos cableados | backend, frontend | 8, 9 | E2E de secuencia en `dataLayer`; sin PII; ver [18-analytics](./18-analytics.md) |
@@ -45,8 +45,8 @@ Prioridad: P1 (siguiente trimestre), P2 (cuando haya volumen), P3 (expansión).
 | Email transaccional | P2 | Backend | `EmailService` con adaptador Resend/Postmark; confirmación de solicitud y cambios de estado |
 | Automatizaciones | P2 | CRM, Email | Recordatorio a ventas de solicitudes sin respuesta en 24 h; aviso de stock |
 | Analítica avanzada | P2 | Fase 11 | Embudo por producto, atribución de finder/comparador, panel en admin |
-| i18n | P3 | Content | `es-ES` por defecto; `en`, `ca`, `pt` con rutas prefijadas y JSON-LD por idioma |
-| Multi-país | P3 | i18n, CRM | Monedas, impuestos, números de WhatsApp por país en `site.ts`, sitemaps por región |
+| i18n | P3 | Content | `es-PE` por defecto; `en`, `pt` con rutas prefijadas y JSON-LD por idioma |
+| Multi-país (i18n de moneda/licencias) | P3 | i18n, CRM | Monedas, impuestos, tipos de licencia y números de WhatsApp por país en `site.ts`, sitemaps por región |
 
 ## 3. Hitos
 

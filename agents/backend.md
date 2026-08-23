@@ -2,12 +2,12 @@
 
 ## Rol
 
-Responsable del dominio, los servicios y la capa de datos de Voltia: `src/domain/`, `src/services/` y `src/data/`. En MVP no existe servidor; el "backend" es código TypeScript puro ejecutado en build y en el navegador, con adaptadores preparados para Supabase. Documentación de referencia: [05-backend](../docs/05-backend.md), [06-database](../docs/06-database.md), [07-api](../docs/07-api.md), [16-whatsapp-commerce](../docs/16-whatsapp-commerce.md), [17-admin-panel](../docs/17-admin-panel.md).
+Responsable del dominio, los servicios y la capa de datos de Raiden: `src/domain/`, `src/services/` y `src/data/`. En MVP no existe servidor; el "backend" es código TypeScript puro ejecutado en build y en el navegador, con adaptadores preparados para Supabase. Documentación de referencia: [05-backend](../docs/05-backend.md), [06-database](../docs/06-database.md), [07-api](../docs/07-api.md), [16-whatsapp-commerce](../docs/16-whatsapp-commerce.md), [17-admin-panel](../docs/17-admin-panel.md).
 
 ## Responsabilidades
 
 - Definir y mantener las entidades de `src/domain/`: Product, ProductVariant, ProductColor, Category, Brand, Battery, Accessory, Cart, CartItem, OrderRequest, Customer, WhatsAppRequest, BlogPost, FAQ, Review.
-- Implementar funciones puras de dominio: pricing (totales en EUR, formato `es-ES`), scoring de compatibilidad del finder, comparación de productos.
+- Implementar funciones puras de dominio: pricing (totales en PEN, formato `S/ 4,999`), scoring de compatibilidad del finder, comparación de productos.
 - Implementar servicios: `WhatsAppMessageBuilder`, `CartService`, `RecommendationService`, `AnalyticsService` (interfaz + adaptadores noop/console/dataLayer/beacon), `StorageService`, `CacheService`, `EmailService` (interfaz sin implementación real en MVP).
 - Mantener `ProductRepository` y sus implementaciones: `JsonProductRepository` (content collections sobre `src/content/products/*.json`) y el esqueleto de `SupabaseProductRepository`. Lo mismo para categorías, accesorios, blog y FAQs.
 - Definir el esquema de content collections con validación manual (sin zod como dependencia adicional más allá de lo que Astro incluya).
@@ -47,7 +47,7 @@ Responsable del dominio, los servicios y la capa de datos de Voltia: `src/domain
 | `WhatsAppMessageBuilder` produce el mensaje del brief | Test con snapshot: cabecera, bloques por ítem, `Total estimado`, `Notas`, cierre |
 | Salida URL-encoded válida | Test: `decodeURIComponent(href)` devuelve el mensaje original y el enlace empieza por `https://wa.me/<PUBLIC_WHATSAPP_NUMBER>?text=` |
 | Reducer del carrito | Tests: añadir, incrementar, decrementar a 0 elimina, variante distinta crea línea nueva |
-| Pricing | Total con variante + accesorios + baterías, formato `5.499 €` |
+| Pricing | Total con variante + accesorios + baterías, formato `S/ 21,996` |
 | Scoring del finder | Entradas inválidas rechazadas; puntuación determinista y ordenada |
 | `JsonProductRepository` | Devuelve todos los productos por categoría y por slug; slug inexistente devuelve `null` |
 | `AnalyticsService` noop | No lanza, no hace red, no bloquea |

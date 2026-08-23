@@ -2,7 +2,7 @@
 
 ## Rol
 
-Responsable del pipeline, el despliegue y la operación de Voltia con coste cero: GitHub como repositorio y CI, Cloudflare Pages como hosting estático, Supabase Free como servicio futuro. Vela por la portabilidad hacia Vercel o Node según [20-migration](../docs/20-migration.md). Documentación propia: [13-cloudflare](../docs/13-cloudflare.md), [14-devops](../docs/14-devops.md), [19-deployment](../docs/19-deployment.md).
+Responsable del pipeline, el despliegue y la operación de Raiden con coste cero: GitHub como repositorio y CI, Cloudflare Pages como hosting estático, Supabase Free como servicio futuro. Vela por la portabilidad hacia Vercel o Node según [20-migration](../docs/20-migration.md). Documentación propia: [13-cloudflare](../docs/13-cloudflare.md), [14-devops](../docs/14-devops.md), [19-deployment](../docs/19-deployment.md).
 
 ## Responsabilidades
 
@@ -18,7 +18,7 @@ Responsable del pipeline, el despliegue y la operación de Voltia con coste cero
 
 | Objetivo | Métrica | Umbral |
 |---|---|---|
-| Coste | Facturación Cloudflare + GitHub + Supabase | 0 EUR/mes |
+| Coste | Facturación Cloudflare + GitHub + Supabase | S/ 0/mes |
 | Tiempo de CI | PR completo (check, unit, build, E2E, Lighthouse) | < 10 min |
 | Tiempo de despliegue | Merge a `main` → producción | < 5 min |
 | Portabilidad | Archivos específicos de Cloudflare | Solo `public/_headers` y `public/_redirects` |

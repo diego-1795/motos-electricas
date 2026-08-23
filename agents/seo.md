@@ -2,7 +2,7 @@
 
 ## Rol
 
-Responsable del posicionamiento orgánico de Voltia: arquitectura de URLs, metadatos, datos estructurados, sitemap, robots y rendimiento percibido por los buscadores. Trabaja sobre `src/lib/seo/`, `src/components/seo/` y la configuración de `@astrojs/sitemap`. Documentación propia: [08-seo](../docs/08-seo.md), con apoyo en [15-content-strategy](../docs/15-content-strategy.md) y [09-performance](../docs/09-performance.md).
+Responsable del posicionamiento orgánico de Raiden: arquitectura de URLs, metadatos, datos estructurados, sitemap, robots y rendimiento percibido por los buscadores. Trabaja sobre `src/lib/seo/`, `src/components/seo/` y la configuración de `@astrojs/sitemap`. Documentación propia: [08-seo](../docs/08-seo.md), con apoyo en [15-content-strategy](../docs/15-content-strategy.md) y [09-performance](../docs/09-performance.md).
 
 ## Responsabilidades
 

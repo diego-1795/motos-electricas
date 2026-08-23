@@ -1,13 +1,13 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-export const CART_KEY = 'voltia:cart:v1';
-export const COMPARE_KEY = 'voltia:compare:v1';
+export const CART_KEY = 'raiden:cart:v1';
+export const COMPARE_KEY = 'raiden:compare:v1';
 
-/** Parsea "4.999 €" / "12.155,50 €" a número de euros */
+/** Parsea "S/ 4,999" / "S/ 12,155.50" a número de soles */
 export function parsePrice(text: string): number {
-  const m = text.replace(/[\s  ]/g, '').match(/([\d.]+)(,\d+)?€/);
+  const m = text.replace(/\s/g, '').match(/S\/(\d{1,3}(?:,\d{3})*|\d+)(\.\d+)?/);
   if (!m) throw new Error(`No price in "${text}"`);
-  return Number(m[1]!.replace(/\./g, '') + (m[2] ? m[2].replace(',', '.') : ''));
+  return Number(m[1]!.replace(/,/g, '') + (m[2] ?? ''));
 }
 
 export function decodeWaHref(href: string): string {

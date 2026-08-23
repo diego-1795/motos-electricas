@@ -7,7 +7,7 @@ interface StoredCart {
 }
 
 test.describe('Persistencia del carrito', () => {
-  test('el carrito sobrevive a recarga y navegación vía voltia:cart:v1', async ({ page }) => {
+  test('el carrito sobrevive a recarga y navegación vía raiden:cart:v1', async ({ page }) => {
     await page.goto('/motos-electricas/odin-1-0');
     await hydrated(page.locator('[data-configurator]'));
     await page.getByRole('button', { name: 'Más unidades' }).click();

@@ -1,6 +1,6 @@
 # 20 — Migraciones
 
-Rutas de evolución previstas para Voltia. Cada una se diseñó para que el cambio quede confinado a configuración o a un adaptador, sin tocar dominio, componentes ni islas. Relacionado con [01-architecture](./01-architecture.md), [05-backend](./05-backend.md), [06-database](./06-database.md), [19-deployment](./19-deployment.md) y [21-decisions](./21-decisions.md).
+Rutas de evolución previstas para Raiden. Cada una se diseñó para que el cambio quede confinado a configuración o a un adaptador, sin tocar dominio, componentes ni islas. Relacionado con [01-architecture](./01-architecture.md), [05-backend](./05-backend.md), [06-database](./06-database.md), [19-deployment](./19-deployment.md) y [21-decisions](./21-decisions.md).
 
 ## Resumen
 
@@ -62,7 +62,7 @@ Equivalente completo en `vercel.json`:
     }
   ],
   "redirects": [
-    { "source": "/:path*", "has": [{ "type": "host", "value": "www.voltia.es" }], "destination": "https://voltia.es/:path*", "permanent": true }
+    { "source": "/:path*", "has": [{ "type": "host", "value": "www.raiden.pe" }], "destination": "https://raiden.pe/:path*", "permanent": true }
   ]
 }
 ```
@@ -83,7 +83,7 @@ Netlify lee `public/_headers` y `public/_redirects` con el mismo formato que Clo
 
 ### Nginx
 
-Bloque `server` con `root /var/www/voltia/dist; try_files $uri $uri.html $uri/index.html =404; error_page 404 /404.html;` y un `add_header` por cada cabecera de la lista. `trailingSlash: 'never'` obliga a incluir `$uri.html` en `try_files`.
+Bloque `server` con `root /var/www/raiden/dist; try_files $uri $uri.html $uri/index.html =404; error_page 404 /404.html;` y un `add_header` por cada cabecera de la lista. `trailingSlash: 'never'` obliga a incluir `$uri.html` en `try_files`.
 
 ## (b) SSG → SSR con adapter
 

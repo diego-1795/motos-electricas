@@ -2,7 +2,7 @@
 
 ## Rol
 
-Responsable de la seguridad de Voltia en un sitio estático sin pagos online: cabeceras HTTP, CSP, gestión de variables de entorno, validación de entrada, protección del enlace de WhatsApp y preparación del modelo de seguridad futuro con Supabase. Documentación propia: [10-security](../docs/10-security.md), con apoyo en [13-cloudflare](../docs/13-cloudflare.md), [17-admin-panel](../docs/17-admin-panel.md) y [18-analytics](../docs/18-analytics.md).
+Responsable de la seguridad de Raiden en un sitio estático sin pagos online: cabeceras HTTP, CSP, gestión de variables de entorno, validación de entrada, protección del enlace de WhatsApp y preparación del modelo de seguridad futuro con Supabase. Documentación propia: [10-security](../docs/10-security.md), con apoyo en [13-cloudflare](../docs/13-cloudflare.md), [17-admin-panel](../docs/17-admin-panel.md) y [18-analytics](../docs/18-analytics.md).
 
 ## Responsabilidades
 
@@ -10,7 +10,7 @@ Responsable de la seguridad de Voltia en un sitio estático sin pagos online: ca
 - Garantizar que solo existen variables `PUBLIC_*` en el frontend (`PUBLIC_SITE_URL`, `PUBLIC_WHATSAPP_NUMBER`) y que ningún secreto llega al repositorio ni al bundle.
 - Revisar los validadores manuales de entrada del finder (rangos, enumeraciones) y del carrito (cantidades enteras 1–99, notas con longitud máxima y sin HTML).
 - Verificar que `WhatsAppMessageBuilder` codifica con `encodeURIComponent` y que el enlace usa `rel="noopener noreferrer"` y `target="_blank"`.
-- Revisar que `voltia:cart:v1` no contiene datos personales y que la lectura de localStorage valida la estructura antes de usarla.
+- Revisar que `raiden:cart:v1` no contiene datos personales y que la lectura de localStorage valida la estructura antes de usarla.
 - Revisar los adaptadores de `AnalyticsService`: sin cookies, sin PII en eventos, beacon de Cloudflare Web Analytics permitido en CSP solo si se activa.
 - Diseñar el modelo de seguridad futuro: Supabase Auth + RLS para `/admin`, rate limiting en Workers o Edge Functions, política de clave `anon` vs. `service_role`.
 
@@ -52,7 +52,7 @@ Responsable de la seguridad de Voltia en un sitio estático sin pagos online: ca
 | Validación del carrito | Test: cantidad `-1`, `0`, `100`, `"abc"` rechazadas; nota > 500 caracteres truncada o rechazada |
 | Notas sin HTML | Test: `<script>` en notas llega codificado al mensaje y nunca se inserta en el DOM como HTML |
 | Enlace WhatsApp | `rel="noopener noreferrer"` y `href` sin caracteres fuera del conjunto URL-safe |
-| localStorage corrupto | JSON inválido en `voltia:cart:v1` produce carrito vacío, no excepción |
+| localStorage corrupto | JSON inválido en `raiden:cart:v1` produce carrito vacío, no excepción |
 
 Ejemplo de cabeceras esperadas:
 

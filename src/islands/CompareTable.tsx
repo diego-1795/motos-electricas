@@ -26,7 +26,7 @@ export interface CompareRow {
 
 type Key = keyof CompareRow;
 const ROWS: { key: Key; label: string; fmt?: (v: CompareRow[Key]) => string; best?: 'max' | 'min' }[] = [
-  { key: 'priceFrom', label: 'Precio desde', fmt: (v) => formatMoney({ amount: v as number, currency: 'EUR' }), best: 'min' },
+  { key: 'priceFrom', label: 'Precio desde', fmt: (v) => formatMoney({ amount: v as number, currency: 'PEN' }), best: 'min' },
   { key: 'rangeKm', label: 'Autonomía', fmt: (v) => `${v} km`, best: 'max' },
   { key: 'topSpeedKmh', label: 'Velocidad máx.', fmt: (v) => `${v} km/h`, best: 'max' },
   { key: 'powerW', label: 'Potencia', fmt: (v) => `${(v as number) / 1000} kW`, best: 'max' },
@@ -35,7 +35,7 @@ const ROWS: { key: Key; label: string; fmt?: (v: CompareRow[Key]) => string; bes
   { key: 'weightKg', label: 'Peso', fmt: (v) => `${v} kg`, best: 'min' },
   { key: 'dimensions', label: 'Dimensiones' },
   { key: 'seats', label: 'Plazas', best: 'max' },
-  { key: 'license', label: 'Carnet' },
+  { key: 'license', label: 'Licencia' },
   { key: 'warranty', label: 'Garantía' },
   { key: 'availability', label: 'Disponibilidad' },
 ];

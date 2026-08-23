@@ -19,7 +19,7 @@ export default defineConfig({
     baseURL: 'http://localhost:4173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    locale: 'es-ES',
+    locale: 'es-PE',
   },
   projects: [
     {
@@ -38,8 +38,8 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     env: {
-      PUBLIC_SITE_URL: 'https://voltia.test',
-      PUBLIC_WHATSAPP_NUMBER: '34600000000',
+      PUBLIC_SITE_URL: 'https://raiden.test',
+      PUBLIC_WHATSAPP_NUMBER: '51987654321',
       // Astro 7 detecta entornos "agente" (CI/IA) y lanza `astro preview` como daemon,
       // con lo que Playwright ve que el proceso termina. Esta variable fuerza primer plano.
       ASTRO_PREVIEW_BACKGROUND: '1',

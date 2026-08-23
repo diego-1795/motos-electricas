@@ -4,12 +4,12 @@
   "name": "Candado de disco con alarma",
   "description": "Candado de disco de acero endurecido con alarma de 110 dB y sensor de movimiento. Incluye cable recordatorio y funda de transporte.",
   "price": {
-    "amount": 3900,
-    "currency": "EUR"
+    "amount": 8900,
+    "currency": "PEN"
   },
   "image": {
     "src": "~/assets/accessories/candado-disco-alarma.svg",
-    "alt": "Candado de disco con alarma Voltia",
+    "alt": "Candado de disco con alarma Raiden",
     "width": 800,
     "height": 800
   },

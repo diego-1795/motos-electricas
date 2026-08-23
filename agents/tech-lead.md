@@ -2,7 +2,7 @@
 
 ## Rol
 
-Responsable técnico de Voltia. Coordina al resto de agentes, custodia la arquitectura descrita en [01-architecture](../docs/01-architecture.md) y [21-decisions](../docs/21-decisions.md), y es la última instancia para cualquier cambio transversal. Garantiza que el MVP se mantenga en coste cero (Cloudflare Pages + GitHub, Supabase Free en el futuro) y agnóstico del proveedor.
+Responsable técnico de Raiden. Coordina al resto de agentes, custodia la arquitectura descrita en [01-architecture](../docs/01-architecture.md) y [21-decisions](../docs/21-decisions.md), y es la última instancia para cualquier cambio transversal. Garantiza que el MVP se mantenga en coste cero (Cloudflare Pages + GitHub, Supabase Free en el futuro) y agnóstico del proveedor.
 
 ## Responsabilidades
 
@@ -19,7 +19,7 @@ Responsable técnico de Voltia. Coordina al resto de agentes, custodia la arquit
 | Objetivo | Métrica | Umbral |
 |---|---|---|
 | Arquitectura estable | Capas con dependencias en un solo sentido (`pages → components/islands → services → domain`) | 0 importaciones inversas |
-| Coste cero en MVP | Facturación mensual de infraestructura | 0 EUR |
+| Coste cero en MVP | Facturación mensual de infraestructura | S/ 0 |
 | Portabilidad | Archivos específicos de Cloudflare | Solo `public/_headers` y `wrangler`-free |
 | Calidad de entrega | Presupuesto Lighthouse CI en página de producto | LCP < 2,0 s, INP < 200 ms, CLS < 0,1, JS < 60 KB gz |
 | Trazabilidad | Decisiones documentadas en ADR | 100 % de cambios transversales |
@@ -105,7 +105,7 @@ Una propuesta con tres o más respuestas negativas se rechaza o se reformula.
 
 Como instancia final, el Tech Lead escala únicamente al cliente:
 
-- Nombre definitivo de la marca (Voltia es provisional).
+- Nombre definitivo de la marca (Raiden es provisional).
 - Número de WhatsApp de ventas (`PUBLIC_WHATSAPP_NUMBER`) y dominio (`PUBLIC_SITE_URL`).
 - Cualquier propuesta que implique coste recurrente.
 - Incorporación de pagos online (fuera del alcance por decisión de producto).

@@ -1,18 +1,18 @@
 # 08 — SEO
 
-Voltia se posiciona como showroom digital de movilidad eléctrica en España. El SEO es orgánico y de catálogo: cada producto, categoría y artículo del blog es una página estática con HTML completo, sin dependencia de JS para el contenido indexable. Ver [01-architecture](./01-architecture.md), [04-frontend](./04-frontend.md), [09-performance](./09-performance.md) y [15-content-strategy](./15-content-strategy.md).
+Raiden se posiciona como showroom digital de movilidad eléctrica en el Perú. El SEO es orgánico y de catálogo: cada producto, categoría y artículo del blog es una página estática con HTML completo, sin dependencia de JS para el contenido indexable. Ver [01-architecture](./01-architecture.md), [04-frontend](./04-frontend.md), [09-performance](./09-performance.md) y [15-content-strategy](./15-content-strategy.md).
 
 ## 1. Estrategia de palabras clave
 
-Idioma objetivo: español de España. Sin versión multi-idioma en MVP (no se emite `hreflang`).
+Idioma objetivo: español del Perú (`es-PE`). Sin versión multi-idioma en MVP (no se emite `hreflang`).
 
 | Categoría | Keyword principal | Secundarias | Intención | Ruta |
 |---|---|---|---|---|
 | Home | movilidad eléctrica | showroom motos eléctricas, comprar moto eléctrica | Navegacional / comercial | `/` |
-| Motos (hub) | motos eléctricas | moto eléctrica precio, moto eléctrica España | Comercial | `/motos-electricas` |
+| Motos (hub) | motos eléctricas | moto eléctrica precio, moto eléctrica Perú, precio en soles | Comercial | `/motos-electricas` |
 | Scooters | scooter eléctrico | scooter eléctrico 125, patinete vs scooter | Comercial | `/scooters-electricos` |
-| Urbanas | moto eléctrica urbana | moto eléctrica ciudad, carnet B moto eléctrica | Comercial | `/motos-electricas-urbanas` |
-| Bicimotos | bicimoto eléctrica | ciclomotor eléctrico, bicimoto sin carnet | Comercial | `/bicimotos` |
+| Urbanas | moto eléctrica urbana | moto eléctrica ciudad, licencia B-IIa moto eléctrica, scooter eléctrico Lima | Comercial | `/motos-electricas-urbanas` |
+| Bicimotos | bicimoto eléctrica | moto lineal eléctrica, bicimoto sin licencia | Comercial | `/bicimotos` |
 | Trimotos | trimoto eléctrica | moto tres ruedas eléctrica | Comercial | `/trimotos` |
 | Carga | vehículo eléctrico de carga | moto de carga eléctrica, reparto eléctrico | Comercial B2B | `/vehiculos-carga` |
 | Cuatrimotos | cuatrimoto eléctrica | quad eléctrico | Comercial | `/cuatrimotos` |
@@ -20,7 +20,7 @@ Idioma objetivo: español de España. Sin versión multi-idioma en MVP (no se em
 | Producto | `{marca} {modelo}` | `{modelo} precio`, `{modelo} autonomía` | Transaccional | `/motos-electricas/[slug]` |
 | Comparador | comparar motos eléctricas | `{modelo A} vs {modelo B}` | Informacional | `/comparar` (noindex) |
 | Finder | qué moto eléctrica comprar | moto eléctrica para ciudad | Informacional | `/encuentra-tu-moto` |
-| Blog | guías movilidad eléctrica | autonomía real, carnet, subvenciones MOVES | Informacional | `/blog/[slug]` |
+| Blog | guías movilidad eléctrica | autonomía real, licencia MTC, SOAT | Informacional | `/blog/[slug]` |
 | Garantía / FAQ | garantía moto eléctrica | mantenimiento batería litio | Informacional | `/garantia`, `/faq` |
 
 Reglas: una keyword principal por URL; no canibalizar (una sola página por categoría); las keywords informacionales van al blog y enlazan a categoría/producto.
@@ -31,20 +31,20 @@ Reglas: una keyword principal por URL; no canibalizar (una sola página por cate
 
 | Ruta | Patrón `<title>` (≤ 60 car.) | Patrón `description` (≤ 155 car.) | Index |
 |---|---|---|---|
-| `/` | Voltia — Motos eléctricas y movilidad urbana | Showroom de motos, scooters y vehículos eléctricos. Compara, configura y pide por WhatsApp. | sí |
-| `/motos-electricas` | Motos eléctricas — Catálogo \| Voltia | Todas las motos eléctricas: urbanas, scooters, bicimotos y más. Precios y autonomía. | sí |
-| `/motos-electricas/[slug]` | `{nombre}` — Moto eléctrica `{autonomía} km` \| Voltia | `{nombre}`: `{potencia}`, `{autonomía}` km, desde `{precio}` €. Configura color y batería. | sí |
-| `/scooters-electricos` y resto de categorías | `{Categoría}` eléctricos \| Voltia | `{descripción corta de la categoría}` | sí |
-| `/accesorios` | Accesorios para moto eléctrica \| Voltia | Baterías, cascos, cargadores y más. | sí |
-| `/accesorios/[slug]` | `{nombre}` \| Accesorios Voltia | `{descripción corta}` | sí |
-| `/comparar` | Comparar motos eléctricas \| Voltia | — | noindex |
-| `/encuentra-tu-moto` | Encuentra tu moto eléctrica \| Voltia | Responde 4 preguntas y te recomendamos el modelo ideal. | sí |
-| `/carrito` | Tu solicitud de pedido \| Voltia | — | noindex |
-| `/blog` | Blog de movilidad eléctrica \| Voltia | Guías, comparativas y consejos. | sí |
-| `/blog/[slug]` | `{título}` \| Blog Voltia | `{extracto}` | sí |
-| `/garantia`, `/contacto`, `/faq` | `{Sección}` \| Voltia | `{texto fijo}` | sí |
-| `/legal/*` | `{Documento legal}` \| Voltia | — | noindex, follow |
-| `404` | Página no encontrada \| Voltia | — | noindex |
+| `/` | Raiden — Motos eléctricas y movilidad urbana | Showroom de motos, scooters y vehículos eléctricos. Compara, configura y pide por WhatsApp. | sí |
+| `/motos-electricas` | Motos eléctricas — Catálogo \| Raiden | Todas las motos eléctricas: urbanas, scooters, bicimotos y más. Precios y autonomía. | sí |
+| `/motos-electricas/[slug]` | `{nombre}` — Moto eléctrica `{autonomía} km` \| Raiden | `{nombre}`: `{potencia}`, `{autonomía}` km, desde S/ `{precio}`. Configura color y batería. | sí |
+| `/scooters-electricos` y resto de categorías | `{Categoría}` eléctricos \| Raiden | `{descripción corta de la categoría}` | sí |
+| `/accesorios` | Accesorios para moto eléctrica \| Raiden | Baterías, cascos, cargadores y más. | sí |
+| `/accesorios/[slug]` | `{nombre}` \| Accesorios Raiden | `{descripción corta}` | sí |
+| `/comparar` | Comparar motos eléctricas \| Raiden | — | noindex |
+| `/encuentra-tu-moto` | Encuentra tu moto eléctrica \| Raiden | Responde 4 preguntas y te recomendamos el modelo ideal. | sí |
+| `/carrito` | Tu solicitud de pedido \| Raiden | — | noindex |
+| `/blog` | Blog de movilidad eléctrica \| Raiden | Guías, comparativas y consejos. | sí |
+| `/blog/[slug]` | `{título}` \| Blog Raiden | `{extracto}` | sí |
+| `/garantia`, `/contacto`, `/faq` | `{Sección}` \| Raiden | `{texto fijo}` | sí |
+| `/legal/*` | `{Documento legal}` \| Raiden | — | noindex, follow |
+| `404` | Página no encontrada \| Raiden | — | noindex |
 
 ## 3. Builder de metadatos (`src/lib/seo/`)
 
@@ -78,7 +78,7 @@ export function buildMeta(i: SeoInput, site = SITE.url): SeoMeta {
     robots: i.noindex ? 'noindex, follow' : 'index, follow',
     og: { 'og:type': i.type ?? 'website', 'og:title': title, 'og:description': i.description,
           'og:url': canonical, 'og:image': new URL(i.image ?? '/og/default.jpg', site).toString(),
-          'og:locale': 'es_ES', 'og:site_name': SITE.name },
+          'og:locale': 'es_PE', 'og:site_name': SITE.name },
     twitter: { 'twitter:card': 'summary_large_image', 'twitter:title': title,
                'twitter:description': i.description }
   };
@@ -92,39 +92,39 @@ El componente `src/components/seo/Seo.astro` recibe `SeoMeta` y los bloques JSON
 Un `<script type="application/ld+json">` por entidad. `@context` siempre `https://schema.org`. Sin precios online no hay checkout, pero sí hay precio público, por lo que `Product` lleva `offers`.
 
 ```json
-{ "@type": "Organization", "name": "Voltia", "url": "https://voltia.example.com",
-  "logo": "https://voltia.example.com/logo.png",
+{ "@type": "Organization", "name": "Raiden", "url": "https://raiden.example.com",
+  "logo": "https://raiden.example.com/logo.png",
   "contactPoint": { "@type": "ContactPoint", "contactType": "sales",
-    "telephone": "+34XXXXXXXXX", "availableLanguage": "es" } }
+    "telephone": "+51XXXXXXXXX", "availableLanguage": "es" } }
 ```
 
 ```json
-{ "@type": "Product", "name": "ODIN 1.0", "brand": { "@type": "Brand", "name": "Voltia" },
-  "sku": "odin-1-0-72v50ah", "image": ["https://voltia.example.com/_astro/odin-1.avif"],
+{ "@type": "Product", "name": "ODIN 1.0", "brand": { "@type": "Brand", "name": "Raiden" },
+  "sku": "odin-1-0-72v50ah", "image": ["https://raiden.example.com/_astro/odin-1.avif"],
   "description": "Moto eléctrica urbana, 72V 50Ah, 120 km de autonomía.",
-  "offers": { "@type": "Offer", "price": "5499", "priceCurrency": "EUR",
+  "offers": { "@type": "Offer", "price": "21996", "priceCurrency": "PEN",
     "availability": "https://schema.org/InStock",
-    "url": "https://voltia.example.com/motos-electricas/odin-1-0", "itemCondition": "https://schema.org/NewCondition" } }
+    "url": "https://raiden.example.com/motos-electricas/odin-1-0", "itemCondition": "https://schema.org/NewCondition" } }
 ```
 
 Reglas de `Product`: precio de la variante base; `availability` derivada del campo `stock` del JSON (`InStock`, `PreOrder`, `OutOfStock`); `aggregateRating` solo cuando existan reseñas reales en `reviews`.
 
 ```json
 { "@type": "BreadcrumbList", "itemListElement": [
-  { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://voltia.example.com/" },
-  { "@type": "ListItem", "position": 2, "name": "Motos eléctricas", "item": "https://voltia.example.com/motos-electricas" },
+  { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://raiden.example.com/" },
+  { "@type": "ListItem", "position": 2, "name": "Motos eléctricas", "item": "https://raiden.example.com/motos-electricas" },
   { "@type": "ListItem", "position": 3, "name": "ODIN 1.0" } ] }
 ```
 
 ```json
-{ "@type": "FAQPage", "mainEntity": [ { "@type": "Question", "name": "¿Necesito carnet?",
-  "acceptedAnswer": { "@type": "Answer", "text": "Depende de la categoría: L1e con AM, L3e con A1/B+3 años." } } ] }
+{ "@type": "FAQPage", "mainEntity": [ { "@type": "Question", "name": "¿Necesito licencia?",
+  "acceptedAnswer": { "@type": "Answer", "text": "Depende de la potencia: las bicimotos no requieren licencia; scooters y motos requieren licencia MTC clase B (B-I, B-IIa o superior)." } } ] }
 ```
 
 ```json
 { "@type": "Article", "headline": "Autonomía real de una moto eléctrica", "datePublished": "2026-09-01",
-  "dateModified": "2026-09-01", "author": { "@type": "Organization", "name": "Voltia" },
-  "image": "https://voltia.example.com/blog/autonomia.jpg", "mainEntityOfPage": "https://voltia.example.com/blog/autonomia-real" }
+  "dateModified": "2026-09-01", "author": { "@type": "Organization", "name": "Raiden" },
+  "image": "https://raiden.example.com/blog/autonomia.jpg", "mainEntityOfPage": "https://raiden.example.com/blog/autonomia-real" }
 ```
 
 `FAQPage` solo en `/faq` y en productos con bloque de preguntas visible; nunca ocultar el texto.
@@ -139,7 +139,7 @@ User-agent: *
 Allow: /
 Disallow: /carrito
 Disallow: /comparar
-Sitemap: https://voltia.example.com/sitemap-index.xml
+Sitemap: https://raiden.example.com/sitemap-index.xml
 ```
 
 - Canonical absoluta en todas las páginas, generada desde `site` de `astro.config.mjs` (`PUBLIC_SITE_URL`). Sin parámetros de consulta; las páginas de categoría con filtros en la URL (`?marca=`) se resuelven en cliente y mantienen canonical limpia.
@@ -165,7 +165,7 @@ Google usa CWV como señal. Presupuestos en [09-performance](./09-performance.md
 
 ## 9. Blog y contenido
 
-El blog sostiene las keywords informacionales (carnet, subvenciones, autonomía, mantenimiento). Cada artículo: H1 único, H2 por sección, 900–1.500 palabras, `Article` JSON-LD, fecha visible, enlace a producto. Calendario y tono en [15-content-strategy](./15-content-strategy.md). Contenido en `src/content/blog/*.md`.
+El blog sostiene las keywords informacionales (licencia MTC, SOAT, autonomía, mantenimiento). Cada artículo: H1 único, H2 por sección, 900–1.500 palabras, `Article` JSON-LD, fecha visible, enlace a producto. Calendario y tono en [15-content-strategy](./15-content-strategy.md). Contenido en `src/content/blog/*.md`.
 
 ## 10. Checklist por página
 

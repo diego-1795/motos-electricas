@@ -2,14 +2,14 @@
 
 ## Rol
 
-Implementa la capa de presentación de Voltia: páginas Astro, componentes en `src/components/`, islas Preact en `src/islands/` y estado con nanostores. Aplica el Design System de [02-design-system](../docs/02-design-system.md) y las pautas de [04-frontend](../docs/04-frontend.md), [03-ux](../docs/03-ux.md) y [12-accessibility](../docs/12-accessibility.md).
+Implementa la capa de presentación de Raiden: páginas Astro, componentes en `src/components/`, islas Preact en `src/islands/` y estado con nanostores. Aplica el Design System de [02-design-system](../docs/02-design-system.md) y las pautas de [04-frontend](../docs/04-frontend.md), [03-ux](../docs/03-ux.md) y [12-accessibility](../docs/12-accessibility.md).
 
 ## Responsabilidades
 
 - Construir todas las rutas de `src/pages/`: `/`, `/motos-electricas`, `/motos-electricas/[slug]`, `/scooters-electricos`, `/motos-electricas-urbanas`, `/bicimotos`, `/trimotos`, `/vehiculos-carga`, `/cuatrimotos`, `/accesorios`, `/accesorios/[slug]`, `/comparar`, `/encuentra-tu-moto`, `/carrito`, `/blog`, `/blog/[slug]`, `/garantia`, `/contacto`, `/faq`, `/legal/*`, `404`.
 - Mantener los componentes Astro por carpeta: `ui/` (Button, Card, Input, Select, Badge, Tabs, Modal, Drawer, Toast, Table), `layout/`, `product/` (ProductCard, SpecTile, ColorSwatch, QuantityStepper), `catalog/`, `home/`, `seo/`.
 - Implementar las cuatro islas Preact y solo esas: drawer del carrito, añadir-al-carrito/configurador, comparador (CompareTable), buscador "Encuentra tu moto". Resto de la página: HTML sin JS.
-- Gestionar el estado del carrito con `@nanostores/persistent` en la clave `voltia:cart:v1`, consumiendo `CartService` y `WhatsAppMessageBuilder` de `src/services/`.
+- Gestionar el estado del carrito con `@nanostores/persistent` en la clave `raiden:cart:v1`, consumiendo `CartService` y `WhatsAppMessageBuilder` de `src/services/`.
 - Usar `<Image>`/`<Picture>` de Astro con AVIF/WebP, `width`/`height` explícitos, `loading="lazy"` salvo el LCP y `sizes` responsive; activos en `src/assets/`.
 - Emitir eventos mediante `AnalyticsService` (`page_view`, `product_view`, `add_to_cart`, `cart_open`, `purchase_request`, `whatsapp_click`, `compare_add`, `finder_complete`) sin bloquear el render.
 - Leer configuración de `src/config/site.ts`; nunca hardcodear teléfono, moneda ni locale.
@@ -32,7 +32,7 @@ Implementa la capa de presentación de Voltia: páginas Astro, componentes en `s
 - No activa `preact/compat` (`compat: false` en `astro.config.mjs`); no se importan paquetes React.
 - No escribe lógica de negocio en componentes: pricing, scoring y construcción del mensaje viven en `src/domain` y `src/services`.
 - No accede a repositorios directamente desde islas; los datos llegan por props desde páginas Astro.
-- No guarda datos personales en `voltia:cart:v1`: solo ids, variantes, colores, cantidades y notas.
+- No guarda datos personales en `raiden:cart:v1`: solo ids, variantes, colores, cantidades y notas.
 
 ## Dependencias
 
@@ -78,7 +78,7 @@ Implementa la capa de presentación de Voltia: páginas Astro, componentes en `s
 
 - Cualquier nueva dependencia o cambio en `package.json`.
 - Una quinta isla Preact o cambio de directiva a `client:load` fuera de drawer y configurador.
-- Cambio de la clave `voltia:cart:v1` o del esquema del carrito persistido.
+- Cambio de la clave `raiden:cart:v1` o del esquema del carrito persistido.
 - Necesidad de SSR o endpoints (`src/pages/api/*`) para cualquier funcionalidad.
 - Cambios en los tipos de `src/domain` o en los contratos de `src/services`.
 - Activación de `preact/compat`.

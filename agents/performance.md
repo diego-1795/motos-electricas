@@ -2,7 +2,7 @@
 
 ## Rol
 
-Custodia el presupuesto de rendimiento de Voltia y revisa todo cambio que pueda afectarlo: peso de JS, imágenes, CSS, animaciones y estrategia de hidratación. Es revisor obligatorio en la matriz de gobernanza para animaciones pesadas y nuevas librerías frontend. Documentación propia: [09-performance](../docs/09-performance.md), con apoyo en [04-frontend](../docs/04-frontend.md) y [11-testing](../docs/11-testing.md).
+Custodia el presupuesto de rendimiento de Raiden y revisa todo cambio que pueda afectarlo: peso de JS, imágenes, CSS, animaciones y estrategia de hidratación. Es revisor obligatorio en la matriz de gobernanza para animaciones pesadas y nuevas librerías frontend. Documentación propia: [09-performance](../docs/09-performance.md), con apoyo en [04-frontend](../docs/04-frontend.md) y [11-testing](../docs/11-testing.md).
 
 ## Responsabilidades
 

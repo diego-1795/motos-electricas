@@ -3,20 +3,20 @@
   "order": 2,
   "items": [
     {
-      "question": "¿Qué garantía tienen los vehículos Voltia?",
-      "answer": "Todos los vehículos tienen 2 años de garantía legal en España. La batería cuenta con 12 o 24 meses según el modelo, siempre indicado en la ficha del producto. Cubre defectos de fabricación; no cubre desgaste, caídas ni manipulaciones."
+      "question": "¿Qué garantía tienen los vehículos Raiden?",
+      "answer": "Todos los vehículos tienen 2 años de garantía contra defectos de fabricación, válida en todo el Perú. La batería cuenta con 12 o 24 meses según el modelo, siempre indicado en la ficha del producto. No cubre desgaste, caídas ni manipulaciones."
     },
     {
       "question": "¿Dónde se hace el servicio técnico?",
-      "answer": "Tenemos taller propio y red de talleres colaboradores en las principales ciudades. Para incidencias pequeñas enviamos el recambio a tu domicilio o a tu taller de confianza con instrucciones; para las grandes recogemos el vehículo."
+      "answer": "Tenemos taller propio en Lima y red de talleres colaboradores en las principales ciudades del país. Para incidencias pequeñas enviamos el repuesto a tu domicilio o a tu taller de confianza con instrucciones; para las grandes coordinamos el recojo del vehículo."
     },
     {
-      "question": "¿Hay recambios disponibles?",
-      "answer": "Sí. Mantenemos stock en España de baterías, cargadores, controladores, pantallas, frenos, plásticos y componentes de desgaste de todos los modelos del catálogo, con envío en 24-48 h."
+      "question": "¿Hay repuestos disponibles?",
+      "answer": "Sí. Mantenemos stock en Lima de baterías, cargadores, controladores, pantallas, frenos, plásticos y componentes de desgaste de todos los modelos del catálogo, con despacho en 24-48 h hábiles a Lima y según plazos de courier a provincias."
     },
     {
       "question": "¿Qué mantenimiento necesita una moto eléctrica?",
-      "answer": "Mucho menos que una de gasolina: sin aceite, filtros ni bujías. Recomendamos una revisión anual de frenos, neumáticos, apriete de tornillería y actualización de software, y mantener la batería entre el 20 y el 80 % cuando no se use."
+      "answer": "Mucho menos que una de gasolina: sin aceite, filtros ni bujías. Recomendamos una revisión anual de frenos, neumáticos, ajuste de pernos y actualización de software, y mantener la batería entre el 20 y el 80 % cuando no se use."
     }
   ]
 }

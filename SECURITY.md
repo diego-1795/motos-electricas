@@ -1,21 +1,21 @@
-# Política de seguridad — Voltia
+# Política de seguridad — Raiden
 
 ## Reportar una vulnerabilidad
 
-- Escribe a **security@voltia.example.com** (sustituir por el buzón real antes del lanzamiento) o abre un *Security Advisory* privado en GitHub (Security → Report a vulnerability). **No** abras issues públicos para vulnerabilidades.
+- Escribe a **security@raiden.example.com** (sustituir por el buzón real antes del lanzamiento) o abre un *Security Advisory* privado en GitHub (Security → Report a vulnerability). **No** abras issues públicos para vulnerabilidades.
 - Incluye: URL afectada, pasos para reproducir, impacto estimado y, si lo tienes, un PoC. Respondemos en un máximo de 5 días laborables y publicamos la corrección junto con el crédito al reportante si lo desea.
-- Alcance: el sitio público (`https://voltia.es` y previews `*.pages.dev`), este repositorio y sus workflows de CI. Fuera de alcance: WhatsApp/Meta, Cloudflare y GitHub como plataformas, y ataques que requieran un dispositivo o navegador ya comprometido.
+- Alcance: el sitio público (`https://raiden.pe` y previews `*.pages.dev`), este repositorio y sus workflows de CI. Fuera de alcance: WhatsApp/Meta, Cloudflare y GitHub como plataformas, y ataques que requieran un dispositivo o navegador ya comprometido.
 - Versiones soportadas: solo la rama `main` desplegada en producción.
 
 ## Modelo de amenazas (sitio estático + traspaso a WhatsApp)
 
-Voltia es un sitio 100 % estático sin backend propio, sin cuentas de usuario, sin pagos online y sin cookies. El único "canal de escritura" es un enlace `https://wa.me/<número>?text=...` que el usuario abre voluntariamente. Detalle en [docs/10-security](./docs/10-security.md).
+Raiden es un sitio 100 % estático sin backend propio, sin cuentas de usuario, sin pagos online y sin cookies. El único "canal de escritura" es un enlace `https://wa.me/<número>?text=...` que el usuario abre voluntariamente. Detalle en [docs/10-security](./docs/10-security.md).
 
 | Activo | Amenaza | Control |
 |---|---|---|
 | HTML/JS servido | XSS vía notas del carrito o parámetros URL | Escape por defecto de Astro/Preact; sin `set:html`/`innerHTML` con entrada de usuario; CSP con `script-src 'self'` (sin `unsafe-inline` en scripts) |
 | Enlace `wa.me` | Inyección de texto, cambio de número, URL excesiva | Número solo desde `src/config/site.ts` (`PUBLIC_WHATSAPP_NUMBER`), nunca de props/URL/localStorage; `sanitizeNotes` (control chars fuera, longitud máxima); `encodeURIComponent` sobre el mensaje completo; el mensaje es **visible para el usuario en WhatsApp antes de enviarlo** |
-| Carrito | Alteración de precios o ítems | Solo en `localStorage` (`voltia:cart:v1`) con `{productId, variantId, colorId, quantity}`; precios recalculados desde el catálogo en cada render; estructura validada al hidratar |
+| Carrito | Alteración de precios o ítems | Solo en `localStorage` (`raiden:cart:v1`) con `{productId, variantId, colorId, quantity}`; precios recalculados desde el catálogo en cada render; estructura validada al hidratar |
 | Datos personales | Fuga / RGPD | **No se almacena PII**: ni nombre, ni teléfono, ni email, ni notas persistidas; sin cookies ni trackers; analítica opcional sin cookies |
 | Clickjacking | Iframe malicioso | `X-Frame-Options: DENY` + `frame-ancestors 'none'` |
 | Cadena de suministro | Paquete npm o Action comprometida | `npm ci` con lockfile, `npm audit --audit-level=high` bloqueante, `--ignore-scripts` donde es posible, `permissions: contents: read`, sin secretos en CI |
@@ -60,7 +60,7 @@ Notas sobre la CSP:
 
 ## Auditoría manual recomendada antes de cada release
 
-1. `curl -I https://voltia.es` → CSP, HSTS, nosniff, Referrer-Policy, Permissions-Policy presentes.
+1. `curl -I https://raiden.pe` → CSP, HSTS, nosniff, Referrer-Policy, Permissions-Policy presentes.
 2. securityheaders.com y Mozilla Observatory con nota A/A+.
 3. Consola del navegador sin violaciones CSP en `/`, una ficha de producto, `/carrito`, `/comparar` y `/encuentra-tu-moto`.
 4. Añadir un producto, escribir notas con `<script>` y saltos de línea, pulsar "Solicitar pedido": el texto llega codificado en `?text=` y nunca se renderiza como HTML.

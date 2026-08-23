@@ -1,6 +1,6 @@
 # 19 — Despliegue
 
-Procedimiento de despliegue de Voltia en Cloudflare Pages desde GitHub, con verificación y rollback. Alternativas de hosting al final. Relacionado con [13-cloudflare](./13-cloudflare.md), [14-devops](./14-devops.md), [10-security](./10-security.md) y [20-migration](./20-migration.md).
+Procedimiento de despliegue de Raiden en Cloudflare Pages desde GitHub, con verificación y rollback. Alternativas de hosting al final. Relacionado con [13-cloudflare](./13-cloudflare.md), [14-devops](./14-devops.md), [10-security](./10-security.md) y [20-migration](./20-migration.md).
 
 ## 1. Principios
 
@@ -39,7 +39,7 @@ Flujo resultante: `push` a rama → Cloudflare construye preview y comenta la UR
 | Variable | Production | Preview | Uso |
 |---|---|---|---|
 | `NODE_VERSION` | `22.12.0` | `22.12.0` | Runtime de build |
-| `PUBLIC_SITE_URL` | `https://voltia.es` (o dominio final) | `https://preview.voltia.es` | `site` en `astro.config.mjs`, canonicals, sitemap |
+| `PUBLIC_SITE_URL` | `https://raiden.pe` (o dominio final) | `https://preview.raiden.pe` | `site` en `astro.config.mjs`, canonicals, sitemap |
 | `PUBLIC_WHATSAPP_NUMBER` | Número real de ventas | Número de pruebas del equipo | `src/config/site.ts` |
 | `PUBLIC_ANALYTICS_PROVIDER` | `cloudflare` (o `noop`) | `console` | [18-analytics](./18-analytics.md) |
 | `PUBLIC_CF_BEACON_TOKEN` | Token del panel Web Analytics | vacío | Beacon |
@@ -49,20 +49,20 @@ En preview, `public/_headers` añade `X-Robots-Tag: noindex` cuando `PUBLIC_ROBO
 
 ## 5. Previews por PR
 
-- Cada PR obtiene `https://<hash>.voltia.pages.dev` y, por rama, `https://<rama>.voltia.pages.dev`.
+- Cada PR obtiene `https://<hash>.raiden.pages.dev` y, por rama, `https://<rama>.raiden.pages.dev`.
 - El bot de Cloudflare publica la URL en la PR. QA ejecuta la checklist de la sección 7 sobre esa URL.
 - Las previews usan el número de WhatsApp de pruebas: ningún clic de QA llega a ventas.
 - Las previews caducan con la rama; no se conservan como entornos permanentes.
 
 ## 6. Dominio y HTTPS
 
-1. Pages → Custom domains → añadir `voltia.es` y `www.voltia.es`.
-2. Si el DNS está en Cloudflare, los registros CNAME se crean solos; si no, crear `CNAME www → voltia.pages.dev` y usar CNAME flattening o ALIAS en el apex.
+1. Pages → Custom domains → añadir `raiden.pe` y `www.raiden.pe`.
+2. Si el DNS está en Cloudflare, los registros CNAME se crean solos; si no, crear `CNAME www → raiden.pages.dev` y usar CNAME flattening o ALIAS en el apex.
 3. SSL/TLS: modo Full (strict); certificado Universal emitido automáticamente. Activar "Always Use HTTPS" y HSTS (max-age 6 meses, includeSubDomains, preload solo tras dos semanas sin incidencias).
 4. Redirección `www → apex` (o al revés, una sola canónica) en `public/_redirects`:
 
 ```
-https://www.voltia.es/* https://voltia.es/:splat 301
+https://www.raiden.pe/* https://raiden.pe/:splat 301
 ```
 
 5. Comprobar que `PUBLIC_SITE_URL` coincide exactamente con la canónica elegida.
@@ -71,14 +71,14 @@ https://www.voltia.es/* https://voltia.es/:splat 301
 
 | # | Comprobación | Cómo | Resultado esperado |
 |---|---|---|---|
-| 1 | Cabeceras de seguridad | `curl -I https://voltia.es` | CSP, HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` presentes |
-| 2 | Sitemap | `curl https://voltia.es/sitemap-index.xml` | 200, URLs con el dominio canónico, sin `/carrito` ni `/comparar` |
-| 3 | robots | `curl https://voltia.es/robots.txt` | `Allow: /`, `Sitemap:` con URL absoluta; en preview `Disallow: /` |
+| 1 | Cabeceras de seguridad | `curl -I https://raiden.pe` | CSP, HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` presentes |
+| 2 | Sitemap | `curl https://raiden.pe/sitemap-index.xml` | 200, URLs con el dominio canónico, sin `/carrito` ni `/comparar` |
+| 3 | robots | `curl https://raiden.pe/robots.txt` | `Allow: /`, `Sitemap:` con URL absoluta; en preview `Disallow: /` |
 | 4 | Enlace WhatsApp | Añadir un producto, abrir carrito, pulsar "Solicitar pedido" | URL `https://wa.me/<número>?text=...` con el número de producción y mensaje decodificado correcto |
 | 5 | Lighthouse móvil en `/`, un listado y una ficha | `npx lhci autorun` o PageSpeed Insights | Performance ≥ 90, LCP < 2,0 s, INP < 200 ms, CLS < 0,1 |
 | 6 | Imágenes | DevTools → Network | AVIF/WebP servidos, `width`/`height` presentes, sin CLS |
-| 7 | 404 | `curl -I https://voltia.es/no-existe` | 404 con página propia |
-| 8 | Redirección www | `curl -I https://www.voltia.es/` | 301 a la canónica |
+| 7 | 404 | `curl -I https://raiden.pe/no-existe` | 404 con página propia |
+| 8 | Redirección www | `curl -I https://www.raiden.pe/` | 301 a la canónica |
 | 9 | Analítica | Panel de Cloudflare Web Analytics | Visitas registradas en los primeros 10 minutos |
 | 10 | Sin secretos | `grep -r "SUPABASE_SERVICE" dist/` | Sin resultados |
 
@@ -97,7 +97,7 @@ Porque el artefacto es `dist/`, cambiar de hosting es configuración, no código
 
 | Aspecto | Cloudflare Pages | Vercel | Netlify | S3 + CloudFront | Nginx |
 |---|---|---|---|---|---|
-| Build | Panel (`npm run build`, `dist`) | `vercel.json` / detección Astro | `netlify.toml` | CI sube `dist/` con `aws s3 sync` | CI hace `rsync` a `/var/www/voltia` |
+| Build | Panel (`npm run build`, `dist`) | `vercel.json` / detección Astro | `netlify.toml` | CI sube `dist/` con `aws s3 sync` | CI hace `rsync` a `/var/www/raiden` |
 | Cabeceras | `public/_headers` | `headers` en `vercel.json` | `public/_headers` (mismo formato) | Response Headers Policy en CloudFront | `add_header` en `server {}` |
 | Redirecciones | `public/_redirects` | `redirects` en `vercel.json` | `public/_redirects` | CloudFront Function | `return 301` |
 | Previews por PR | Sí | Sí | Sí | No (manual) | No |
@@ -120,8 +120,8 @@ Porque el artefacto es `dist/`, cambiar de hosting es configuración, no código
 | Sitio caído tras deploy | Rollback (sección 8); después investigar en la preview |
 | Enlace WhatsApp abre número incorrecto | Comprobar `PUBLIC_WHATSAPP_NUMBER` del entorno; relanzar build. No hay números en código |
 | Cabeceras ausentes | Verificar que `public/_headers` está en `dist/_headers`; `_headers` no admite comodines anidados mal formados: validar con `npx wrangler pages dev dist` |
-| Sitemap con dominio `voltia.example.com` | `PUBLIC_SITE_URL` no definido en ese entorno |
-| Certificado pendiente > 15 min | Comprobar que el CNAME apunta a `voltia.pages.dev` y que no hay registros AAAA residuales |
+| Sitemap con dominio `raiden.example.com` | `PUBLIC_SITE_URL` no definido en ese entorno |
+| Certificado pendiente > 15 min | Comprobar que el CNAME apunta a `raiden.pages.dev` y que no hay registros AAAA residuales |
 | Preview indexada en Google | Confirmar `PUBLIC_ROBOTS=noindex` y Cloudflare Access activo en previews |
 | Necesidad de purgar caché | Pages invalida por despliegue; para assets con hash no es necesario. Para `robots.txt` o `_headers`: Caching → Purge by URL |
 

@@ -1,15 +1,15 @@
 {
   "id": "b7e2d9c1-0000-4003-9c2f-000000000003",
-  "slug": "casco-integral-voltia",
-  "name": "Casco integral Voltia",
+  "slug": "casco-integral-raiden",
+  "name": "Casco integral Raiden",
   "description": "Casco integral homologado ECE 22.06 con calota de fibra, visera solar interior y forro desmontable. Tallas XS a XXL, acabado negro mate con detalle volt.",
   "price": {
-    "amount": 18900,
-    "currency": "EUR"
+    "amount": 34900,
+    "currency": "PEN"
   },
   "image": {
-    "src": "~/assets/accessories/casco-integral-voltia.svg",
-    "alt": "Casco integral Voltia Voltia",
+    "src": "~/assets/accessories/casco-integral-raiden.svg",
+    "alt": "Casco integral Raiden Raiden",
     "width": 800,
     "height": 800
   },

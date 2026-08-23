@@ -6,11 +6,11 @@
   "claim": "Más potencia, más autonomía, misma libertad urbana",
   "description": "El URBAN S2 PRO lleva el scooter urbano al siguiente nivel con motor de 3 kW, batería de 72V y frenada combinada. Arranca con decisión en semáforos y cuestas, y mantiene los 45 km/h sin esfuerzo con dos personas.",
   "category": "scooters-electricos",
-  "brand": "Voltia",
+  "brand": "Raiden",
   "images": [
     {
       "src": "~/assets/products/urban-s2-pro-1.svg",
-      "alt": "URBAN S2 PRO, scooter eléctrico urbano premium Voltia, vista lateral",
+      "alt": "URBAN S2 PRO, scooter eléctrico urbano premium Raiden, vista lateral",
       "width": 1600,
       "height": 1000
     },
@@ -47,7 +47,7 @@
     "weightKg": 92,
     "maxLoadKg": 160,
     "seats": 2,
-    "license": "AM",
+    "license": "B-IIa",
     "dimensionsMm": [
       1850,
       720,
@@ -74,8 +74,8 @@
       "name": "Batería 72V 32Ah",
       "description": "72V 32Ah · 80 km",
       "price": {
-        "amount": 289900,
-        "currency": "EUR"
+        "amount": 649000,
+        "currency": "PEN"
       },
       "availability": "en-stock",
       "sku": "VT-S2P-7232",
@@ -86,8 +86,8 @@
       "name": "Batería 72V 50Ah",
       "description": "72V 50Ah · 120 km",
       "price": {
-        "amount": 339900,
-        "currency": "EUR"
+        "amount": 729000,
+        "currency": "PEN"
       },
       "availability": "en-stock",
       "sku": "VT-S2P-7250",
@@ -131,7 +131,7 @@
     "bateria-adicional-72v-50ah",
     "cargador-rapido-10a",
     "casco-jet-urbano",
-    "casco-integral-voltia",
+    "casco-integral-raiden",
     "baul-trasero-45l",
     "candado-disco-alarma",
     "funda-exterior-impermeable"
@@ -176,7 +176,7 @@
     },
     {
       "title": "Pantalla y modos de conducción",
-      "text": "Pantalla TFT de 5\" a color legible a pleno sol, con conexión a la app Voltia para localizar el vehículo y ver el estado de carga. Modos Eco, Normal y Sport más marcha atrás."
+      "text": "Pantalla TFT de 5\" a color legible a pleno sol, con conexión a la app Raiden para localizar el vehículo y ver el estado de carga. Modos Eco, Normal y Sport más marcha atrás."
     }
   ],
   "faqs": [
@@ -185,16 +185,16 @@
       "answer": "La autonomía declarada es de 80 km en modo Eco con un conductor de unos 75 kg y a velocidad constante. En uso mixto urbano real, con paradas y modo Normal, puedes esperar entre 56 y 68 km. La variante Batería 72V 50Ah amplía la autonomía."
     },
     {
-      "question": "¿Qué carnet necesito para conducir el URBAN S2 PRO?",
-      "answer": "Necesitas el carnet AM (ciclomotor, a partir de 15 años) o cualquier carnet superior, incluido el carnet B de coche. Se matricula como ciclomotor con su placa amarilla."
+      "question": "¿Qué licencia necesito para conducir el URBAN S2 PRO?",
+      "answer": "El URBAN S2 PRO es un scooter de 45 km/h: según la normativa vigente del MTC requiere licencia de conducir clase B (categoría B-IIa o superior). Además debe contar con placa (inscripción en SUNARP), SOAT vigente y casco homologado. Nuestro asesor te orienta sobre los trámites."
     },
     {
       "question": "¿Qué garantía tiene?",
-      "answer": "El URBAN S2 PRO tiene 2 años de garantía en vehículo y 12 meses en batería, con servicio técnico propio en España y recambios en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
+      "answer": "El URBAN S2 PRO tiene 2 años de garantía en vehículo y 12 meses en batería, con servicio técnico propio en Lima y repuestos en stock. La garantía cubre defectos de fabricación; no cubre desgaste normal ni daños por caídas."
     },
     {
       "question": "¿Cuál es el plazo de entrega?",
-      "answer": "Las unidades en stock salen del almacén en 24-48 h laborables y llegan montadas y revisadas en 3-5 días laborables a península. Los pedidos bajo pedido tienen un plazo orientativo de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
+      "answer": "Las unidades en stock salen de nuestro almacén en Lima en 24-48 h hábiles y llegan montadas y revisadas en 3-7 días hábiles en Lima Metropolitana y en 7-15 días hábiles en provincias (plazos referenciales, vía courier o agencia según destino). Los productos bajo pedido tienen un plazo referencial de 4 a 8 semanas que confirmamos por WhatsApp antes de formalizar la compra."
     }
   ],
   "reviews": [
@@ -214,7 +214,7 @@
   "featured": 80,
   "publishedAt": "2026-02-18T09:00:00.000Z",
   "seo": {
-    "title": "URBAN S2 PRO | Scooter eléctrico urbano premium | Voltia",
-    "description": "URBAN S2 PRO: scooter eléctrico de 3 kW, 45 km/h, batería 72V extraíble y hasta 120 km. Desde 2.899 €. Garantía 2 años y servicio técnico en España."
+    "title": "URBAN S2 PRO | Scooter eléctrico urbano premium | Raiden",
+    "description": "URBAN S2 PRO: scooter eléctrico de 3 kW, 45 km/h, batería 72V extraíble y hasta 120 km. Desde S/ 6,490. Garantía 2 años y servicio técnico en Lima."
   }
 }

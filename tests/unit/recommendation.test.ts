@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { recommend, scoreProduct, useCaseLabel, type FinderAnswers } from '../../src/domain/recommendation';
-import { eur } from '../../src/domain/money';
+import { pen } from '../../src/domain/money';
 import { baseSpecs, makeProduct, variant } from './fixtures';
 
 const none: FinderAnswers = { useCases: [], types: [] };
 const city = makeProduct({
   slug: 'city',
   useCases: ['ciudad', 'trabajo'],
-  variants: [variant({ price: eur(300000) })],
+  variants: [variant({ price: pen(300000) })],
   specs: baseSpecs({ rangeKm: 100, topSpeedKmh: 80, powerW: 4000 }),
 });
 
@@ -28,7 +28,7 @@ describe('scoreProduct', () => {
   it('presupuesto: dentro → 100; fuera → penalización proporcional al exceso', () => {
     expect(scoreProduct(city, { ...none, budgetMax: 300000 }).score).toBe(100);
     expect(scoreProduct(city, { ...none, budgetMax: 300000 }).reasons).toContain('Dentro de tu presupuesto');
-    // 3000 € con presupuesto 2000 € → exceso 50 % → s = 0.5
+    // S/ 3,000 con presupuesto S/ 2,000 → exceso 50 % → s = 0.5
     expect(scoreProduct(city, { ...none, budgetMax: 200000 }).score).toBe(50);
     // exceso ≥ 100 % → 0
     expect(scoreProduct(city, { ...none, budgetMax: 100000 }).score).toBe(0);

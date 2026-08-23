@@ -54,7 +54,7 @@ const specRows: [string, string][] = [
   ['Dimensiones (L×An×Al)', `${specs.dimensionsMm.join(' × ')} mm`],
   ...(specs.wheelInches ? ([['Ruedas', `${specs.wheelInches}"`]] as [string, string][]) : []),
   ...(specs.ipRating ? ([['Protección', specs.ipRating]] as [string, string][]) : []),
-  ['Carnet', licenseLabel[specs.license]],
+  ['Licencia', licenseLabel[specs.license]],
   ['Garantía', `${specs.warrantyMonths} meses (batería: ${specs.batteryWarrantyMonths} meses)`],
 ];
 ---
@@ -185,7 +185,7 @@ const specRows: [string, string][] = [
           <li>Asistencia técnica y recambios gestionados por nuestro equipo. Las condiciones completas están en <a href="/garantia">garantía</a>.</li>
         </ul>
         <p class="muted">
-          Precio desde {formatMoney(fromPrice(p))}, IVA incluido. Disponibilidad actual: {availabilityLabel[avail]}. El transporte y la matriculación se confirman en la
+          Precio desde {formatMoney(fromPrice(p))}, IGV incluido. Disponibilidad actual: {availabilityLabel[avail]}. El envío e inscripción (placa) se confirman en la
           solicitud por WhatsApp.
         </p>
       </div>

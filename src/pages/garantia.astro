@@ -34,15 +34,15 @@ const message = 'Hola 👋 Quiero iniciar una reclamación de garantía. Modelo:
           <span class="muted">Garantía de la batería, según modelo (ver ficha técnica)</span>
         </li>
         <li class="card">
-          <strong>Recambios</strong>
+          <strong>Repuestos</strong>
           <span class="muted">Disponibilidad garantizada durante la vida útil del modelo</span>
         </li>
       </ul>
 
       <h2>Plazos de garantía</h2>
       <p>
-        Todos los vehículos cuentan con <strong>24 meses de garantía</strong> desde la fecha de entrega, conforme a la legislación vigente de garantías en bienes
-        de consumo. La <strong>batería</strong> tiene una garantía específica de <strong>entre 12 y 24 meses</strong> según el modelo y la química de la celda; el
+        Todos los vehículos cuentan con <strong>24 meses de garantía</strong> desde la fecha de entrega, válida en todo el Perú y sin perjuicio de los derechos
+        que reconoce al consumidor el Código de Protección y Defensa del Consumidor. La <strong>batería</strong> tiene una garantía específica de <strong>entre 12 y 24 meses</strong> según el modelo y la química de la celda; el
         plazo exacto aparece en la ficha técnica de cada producto.
       </p>
       <p>
@@ -55,13 +55,13 @@ const message = 'Hola 👋 Quiero iniciar una reclamación de garantía. Modelo:
         <li>Defectos de fabricación o de materiales en motor, controlador, batería, cargador, chasis y componentes eléctricos.</li>
         <li>Fallos de la pantalla, iluminación y sistema de frenado no derivados del desgaste.</li>
         <li>Mano de obra y piezas necesarias para la reparación, o sustitución del componente si no es reparable.</li>
-        <li>Recogida y devolución del vehículo cuando la reparación no pueda realizarse a domicilio.</li>
+        <li>Recojo y devolución del vehículo cuando la reparación no pueda realizarse a domicilio (en Lima Metropolitana; en provincias coordinamos el envío a nuestro taller o a un taller colaborador).</li>
       </ul>
 
       <h2>Qué no cubre</h2>
       <ul>
         <li><strong>Desgaste normal:</strong> neumáticos, pastillas y discos de freno, cables, bombillas, fusibles, asiento y elementos estéticos.</li>
-        <li><strong>Mal uso o negligencia:</strong> caídas, accidentes, sobrecarga por encima del peso máximo, uso fuera de vía o competición.</li>
+        <li><strong>Mal uso o negligencia:</strong> caídas, accidentes, sobrecarga por encima del peso máximo, uso fuera de vía no previsto por el modelo o competición.</li>
         <li><strong>Agua:</strong> daños por inmersión o por exposición superior al grado de protección IP indicado en la ficha (por ejemplo, limpieza con agua a presión).</li>
         <li><strong>Modificaciones:</strong> cambios en el controlador, el motor, la batería o el software, y la instalación de piezas no homologadas.</li>
         <li>Uso de cargadores no originales o almacenamiento prolongado de la batería descargada.</li>
@@ -74,21 +74,21 @@ const message = 'Hola 👋 Quiero iniciar una reclamación de garantía. Modelo:
           Escríbenos por <strong>WhatsApp</strong> o por correo a <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a> indicando el modelo, el número de
           bastidor o de pedido y una descripción del problema. Si es posible, adjunta fotos o vídeo.
         </li>
-        <li>Nuestro equipo técnico responde en un plazo máximo de 2 días laborables con el diagnóstico inicial y los siguientes pasos.</li>
-        <li>Si hace falta intervención, organizamos la reparación a domicilio o la recogida del vehículo sin coste para ti cuando el fallo está cubierto.</li>
+        <li>Nuestro equipo técnico en Lima responde en un plazo máximo de 2 días hábiles con el diagnóstico inicial y los siguientes pasos.</li>
+        <li>Si hace falta intervención, organizamos la reparación a domicilio o el recojo del vehículo sin costo para ti cuando el fallo está cubierto. Para provincias, cubrimos el envío nacional del repuesto o del vehículo vía courier o agencia.</li>
         <li>Te devolvemos el vehículo reparado o el componente sustituido, con el informe de la intervención.</li>
       </ol>
 
       <h2>Recambios y mantenimiento</h2>
       <p>
-        Disponemos de recambios originales (baterías, cargadores, controladores, pantallas, frenos y carrocería) durante toda la vida útil del modelo. Fuera de
-        garantía, te enviamos un presupuesto cerrado antes de intervenir. Las revisiones recomendadas están en el manual de cada vehículo y no son obligatorias
+        Disponemos de repuestos originales (baterías, cargadores, controladores, pantallas, frenos y carrocería) durante toda la vida útil del modelo. Fuera de
+        garantía, te enviamos una cotización cerrada (precios en soles, IGV incluido) antes de intervenir, con envío a todo el Perú. Las revisiones recomendadas están en el manual de cada vehículo y no son obligatorias
         para mantener la garantía, siempre que se sigan las indicaciones de uso y carga.
       </p>
 
       <div class="card war__cta">
         <h2>¿Necesitas iniciar una reclamación?</h2>
-        <p class="muted">Ten a mano el modelo y el número de pedido. Te respondemos en el día.</p>
+        <p class="muted">Ten a mano el modelo y el número de pedido. Te respondemos en el día, de L–V 9:00–18:00 y S 9:00–13:00 (hora de Lima).</p>
         <div class="war__ctabtns">
           <WhatsAppLink source="product" message={message} class="btn btn--whatsapp">Reclamar por WhatsApp</WhatsAppLink>
           <a href={`mailto:${site.contactEmail}`} class="btn btn--secondary">Escribir un email</a>

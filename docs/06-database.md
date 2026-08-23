@@ -2,7 +2,7 @@
 
 Esquema Postgres para Supabase (fase posterior al MVP). En MVP no hay base de datos: el catálogo son JSON en `src/content/` ([05-backend](./05-backend.md)). Este esquema es el destino de la migración de [20-migration](./20-migration.md) y la fuente de la API de [07-api](./07-api.md).
 
-Principios: PK `uuid`, `slug` único como identificador público, precios en céntimos (`integer`) con IVA incluido, `timestamptz`, borrado lógico vía `status`, RLS activada en todas las tablas. Fichero: `supabase/migrations/0001_init.sql`.
+Principios: PK `uuid`, `slug` único como identificador público, precios en céntimos (`integer`) con IGV incluido, `timestamptz`, borrado lógico vía `status`, RLS activada en todas las tablas. Fichero: `supabase/migrations/0001_init.sql`.
 
 ## 1. Extensiones, enums y utilidades
 
@@ -11,7 +11,7 @@ create extension if not exists "pgcrypto";
 
 create type product_status as enum ('draft', 'published', 'archived');
 create type stock_status as enum ('in_stock', 'preorder', 'out_of_stock');
-create type licence_type as enum ('none', 'AM', 'A1', 'A2', 'A', 'B');
+create type license_type as enum ('sin-licencia', 'B-I', 'B-IIa', 'B-IIb', 'B-IIc');
 create type use_case as enum ('ciudad', 'interurbano', 'reparto', 'carga', 'ocio', 'trabajo');
 create type order_request_status as enum ('new', 'contacted', 'quoted', 'won', 'lost', 'spam');
 create type whatsapp_source as enum ('cart', 'product', 'contact', 'finder');
@@ -59,7 +59,7 @@ create table products (
   category_id uuid not null references categories(id) on delete restrict,
   status product_status not null default 'draft',
   summary text not null check (char_length(summary) <= 200), description_md text,
-  licence licence_type not null default 'AM', use_cases use_case[] not null default '{}',
+  license license_type not null default 'B-IIa', use_cases use_case[] not null default '{}',
   hero_image_path text, gallery_paths text[] not null default '{}',
   specs jsonb not null default '{}'::jsonb, seo_title text, seo_description text,
   published_at timestamptz,
@@ -122,7 +122,7 @@ create table order_requests (
   public_ref text not null unique default upper(encode(gen_random_bytes(4), 'hex')),
   customer_id uuid references customers(id) on delete set null,
   status order_request_status not null default 'new',
-  total_cents integer not null check (total_cents >= 0), currency char(3) not null default 'EUR',
+  total_cents integer not null check (total_cents >= 0), currency char(3) not null default 'PEN' check (currency = 'PEN'),
   notes text check (char_length(notes) <= 1000), source_path text, ip_hash text, user_agent text,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
@@ -157,7 +157,7 @@ create table blog_posts (
   id uuid primary key default gen_random_uuid(),
   slug slug_t not null unique, title text not null, excerpt text, body_md text not null,
   cover_image_path text, status product_status not null default 'draft',
-  tags text[] not null default '{}', author text not null default 'Voltia', published_at timestamptz,
+  tags text[] not null default '{}', author text not null default 'Raiden', published_at timestamptz,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
 
@@ -290,7 +290,7 @@ create policy reviews_insert_anon on reviews for insert to anon, authenticated w
 ## 9. Seeds
 
 ```sql
-insert into brands (slug, name) values ('voltia', 'Voltia');
+insert into brands (slug, name) values ('raiden', 'Raiden');
 insert into categories (slug, name, sort_order) values
   ('scooters-electricos', 'Scooters eléctricos', 1), ('motos-electricas-urbanas', 'Motos eléctricas urbanas', 2),
   ('bicimotos', 'Bicimotos', 3), ('trimotos', 'Trimotos', 4),

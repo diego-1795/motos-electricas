@@ -1,6 +1,6 @@
 # 12 — Accesibilidad
 
-Objetivo: conformidad WCAG 2.2 nivel AA en todas las páginas públicas, verificada de forma automática (axe-core en E2E, Lighthouse) y manual (teclado, lector de pantalla). La accesibilidad es además obligación legal para comercio electrónico en España desde junio de 2025 (Ley 11/2023, transposición de la Directiva europea de accesibilidad). Ver [02-design-system](./02-design-system.md), [03-ux](./03-ux.md), [04-frontend](./04-frontend.md) y [11-testing](./11-testing.md).
+Objetivo: conformidad WCAG 2.2 nivel AA en todas las páginas públicas, verificada de forma automática (axe-core en E2E, Lighthouse) y manual (teclado, lector de pantalla). La accesibilidad es además además un requisito de buenas prácticas para comercio electrónico en el Perú (Ley 29973 y su reglamento sobre accesibilidad en servicios públicos y privados). Ver [02-design-system](./02-design-system.md), [03-ux](./03-ux.md), [04-frontend](./04-frontend.md) y [11-testing](./11-testing.md).
 
 ## 1. Principios
 
@@ -16,7 +16,7 @@ Objetivo: conformidad WCAG 2.2 nivel AA en todas las páginas públicas, verific
 - Grid de productos: `<ul>` con `<li>` por tarjeta; el nombre del producto es el único enlace de la tarjeta (área clicable ampliada con pseudo-elemento), sin enlaces duplicados.
 - Specs: `<dl>`/`<dt>`/`<dd>` (SpecTile) o `<table>` (CompareTable).
 - Breadcrumbs: `<nav aria-label="Ruta"><ol>` con `aria-current="page"` en el último.
-- Precio: `<p>` con texto completo "5.499 €" sin separar símbolo en `<span>` sin sentido para lectores.
+- Precio: `<p>` con texto completo "S/ 21,996" sin separar símbolo en `<span>` sin sentido para lectores.
 - Enlace "Saltar al contenido" como primer elemento enfocable, visible al recibir foco.
 - `<html lang="es">` en `BaseLayout`; `lang` distinto solo en fragmentos en otro idioma.
 

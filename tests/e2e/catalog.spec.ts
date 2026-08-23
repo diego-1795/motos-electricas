@@ -29,6 +29,9 @@ test.describe('Catálogo', () => {
 
     await page.locator('#f-velocidad').fill('80');
     await expect(page.locator('[data-out="velocidad"]')).toHaveText('80 km/h');
+    // El slider de precio parte del mínimo en soles (1000) y se muestra como "S/ N"
+    await expect(page.locator('[data-out="precio"]')).toHaveText(/^S\/ [\d,]+$/);
+    await expect(page.locator('#f-precio')).toHaveAttribute('min', '1000');
 
     const after = visibleItems(page);
     await expect.poll(() => after.count()).toBeLessThan(total);
@@ -65,7 +68,7 @@ test.describe('Catálogo', () => {
 
   test('un filtro imposible oculta todas las tarjetas y "Quitar filtros" las restaura', async ({ page }) => {
     await openFilters(page);
-    await page.locator('#f-precio').fill('500');
+    await page.locator('#f-precio').fill('1000');
     await expect(visibleItems(page)).toHaveCount(0);
     await expect(page.locator('[data-empty]')).not.toHaveAttribute('hidden', /.*/);
     await expect(page.locator('[data-count]')).toHaveText('0 modelos');
@@ -82,7 +85,7 @@ test.describe('Catálogo', () => {
   test('el mensaje de "sin resultados" solo se ve cuando no hay modelos', async ({ page }) => {
     await expect(page.locator('[data-empty]')).toBeHidden();
     await openFilters(page);
-    await page.locator('#f-precio').fill('500');
+    await page.locator('#f-precio').fill('1000');
     await expect(page.locator('[data-empty]')).toBeVisible();
     await page.locator('[data-reset]').click();
     await expect(page.locator('[data-empty]')).toBeHidden();
