@@ -21,6 +21,14 @@
     {
       "question": "¿Recibo comprobante y documentación para sacar la placa?",
       "answer": "Sí. Con cada vehículo recibes boleta o factura electrónica (SUNAT) con IGV y la documentación del fabricante necesaria para la inscripción en SUNARP y la obtención de la placa. Si quieres, te orientamos con el trámite de placa y SOAT; consulta con tu asesor las condiciones."
+    },
+    {
+      "question": "¿Hacen envíos contra entrega?",
+      "answer": "No trabajamos con pago contra entrega de forma estándar: el pedido se confirma y se paga por los medios que te indica tu asesor (transferencia, Yape/Plin o efectivo en tienda) antes del despacho. Dicho esto, cuéntale tu caso por WhatsApp: según el destino y el vehículo, tu asesor te confirmará las opciones disponibles."
+    },
+    {
+      "question": "¿Puedo probar la moto antes de comprar?",
+      "answer": "Sí. Ofrecemos test ride en nuestra tienda de Lima con los modelos disponibles en sala. Coordina día y hora por WhatsApp con tu asesor, trae tu licencia de conducir vigente y un casco (si no tienes, te prestamos uno). Si estás en provincias, consulta disponibilidad: te asesoramos en video llamada con el modelo que te interesa."
     }
   ]
 }

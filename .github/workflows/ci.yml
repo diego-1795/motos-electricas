@@ -77,6 +77,8 @@ jobs:
       - run: npm run build
       - name: Presupuestos de rendimiento (JS/CSS/HTML gzip por página)
         run: npm run perf:budget
+      - name: Validar JSON-LD (schema.org)
+        run: npm run check:jsonld
       - name: Comprobar ficheros de hosting y ausencia de secretos en dist
         run: |
           set -euo pipefail
