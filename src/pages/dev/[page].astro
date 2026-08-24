@@ -1,0 +1,178 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SpecTiles from '../../components/product/SpecTiles.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import { repos } from '../../data';
+import ProductCard from '../../components/product/ProductCard.astro';
+
+/**
+ * Styleguide del Design System (docs/02-design-system.md).
+ * SOLO en desarrollo: en el build de producción getStaticPaths devuelve []
+ * y la ruta no se genera.
+ */
+export function getStaticPaths() {
+  return import.meta.env.DEV ? [{ params: { page: 'ui' } }] : [];
+}
+
+const demo = (await repos.products.hero())!;
+const swatches = [
+  ['--n-950', 'n-950'], ['--n-900', 'n-900'], ['--n-700', 'n-700'], ['--n-500', 'n-500'],
+  ['--n-300', 'n-300'], ['--n-100', 'n-100'], ['--n-50', 'n-50'],
+  ['--volt', 'volt'], ['--electric', 'electric'], ['--success', 'success'], ['--warning', 'warning'], ['--danger', 'danger'],
+];
+---
+
+<BaseLayout title="Design System (dev)" description="Styleguide interno de Raiden. Solo visible en desarrollo." path="/dev/ui" noindex>
+  <div class="container section ui">
+    <Breadcrumbs items={[{ name: 'Inicio', url: '/' }, { name: 'Design System', url: '/dev/ui' }]} />
+    <h1>Design System</h1>
+    <p class="muted">Referencia viva de tokens y componentes. Esta página no existe en producción.</p>
+
+    <section aria-labelledby="ui-color">
+      <h2 id="ui-color">Color</h2>
+      <ul role="list" class="ui__swatches">
+        {swatches.map(([varName, label]) => (
+          <li>
+            <span class="ui__chip" style={`background: var(${varName})`}></span>
+            <code>{label}</code>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section aria-labelledby="ui-type">
+      <h2 id="ui-type">Tipografía</h2>
+      <p style="font-size: var(--fs-4xl); font-weight: 700; letter-spacing: -0.035em">Display 4xl</p>
+      <p style="font-size: var(--fs-3xl); font-weight: 600">Heading 3xl</p>
+      <p style="font-size: var(--fs-2xl); font-weight: 600">Heading 2xl</p>
+      <p style="font-size: var(--fs-xl)">Heading xl</p>
+      <p>Body md — La ODIN 1.0 es la moto eléctrica insignia de Raiden.</p>
+      <p class="muted" style="font-size: var(--fs-sm)">Muted sm</p>
+      <p class="eyebrow">Eyebrow</p>
+    </section>
+
+    <section aria-labelledby="ui-btn">
+      <h2 id="ui-btn">Botones</h2>
+      <div class="ui__row">
+        <button class="btn btn--primary">Primario</button>
+        <button class="btn btn--secondary">Secundario</button>
+        <button class="btn btn--ghost">Ghost</button>
+        <a href="#" class="btn btn--whatsapp">WhatsApp</a>
+        <button class="btn btn--primary btn--lg">Grande</button>
+        <button class="btn btn--secondary btn--sm">Pequeño</button>
+        <button class="btn btn--primary" disabled>Deshabilitado</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="ui-badge">
+      <h2 id="ui-badge">Badges</h2>
+      <div class="ui__row">
+        <span class="badge">Neutro</span>
+        <span class="badge badge--stock">En stock</span>
+        <span class="badge badge--order">Bajo pedido</span>
+        <span class="badge badge--soon">Próximamente</span>
+        <span class="badge badge--new">Nuevo</span>
+      </div>
+    </section>
+
+    <section aria-labelledby="ui-form">
+      <h2 id="ui-form">Formularios</h2>
+      <div class="ui__grid2">
+        <label class="field"><span class="label">Input</span><input class="input" placeholder="Escribe aquí" /></label>
+        <label class="field"><span class="label">Select</span><select class="select"><option>Opción A</option><option>Opción B</option></select></label>
+        <label class="field" style="grid-column: 1 / -1"><span class="label">Textarea</span><textarea class="textarea" placeholder="Notas…"></textarea><span class="hint">Texto de ayuda</span></label>
+      </div>
+      <div class="ui__row" style="margin-top: var(--s-4)">
+        <label class="choice"><input type="checkbox" checked /> Chip seleccionado</label>
+        <label class="choice"><input type="checkbox" /> Chip</label>
+        <label class="swatch" style="background: #111315"><input type="radio" name="sw" checked /><span class="visually-hidden">Negro</span></label>
+        <label class="swatch" style="background: #0b5fff"><input type="radio" name="sw" /><span class="visually-hidden">Azul</span></label>
+        <div class="stepper"><button type="button">−</button><input type="number" value="1" aria-label="Cantidad" /><button type="button">+</button></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="ui-card">
+      <h2 id="ui-card">Cards y tiles</h2>
+      <div class="ui__grid2">
+        <div style="max-width: 20rem"><ProductCard product={demo} showCompare={false} /></div>
+        <SpecTiles specs={demo.specs} compact />
+      </div>
+    </section>
+
+    <section aria-labelledby="ui-misc">
+      <h2 id="ui-misc">Accordion, tabla y toast</h2>
+      <details class="accordion" open>
+        <summary>¿Pregunta frecuente?</summary>
+        <div>Respuesta de ejemplo con el estilo del acordeón.</div>
+      </details>
+      <div class="table-wrap" style="margin-top: var(--s-4)">
+        <table class="table">
+          <thead><tr><th>Métrica</th><th>Valor</th></tr></thead>
+          <tbody><tr><th scope="row">Autonomía</th><td>120 km</td></tr><tr><th scope="row">Potencia</th><td>5 kW</td></tr></tbody>
+        </table>
+      </div>
+      <p class="toast" style="position: static; transform: none; display: inline-block; margin-top: var(--s-4)">Toast de ejemplo</p>
+    </section>
+
+    <section aria-labelledby="ui-dark" class="surface-dark ui__dark">
+      <h2 id="ui-dark">Superficie oscura</h2>
+      <div class="ui__row">
+        <button class="btn btn--primary">Primario (volt)</button>
+        <button class="btn btn--secondary">Secundario</button>
+        <span class="badge badge--stock">En stock</span>
+        <span class="badge badge--new">Nuevo</span>
+        <p class="eyebrow" style="margin: 0">Eyebrow oscuro</p>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .ui section {
+    margin-top: var(--s-12);
+  }
+  .ui h2 {
+    font-size: var(--fs-xl);
+    margin-bottom: var(--s-4);
+    padding-bottom: var(--s-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .ui__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-4);
+  }
+  .ui__swatches li {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
+    align-items: center;
+    font-size: var(--fs-xs);
+  }
+  .ui__chip {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--r-md);
+    border: 1px solid var(--border);
+    display: block;
+  }
+  .ui__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    align-items: center;
+  }
+  .ui__grid2 {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .ui__dark {
+    padding: var(--s-6);
+    border-radius: var(--r-xl);
+  }
+  @media (min-width: 768px) {
+    .ui__grid2 {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
