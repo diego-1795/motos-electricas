@@ -1,0 +1,25 @@
+{
+  "id": "rp-13",
+  "slug": "cable-freno-delantero-350w",
+  "name": "Cable de freno delantero 350 W",
+  "description": "Cable de freno delantero estándar de 1.20 m para bicimotos de 350 W.",
+  "price": {
+    "amount": 2500,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/cable-de-freno-delantero-350w-estandar-1-20-mts.jpg",
+    "alt": "Cable de freno delantero 350 W",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "frenos",
+  "unit": "UND",
+  "code": "RP-013",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

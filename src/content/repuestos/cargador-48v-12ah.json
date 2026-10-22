@@ -1,0 +1,25 @@
+{
+  "id": "rp-18",
+  "slug": "cargador-48v-12ah",
+  "name": "Cargador 48V 12Ah",
+  "description": "Cargador de 220 V para baterías de plomo-ácido de 48V 12Ah.",
+  "price": {
+    "amount": 8000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/cargador-48v12ah.jpg",
+    "alt": "Cargador 48V 12Ah",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "cargador",
+  "unit": "UND",
+  "code": "RP-018",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

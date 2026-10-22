@@ -1,0 +1,25 @@
+{
+  "id": "rp-02",
+  "slug": "bateria-chilwee-48v-20ah",
+  "name": "Batería Chilwee 48V 20Ah",
+  "description": "Batería de plomo-ácido Chilwee de 48V 20Ah para bicimotos versión Premium (500 W).",
+  "price": {
+    "amount": 15000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/bateria-chilwee-20ah.jpg",
+    "alt": "Batería Chilwee 48V 20Ah",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "bateria",
+  "unit": "UND",
+  "code": "RP-002",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

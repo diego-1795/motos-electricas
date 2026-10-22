@@ -217,3 +217,20 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 **Consecuencias.** Contenido, documentación y tests migrados a PEN/es-PE/MTC. Los precios del catálogo son placeholders (×4 sobre los valores originales en euros) pendientes de validación del cliente. Un eventual multi-país queda en el roadmap como i18n de moneda y licencias ([22-roadmap](./22-roadmap.md)).
 
 **Estado.** Aceptada (2026-08-22).
+
+## ADR-015 — Catálogo real RAIDEN: bicimotos, trimotos y repuestos
+
+**Contexto.** El cliente (EG Motors SAC, distribuidor oficial de RAIDEN, Callao) entregó el 2026-10-22 su brief: 4 modelos reales (Golden Eagle, Royal Tiger, Vortex Kobra — bicimotos de 25 km/h; Titan Rhino — trimoto de carga), 26 repuestos, paleta (Raiden Black #111111, Raiden Blue #0142A6, blanco), tipografías (Montserrat + Integral CF), logo, fotos y textos de Nosotros/Contacto/Servicio técnico/Blog. El catálogo anterior (9 modelos ficticios en 7 categorías) era un placeholder.
+
+**Decisión.**
+- `CategorySlug` = `bicimotos | trimotos | repuestos`. Rutas: `/bicimotos/[slug]`, `/trimotos/[slug]`, `/repuestos/[slug]`, `/productos` (todo). Se eliminan `/motos-electricas*`, `/accesorios*` y las categorías ficticias.
+- Versiones comerciales como variantes con `tier`: Estándar (350 W · 48V 12Ah) y Premium (500 W · 48V 20Ah). Precios del Excel del cliente; se excluyen las filas marca "EG MOTORS". Incoherencias a confirmar con el cliente: Royal Tiger (350 W S/ 1,800 > 500 W S/ 1,400) y Vortex Kobra (350 W S/ 1,500 > 500 W S/ 1,200); Titan Rhino S/ 2,700 (Excel) vs S/ 2,800 (presentación).
+- Entidad `Part` (repuestos, unidad UND/PAR) sustituye a `Accessory`; el valor interno de carrito `accessory` se conserva por compatibilidad del estado persistido.
+- Pesos y dimensiones pasan a opcionales (el fabricante no los facilita). `features` guarda la lista completa de características.
+- Diseño: se mantiene la arquitectura y el layout actual; el acento pasa de lima a Raiden Blue; fuentes autoalojadas Montserrat (OFL) e Integral CF (webfonts entregadas por el cliente; licencia a confirmar con él).
+- Contacto: formulario sin backend que compone el mensaje y abre WhatsApp (+51 989 853 431) con alternativa mailto; buscador estático con Pagefind.
+- Razón social, RUC, dirección, horario y redes (@egmotors.peru) centralizados en `src/config/site.ts`.
+
+**Consecuencias.** Reescritura de contenido, páginas y tests; los artículos del blog sobre motos de alta potencia se retiran o adaptan a bicimotos. Las fotos reales sustituyen a los SVG placeholder (Astro genera AVIF/WebP).
+
+**Estado.** Aceptada (2026-10-22).

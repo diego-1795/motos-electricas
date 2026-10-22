@@ -1,14 +1,14 @@
 {
   "slug": "trimotos",
   "name": "Trimotos",
-  "title": "Trimotos eléctricas de tres ruedas",
-  "description": "Trimotos eléctricas de tres ruedas con caja de carga para reparto, pequeños negocios y uso profesional. Estables, robustas y sin emisiones. Desde S/ 5,690.",
-  "tagline": "Estabilidad y capacidad para trabajar",
+  "title": "Trimotos eléctricas de carga en Perú",
+  "description": "Trimoto eléctrica RAIDEN Titan Rhino: motor de 800 W, 250 kg de carga, modo reversa y batería de 60V 20Ah. Fuerza y estabilidad para el trabajo diario. Desde S/ 2,700.",
+  "tagline": "Fuerza, resistencia y capacidad",
   "image": {
-    "src": "~/assets/categories/trimotos.svg",
-    "alt": "Trimotos eléctricas de tres ruedas Raiden",
-    "width": 1200,
-    "height": 800
+    "src": "~/assets/hero/titan-rhino.jpg",
+    "alt": "Trimoto eléctrica RAIDEN Titan Rhino en el laboratorio",
+    "width": 1577,
+    "height": 672
   },
-  "order": 4
+  "order": 2
 }

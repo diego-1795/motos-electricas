@@ -32,7 +32,7 @@ const load = (dir) =>
     .filter(Boolean);
 
 const products = load('products');
-const accessories = load('accessories');
+const accessories = load('repuestos');
 const categories = load('categories');
 const blogFiles = readdirSync(join(ROOT, 'blog')).filter((f) => f.endsWith('.md'));
 

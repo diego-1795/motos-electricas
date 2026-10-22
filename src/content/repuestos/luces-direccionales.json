@@ -1,0 +1,21 @@
+{
+  "id": "rp-08",
+  "slug": "luces-direccionales",
+  "name": "Luces direccionales",
+  "description": "Luces intermitentes direccionales. Se vende por par.",
+  "price": {
+    "amount": 3500,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/faros-direccionales.jpg",
+    "alt": "Luces direccionales",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "iluminacion",
+  "unit": "PAR",
+  "code": "RP-008",
+  "compatibleWith": []
+}

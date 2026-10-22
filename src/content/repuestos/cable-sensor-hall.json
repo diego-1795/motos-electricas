@@ -1,0 +1,21 @@
+{
+  "id": "rp-17",
+  "slug": "cable-sensor-hall",
+  "name": "Cable con sensor Hall",
+  "description": "Cable con sensor Hall para motor sin escobillas.",
+  "price": {
+    "amount": 1500,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/cable-con-sensor-hall.jpg",
+    "alt": "Cable con sensor Hall",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "cables",
+  "unit": "UND",
+  "code": "RP-017",
+  "compatibleWith": []
+}

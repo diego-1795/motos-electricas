@@ -1,5 +1,5 @@
 import { getCollection, getEntry } from 'astro:content';
-import type { Accessory, BlogPost, Category, CategorySlug, Product } from '../domain/types';
+import type { BlogPost, Category, CategorySlug, Part, Product } from '../domain/types';
 import type { Repositories } from './repositories';
 
 /**
@@ -32,16 +32,16 @@ const products = {
   },
 };
 
-const accessories = {
-  async all(): Promise<Accessory[]> {
-    return (await getCollection('accessories')).map((e) => e.data as Accessory);
+const parts = {
+  async all(): Promise<Part[]> {
+    return (await getCollection('repuestos')).map((e) => e.data as Part);
   },
   async bySlug(slug: string) {
     return (await this.all()).find((a) => a.slug === slug);
   },
   async bySlugs(slugs: string[]) {
     const all = await this.all();
-    return slugs.map((s) => all.find((a) => a.slug === s)).filter((a): a is Accessory => !!a);
+    return slugs.map((s) => all.find((a) => a.slug === s)).filter((a): a is Part => !!a);
   },
   async compatibleWith(productSlug: string) {
     return (await this.all()).filter((a) => a.compatibleWith.length === 0 || a.compatibleWith.includes(productSlug));
@@ -80,4 +80,4 @@ const faqs = {
   },
 };
 
-export const jsonRepositories: Repositories = { products, accessories, categories, blog, faqs };
+export const jsonRepositories: Repositories = { products, parts, categories, blog, faqs };

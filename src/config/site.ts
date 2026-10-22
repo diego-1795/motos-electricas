@@ -5,21 +5,30 @@
  */
 export const site = {
   name: 'Raiden',
-  tagline: 'Digital Electric Mobility Showroom',
+  tagline: 'The Future of Power',
   description:
-    'Showroom digital de motos eléctricas en Perú: scooters, motos, bicimotos, trimotos y vehículos de carga. Compara, configura y solicita tu compra por WhatsApp.',
+    'Bicimotos y trimotos eléctricas en Lima, Perú. Descubre tu instinto RAIDEN: Golden Eagle, Royal Tiger, Vortex Kobra y Titan Rhino. Repuestos, servicio técnico y asesoría por WhatsApp.',
+  /** Empresa titular (distribuidor oficial) */
+  legalName: 'EG Motors SAC',
+  ruc: '20615247384',
+  address: 'Calle Omega con Pj 48, Bocanegra, Callao',
+  mapsUrl: 'https://maps.app.goo.gl/x3R1hTben769u2PX7',
+  hours: 'Lunes a domingo: 10:00 a. m. – 8:00 p. m.',
+  /** Número visible (formato humano) */
+  phoneDisplay: '+51 989 853 431',
   url: import.meta.env.PUBLIC_SITE_URL ?? 'https://raiden.example.com',
   locale: 'es-PE',
   lang: 'es',
   currency: 'PEN',
   country: 'PE',
   /** Número en formato internacional sin "+", p.ej. 51987654321 (Perú) */
-  whatsappNumber: (import.meta.env.PUBLIC_WHATSAPP_NUMBER as string | undefined) ?? '51987654321',
-  contactEmail: (import.meta.env.PUBLIC_CONTACT_EMAIL as string | undefined) ?? 'hola@raiden.example.com',
+  whatsappNumber: (import.meta.env.PUBLIC_WHATSAPP_NUMBER as string | undefined) ?? '51989853431',
+  contactEmail: (import.meta.env.PUBLIC_CONTACT_EMAIL as string | undefined) ?? 'raiden.peru@gmail.com',
   social: {
-    instagram: 'https://instagram.com/raiden',
-    tiktok: 'https://tiktok.com/@raiden',
-    youtube: 'https://youtube.com/@raiden',
+    instagram: 'https://www.instagram.com/egmotors.peru/',
+    tiktok: 'https://www.tiktok.com/@egmotors.peru',
+    facebook: 'https://www.facebook.com/EGMOTORSPERU',
+    youtube: '',
   },
   /** Máximo de modelos en el comparador */
   compareLimit: 3,

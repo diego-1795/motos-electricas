@@ -1,0 +1,21 @@
+{
+  "id": "rp-10",
+  "slug": "espejos-retrovisores",
+  "name": "Espejos retrovisores",
+  "description": "Juego de espejos retrovisores. Se vende por par.",
+  "price": {
+    "amount": 3000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/espejos-frontal.jpg",
+    "alt": "Espejos retrovisores",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "mandos",
+  "unit": "PAR",
+  "code": "RP-010",
+  "compatibleWith": []
+}

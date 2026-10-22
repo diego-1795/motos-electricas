@@ -1,0 +1,21 @@
+{
+  "id": "rp-11",
+  "slug": "faro-delantero",
+  "name": "Faro delantero",
+  "description": "Faro delantero con luces multicolores.",
+  "price": {
+    "amount": 9000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/faro-delantero.jpg",
+    "alt": "Faro delantero",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "iluminacion",
+  "unit": "UND",
+  "code": "RP-011",
+  "compatibleWith": []
+}

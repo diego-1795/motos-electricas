@@ -1,0 +1,24 @@
+{
+  "id": "rp-09",
+  "slug": "llanta-14x2-5",
+  "name": "Llanta sin cámara 14 x 2.5\"",
+  "description": "Neumático sin cámara de 14 x 2.5\" para bicimoto.",
+  "price": {
+    "amount": 7000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/llanta-sin-camara-14x2-5.jpg",
+    "alt": "Llanta sin cámara 14 x 2.5\"",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "llantas",
+  "unit": "UND",
+  "code": "RP-009",
+  "compatibleWith": [
+    "golden-eagle",
+    "vortex-kobra"
+  ]
+}

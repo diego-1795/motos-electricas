@@ -1,0 +1,25 @@
+{
+  "id": "rp-19",
+  "slug": "cargador-48v-20ah",
+  "name": "Cargador 48V 20Ah",
+  "description": "Cargador de 220 V para baterías de plomo-ácido de 48V 20Ah.",
+  "price": {
+    "amount": 10000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/cargador-48v20ah.jpg",
+    "alt": "Cargador 48V 20Ah",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "cargador",
+  "unit": "UND",
+  "code": "RP-019",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

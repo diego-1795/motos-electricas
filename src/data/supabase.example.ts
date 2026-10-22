@@ -12,7 +12,7 @@
  *
  * Renombrar a supabase.ts y completar los TODO cuando se necesite.
  */
-import type { Accessory, BlogPost, Category, CategorySlug, Product } from '../domain/types';
+import type { BlogPost, Category, CategorySlug, Part, Product } from '../domain/types';
 import type { Repositories } from './repositories';
 
 type Client = {
@@ -36,11 +36,11 @@ export function createSupabaseRepositories(client: Client): Repositories {
     featured: async (limit = 4) => (await products.all()).slice(0, limit),
   };
 
-  const accessories: Repositories['accessories'] = {
-    all: () => rows<Accessory>('accessories', 'name'),
-    bySlug: async (slug) => (await accessories.all()).find((a) => a.slug === slug),
-    bySlugs: async (slugs) => (await accessories.all()).filter((a) => slugs.includes(a.slug)),
-    compatibleWith: async (slug) => (await accessories.all()).filter((a) => !a.compatibleWith.length || a.compatibleWith.includes(slug)),
+  const parts: Repositories['parts'] = {
+    all: () => rows<Part>('parts', 'name'),
+    bySlug: async (slug) => (await parts.all()).find((a) => a.slug === slug),
+    bySlugs: async (slugs) => (await parts.all()).filter((a) => slugs.includes(a.slug)),
+    compatibleWith: async (slug) => (await parts.all()).filter((a) => !a.compatibleWith.length || a.compatibleWith.includes(slug)),
   };
 
   const categories: Repositories['categories'] = {
@@ -57,5 +57,5 @@ export function createSupabaseRepositories(client: Client): Repositories {
     groups: () => rows<{ group: string; items: { question: string; answer: string }[] }>('faq_groups_view', 'order'),
   };
 
-  return { products, accessories, categories, blog, faqs };
+  return { products, parts, categories, blog, faqs };
 }

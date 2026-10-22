@@ -1,0 +1,25 @@
+{
+  "id": "rp-21",
+  "slug": "controlador-500w",
+  "name": "Controlador 500 W",
+  "description": "Controlador tipo sólido de 6 tubos para motores de 500 W.",
+  "price": {
+    "amount": 12000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/controlador-500w.jpg",
+    "alt": "Controlador 500 W",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "controlador",
+  "unit": "UND",
+  "code": "RP-021",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

@@ -1,4 +1,4 @@
-import type { Availability, Product, ProductColor, ProductVariant, Specs } from './types';
+import type { Availability, Product, ProductColor, ProductVariant, Specs, VariantTier } from './types';
 import { add, pen } from './money';
 import type { Money } from './types';
 
@@ -46,6 +46,18 @@ export const licenseLabel = {
   'B-IIb': 'Licencia B-IIb',
   'B-IIc': 'Licencia B-IIc',
 } as const;
+
+export const tierLabel: Record<VariantTier, string> = { estandar: 'Estándar', premium: 'Premium' };
+
+/** "30-35 km" si hay rango, "120 km" si no */
+export function rangeLabel(s: Specs): string {
+  return s.rangeMinKm && s.rangeMinKm !== s.rangeKm ? `${s.rangeMinKm}-${s.rangeKm} km` : `${s.rangeKm} km`;
+}
+
+/** Potencia en W para bicimotos (<1 kW) y en kW para el resto */
+export function powerLabel(powerW: number): string {
+  return powerW < 1000 ? `${powerW} W` : kw(powerW);
+}
 
 export function kw(powerW: number): string {
   return `${(powerW / 1000).toLocaleString('es-PE', { maximumFractionDigits: 1 })} kW`;

@@ -1,0 +1,21 @@
+{
+  "id": "rp-23",
+  "slug": "claxon-3-en-1",
+  "name": "Claxon / bocina 3 en 1",
+  "description": "Emite sonido de claxon, aviso de reversa y alarma antirrobo.",
+  "price": {
+    "amount": 3000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/bocina-3-en-1.jpg",
+    "alt": "Claxon / bocina 3 en 1",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "seguridad",
+  "unit": "UND",
+  "code": "RP-023",
+  "compatibleWith": []
+}

@@ -1,0 +1,292 @@
+{
+  "id": "rd-golden-eagle",
+  "slug": "golden-eagle",
+  "name": "Golden Eagle",
+  "subtitle": "Bicimoto eléctrica urbana",
+  "claim": "Escoge libertad que te impulsa",
+  "description": "Diseñada para quienes buscan libertad en cada recorrido. Golden Eagle combina practicidad, comodidad y autonomía para moverte con confianza hacia donde quieras.",
+  "category": "bicimotos",
+  "brand": "Raiden",
+  "images": [
+    {
+      "src": "~/assets/products/golden-eagle-negro.jpg",
+      "alt": "Golden Eagle en color negro",
+      "width": 2020,
+      "height": 2486
+    },
+    {
+      "src": "~/assets/products/golden-eagle-blanco.jpg",
+      "alt": "Golden Eagle en color blanco",
+      "width": 2020,
+      "height": 2486
+    },
+    {
+      "src": "~/assets/products/golden-eagle-rojo.jpg",
+      "alt": "Golden Eagle en color rojo",
+      "width": 2020,
+      "height": 2486
+    },
+    {
+      "src": "~/assets/products/golden-eagle-rosa.jpg",
+      "alt": "Golden Eagle en color rosa",
+      "width": 2020,
+      "height": 2486
+    }
+  ],
+  "heroImage": {
+    "src": "~/assets/hero/golden-eagle.jpg",
+    "alt": "Bicimoto eléctrica RAIDEN Golden Eagle",
+    "width": 1577,
+    "height": 672
+  },
+  "specs": {
+    "rangeKm": 35,
+    "rangeMinKm": 30,
+    "topSpeedKmh": 25,
+    "powerW": 350,
+    "battery": {
+      "voltage": 48,
+      "capacityAh": 12,
+      "capacityKwh": 0.58,
+      "chemistry": "plomo-acido",
+      "removable": true,
+      "chargeHours": [
+        6,
+        8
+      ],
+      "cycles": 400,
+      "lifeMonths": 24,
+      "brand": "Chilwee"
+    },
+    "maxLoadKg": 150,
+    "seats": 2,
+    "license": "sin-licencia",
+    "tires": "14 x 2.5\"",
+    "wheelInches": 14,
+    "brakes": "Tambor delantero y trasero",
+    "suspension": "Hidráulica delantera y suspensión trasera",
+    "lighting": "Faro delantero multicolor, intermitentes delanteras y traseras",
+    "display": "Pantalla LCD",
+    "drivingModes": [
+      "Velocidad 1",
+      "Velocidad 2",
+      "Velocidad 3"
+    ],
+    "motorType": "Motor sin escobillas (brushless) en rueda",
+    "controller": "6 tubos SineWave",
+    "warrantyMonths": 12,
+    "batteryWarrantyMonths": 12,
+    "features": [
+      "Motor sin escobillas con potencia de 350 W (Estándar) o 500 W (Premium)",
+      "Batería Chilwee de plomo-ácido de 48V 12Ah (Estándar) o 20Ah (Premium)",
+      "Autonomía: 30-35 km (Estándar) · 40-50 km (Premium)",
+      "Llantas de 14 x 2.5\"",
+      "Controlador de 6 tubos - SineWave Technology",
+      "Velocidad máxima: 25 km/h",
+      "Tiempo de carga: 6-8 horas",
+      "Vida útil de batería: 2 años o 350-400 ciclos (cada carga completa es un ciclo)",
+      "Cargador 220 V",
+      "Carga máxima: 150 kg",
+      "Pantalla LCD",
+      "Alarma antirrobo",
+      "Interruptor de 3 velocidades",
+      "Faro delantero multicolor",
+      "Luces intermitentes delanteras y traseras",
+      "Con reposapiés y cesta delantera",
+      "Parante trasero de apoyo",
+      "Espejos retrovisores",
+      "Bocina (claxon)",
+      "Capacidad de torque: 30°",
+      "Freno de tambor delantero y trasero",
+      "Suspensión hidráulica delantera y suspensión trasera",
+      "Garantía 12 meses (batería y motor)"
+    ]
+  },
+  "variants": [
+    {
+      "id": "estandar",
+      "name": "Estándar",
+      "tier": "estandar",
+      "description": "350 W · 48V 12Ah (extraíble)",
+      "price": {
+        "amount": 120000,
+        "currency": "PEN"
+      },
+      "specsOverride": {
+        "powerW": 350,
+        "battery": {
+          "voltage": 48,
+          "capacityAh": 12,
+          "capacityKwh": 0.58,
+          "chemistry": "plomo-acido",
+          "removable": true,
+          "chargeHours": [
+            6,
+            8
+          ],
+          "cycles": 400,
+          "lifeMonths": 24,
+          "brand": "Chilwee"
+        },
+        "rangeKm": 35,
+        "rangeMinKm": 30
+      },
+      "availability": "en-stock",
+      "sku": "RD-GOLDENEAGLE-350",
+      "isDefault": true
+    },
+    {
+      "id": "premium",
+      "name": "Premium",
+      "tier": "premium",
+      "description": "500 W · 48V 20Ah (no extraíble)",
+      "price": {
+        "amount": 150000,
+        "currency": "PEN"
+      },
+      "specsOverride": {
+        "powerW": 500,
+        "battery": {
+          "voltage": 48,
+          "capacityAh": 20,
+          "capacityKwh": 0.96,
+          "chemistry": "plomo-acido",
+          "removable": false,
+          "chargeHours": [
+            6,
+            8
+          ],
+          "cycles": 400,
+          "lifeMonths": 24,
+          "brand": "Chilwee"
+        },
+        "rangeKm": 50,
+        "rangeMinKm": 40
+      },
+      "availability": "en-stock",
+      "sku": "RD-GOLDENEAGLE-500"
+    }
+  ],
+  "colors": [
+    {
+      "id": "negro",
+      "name": "Negro",
+      "hex": "#111315",
+      "image": {
+        "src": "~/assets/products/golden-eagle-negro.jpg",
+        "alt": "Golden Eagle en color negro",
+        "width": 2020,
+        "height": 2486
+      }
+    },
+    {
+      "id": "blanco",
+      "name": "Blanco",
+      "hex": "#F2F2F0",
+      "image": {
+        "src": "~/assets/products/golden-eagle-blanco.jpg",
+        "alt": "Golden Eagle en color blanco",
+        "width": 2020,
+        "height": 2486
+      }
+    },
+    {
+      "id": "rojo",
+      "name": "Rojo",
+      "hex": "#C8102E",
+      "image": {
+        "src": "~/assets/products/golden-eagle-rojo.jpg",
+        "alt": "Golden Eagle en color rojo",
+        "width": 2020,
+        "height": 2486
+      }
+    },
+    {
+      "id": "rosa",
+      "name": "Rosa",
+      "hex": "#E8A0BF",
+      "image": {
+        "src": "~/assets/products/golden-eagle-rosa.jpg",
+        "alt": "Golden Eagle en color rosa",
+        "width": 2020,
+        "height": 2486
+      }
+    }
+  ],
+  "accessories": [
+    "bateria-chilwee-48v-12ah",
+    "bateria-chilwee-48v-20ah",
+    "cargador-48v-12ah",
+    "cargador-48v-20ah",
+    "llanta-14x2-5",
+    "faro-delantero",
+    "alarma-350w",
+    "alarma-500w"
+  ],
+  "related": [
+    "royal-tiger",
+    "vortex-kobra"
+  ],
+  "useCases": [
+    "ciudad",
+    "trabajo",
+    "ocio"
+  ],
+  "highlights": [
+    "25 km/h · sin licencia",
+    "Batería Chilwee 48 V",
+    "Versiones Estándar (350 W) y Premium (500 W)",
+    "Garantía 12 meses en batería y motor"
+  ],
+  "technology": [
+    {
+      "title": "Motor",
+      "text": "Motor sin escobillas integrado en la rueda, disponible en 350 W (Estándar) y 500 W (Premium). Entrega silenciosa y sin mantenimiento de bujías ni aceite."
+    },
+    {
+      "title": "Batería",
+      "text": "Batería Chilwee de plomo-ácido de 48 V (12 Ah o 20 Ah según versión) con vida útil estimada de 2 años o 350-400 ciclos. Carga completa en 6-8 horas con el cargador de 220 V incluido."
+    },
+    {
+      "title": "Frenos",
+      "text": "Frenos de tambor delantero y trasero con manijas ergonómicas. Mantenimiento sencillo y repuestos disponibles en nuestro catálogo."
+    },
+    {
+      "title": "Suspensión",
+      "text": "Horquilla hidráulica delantera y suspensión trasera que absorben las irregularidades de la pista urbana de Lima."
+    },
+    {
+      "title": "Iluminación",
+      "text": "Faro delantero multicolor, luces intermitentes delanteras y traseras y faro posterior para circular con visibilidad de noche."
+    },
+    {
+      "title": "Pantalla y modos de conducción",
+      "text": "Pantalla LCD con nivel de batería y velocidad, interruptor de 3 velocidades, alarma antirrobo y bocina. Golden Eagle está lista para la ciudad desde el primer día."
+    }
+  ],
+  "faqs": [
+    {
+      "question": "¿Necesito licencia para manejar la Golden Eagle?",
+      "answer": "La Golden Eagle es una bicimoto eléctrica de baja velocidad (25 km/h). En general no requiere licencia de conducir; te recomendamos usar casco y respetar las normas de tránsito. Confírmalo con nuestro asesor según la normativa vigente del MTC."
+    },
+    {
+      "question": "¿Cuál es la autonomía real?",
+      "answer": "La versión Estándar (48V 12Ah) recorre entre 30 y 35 km por carga y la Premium (48V 20Ah) entre 40 y 50 km. La autonomía varía con el peso, el terreno y la velocidad seleccionada."
+    },
+    {
+      "question": "¿Qué garantía tiene?",
+      "answer": "12 meses de garantía en batería y motor, con servicio técnico propio en nuestra oficina de Bocanegra, Callao, y repuestos originales disponibles."
+    },
+    {
+      "question": "¿Cuánto tarda la entrega?",
+      "answer": "En Lima y Callao coordinamos la entrega en 3-7 días hábiles; a provincias enviamos por agencia en 7-15 días hábiles (referencial). Te confirmamos el plazo por WhatsApp."
+    }
+  ],
+  "featured": 100,
+  "isHero": true,
+  "publishedAt": "2026-10-01",
+  "seo": {
+    "title": "Golden Eagle: bicimoto eléctrica RAIDEN | Precio en soles",
+    "description": "Bicimoto eléctrica RAIDEN Golden Eagle: 25 km/h sin licencia, batería Chilwee 48 V, versiones Estándar y Premium. Desde S/ 1,200. Garantía 12 meses."
+  }
+}

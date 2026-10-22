@@ -2,16 +2,12 @@
  * Entidades de dominio. Independientes de framework, proveedor y UI.
  * Las interfaces aquí son el contrato que cumplen todos los repositorios
  * (JSON en el MVP, Supabase/PostgreSQL después).
+ *
+ * Catálogo Raiden (Perú): bicimotos y trimotos eléctricas de baja velocidad
+ * (25 km/h, sin licencia) + repuestos. Ver docs/21-decisions.md ADR-015.
  */
 
-export type CategorySlug =
-  | 'scooters-electricos'
-  | 'motos-electricas'
-  | 'bicimotos'
-  | 'trimotos'
-  | 'vehiculos-carga'
-  | 'cuatrimotos'
-  | 'accesorios';
+export type CategorySlug = 'bicimotos' | 'trimotos' | 'repuestos';
 
 export type UseCase =
   | 'ciudad'
@@ -24,8 +20,11 @@ export type UseCase =
 
 export type Availability = 'en-stock' | 'bajo-pedido' | 'proximamente' | 'agotado';
 
-/** Licencias de conducir MTC (Perú). 'sin-licencia' = vehículo que no la requiere (p.ej. bicimoto ≤25 km/h). */
+/** Licencias de conducir MTC (Perú). 'sin-licencia' = vehículo que no la requiere (bicimotos ≤25 km/h). */
 export type LicenseType = 'sin-licencia' | 'B-I' | 'B-IIa' | 'B-IIb' | 'B-IIc';
+
+/** Versión comercial de un modelo. Estándar = 350 W / 48V 12Ah · Premium = 500 W / 48V 20Ah. */
+export type VariantTier = 'estandar' | 'premium';
 
 export interface Money {
   /** Importe en céntimos de sol para evitar errores de coma flotante */
@@ -70,12 +69,18 @@ export interface Battery {
   removable: boolean;
   /** Tiempo de carga en horas (mín-máx) */
   chargeHours: [number, number];
+  /** Ciclos de vida estimados */
   cycles?: number;
+  /** Vida útil estimada en meses */
+  lifeMonths?: number;
+  brand?: string;
 }
 
 export interface Specs {
-  /** Autonomía declarada en km */
+  /** Autonomía declarada en km (valor máximo del rango) */
   rangeKm: number;
+  /** Autonomía mínima del rango declarado, si el fabricante da un rango */
+  rangeMinKm?: number;
   /** Velocidad máxima km/h */
   topSpeedKmh: number;
   /** Potencia nominal en W */
@@ -84,13 +89,15 @@ export interface Specs {
   peakPowerW?: number;
   battery: Battery;
   /** Peso en kg (con batería) */
-  weightKg: number;
+  weightKg?: number;
   /** Carga máxima en kg */
   maxLoadKg: number;
   seats: 1 | 2 | 3;
   license: LicenseType;
   /** Largo x ancho x alto en mm */
-  dimensionsMm: [number, number, number];
+  dimensionsMm?: [number, number, number];
+  /** Medida de llanta, p. ej. 14 x 2.5" */
+  tires?: string;
   wheelInches?: number;
   brakes: string;
   suspension: string;
@@ -98,10 +105,14 @@ export interface Specs {
   display: string;
   drivingModes: string[];
   motorType: string;
+  /** Controlador, p. ej. "6 tubos SineWave" */
+  controller?: string;
   ipRating?: string;
   /** Garantía en meses */
   warrantyMonths: number;
   batteryWarrantyMonths: number;
+  /** Lista completa de características tal como la entrega el fabricante */
+  features: string[];
 }
 
 export interface ProductColor {
@@ -116,11 +127,12 @@ export interface ProductColor {
 export interface ProductVariant {
   id: string;
   name: string;
-  /** Ej. "72V 32Ah", "Doble batería" */
+  tier: VariantTier;
+  /** Ej. "350 W · 48V 12Ah" */
   description?: string;
   price: Money;
   /** Sobrescribe specs del producto base si la variante los cambia */
-  specsOverride?: Partial<Pick<Specs, 'rangeKm' | 'topSpeedKmh' | 'powerW' | 'battery' | 'weightKg'>>;
+  specsOverride?: Partial<Pick<Specs, 'rangeKm' | 'rangeMinKm' | 'topSpeedKmh' | 'powerW' | 'battery' | 'weightKg' | 'controller'>>;
   availability: Availability;
   sku?: string;
   isDefault?: boolean;
@@ -142,17 +154,20 @@ export interface Product {
   id: string;
   slug: string;
   name: string;
-  /** Subtítulo comercial corto, p.ej. "Moto eléctrica deportiva" */
+  /** Subtítulo comercial corto, p.ej. "Bicimoto eléctrica urbana" */
   subtitle: string;
+  /** Claim del hero, p.ej. "Afronta nuevas rutas con tu" */
   claim: string;
   description: string;
   category: CategorySlug;
   brand: string;
   images: ImageRef[];
+  /** Imagen apaisada para el hero de portada (opcional) */
+  heroImage?: ImageRef;
   specs: Specs;
   variants: ProductVariant[];
   colors: ProductColor[];
-  /** Slugs de accesorios compatibles */
+  /** Slugs de repuestos compatibles */
   accessories: string[];
   /** Slugs de modelos similares para la sección de comparación */
   related: string[];
@@ -168,9 +183,27 @@ export interface Product {
   isHero?: boolean;
   publishedAt: string;
   seo?: { title?: string; description?: string };
+  /** Recursos descargables / multimedia de la ficha */
+  datasheetUrl?: string;
+  manualUrl?: string;
+  videoUrl?: string;
 }
 
-export interface Accessory {
+export type PartKind =
+  | 'bateria'
+  | 'motor'
+  | 'controlador'
+  | 'cargador'
+  | 'iluminacion'
+  | 'frenos'
+  | 'cables'
+  | 'mandos'
+  | 'seguridad'
+  | 'llantas'
+  | 'otro';
+
+/** Repuesto (antes "Accessory"). Se vende por unidad o por par. */
+export interface Part {
   id: string;
   slug: string;
   name: string;
@@ -178,14 +211,20 @@ export interface Accessory {
   price: Money;
   image?: ImageRef;
   availability: Availability;
-  /** Tipo para agrupar: batería, casco, baúl, cargador… */
-  kind: 'bateria' | 'casco' | 'baul' | 'cargador' | 'seguridad' | 'otro';
+  kind: PartKind;
+  unit: 'UND' | 'PAR';
+  /** Código interno/SKU */
+  code?: string;
   /** Slugs de productos compatibles; vacío = universal */
   compatibleWith: string[];
 }
 
+/** @deprecated usar Part */
+export type Accessory = Part;
+
 /* ---------- Carrito / pedido ---------- */
 
+/** 'accessory' se mantiene como valor interno para repuestos (compatibilidad del carrito persistido) */
 export type CartItemKind = 'product' | 'accessory';
 
 export interface CartItem {

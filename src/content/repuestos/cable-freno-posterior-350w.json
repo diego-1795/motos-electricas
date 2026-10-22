@@ -1,0 +1,25 @@
+{
+  "id": "rp-14",
+  "slug": "cable-freno-posterior-350w",
+  "name": "Cable de freno posterior 350 W",
+  "description": "Cable de freno posterior estándar de 1.90 m para bicimotos de 350 W.",
+  "price": {
+    "amount": 2500,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/cable-de-freno-posterior-350w-estandar-1-90-mts.jpg",
+    "alt": "Cable de freno posterior 350 W",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "frenos",
+  "unit": "UND",
+  "code": "RP-014",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "rp-01",
+  "slug": "bateria-chilwee-48v-12ah",
+  "name": "Batería Chilwee 48V 12Ah",
+  "description": "Batería de plomo-ácido Chilwee de 48V 12Ah para bicimotos versión Estándar (350 W).",
+  "price": {
+    "amount": 12000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/bateria-chilwee-12ah.jpg",
+    "alt": "Batería Chilwee 48V 12Ah",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "bateria",
+  "unit": "UND",
+  "code": "RP-001",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

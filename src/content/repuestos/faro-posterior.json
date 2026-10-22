@@ -1,0 +1,21 @@
+{
+  "id": "rp-12",
+  "slug": "faro-posterior",
+  "name": "Faro posterior",
+  "description": "Faro posterior con luces intermitentes integradas.",
+  "price": {
+    "amount": 4500,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/faro-posterior.jpg",
+    "alt": "Faro posterior",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "iluminacion",
+  "unit": "UND",
+  "code": "RP-012",
+  "compatibleWith": []
+}

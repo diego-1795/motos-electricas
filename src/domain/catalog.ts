@@ -85,4 +85,4 @@ export function parseFilters(params: URLSearchParams): CatalogFilters & { sort: 
 
 export const USE_CASES: UseCase[] = ['ciudad', 'trabajo', 'reparto', 'ocio', 'trayectos-largos', 'dos-personas', 'carga'];
 export const AVAILABILITIES: Availability[] = ['en-stock', 'bajo-pedido', 'proximamente', 'agotado'];
-export const TYPES: CategorySlug[] = ['scooters-electricos', 'motos-electricas', 'bicimotos', 'trimotos', 'vehiculos-carga', 'cuatrimotos'];
+export const TYPES: CategorySlug[] = ['bicimotos', 'trimotos'];

@@ -1,0 +1,26 @@
+{
+  "id": "rp-15",
+  "slug": "cable-freno-delantero-500w-800w",
+  "name": "Cable de freno delantero 500 W - 800 W",
+  "description": "Cable de freno delantero premium de 1.25 m para bicimotos de 500 W y trimotos de 800 W.",
+  "price": {
+    "amount": 2500,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/cable-de-freno-delantero-500w-800w-premium-1-25mts.jpg",
+    "alt": "Cable de freno delantero 500 W - 800 W",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "frenos",
+  "unit": "UND",
+  "code": "RP-015",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra",
+    "titan-rhino"
+  ]
+}

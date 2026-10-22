@@ -1,0 +1,25 @@
+{
+  "id": "rp-07",
+  "slug": "alarma-500w",
+  "name": "Alarma 500 W",
+  "description": "Alarma antirrobo para controlador sólido (bicimotos de 500 W).",
+  "price": {
+    "amount": 6000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/alarma-500w.jpg",
+    "alt": "Alarma 500 W",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "seguridad",
+  "unit": "UND",
+  "code": "RP-007",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

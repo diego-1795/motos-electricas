@@ -1,0 +1,25 @@
+{
+  "id": "rp-26",
+  "slug": "ramal-electrico-350w-500w",
+  "name": "Ramal eléctrico 350 W / 500 W",
+  "description": "Cableado eléctrico principal para bicimoto de 350 W o 500 W.",
+  "price": {
+    "amount": 8000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/ramal-electrico-350w-500w.jpg",
+    "alt": "Ramal eléctrico 350 W / 500 W",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "cables",
+  "unit": "UND",
+  "code": "RP-026",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

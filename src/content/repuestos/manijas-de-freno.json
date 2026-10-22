@@ -1,0 +1,21 @@
+{
+  "id": "rp-24",
+  "slug": "manijas-de-freno",
+  "name": "Manijas de freno",
+  "description": "Juego de manijas de freno. Se vende por par.",
+  "price": {
+    "amount": 7000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/manijas-de-freno.jpg",
+    "alt": "Manijas de freno",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "frenos",
+  "unit": "PAR",
+  "code": "RP-024",
+  "compatibleWith": []
+}

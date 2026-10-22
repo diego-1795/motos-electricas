@@ -1,4 +1,4 @@
-import type { Accessory, BlogPost, Category, CategorySlug, FAQ, Product } from '../domain/types';
+import type { BlogPost, Category, CategorySlug, FAQ, Part, Product } from '../domain/types';
 
 /**
  * Contratos de acceso a datos. La UI y los servicios dependen de estas
@@ -16,11 +16,12 @@ export interface ProductRepository {
   featured(limit?: number): Promise<Product[]>;
 }
 
-export interface AccessoryRepository {
-  all(): Promise<Accessory[]>;
-  bySlug(slug: string): Promise<Accessory | undefined>;
-  bySlugs(slugs: string[]): Promise<Accessory[]>;
-  compatibleWith(productSlug: string): Promise<Accessory[]>;
+/** Repuestos (antes accesorios) */
+export interface PartRepository {
+  all(): Promise<Part[]>;
+  bySlug(slug: string): Promise<Part | undefined>;
+  bySlugs(slugs: string[]): Promise<Part[]>;
+  compatibleWith(productSlug: string): Promise<Part[]>;
 }
 
 export interface CategoryRepository {
@@ -39,7 +40,7 @@ export interface FaqRepository {
 
 export interface Repositories {
   products: ProductRepository;
-  accessories: AccessoryRepository;
+  parts: PartRepository;
   categories: CategoryRepository;
   blog: BlogRepository;
   faqs: FaqRepository;

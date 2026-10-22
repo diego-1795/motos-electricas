@@ -1,0 +1,25 @@
+{
+  "id": "rp-20",
+  "slug": "controlador-350w",
+  "name": "Controlador 350 W",
+  "description": "Controlador tipo convencional de 6 tubos para motores de 350 W.",
+  "price": {
+    "amount": 10000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/controlador-350w.jpg",
+    "alt": "Controlador 350 W",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "controlador",
+  "unit": "UND",
+  "code": "RP-020",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

@@ -1,4 +1,4 @@
-import type { Accessory, BlogPost, FAQ, Product } from '../../domain/types';
+import type { BlogPost, FAQ, Part, Product } from '../../domain/types';
 import { site } from '../../config/site';
 import { availabilityLabel, fromPrice, productAvailability } from '../../domain/product';
 
@@ -89,7 +89,7 @@ export function productSchema(p: Product, url: string, imageUrls: string[]) {
   };
 }
 
-export function accessorySchema(a: Accessory, url: string, imageUrl?: string) {
+export function partSchema(a: Part, url: string, imageUrl?: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -97,7 +97,7 @@ export function accessorySchema(a: Accessory, url: string, imageUrl?: string) {
     description: a.description,
     sku: a.id,
     brand: { '@type': 'Brand', name: site.name },
-    category: 'Accesorios',
+    category: 'Repuestos',
     ...(imageUrl ? { image: [imageUrl] } : {}),
     url,
     offers: {
@@ -143,3 +143,4 @@ export function itemListSchema(items: { name: string; url: string }[]) {
     itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.name, url: `${site.url}${it.url}` })),
   };
 }
+export const accessorySchema = partSchema;

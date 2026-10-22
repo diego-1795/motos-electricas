@@ -17,15 +17,7 @@ const image = z.object({
 });
 
 const availability = z.enum(['en-stock', 'bajo-pedido', 'proximamente', 'agotado']);
-const categorySlug = z.enum([
-  'scooters-electricos',
-  'motos-electricas',
-  'bicimotos',
-  'trimotos',
-  'vehiculos-carga',
-  'cuatrimotos',
-  'accesorios',
-]);
+const categorySlug = z.enum(['bicimotos', 'trimotos', 'repuestos']);
 const useCase = z.enum(['ciudad', 'trabajo', 'reparto', 'ocio', 'trayectos-largos', 'dos-personas', 'carga']);
 
 const battery = z.object({
@@ -36,19 +28,23 @@ const battery = z.object({
   removable: z.boolean(),
   chargeHours: z.tuple([z.number(), z.number()]),
   cycles: z.number().optional(),
+  lifeMonths: z.number().optional(),
+  brand: z.string().optional(),
 });
 
 const specs = z.object({
   rangeKm: z.number(),
+  rangeMinKm: z.number().optional(),
   topSpeedKmh: z.number(),
   powerW: z.number(),
   peakPowerW: z.number().optional(),
   battery,
-  weightKg: z.number(),
+  weightKg: z.number().optional(),
   maxLoadKg: z.number(),
   seats: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   license: z.enum(['sin-licencia', 'B-I', 'B-IIa', 'B-IIb', 'B-IIc']),
-  dimensionsMm: z.tuple([z.number(), z.number(), z.number()]),
+  dimensionsMm: z.tuple([z.number(), z.number(), z.number()]).optional(),
+  tires: z.string().optional(),
   wheelInches: z.number().optional(),
   brakes: z.string(),
   suspension: z.string(),
@@ -56,9 +52,11 @@ const specs = z.object({
   display: z.string(),
   drivingModes: z.array(z.string()),
   motorType: z.string(),
+  controller: z.string().optional(),
   ipRating: z.string().optional(),
   warrantyMonths: z.number(),
   batteryWarrantyMonths: z.number(),
+  features: z.array(z.string()).default([]),
 });
 
 const products = defineCollection({
@@ -73,15 +71,17 @@ const products = defineCollection({
     category: categorySlug,
     brand: z.string(),
     images: z.array(image).min(1),
+    heroImage: image.optional(),
     specs,
     variants: z
       .array(
         z.object({
           id: z.string(),
           name: z.string(),
+          tier: z.enum(['estandar', 'premium']),
           description: z.string().optional(),
           price: money,
-          specsOverride: specs.pick({ rangeKm: true, topSpeedKmh: true, powerW: true, battery: true, weightKg: true }).partial().optional(),
+          specsOverride: specs.pick({ rangeKm: true, rangeMinKm: true, topSpeedKmh: true, powerW: true, battery: true, weightKg: true, controller: true }).partial().optional(),
           availability,
           sku: z.string().optional(),
           isDefault: z.boolean().optional(),
@@ -103,11 +103,14 @@ const products = defineCollection({
     isHero: z.boolean().optional(),
     publishedAt: z.string(),
     seo: z.object({ title: z.string().optional(), description: z.string().optional() }).optional(),
+    datasheetUrl: z.string().optional(),
+    manualUrl: z.string().optional(),
+    videoUrl: z.string().optional(),
   }),
 });
 
-const accessories = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/accessories' }),
+const repuestos = defineCollection({
+  loader: glob({ pattern: '**/*.json', base: './src/content/repuestos' }),
   schema: z.object({
     id: z.string(),
     slug: z.string(),
@@ -116,7 +119,9 @@ const accessories = defineCollection({
     price: money,
     image: image.optional(),
     availability,
-    kind: z.enum(['bateria', 'casco', 'baul', 'cargador', 'seguridad', 'otro']),
+    kind: z.enum(['bateria', 'motor', 'controlador', 'cargador', 'iluminacion', 'frenos', 'cables', 'mandos', 'seguridad', 'llantas', 'otro']),
+    unit: z.enum(['UND', 'PAR']).default('UND'),
+    code: z.string().optional(),
     compatibleWith: z.array(z.string()),
   }),
 });
@@ -158,4 +163,4 @@ const faqs = defineCollection({
   }),
 });
 
-export const collections = { products, accessories, categories, blog, faqs };
+export const collections = { products, repuestos, categories, blog, faqs };

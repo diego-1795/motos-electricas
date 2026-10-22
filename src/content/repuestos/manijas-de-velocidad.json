@@ -1,0 +1,25 @@
+{
+  "id": "rp-03",
+  "slug": "manijas-de-velocidad",
+  "name": "Manijas de velocidad",
+  "description": "Juego de manijas de acelerador para bicimoto. Se vende por par.",
+  "price": {
+    "amount": 7000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/manijas-de-velocidad.jpg",
+    "alt": "Manijas de velocidad",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "mandos",
+  "unit": "PAR",
+  "code": "RP-003",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}

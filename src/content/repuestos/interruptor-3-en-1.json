@@ -1,0 +1,21 @@
+{
+  "id": "rp-22",
+  "slug": "interruptor-3-en-1",
+  "name": "Interruptor 3 en 1",
+  "description": "Activa la luz del faro delantero, las luces intermitentes y el claxon.",
+  "price": {
+    "amount": 4000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/interruptor-3-en-1.jpg",
+    "alt": "Interruptor 3 en 1",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "mandos",
+  "unit": "UND",
+  "code": "RP-022",
+  "compatibleWith": []
+}

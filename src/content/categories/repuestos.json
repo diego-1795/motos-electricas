@@ -1,0 +1,14 @@
+{
+  "slug": "repuestos",
+  "name": "Repuestos",
+  "title": "Repuestos para bicimotos eléctricas",
+  "description": "Repuestos originales RAIDEN: baterías Chilwee, motores de 350 W y 500 W, controladores, cargadores, faros, frenos, cables y mandos. Compatibles con toda la gama. Envío a todo el Perú.",
+  "tagline": "Todo lo que tu bicimoto necesita",
+  "image": {
+    "src": "~/assets/repuestos/motor-500w.jpg",
+    "alt": "Motor sin escobillas de 500 W para bicimoto RAIDEN",
+    "width": 2018,
+    "height": 2537
+  },
+  "order": 3
+}

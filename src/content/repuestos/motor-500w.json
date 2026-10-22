@@ -1,0 +1,25 @@
+{
+  "id": "rp-05",
+  "slug": "motor-500w",
+  "name": "Motor 500 W",
+  "description": "Motor sin escobillas de 500 W para bicimoto (versión Premium).",
+  "price": {
+    "amount": 45000,
+    "currency": "PEN"
+  },
+  "image": {
+    "src": "~/assets/repuestos/motor-500w.jpg",
+    "alt": "Motor 500 W",
+    "width": 2018,
+    "height": 2537
+  },
+  "availability": "en-stock",
+  "kind": "motor",
+  "unit": "UND",
+  "code": "RP-005",
+  "compatibleWith": [
+    "golden-eagle",
+    "royal-tiger",
+    "vortex-kobra"
+  ]
+}
