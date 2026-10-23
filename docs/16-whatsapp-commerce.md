@@ -175,13 +175,13 @@ Sin stock: Ese color llega la semana del 15. Puedo reservártela sin compromiso 
 
 Objetivo inicial: tasa de solicitud > 8 % sobre carritos y primera respuesta < 15 min.
 
-## 9. RGPD
+## 9. Protección de datos (Ley N.º 29733, Perú)
 
 - Raiden no recibe ni almacena datos del cliente en el MVP: el mensaje viaja desde el dispositivo del cliente a WhatsApp; el sitio solo genera una URL. El carrito en `localStorage` contiene ítems y notas, sin datos personales, y nunca sale del navegador.
-- En el momento del clic, el cliente comparte con la empresa su número de teléfono y nombre de perfil a través de WhatsApp (Meta Platforms Ireland). La política de privacidad ([15-content-strategy](./15-content-strategy.md)) lo declara como finalidad "gestión de solicitudes de pedido", base legal "medidas precontractuales", con mención a la transferencia internacional que implica el uso de WhatsApp.
-- Junto al botón se muestra el texto: "Al continuar se abrirá WhatsApp y compartirás tu número con nuestro equipo de ventas. Más información en la política de privacidad." No es un consentimiento con casilla: la base legal es precontractual.
+- En el momento del clic, el cliente comparte con la empresa su número de teléfono y nombre de perfil a través de WhatsApp (Meta Platforms; transferencia internacional de datos). La política de privacidad ([15-content-strategy](./15-content-strategy.md)) lo declara como finalidad "gestión de solicitudes de pedido" con base en la ejecución de medidas precontractuales a solicitud del titular, e informa del flujo transfronterizo de datos que implica el uso de WhatsApp, conforme a la Ley N.º 29733 y su reglamento.
+- Junto al botón se muestra el texto: "Al continuar se abrirá WhatsApp y compartirás tu número con nuestro equipo de ventas. Más información en la política de privacidad." No es un consentimiento con casilla: el tratamiento responde a la solicitud del propio titular (relación precontractual).
 - El campo de notas advierte: "No incluyas datos bancarios ni documentos de identidad".
-- Ventas conserva las conversaciones el tiempo necesario para la venta y, como máximo, 3 años (plazo de garantía) en el dispositivo corporativo con WhatsApp Business.
+- Ventas conserva las conversaciones el tiempo necesario para la venta y, como máximo, 2 años (12 meses de garantía más el plazo razonable de reclamación ante INDECOPI) en el dispositivo corporativo con WhatsApp Business.
 
 ## 10. Futuro: Business API y CRM
 
