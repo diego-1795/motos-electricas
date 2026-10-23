@@ -11,7 +11,7 @@ export interface PageMeta {
 }
 
 export function buildTitle(title: string): string {
-  return title.includes(site.name) ? title : `${title} · ${site.name}`;
+  return title.toLowerCase().includes(site.name.toLowerCase()) ? title : `${title} · ${site.name}`;
 }
 
 export function canonical(path: string): string {

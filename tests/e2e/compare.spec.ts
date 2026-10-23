@@ -48,7 +48,6 @@ test.describe('Comparador', () => {
    *   useEffect(() => setMounted(true), []); const active = mounted && list.includes(slug);
    */
   test('el toggle de la ficha de producto comparte estado con el catálogo tras navegar', async ({ page }) => {
-    test.fixme(true, 'CompareToggle.tsx: aria-pressed/clase no se re-aplican al hidratar con estado persistido');
     await page.goto('/bicimotos/golden-eagle');
     const t = page.locator('[data-compare-toggle="golden-eagle"]');
     await hydrated(t);

@@ -74,11 +74,21 @@ const slides = products.filter((p) => p.heroImage);
     let timer: ReturnType<typeof setInterval> | undefined;
     let paused = false;
 
+    // Mientras dura un desplazamiento programático, el handler de scroll no debe
+    // reinterpretar las posiciones intermedias como "nueva diapositiva activa".
+    let programmatic: ReturnType<typeof setTimeout> | undefined;
     function go(i: number, smooth = true) {
       index = (i + slides.length) % slides.length;
       const target = slides[index]!;
+      clearTimeout(programmatic);
+      programmatic = setTimeout(() => (programmatic = undefined), 800);
       track.scrollTo({ left: target.offsetLeft, behavior: smooth && !reduce.matches ? 'smooth' : 'auto' });
+      paint();
     }
+    track.addEventListener('scrollend', () => {
+      clearTimeout(programmatic);
+      programmatic = undefined;
+    });
     function paint() {
       dots.forEach((d, i) => d.setAttribute('aria-selected', String(i === index)));
     }
@@ -89,6 +99,7 @@ const slides = products.filter((p) => p.heroImage);
       () => {
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
+          if (programmatic) return;
           const i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
           if (i !== index) {
             index = Math.min(slides.length - 1, Math.max(0, i));
@@ -259,7 +270,18 @@ const slides = products.filter((p) => p.heroImage);
     display: flex;
     gap: var(--s-2);
   }
+  /* Botón de 24 px (WCAG 2.5.8); el punto visible se dibuja dentro */
   .hs__dot {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--r-full);
+    background: transparent;
+    transition: width var(--t-base) var(--ease);
+  }
+  .hs__dot::before {
+    content: '';
     width: 0.625rem;
     height: 0.625rem;
     border-radius: var(--r-full);
@@ -269,6 +291,9 @@ const slides = products.filter((p) => p.heroImage);
       background var(--t-base) var(--ease);
   }
   .hs__dot[aria-selected='true'] {
+    width: 2.75rem;
+  }
+  .hs__dot[aria-selected='true']::before {
     width: 2rem;
     background: var(--dark-fg);
   }

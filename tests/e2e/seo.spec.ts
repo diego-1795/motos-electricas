@@ -53,7 +53,6 @@ test.describe('SEO', () => {
    */
   for (const path of [GE, TITAN, '/servicio-tecnico']) {
     test(`${path}: la marca aparece una sola vez en el <title>`, async ({ page }) => {
-      test.fixme(true, 'meta.ts buildTitle: comparación de marca sensible a mayúsculas → "RAIDEN · Raiden"');
       await page.goto(path);
       expect((await page.title()).match(/raiden/gi)?.length).toBe(1);
     });

@@ -163,7 +163,15 @@ const productsActive = [...productLinks, ...productTools].some((l) => isCurrent(
   }
   const isOpen = () => btn?.getAttribute('aria-expanded') === 'true';
 
-  btn?.addEventListener('click', () => setOpen(!isOpen()));
+  // Con puntero fino el hover ya abre el panel: el clic que sigue no debe cerrarlo
+  let hoverOpened = false;
+  btn?.addEventListener('click', () => {
+    if (hoverOpened && isOpen()) {
+      hoverOpened = false;
+      return;
+    }
+    setOpen(!isOpen());
+  });
   btn?.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -174,10 +182,14 @@ const productsActive = [...productLinks, ...productTools].some((l) => isCurrent(
   if (dd && matchMedia('(hover: hover) and (pointer: fine)').matches) {
     dd.addEventListener('mouseenter', () => {
       clearTimeout(hoverTimer);
+      hoverOpened = !isOpen();
       setOpen(true);
     });
     dd.addEventListener('mouseleave', () => {
-      hoverTimer = setTimeout(() => setOpen(false), 150);
+      hoverTimer = setTimeout(() => {
+        setOpen(false);
+        hoverOpened = false;
+      }, 150);
     });
   }
   dd?.addEventListener('focusout', (e) => {

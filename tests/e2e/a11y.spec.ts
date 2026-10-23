@@ -18,10 +18,7 @@ const BLOCKING = new Set(['serious', 'critical']);
  *    (src/styles/components.css:122 `color:var(--fg-muted)` #6b6f76 sobre `--bg-sunken` #efefec = 4,38:1 < 4,5:1 a 12 px).
  *    Fix: `.rp__jump a{color:var(--fg)}` o subir `--fg-muted` a n-600.
  */
-const KNOWN: { id: string; target: RegExp }[] = [
-  { id: 'target-size', target: /^button\[aria-label=".+"\]$/ },
-  { id: 'color-contrast', target: /^a\[href\$="#[a-z]+"\]$/ },
-];
+const KNOWN: { id: string; target: RegExp }[] = [];
 
 function split(violations: Result[]) {
   const known: string[] = [];
@@ -120,14 +117,12 @@ test('contraste de color: sin violaciones en la ficha de producto', async ({ pag
 });
 
 test('BUG HeroSlider: los puntos del carrusel cumplen el tamaño mínimo de 24 px (target-size)', async ({ page }) => {
-  test.fixme(true, 'src/components/home/HeroSlider.astro:262 — .hs__dot mide 10×10 px; ver KNOWN arriba');
   await page.goto('/');
   const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   expect(results.violations.filter((v) => v.id === 'target-size')).toEqual([]);
 });
 
 test('BUG /repuestos: el índice de tipos (.rp__jump .badge) cumple contraste 4,5:1', async ({ page }) => {
-  test.fixme(true, 'src/pages/repuestos/index.astro:42 + src/styles/components.css:122 — 4,38:1; ver KNOWN arriba');
   await page.goto('/repuestos');
   const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   expect(results.violations.filter((v) => v.id === 'color-contrast')).toEqual([]);

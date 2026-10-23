@@ -56,11 +56,11 @@ test.describe('Cabecera: desplegable Productos (escritorio)', () => {
    *   btn.addEventListener('click', () => { if (hoverOpened && isOpen()) return; setOpen(!isOpen()); });
    */
   test('clic con ratón sobre "Productos" abre el desplegable (y clic fuera lo cierra)', async ({ page }) => {
-    test.fixme(true, 'Header.astro: hover abre y el click posterior cierra el panel con puntero fino');
     await page.goto('/nosotros');
     await page.locator('[data-dropdown-btn]').click();
     await expect(page.locator('[data-dropdown-panel]')).toBeVisible();
-    await page.locator('h1').click();
+    // Clic fuera: el panel abierto cubre el h1, así que se clica en el pie (siempre visible y libre)
+    await page.locator('footer').click({ position: { x: 10, y: 10 } });
     await expect(page.locator('[data-dropdown-panel]')).toBeHidden();
   });
 
