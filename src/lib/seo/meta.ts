@@ -3,7 +3,7 @@ import { site } from '../../config/site';
 export interface PageMeta {
   title: string;
   description: string;
-  /** Ruta absoluta del sitio, p.ej. /motos-electricas/odin-1-0 */
+  /** Ruta absoluta del sitio, p.ej. /bicimotos/golden-eagle */
   path: string;
   image?: string;
   type?: 'website' | 'article' | 'product';

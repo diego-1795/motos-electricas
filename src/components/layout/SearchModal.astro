@@ -1,0 +1,181 @@
+---
+/**
+ * Búsqueda del sitio con Pagefind (índice estático generado en `postbuild`).
+ * - <dialog> nativo: foco atrapado, Esc cierra, sin librerías.
+ * - El JS/CSS de Pagefind UI (/pagefind/*) se carga SOLO al abrir por primera vez.
+ * - En `astro dev` el índice no existe: se muestra un aviso en lugar de romper.
+ * Se abre desde cualquier botón con [data-search-open] (Header).
+ */
+---
+
+<dialog class="search" id="site-search" aria-labelledby="search-title" data-pagefind-ignore data-search>
+  <div class="search__head">
+    <h2 id="search-title" class="search__title">Buscar en el sitio</h2>
+    <button type="button" class="btn btn--ghost btn--icon" aria-label="Cerrar búsqueda" data-search-close>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+  </div>
+  <div class="search__body">
+    <div id="search-ui" class="search__ui" data-search-ui>
+      <p class="muted search__loading" data-search-status>Cargando el buscador…</p>
+    </div>
+  </div>
+  <p class="hint search__hint">Modelos, repuestos, artículos del blog y preguntas frecuentes. Pulsa Esc para cerrar.</p>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('[data-search]');
+  const ui = dialog?.querySelector<HTMLElement>('[data-search-ui]');
+  const status = dialog?.querySelector<HTMLElement>('[data-search-status]');
+  let loaded: Promise<void> | null = null;
+
+  type PagefindUICtor = new (opts: Record<string, unknown>) => unknown;
+
+  function loadScript(src: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
+      document.head.appendChild(s);
+    });
+  }
+  function loadCss(href: string) {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = href;
+    document.head.appendChild(l);
+  }
+
+  async function ensurePagefind(): Promise<void> {
+    if (loaded) return loaded;
+    loaded = (async () => {
+      loadCss('/pagefind/pagefind-ui.css');
+      await loadScript('/pagefind/pagefind-ui.js');
+      const Ctor = (window as unknown as { PagefindUI?: PagefindUICtor }).PagefindUI;
+      if (!Ctor || !ui) throw new Error('PagefindUI no disponible');
+      status?.remove();
+      new Ctor({
+        element: ui,
+        bundlePath: '/pagefind/',
+        showImages: true,
+        showSubResults: true,
+        excerptLength: 20,
+        autofocus: true,
+        translations: {
+          placeholder: 'Busca un modelo, repuesto o artículo…',
+          clear_search: 'Limpiar',
+          load_more: 'Ver más resultados',
+          search_label: 'Buscar en el sitio',
+          filters_label: 'Filtros',
+          zero_results: 'Sin resultados para [SEARCH_TERM]',
+          many_results: '[COUNT] resultados para [SEARCH_TERM]',
+          one_result: '[COUNT] resultado para [SEARCH_TERM]',
+          alt_search: 'Sin resultados para [SEARCH_TERM]. Mostrando resultados para [DIFFERENT_TERM]',
+          search_suggestion: 'Sin resultados para [SEARCH_TERM]. Prueba con: ',
+          searching: 'Buscando [SEARCH_TERM]…',
+        },
+      });
+    })().catch((err) => {
+      loaded = null;
+      if (status) {
+        status.textContent = import.meta.env.DEV
+          ? 'El buscador se genera en el build (npm run build). En desarrollo no está disponible.'
+          : 'El buscador no está disponible ahora mismo. Prueba desde el menú Productos o escríbenos por WhatsApp.';
+      }
+      console.warn(err);
+    });
+    return loaded;
+  }
+
+  function open() {
+    if (!dialog || dialog.open) return;
+    dialog.showModal();
+    document.documentElement.style.overflow = 'hidden';
+    void ensurePagefind().then(() => dialog.querySelector<HTMLInputElement>('input[type="text"], input[type="search"]')?.focus());
+  }
+  function close() {
+    dialog?.close();
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    if (t.closest('[data-search-open]')) {
+      e.preventDefault();
+      open();
+    } else if (t.closest('[data-search-close]')) {
+      close();
+    } else if (dialog?.open && t === dialog) {
+      // clic en el backdrop
+      close();
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      dialog?.open ? close() : open();
+    }
+  });
+  dialog?.addEventListener('close', () => {
+    document.documentElement.style.overflow = '';
+  });
+</script>
+
+<style>
+  .search {
+    width: min(100% - 2rem, 44rem);
+    max-height: min(85dvh, 44rem);
+    margin: 6vh auto auto;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--bg-elev);
+    color: var(--fg);
+    box-shadow: var(--sh-3);
+    display: none;
+    flex-direction: column;
+  }
+  .search[open] {
+    display: flex;
+  }
+  .search::backdrop {
+    background: rgb(11 12 15 / 0.6);
+    backdrop-filter: blur(2px);
+  }
+  .search__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-4) var(--s-5);
+    border-bottom: 1px solid var(--border);
+  }
+  .search__title {
+    font-size: var(--fs-lg);
+  }
+  .search__body {
+    padding: var(--s-5);
+    overflow-y: auto;
+    flex: 1;
+  }
+  .search__hint {
+    padding: var(--s-3) var(--s-5);
+    border-top: 1px solid var(--border);
+  }
+  /* Ajuste de Pagefind UI a los tokens del Design System */
+  .search__ui {
+    --pagefind-ui-scale: 0.9;
+    --pagefind-ui-primary: var(--accent);
+    --pagefind-ui-text: var(--fg);
+    --pagefind-ui-background: var(--bg-elev);
+    --pagefind-ui-border: var(--border-strong);
+    --pagefind-ui-tag: var(--bg-sunken);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: var(--r-md);
+    --pagefind-ui-image-border-radius: var(--r-md);
+    --pagefind-ui-image-box-ratio: 4 / 3;
+    --pagefind-ui-font: var(--font-sans);
+  }
+</style>

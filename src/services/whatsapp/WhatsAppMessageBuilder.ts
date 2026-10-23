@@ -15,7 +15,7 @@ export interface WhatsAppBuilderOptions {
 }
 
 const DEFAULT_GREETING = 'Hola 👋\nEstoy interesado en realizar el siguiente pedido:';
-const DEFAULT_CLOSING = '¿Podéis confirmarme disponibilidad y condiciones de compra?';
+const DEFAULT_CLOSING = '¿Pueden confirmarme disponibilidad y condiciones de compra?';
 
 const ICON: Record<CartItem['kind'], string> = { product: '🏍️', accessory: '🧩' };
 
@@ -62,7 +62,49 @@ export function buildMessage(cart: Cart, opts: Pick<WhatsAppBuilderOptions, 'gre
 /** Mensaje corto para "Consultar por WhatsApp" desde una ficha de producto */
 export function buildInquiryMessage(productName: string, variantName?: string): string {
   const v = variantName ? ` (${variantName})` : '';
-  return `Hola 👋\nMe interesa el modelo ${productName}${v}. ¿Podéis darme más información sobre disponibilidad, precio y condiciones de compra?`;
+  return `Hola 👋\nMe interesa el modelo ${productName}${v}. ¿Pueden darme más información sobre disponibilidad, precio y condiciones de compra?`;
+}
+
+/* ---------- Formulario de contacto (sin backend) ---------- */
+
+export type ContactSubject = 'Compra' | 'Servicio técnico' | 'Repuestos' | 'Otro';
+export const CONTACT_SUBJECTS: ContactSubject[] = ['Compra', 'Servicio técnico', 'Repuestos', 'Otro'];
+
+export interface ContactFormData {
+  name: string;
+  phone: string;
+  subject: ContactSubject;
+  message: string;
+}
+
+/** Limpia un campo libre de una sola línea (nombre, teléfono) */
+function cleanLine(s: string, max: number): string {
+  return s
+    .replace(/[\u0000-\u001F\u007F]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+}
+
+/**
+ * Mensaje del formulario de /contacto. Mismo texto para WhatsApp y para mailto;
+ * nunca se almacena: el usuario lo envía desde su propia app.
+ */
+export function buildContactMessage(d: ContactFormData): string {
+  const subject = CONTACT_SUBJECTS.includes(d.subject) ? d.subject : 'Otro';
+  const lines = [`Hola 👋 Soy ${cleanLine(d.name, 80) || 'un cliente'} y escribo desde la web.`, `Asunto: ${subject}`];
+  const phone = cleanLine(d.phone, 24);
+  if (phone) lines.push(`Teléfono: ${phone}`);
+  const msg = sanitizeNotes(d.message);
+  if (msg) lines.push(`Mensaje: ${msg}`);
+  return lines.join('\n');
+}
+
+/** Mensaje de soporte para /servicio-tecnico (campos a rellenar por el cliente) */
+export const SUPPORT_MESSAGE = 'Hola 👋 Necesito soporte técnico para mi bicimoto RAIDEN. Modelo: ___ . Problema: ___';
+
+export function buildMailto(email: string, subject: string, body: string): string {
+  return `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 export function buildUrl(phone: string, message: string): string {

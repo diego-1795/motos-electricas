@@ -1,0 +1,58 @@
+/* =====================================================================
+   FUENTES SELF-HOSTED (docs/02-design-system.md §1.3)
+   Montserrat (principal, variable 100–900) + Integral CF (display, 400/600/700/800).
+   Subconjunto latino (Basic Latin, Latin-1, Latin Extended-A, puntuación, moneda).
+   Preload recomendado en BaseLayout: Montserrat[wght].woff2 e IntegralCF-Bold.woff2.
+   ===================================================================== */
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/montserrat/Montserrat[wght].woff2') format('woff2-variations'),
+    url('/fonts/montserrat/Montserrat[wght].woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF, U+2122, U+2190-2199, U+2212, U+2215;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/montserrat/Montserrat-Italic[wght].woff2') format('woff2-variations'),
+    url('/fonts/montserrat/Montserrat-Italic[wght].woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF, U+2122, U+2190-2199, U+2212, U+2215;
+}
+
+@font-face {
+  font-family: 'Integral CF';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/integral-cf/IntegralCF-Regular.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF;
+}
+@font-face {
+  font-family: 'Integral CF';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/integral-cf/IntegralCF-DemiBold.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF;
+}
+@font-face {
+  font-family: 'Integral CF';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/integral-cf/IntegralCF-Bold.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF;
+}
+@font-face {
+  font-family: 'Integral CF';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/integral-cf/IntegralCF-ExtraBold.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF;
+}

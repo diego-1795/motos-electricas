@@ -224,7 +224,7 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 
 **Decisión.**
 - `CategorySlug` = `bicimotos | trimotos | repuestos`. Rutas: `/bicimotos/[slug]`, `/trimotos/[slug]`, `/repuestos/[slug]`, `/productos` (todo). Se eliminan `/motos-electricas*`, `/accesorios*` y las categorías ficticias.
-- Versiones comerciales como variantes con `tier`: Estándar (350 W · 48V 12Ah) y Premium (500 W · 48V 20Ah). Precios del Excel del cliente; se excluyen las filas marca "EG MOTORS". Incoherencias a confirmar con el cliente: Royal Tiger (350 W S/ 1,800 > 500 W S/ 1,400) y Vortex Kobra (350 W S/ 1,500 > 500 W S/ 1,200); Titan Rhino S/ 2,700 (Excel) vs S/ 2,800 (presentación).
+- Versiones comerciales como variantes con `tier`: Estándar (350 W · 48V 12Ah) y Premium (500 W · 48V 20Ah). Precios del Excel del cliente; se excluyen las filas marca "EG MOTORS". Diego confirmó (2026-10-22) que los precios vigentes son los del Excel tal cual, aunque en Royal Tiger (350 W S/ 1,800 > 500 W S/ 1,400) y Vortex Kobra (350 W S/ 1,500 > 500 W S/ 1,200) la versión Estándar resulta más cara que la Premium; Titan Rhino S/ 2,700. Si el cliente los corrige, basta editar `variants[].price` en los JSON.
 - Entidad `Part` (repuestos, unidad UND/PAR) sustituye a `Accessory`; el valor interno de carrito `accessory` se conserva por compatibilidad del estado persistido.
 - Pesos y dimensiones pasan a opcionales (el fabricante no los facilita). `features` guarda la lista completa de características.
 - Diseño: se mantiene la arquitectura y el layout actual; el acento pasa de lima a Raiden Blue; fuentes autoalojadas Montserrat (OFL) e Integral CF (webfonts entregadas por el cliente; licencia a confirmar con él).

@@ -1,0 +1,452 @@
+---
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Pic from '../../components/ui/Pic.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import ProductCard from '../../components/product/ProductCard.astro';
+import ProductTabs from '../../components/product/ProductTabs.astro';
+import WhatsAppLink from '../../components/ui/WhatsAppLink.astro';
+import ProductConfigurator, { type OptimizedImage } from '../../islands/ProductConfigurator';
+import CompareToggle from '../../islands/CompareToggle';
+import { repos } from '../../data';
+import type { Product } from '../../domain/types';
+import { availabilityLabel, batteryLabel, chargeLabel, effectiveSpecs, fromPrice, licenseLabel, powerLabel, productAvailability, rangeLabel, tierLabel } from '../../domain/product';
+import { formatMoney } from '../../domain/money';
+import { publicSrc, resolveImage } from '../../lib/images';
+import { breadcrumbSchema, faqSchema, productSchema } from '../../lib/seo/jsonld';
+import { canonical } from '../../lib/seo/meta';
+import { categoryPath, COMPARE_PATH, PARTS_PATH, partPath, productPath } from '../../lib/routes';
+import { formatMoney as fm } from '../../domain/money';
+
+/** Fichas de producto: /bicimotos/[slug], /trimotos/[slug] */
+export async function getStaticPaths() {
+  const products = await repos.products.all();
+  return products.map((p) => ({ params: { categoria: p.category, slug: p.slug }, props: { product: p } }));
+}
+
+const { product: p } = Astro.props as { product: Product };
+const category = await repos.categories.bySlug(p.category);
+const categories = await repos.categories.all();
+const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
+const configParts = await repos.parts.bySlugs(p.accessories);
+const compatibleParts = (await repos.parts.compatibleWith(p.slug)).slice(0, 6);
+const related = await repos.products.bySlugs(p.related);
+const specs = effectiveSpecs(p);
+const path = productPath(p);
+const url = canonical(path);
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: category?.name ?? 'Productos', url: category ? categoryPath(category.slug) : '/productos' },
+  { name: p.name, url: path },
+];
+const imageUrls = p.images.map((i) => `${Astro.site?.origin ?? ''}${publicSrc(i)}`);
+const avail = productAvailability(p);
+
+/* Galería = fotos por color. Primera imagen SSR (LCP); el resto se cambia desde la isla. */
+const gallerySizes = '(min-width: 1024px) 56vw, 100vw';
+const galleryColors = p.colors.filter((c) => c.image);
+const mainImage = galleryColors[0]?.image ?? p.images[0]!;
+const colorImages: Record<string, OptimizedImage> = {};
+for (const c of galleryColors) {
+  const meta = resolveImage(c.image!);
+  if (typeof meta === 'string') {
+    colorImages[c.id] = { src: meta, alt: c.image!.alt };
+    continue;
+  }
+  const opt = await getImage({ src: meta as ImageMetadata, format: 'avif', widths: [640, 960, 1200], sizes: gallerySizes });
+  colorImages[c.id] = { src: opt.src, srcset: opt.srcSet.attribute, sizes: gallerySizes, alt: c.image!.alt };
+}
+const mainOptimizedSrc = galleryColors[0] ? colorImages[galleryColors[0].id]!.src : publicSrc(mainImage);
+
+/* Ficha técnica completa (oculta peso/dimensiones si el fabricante no los da) */
+const row = (k: string, v: string | undefined | false): [string, string][] => (v ? [[k, v]] : []);
+const powerRange = [...new Set(p.variants.map((v) => effectiveSpecs(p, v).powerW))].sort((a, b) => a - b);
+const specRows: [string, string][] = [
+  ['Autonomía (declarada)', p.variants.length > 1 ? p.variants.map((v) => `${rangeLabel(effectiveSpecs(p, v))} (${tierLabel[v.tier]})`).join(' · ') : rangeLabel(specs)],
+  ['Velocidad máxima', `${specs.topSpeedKmh} km/h`],
+  ['Potencia nominal', powerRange.length > 1 ? p.variants.map((v) => `${powerLabel(effectiveSpecs(p, v).powerW)} (${tierLabel[v.tier]})`).join(' · ') : powerLabel(specs.powerW)],
+  ...row('Potencia pico', specs.peakPowerW ? `${specs.peakPowerW} W` : undefined),
+  ['Batería', p.variants.length > 1 ? p.variants.map((v) => `${batteryLabel(effectiveSpecs(p, v))} (${tierLabel[v.tier]})`).join(' · ') : batteryLabel(specs)],
+  ['Química de la batería', specs.battery.chemistry === 'plomo-acido' ? 'Plomo-ácido' : specs.battery.chemistry],
+  ...row('Marca de la batería', specs.battery.brand),
+  ['Batería extraíble', specs.battery.removable ? 'Sí' : 'No'],
+  ['Tiempo de carga', chargeLabel(specs)],
+  ...row('Vida útil de la batería', specs.battery.cycles ? `${specs.battery.cycles} ciclos${specs.battery.lifeMonths ? ` · ${specs.battery.lifeMonths / 12} años` : ''}` : undefined),
+  ['Motor', specs.motorType],
+  ...row('Controlador', specs.controller),
+  ['Frenos', specs.brakes],
+  ['Suspensión', specs.suspension],
+  ...row('Llantas', specs.tires),
+  ['Iluminación', specs.lighting],
+  ['Pantalla', specs.display],
+  ['Modos de conducción', specs.drivingModes.join(', ')],
+  ['Plazas', String(specs.seats)],
+  ['Carga máxima', `${specs.maxLoadKg} kg`],
+  ...row('Peso', specs.weightKg !== undefined ? `${specs.weightKg} kg` : undefined),
+  ...row('Dimensiones (L×An×Al)', specs.dimensionsMm ? `${specs.dimensionsMm.join(' × ')} mm` : undefined),
+  ...row('Protección', specs.ipRating),
+  ['Licencia', licenseLabel[specs.license]],
+  ['Garantía', `${specs.warrantyMonths} meses (batería: ${specs.batteryWarrantyMonths} meses)`],
+];
+---
+
+<BaseLayout
+  title={p.seo?.title ?? `${p.name}: ${p.subtitle.toLowerCase()}`}
+  description={p.seo?.description ?? p.description}
+  path={path}
+  image={publicSrc(p.images[0]!)}
+  type="product"
+  jsonLd={[breadcrumbSchema(crumbs), productSchema(p, url, imageUrls), ...(p.faqs.length ? [faqSchema(p.faqs)] : [])]}
+>
+  <article class="pdp" data-pagefind-meta={`image:${mainOptimizedSrc}`}>
+    <div class="container">
+      <Breadcrumbs items={crumbs} />
+    </div>
+
+    <!-- ABOVE THE FOLD -->
+    <section class="container pdp__top">
+      <div class="pdp__gallery">
+        <div class="pdp__main" data-product-image>
+          <Pic image={mainImage} width={1000} height={1230} widths={[640, 960, 1200]} sizes={gallerySizes} priority />
+        </div>
+        {
+          galleryColors.length > 1 ? (
+            <ul role="list" class="pdp__thumbs" aria-label="Colores disponibles">
+              {galleryColors.map((c, i) => (
+                <li>
+                  <button type="button" class="pdp__thumb" data-color-thumb={c.id} aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`Ver en color ${c.name}`}>
+                    <Pic image={c.image!} alt="" width={240} height={300} widths={[160, 240]} sizes="(min-width: 1024px) 10vw, 22vw" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            p.images.length > 1 && (
+              <ul role="list" class="pdp__thumbs">
+                {p.images.slice(1).map((img) => (
+                  <li class="pdp__thumb">
+                    <Pic image={img} width={240} height={300} widths={[160, 240]} sizes="(min-width: 1024px) 10vw, 22vw" />
+                  </li>
+                ))}
+              </ul>
+            )
+          )
+        }
+      </div>
+
+      <div class="pdp__buy">
+        <p class="eyebrow pdp__eyebrow">{p.subtitle}</p>
+        <h1 class="pdp__title">{p.name}</h1>
+        <p class="pdp__claim">{p.claim}</p>
+        <p class="pdp__meta muted">
+          Categoría: <a href={categoryPath(p.category)}>{category?.name ?? categoryNames[p.category]}</a> · Marca: <strong>{p.brand}</strong>
+        </p>
+        <p class="muted">{p.description}</p>
+        <ul class="pdp__highlights" role="list">
+          {p.highlights.map((h) => <li>{h}</li>)}
+        </ul>
+
+        <ProductConfigurator
+          client:load
+          slug={p.slug}
+          name={p.name}
+          variants={p.variants}
+          colors={p.colors}
+          parts={configParts}
+          image={{ ...p.images[0]!, src: publicSrc(p.images[0]!) }}
+          colorImages={colorImages}
+        />
+
+        <div class="pdp__secondary">
+          <WhatsAppLink source="product" slug={p.slug} productName={p.name} class="btn btn--secondary">Consultar por WhatsApp</WhatsAppLink>
+          <CompareToggle client:idle slug={p.slug} name={p.name} />
+        </div>
+      </div>
+    </section>
+
+    <!-- PESTAÑAS: ficha · especificaciones · manual · video -->
+    <section class="container section pdp__section" aria-labelledby="info-h">
+      <h2 id="info-h" class="visually-hidden">Información técnica de {p.name}</h2>
+      <ProductTabs name={p.name} slug={p.slug} specs={specs} specRows={specRows} features={specs.features} manualUrl={p.manualUrl} videoUrl={p.videoUrl} poster={p.images[0]!} />
+    </section>
+
+    <!-- TECNOLOGÍA -->
+    <section class="section surface-dark pdp__tech" aria-labelledby="tech-h">
+      <div class="container">
+        <p class="eyebrow">Tecnología</p>
+        <h2 id="tech-h">Lo que hay debajo</h2>
+        <ul role="list" class="pdp__techgrid">
+          {
+            p.technology.map((t) => (
+              <li>
+                <h3>{t.title}</h3>
+                <p class="muted">{t.text}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- PRODUCTOS RELACIONADOS -->
+    {
+      related.length > 0 && (
+        <section class="container section pdp__section" aria-labelledby="rel-h">
+          <div class="pdp__relhead">
+            <h2 id="rel-h">Productos relacionados</h2>
+            <a href={COMPARE_PATH} class="btn btn--ghost">Abrir comparador →</a>
+          </div>
+          <div class="grid-products">
+            {related.map((r) => (
+              <ProductCard product={r} categoryLabel={categoryNames[r.category]} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- REPUESTOS COMPATIBLES -->
+    {
+      compatibleParts.length > 0 && (
+        <section class="container section pdp__section pdp__parts" aria-labelledby="parts-h">
+          <div class="pdp__relhead">
+            <h2 id="parts-h">Repuestos compatibles</h2>
+            <a href={PARTS_PATH} class="btn btn--ghost">Ver todos los repuestos →</a>
+          </div>
+          <ul role="list" class="pdp__partsgrid">
+            {compatibleParts.map((a) => (
+              <li class="card card--interactive pdp__part">
+                <a href={partPath(a)}>
+                  {a.image && <Pic image={a.image} alt="" width={320} height={400} widths={[240, 320]} sizes="(min-width:1024px) 15vw, 45vw" />}
+                  <span class="pdp__partbody">
+                    <strong>{a.name}</strong>
+                    <span class="muted">
+                      {fm(a.price)}
+                      {a.unit === 'PAR' ? ' por par' : ''}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <!-- GARANTÍA -->
+    <section class="container section pdp__section pdp__warranty" aria-labelledby="war-h">
+      <div class="card pdp__warcard">
+        <h2 id="war-h">Garantía y servicio técnico</h2>
+        <ul>
+          <li>
+            <strong>{specs.warrantyMonths} meses</strong> de garantía en <strong>batería y motor</strong> frente a defectos de fabricación.
+          </li>
+          <li>Servicio técnico propio en nuestra oficina de Callao: diagnóstico, mantenimiento preventivo y repuestos originales. Más en <a href="/servicio-tecnico">servicio técnico</a>.</li>
+          <li>Condiciones completas en <a href="/garantia">garantía</a>.</li>
+        </ul>
+        <p class="muted">
+          Precio desde {formatMoney(fromPrice(p))}, IGV incluido. Disponibilidad actual: {availabilityLabel[avail]}. La entrega en Lima, Callao y provincias se coordina en la solicitud por WhatsApp.
+        </p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    {
+      p.faqs.length > 0 && (
+        <section class="container section pdp__section pdp__faq" aria-labelledby="faq-h">
+          <h2 id="faq-h">Preguntas frecuentes sobre {p.name}</h2>
+          <div class="pdp__faqlist">
+            {p.faqs.map((f) => (
+              <details class="accordion">
+                <summary>{f.question}</summary>
+                <div>{f.answer}</div>
+              </details>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .pdp > .container:first-child {
+    padding-top: var(--s-6);
+  }
+  .pdp__top {
+    display: grid;
+    gap: var(--s-8);
+    padding-block: var(--s-6) var(--s-10);
+  }
+  .pdp__main {
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    background: var(--bg-sunken);
+    aspect-ratio: 1 / 1;
+  }
+  .pdp__main :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .pdp__thumbs {
+    display: flex;
+    gap: var(--s-3);
+    margin-top: var(--s-3);
+    flex-wrap: wrap;
+  }
+  .pdp__thumb {
+    display: block;
+    width: 4.5rem;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    background: var(--bg-sunken);
+    border: 2px solid transparent;
+    transition: border-color var(--t-fast) var(--ease);
+  }
+  .pdp__thumb[aria-pressed='true'] {
+    border-color: var(--fg);
+  }
+  .pdp__thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .pdp__buy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .pdp__eyebrow {
+    color: var(--accent-text, var(--accent));
+  }
+  .pdp__title {
+    font-size: var(--fs-3xl);
+    font-weight: 700;
+    font-family: var(--font-display, var(--font-sans));
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+  .pdp__claim {
+    font-size: var(--fs-lg);
+  }
+  .pdp__meta {
+    font-size: var(--fs-sm);
+  }
+  .pdp__meta a {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .pdp__meta strong {
+    color: var(--fg);
+  }
+  .pdp__highlights {
+    display: grid;
+    gap: var(--s-2);
+    font-size: var(--fs-sm);
+  }
+  .pdp__highlights li::before {
+    content: '—';
+    color: var(--fg-subtle);
+    margin-right: var(--s-2);
+  }
+  .pdp__secondary {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--border);
+  }
+  .pdp__section h2 {
+    margin-bottom: var(--s-6);
+  }
+  .pdp__tech h2 {
+    margin-bottom: var(--s-8);
+  }
+  .pdp__techgrid {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .pdp__techgrid li {
+    padding: var(--s-5);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--bg-elev);
+  }
+  .pdp__techgrid h3 {
+    font-size: var(--fs-md);
+    margin-bottom: var(--s-2);
+  }
+  .pdp__techgrid p {
+    font-size: var(--fs-sm);
+  }
+  .pdp__relhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+  .pdp__partsgrid {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
+  }
+  .pdp__part a {
+    display: block;
+  }
+  .pdp__part a:hover {
+    text-decoration: none;
+  }
+  .pdp__part :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    background: var(--bg-sunken);
+  }
+  .pdp__partbody {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--s-3) var(--s-4) var(--s-4);
+    font-size: var(--fs-sm);
+  }
+  .pdp__warcard {
+    padding: var(--s-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .pdp__warcard h2 {
+    margin-bottom: 0;
+  }
+  .pdp__warcard ul {
+    display: grid;
+    gap: var(--s-2);
+  }
+  .pdp__warcard a {
+    text-decoration: underline;
+  }
+  .pdp__faqlist {
+    max-width: var(--container-narrow);
+  }
+  @media (min-width: 1024px) {
+    .pdp__top {
+      grid-template-columns: 7fr 5fr;
+      gap: var(--s-12);
+      align-items: start;
+    }
+    .pdp__main {
+      aspect-ratio: 5 / 4;
+    }
+    .pdp__buy {
+      position: sticky;
+      top: 5rem;
+    }
+    .pdp__techgrid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

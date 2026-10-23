@@ -3,32 +3,36 @@
   "order": 1,
   "items": [
     {
-      "question": "¿Cómo se compra en Raiden?",
-      "answer": "Eliges el modelo, la batería y el color en la web, añades los accesorios que quieras y envías tu solicitud por WhatsApp. Un asesor confirma disponibilidad, plazo y precio final y te guía hasta la entrega. Sin formularios interminables."
+      "question": "¿Cómo se compra una bicimoto RAIDEN?",
+      "answer": "Eliges el modelo, la versión (Estándar o Premium) y el color en la web, añades los repuestos que quieras y envías tu solicitud por WhatsApp. Un asesor confirma disponibilidad, precio final y plazo, y te acompaña hasta la entrega. Sin formularios interminables ni pago online."
     },
     {
-      "question": "¿Se paga online?",
-      "answer": "No. No hay pago online: una vez confirmado tu pedido por WhatsApp, tu asesor te indica los medios de pago disponibles (transferencia bancaria, Yape/Plin, efectivo en tienda y opciones de financiamiento, si aplican; consultar). Solo se cobra cuando confirmamos stock y fecha de entrega."
+      "question": "¿Se paga en la web?",
+      "answer": "No. No hay pago online. Una vez confirmado tu pedido por WhatsApp, el asesor te indica los medios de pago disponibles: en nuestra tienda de Bocanegra, Callao, aceptamos Visa, Mastercard y American Express; para Yape, Plin o transferencia bancaria, consulta con tu asesor. Solo se cobra cuando confirmamos stock y fecha de entrega."
+    },
+    {
+      "question": "¿Emiten boleta o factura?",
+      "answer": "Sí. Con cada compra recibes boleta o factura electrónica a nombre de EG Motors SAC, distribuidor oficial de RAIDEN en el Perú, con el IGV incluido en el precio publicado. Indica a tu asesor si necesitas factura con RUC."
     },
     {
       "question": "¿Cuál es el plazo de entrega?",
-      "answer": "Los modelos en stock se entregan en 3-7 días hábiles en Lima Metropolitana y en 7-15 días hábiles en provincias (plazos referenciales según destino). Los productos bajo pedido tienen un plazo referencial de 4 a 8 semanas, que confirmamos antes del pago."
+      "answer": "Los modelos en stock se entregan en 3-7 días hábiles en Lima y Callao, y en 7-15 días hábiles en provincias (plazos referenciales según destino y agencia). El asesor te confirma el plazo exacto antes del pago."
     },
     {
-      "question": "¿Cómo se envía el vehículo?",
-      "answer": "Enviamos a todo el Perú vía courier o agencia de transporte especializada, con el vehículo montado, revisado y con la batería cargada al 60 % para el traslado. El envío en Lima Metropolitana está incluido en el precio; para provincias te cotizamos el flete según ciudad y agencia."
+      "question": "¿Hacen envíos a provincias?",
+      "answer": "Sí, enviamos a todo el Perú por agencia de transporte, con la bicimoto embalada y revisada. El costo del envío a provincias se cotiza según ciudad y agencia; el asesor te lo indica por WhatsApp antes de confirmar el pedido."
     },
     {
-      "question": "¿Recibo comprobante y documentación para sacar la placa?",
-      "answer": "Sí. Con cada vehículo recibes boleta o factura electrónica (SUNAT) con IGV y la documentación del fabricante necesaria para la inscripción en SUNARP y la obtención de la placa. Si quieres, te orientamos con el trámite de placa y SOAT; consulta con tu asesor las condiciones."
+      "question": "¿Puedo probar la bicimoto antes de comprar?",
+      "answer": "Sí. Ofrecemos prueba de manejo en nuestra tienda de Bocanegra, Callao, de lunes a domingo de 10 a. m. a 8 p. m., con los modelos disponibles en sala. Coordina día y hora por WhatsApp. Si estás en provincias, te mostramos el modelo por videollamada."
     },
     {
-      "question": "¿Hacen envíos contra entrega?",
-      "answer": "No trabajamos con pago contra entrega de forma estándar: el pedido se confirma y se paga por los medios que te indica tu asesor (transferencia, Yape/Plin o efectivo en tienda) antes del despacho. Dicho esto, cuéntale tu caso por WhatsApp: según el destino y el vehículo, tu asesor te confirmará las opciones disponibles."
+      "question": "¿La bicimoto llega lista para usar?",
+      "answer": "Sí. Entregamos la bicimoto armada, revisada y con la batería cargada, junto con el cargador de 220 V y las indicaciones básicas de uso. Te recomendamos dar una carga completa de 6-8 horas antes del primer recorrido largo."
     },
     {
-      "question": "¿Puedo probar la moto antes de comprar?",
-      "answer": "Sí. Ofrecemos test ride en nuestra tienda de Lima con los modelos disponibles en sala. Coordina día y hora por WhatsApp con tu asesor, trae tu licencia de conducir vigente y un casco (si no tienes, te prestamos uno). Si estás en provincias, consulta disponibilidad: te asesoramos en video llamada con el modelo que te interesa."
+      "question": "¿Qué pasa después de enviar la solicitud por WhatsApp?",
+      "answer": "Un asesor te responde en horario de tienda (lunes a domingo de 10 a. m. a 8 p. m.), confirma el modelo, la versión y el color, te indica el precio final y las opciones de pago y entrega, y acuerda contigo la fecha. Puedes modificar el pedido en cualquier momento antes de pagar."
     }
   ]
 }

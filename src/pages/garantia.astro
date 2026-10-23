@@ -5,65 +5,65 @@ import SectionHeading from '../components/ui/SectionHeading.astro';
 import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
 import { site } from '../config/site';
 import { breadcrumbSchema } from '../lib/seo/jsonld';
+import { PARTS_PATH } from '../lib/routes';
 
 const crumbs = [
   { name: 'Inicio', url: '/' },
   { name: 'Garantía', url: '/garantia' },
 ];
-const message = 'Hola 👋 Quiero iniciar una reclamación de garantía. Modelo: [modelo]. Número de bastidor/pedido: [número]. Descripción del problema: [descripción].';
+const message = 'Hola 👋 Quiero iniciar una reclamación de garantía. Modelo: [modelo]. Número de serie/pedido: [número]. Descripción del problema: [descripción].';
 ---
 
 <BaseLayout
   title="Garantía y servicio posventa"
-  description="24 meses de garantía en el vehículo y 12 a 24 meses en batería según modelo. Qué cubre, qué no cubre y cómo gestionar una reclamación."
+  description="12 meses de garantía en batería y motor de tu bicimoto o trimoto RAIDEN. Qué cubre, qué no cubre y cómo gestionar una reclamación con nuestro servicio técnico en Callao."
   path="/garantia"
   jsonLd={[breadcrumbSchema(crumbs)]}
 >
   <div class="container section">
     <Breadcrumbs items={crumbs} />
-    <SectionHeading as="h1" eyebrow="Posventa" title="Garantía" text="Condiciones claras, sin letra pequeña. Así protegemos tu vehículo y tu batería." />
+    <SectionHeading as="h1" eyebrow="Posventa" title="Garantía" text="Condiciones claras, sin letra pequeña. Así protegemos tu bicimoto y su batería." />
 
     <div class="prose">
       <ul role="list" class="war__summary">
         <li class="card">
-          <strong>24 meses</strong>
-          <span class="muted">Garantía del vehículo frente a defectos de fabricación</span>
+          <strong>12 meses</strong>
+          <span class="muted">Garantía en batería y motor frente a defectos de fabricación</span>
         </li>
         <li class="card">
-          <strong>12–24 meses</strong>
-          <span class="muted">Garantía de la batería, según modelo (ver ficha técnica)</span>
+          <strong>Servicio técnico propio</strong>
+          <span class="muted">Diagnóstico y mantenimiento en nuestra oficina de Callao</span>
         </li>
         <li class="card">
-          <strong>Repuestos</strong>
-          <span class="muted">Disponibilidad garantizada durante la vida útil del modelo</span>
+          <strong>Repuestos originales</strong>
+          <span class="muted">Baterías, motores, controladores, cargadores y más en stock</span>
         </li>
       </ul>
 
       <h2>Plazos de garantía</h2>
       <p>
-        Todos los vehículos cuentan con <strong>24 meses de garantía</strong> desde la fecha de entrega, válida en todo el Perú y sin perjuicio de los derechos
-        que reconoce al consumidor el Código de Protección y Defensa del Consumidor. La <strong>batería</strong> tiene una garantía específica de <strong>entre 12 y 24 meses</strong> según el modelo y la química de la celda; el
-        plazo exacto aparece en la ficha técnica de cada producto.
+        Todos los vehículos RAIDEN cuentan con <strong>12 meses de garantía en batería y motor</strong> desde la fecha de entrega, válida en todo el Perú y sin
+        perjuicio de los derechos que reconoce al consumidor el Código de Protección y Defensa del Consumidor. El plazo exacto de cada modelo aparece en su ficha
+        técnica.
       </p>
       <p>
-        La garantía de batería cubre la pérdida de capacidad por debajo del <strong>70 % de la capacidad nominal</strong> dentro del periodo de garantía, con un uso
-        y una carga conformes al manual.
+        La garantía de batería cubre los defectos de fabricación y la pérdida anormal de capacidad dentro del periodo de garantía, con un uso y una carga conformes
+        al manual (cargador original de 220 V, sin descargas profundas prolongadas).
       </p>
 
       <h2>Qué cubre</h2>
       <ul>
-        <li>Defectos de fabricación o de materiales en motor, controlador, batería, cargador, chasis y componentes eléctricos.</li>
-        <li>Fallos de la pantalla, iluminación y sistema de frenado no derivados del desgaste.</li>
+        <li>Defectos de fabricación o de materiales en la <strong>batería</strong> y el <strong>motor</strong>.</li>
+        <li>Fallos del controlador, cargador, pantalla, iluminación y sistema eléctrico no derivados del desgaste ni del mal uso, evaluados por nuestro servicio técnico.</li>
         <li>Mano de obra y piezas necesarias para la reparación, o sustitución del componente si no es reparable.</li>
-        <li>Recojo y devolución del vehículo cuando la reparación no pueda realizarse a domicilio (en Lima Metropolitana; en provincias coordinamos el envío a nuestro taller o a un taller colaborador).</li>
       </ul>
 
       <h2>Qué no cubre</h2>
       <ul>
-        <li><strong>Desgaste normal:</strong> neumáticos, pastillas y discos de freno, cables, bombillas, fusibles, asiento y elementos estéticos.</li>
-        <li><strong>Mal uso o negligencia:</strong> caídas, accidentes, sobrecarga por encima del peso máximo, uso fuera de vía no previsto por el modelo o competición.</li>
-        <li><strong>Agua:</strong> daños por inmersión o por exposición superior al grado de protección IP indicado en la ficha (por ejemplo, limpieza con agua a presión).</li>
-        <li><strong>Modificaciones:</strong> cambios en el controlador, el motor, la batería o el software, y la instalación de piezas no homologadas.</li>
+        <li><strong>Desgaste normal:</strong> llantas, cables de freno, manijas, focos, fusibles, asiento y elementos estéticos.</li>
+        <li><strong>Mal uso o negligencia:</strong> caídas, accidentes, sobrecarga por encima del peso máximo o uso fuera de vía.</li>
+        <li><strong>Agua:</strong> daños por inmersión o limpieza con agua a presión sobre componentes eléctricos.</li>
+        <li><strong>Modificaciones:</strong> cambios en el controlador, el motor, la batería o el cableado, y la instalación de piezas no originales.</li>
         <li>Uso de cargadores no originales o almacenamiento prolongado de la batería descargada.</li>
         <li>Daños derivados de un mantenimiento no realizado según el manual.</li>
       </ul>
@@ -71,27 +71,27 @@ const message = 'Hola 👋 Quiero iniciar una reclamación de garantía. Modelo:
       <h2>Cómo reclamar</h2>
       <ol>
         <li>
-          Escríbenos por <strong>WhatsApp</strong> o por correo a <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a> indicando el modelo, el número de
-          bastidor o de pedido y una descripción del problema. Si es posible, adjunta fotos o vídeo.
+          Escríbenos por <strong>WhatsApp</strong> ({site.phoneDisplay}) o por correo a <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a> indicando el
+          modelo, el número de serie o de pedido y una descripción del problema. Si es posible, adjunta fotos o video.
         </li>
-        <li>Nuestro equipo técnico en Lima responde en un plazo máximo de 2 días hábiles con el diagnóstico inicial y los siguientes pasos.</li>
-        <li>Si hace falta intervención, organizamos la reparación a domicilio o el recojo del vehículo sin costo para ti cuando el fallo está cubierto. Para provincias, cubrimos el envío nacional del repuesto o del vehículo vía courier o agencia.</li>
-        <li>Te devolvemos el vehículo reparado o el componente sustituido, con el informe de la intervención.</li>
+        <li>Nuestro equipo técnico responde en un plazo máximo de 2 días hábiles con el diagnóstico inicial y los siguientes pasos.</li>
+        <li>Si hace falta intervención, coordinamos la revisión en nuestra oficina de {site.address}. Para provincias, coordinamos el envío del repuesto o del vehículo vía agencia.</li>
+        <li>Te devolvemos la bicimoto reparada o el componente sustituido, con el detalle de la intervención.</li>
       </ol>
 
-      <h2>Recambios y mantenimiento</h2>
+      <h2>Repuestos y mantenimiento</h2>
       <p>
-        Disponemos de repuestos originales (baterías, cargadores, controladores, pantallas, frenos y carrocería) durante toda la vida útil del modelo. Fuera de
-        garantía, te enviamos una cotización cerrada (precios en soles, IGV incluido) antes de intervenir, con envío a todo el Perú. Las revisiones recomendadas están en el manual de cada vehículo y no son obligatorias
-        para mantener la garantía, siempre que se sigan las indicaciones de uso y carga.
+        Disponemos de <a href={PARTS_PATH}>repuestos originales</a> (baterías Chilwee, motores de 350 W y 500 W, controladores, cargadores, frenos, luces y
+        mandos) para toda la gama. Fuera de garantía, te enviamos una cotización cerrada (precios en soles, IGV incluido) antes de intervenir. Las revisiones
+        preventivas recomendadas están en el <a href="/servicio-tecnico">servicio técnico</a>.
       </p>
 
       <div class="card war__cta">
         <h2>¿Necesitas iniciar una reclamación?</h2>
-        <p class="muted">Ten a mano el modelo y el número de pedido. Te respondemos en el día, de L–V 9:00–18:00 y S 9:00–13:00 (hora de Lima).</p>
+        <p class="muted">Ten a mano el modelo y el número de pedido. Te respondemos en el día. {site.hours}.</p>
         <div class="war__ctabtns">
-          <WhatsAppLink source="product" message={message} class="btn btn--whatsapp">Reclamar por WhatsApp</WhatsAppLink>
-          <a href={`mailto:${site.contactEmail}`} class="btn btn--secondary">Escribir un email</a>
+          <WhatsAppLink source="support" message={message} class="btn btn--whatsapp">Reclamar por WhatsApp</WhatsAppLink>
+          <a href={`mailto:${site.contactEmail}`} class="btn btn--secondary">Escribir un correo</a>
         </div>
       </div>
     </div>

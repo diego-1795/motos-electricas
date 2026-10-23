@@ -1,6 +1,6 @@
 ---
 import type { Specs } from '../../domain/types';
-import { batteryLabel, chargeLabel, kw } from '../../domain/product';
+import { batteryLabel, chargeLabel, powerLabel, rangeLabel } from '../../domain/product';
 
 interface Props {
   specs: Specs;
@@ -8,12 +8,13 @@ interface Props {
 }
 const { specs, compact = false } = Astro.props;
 const tiles = [
-  { label: 'Autonomía', value: `${specs.rangeKm} km` },
+  { label: 'Autonomía', value: rangeLabel(specs) },
   { label: 'Velocidad', value: `${specs.topSpeedKmh} km/h` },
-  { label: 'Potencia', value: kw(specs.powerW) },
+  { label: 'Potencia', value: powerLabel(specs.powerW) },
   { label: 'Batería', value: batteryLabel(specs) },
   { label: 'Carga', value: chargeLabel(specs) },
-  ...(compact ? [] : [{ label: 'Peso', value: `${specs.weightKg} kg` }]),
+  ...(compact ? [] : [{ label: 'Carga máx.', value: `${specs.maxLoadKg} kg` }]),
+  ...(compact || specs.weightKg === undefined ? [] : [{ label: 'Peso', value: `${specs.weightKg} kg` }]),
 ];
 ---
 

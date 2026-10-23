@@ -4,7 +4,7 @@
   "name": "Titan Rhino",
   "subtitle": "Trimoto eléctrica de carga",
   "claim": "Define la forma de moverte",
-  "description": "Titan Rhino representa fuerza, resistencia y capacidad, convirtiéndose en una aliada para los recorridos que exigen más: reparto, carga y trabajo diario.",
+  "description": "Titan Rhino representa fuerza, resistencia y capacidad, convirtiéndose en una aliada para los recorridos que exigen más: reparto, carga y trabajo diario. Trimoto eléctrica de 800 W con hasta 250 kg de carga, modo reversa y batería Chilwee 60V 20Ah, limitada a 25 km/h. Disponible en verde y rojo.",
   "category": "trimotos",
   "brand": "Raiden",
   "images": [
@@ -148,58 +148,80 @@
   ],
   "highlights": [
     "Motor de 800 W con modo reversa",
-    "Hasta 250 kg de carga",
+    "Hasta 250 kg de carga · 35-40 km por carga",
     "Tres ruedas: estabilidad para el trabajo",
     "Garantía 12 meses en batería y motor"
   ],
   "technology": [
     {
       "title": "Motor",
-      "text": "Motor sin escobillas de 800 W con controlador de 12 tubos SineWave: par suficiente para mover hasta 250 kg sin esfuerzo y modo reversa para maniobrar con carga."
+      "text": "Motor sin escobillas de 800 W con controlador de 12 tubos SineWave: par suficiente para mover hasta 250 kg y modo reversa para maniobrar con carga en espacios estrechos."
     },
     {
       "title": "Batería",
-      "text": "Batería Chilwee de plomo-ácido de 60V 20Ah (1,2 kWh) con 35-40 km de autonomía y carga completa en 6-8 horas con el cargador de 220 V incluido."
+      "text": "Batería Chilwee de plomo-ácido de 60V 20Ah (1,2 kWh) con 35-40 km de autonomía y carga completa en 6-8 horas con el cargador de 220 V incluido. Vida útil estimada de 2 años o 350-400 ciclos."
     },
     {
       "title": "Frenos",
-      "text": "Frenos de tambor delantero y trasero dimensionados para el peso de carga. Cables de freno premium disponibles como repuesto."
+      "text": "Frenos de tambor delantero y trasero dimensionados para el peso de carga. Cables de freno para 800 W disponibles como repuesto original."
     },
     {
-      "title": "Suspensión",
-      "text": "Horquilla hidráulica delantera y suspensión trasera reforzada para trabajar con carga sobre pistas irregulares."
+      "title": "Suspensión y llantas",
+      "text": "Horquilla hidráulica delantera y suspensión trasera reforzada para trabajar con carga sobre pistas irregulares, con llantas de 3.00 x 10\"."
     },
     {
-      "title": "Iluminación",
-      "text": "Faro delantero multicolor, intermitentes delanteras y traseras y faro posterior con luz de freno."
+      "title": "Iluminación y seguridad",
+      "text": "Faro delantero multicolor, luces intermitentes delanteras y traseras, espejos retrovisores, alarma antirrobo y bocina 3 en 1 con aviso de retroceso."
     },
     {
       "title": "Pantalla y modos de conducción",
-      "text": "Pantalla LCD, interruptor de 3 velocidades y reversa, alarma antirrobo y bocina 3 en 1 con aviso de retroceso."
+      "text": "Pantalla LCD, interruptor de 3 velocidades y modo reversa, alarma antirrobo y cesta delantera incluida. Lista para trabajar desde el primer día."
     }
   ],
   "faqs": [
     {
       "question": "¿Necesito licencia para manejar la Titan Rhino?",
-      "answer": "La Titan Rhino es una trimoto eléctrica de baja velocidad (25 km/h). Según la normativa vigente del MTC puede no requerir licencia; confírmalo con nuestro asesor para tu ciudad y uso (carga o reparto)."
+      "answer": "La Titan Rhino es una trimoto eléctrica de baja velocidad (25 km/h). En general no requiere licencia de conducir; para uso comercial (carga o reparto) te recomendamos verificar la normativa vigente del MTC y de tu municipalidad y confirmarlo con nuestro asesor."
     },
     {
       "question": "¿Cuánta carga soporta?",
-      "answer": "Hasta 250 kg de carga máxima, incluido el conductor. Supera ese límite y perderás autonomía y seguridad de frenado."
+      "answer": "Hasta 250 kg de carga máxima, incluido el conductor. Es una trimoto de una plaza: no lleva pasajero. Superar el límite reduce la autonomía, alarga la frenada y acelera el desgaste."
     },
     {
-      "question": "¿Qué garantía tiene?",
-      "answer": "12 meses de garantía en batería y motor, con servicio técnico propio en Bocanegra, Callao."
+      "question": "¿Qué autonomía tiene con carga?",
+      "answer": "Entre 35 y 40 km por carga en condiciones normales. Con carga cercana al máximo, subidas o arranques constantes la autonomía baja; para una jornada de reparto de barrio es suficiente cargando cada noche (6-8 horas en un tomacorriente de 220 V)."
     },
     {
-      "question": "¿Cuánto tarda la entrega?",
-      "answer": "En Lima y Callao coordinamos la entrega en 3-7 días hábiles; a provincias enviamos por agencia en 7-15 días hábiles (referencial)."
+      "question": "¿Cuánto tarda en cargar y qué cuidados necesita la batería?",
+      "answer": "La carga completa toma entre 6 y 8 horas con el cargador de 220 V incluido, en cualquier tomacorriente doméstico. La batería Chilwee de plomo-ácido se cuida con hábitos sencillos: cárgala después de cada uso, no la dejes descargarse a fondo, usa solo el cargador original y, si no la usas, dale una carga cada 15-30 días. Su vida útil estimada es de 2 años o 350-400 ciclos."
+    },
+    {
+      "question": "¿Qué garantía tiene y dónde se repara?",
+      "answer": "12 meses de garantía en batería y motor, con Servicio técnico RAIDEN propio en nuestra tienda de Bocanegra, Callao (lunes a domingo, de 10 a. m. a 8 p. m.) y repuestos originales en stock: baterías, cargadores, controladores, cables de freno, llantas, faros y más."
+    },
+    {
+      "question": "¿Cómo se compra y cuánto tarda la entrega?",
+      "answer": "Envías tu solicitud por WhatsApp y un asesor confirma modelo, versión, color, precio final y medios de pago (no hay pago online). En Lima y Callao coordinamos la entrega en 3-7 días hábiles; a provincias enviamos por agencia en 7-15 días hábiles (referencial). También puedes probarla en tienda antes de decidir."
+    }
+  ],
+  "reviews": [
+    {
+      "author": "Pedro",
+      "rating": 5,
+      "text": "La uso para repartir agua y gaseosas en Ventanilla. Carga bastante y la reversa ayuda mucho para salir del depósito. Cero gasolina.",
+      "date": "2026-09-22"
+    },
+    {
+      "author": "Martha",
+      "rating": 4,
+      "text": "La compramos para la bodega. Estable con carga y se maneja fácil. Para subidas fuertes con mucho peso hay que ir en velocidad 1.",
+      "date": "2026-10-08"
     }
   ],
   "featured": 70,
   "publishedAt": "2026-10-01",
   "seo": {
     "title": "Titan Rhino: trimoto eléctrica de carga RAIDEN | S/ 2,700",
-    "description": "Trimoto eléctrica RAIDEN Titan Rhino: motor 800 W, 250 kg de carga, modo reversa, batería Chilwee 60V 20Ah y 12 meses de garantía. S/ 2,700, IGV incluido."
+    "description": "Trimoto eléctrica RAIDEN Titan Rhino: motor 800 W, hasta 250 kg de carga, modo reversa, batería Chilwee 60V 20Ah, 35-40 km de autonomía y 12 meses de garantía. S/ 2,700, IGV incluido."
   }
 }

@@ -1,0 +1,289 @@
+---
+import Pic from '../ui/Pic.astro';
+import WhatsAppLink from '../ui/WhatsAppLink.astro';
+import type { Product } from '../../domain/types';
+import { productPath } from '../../lib/routes';
+
+/**
+ * Hero "DESCUBRE TU INSTINTO": slider ligero con los modelos (SSR completo).
+ * - CSS scroll-snap horizontal; puntos + flechas; sin librerías.
+ * - Autoplay cada 6 s (vanilla), pausado con hover/foco y desactivado con prefers-reduced-motion.
+ * - La primera diapositiva lleva el h1 y la imagen LCP con prioridad.
+ */
+interface Props {
+  products: Product[];
+}
+const { products } = Astro.props;
+const slides = products.filter((p) => p.heroImage);
+---
+
+<section class="hs" aria-roledescription="carrusel" aria-label="Modelos RAIDEN" data-slider>
+  <ul role="list" class="hs__track" data-track>
+    {
+      slides.map((p, i) => {
+        const Title = i === 0 ? 'h1' : 'h2';
+        return (
+          <li class="hs__slide" data-slide aria-roledescription="diapositiva" aria-label={`${i + 1} de ${slides.length}: ${p.name}`}>
+            <div class="hs__media">
+              <Pic image={p.heroImage!} alt="" width={1577} height={672} widths={[640, 960, 1280, 1600]} sizes="100vw" priority={i === 0} />
+            </div>
+            <div class="container hs__copy">
+              <p class="eyebrow hs__eyebrow">Descubre tu instinto</p>
+              <Title class="hs__title">{p.name}</Title>
+              <p class="hs__claim">{p.claim}</p>
+              <div class="hs__cta">
+                <a href={productPath(p)} class="btn btn--primary btn--lg">
+                  Descubrir modelo
+                </a>
+                <WhatsAppLink source="header" slug={p.slug} class="btn btn--secondary btn--lg">
+                  Contáctanos
+                </WhatsAppLink>
+              </div>
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
+
+  <div class="container hs__controls">
+    <button type="button" class="hs__arrow" aria-label="Modelo anterior" data-prev>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+    </button>
+    <div class="hs__dots" role="tablist" aria-label="Elegir modelo">
+      {
+        slides.map((p, i) => (
+          <button type="button" class="hs__dot" role="tab" aria-selected={i === 0 ? 'true' : 'false'} aria-label={p.name} data-dot={i} />
+        ))
+      }
+    </div>
+    <button type="button" class="hs__arrow" aria-label="Modelo siguiente" data-next>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+    </button>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-slider]');
+  if (root) {
+    const track = root.querySelector<HTMLElement>('[data-track]')!;
+    const slides = Array.from(track.querySelectorAll<HTMLElement>('[data-slide]'));
+    const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-dot]'));
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    let index = 0;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    let paused = false;
+
+    function go(i: number, smooth = true) {
+      index = (i + slides.length) % slides.length;
+      const target = slides[index]!;
+      track.scrollTo({ left: target.offsetLeft, behavior: smooth && !reduce.matches ? 'smooth' : 'auto' });
+    }
+    function paint() {
+      dots.forEach((d, i) => d.setAttribute('aria-selected', String(i === index)));
+    }
+    // Detecta la diapositiva visible al hacer scroll/swipe
+    let raf = 0;
+    track.addEventListener(
+      'scroll',
+      () => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const i = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+          if (i !== index) {
+            index = Math.min(slides.length - 1, Math.max(0, i));
+            paint();
+          }
+        });
+      },
+      { passive: true },
+    );
+
+    root.querySelector('[data-prev]')?.addEventListener('click', () => go(index - 1));
+    root.querySelector('[data-next]')?.addEventListener('click', () => go(index + 1));
+    dots.forEach((d, i) => d.addEventListener('click', () => go(i)));
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') go(index + 1);
+      if (e.key === 'ArrowLeft') go(index - 1);
+    });
+
+    function start() {
+      stop();
+      if (reduce.matches || slides.length < 2 || paused) return;
+      timer = setInterval(() => {
+        if (document.hidden) return;
+        go(index + 1);
+      }, 6000);
+    }
+    function stop() {
+      if (timer) clearInterval(timer);
+      timer = undefined;
+    }
+    root.addEventListener('mouseenter', () => {
+      paused = true;
+      stop();
+    });
+    root.addEventListener('mouseleave', () => {
+      paused = false;
+      start();
+    });
+    root.addEventListener('focusin', () => {
+      paused = true;
+      stop();
+    });
+    root.addEventListener('focusout', (e) => {
+      if (!root.contains(e.relatedTarget as Node | null)) {
+        paused = false;
+        start();
+      }
+    });
+    root.addEventListener('touchstart', () => stop(), { passive: true });
+    root.addEventListener('touchend', () => start(), { passive: true });
+    reduce.addEventListener('change', start);
+    paint();
+    start();
+  }
+</script>
+
+<style>
+  .hs {
+    position: relative;
+    background: var(--dark-bg);
+    color: var(--dark-fg);
+  }
+  .hs__track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  .hs__track::-webkit-scrollbar {
+    display: none;
+  }
+  .hs__slide {
+    position: relative;
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    min-height: min(80dvh, 44rem);
+    display: grid;
+    align-items: end;
+    isolation: isolate;
+  }
+  .hs__media {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--dark-bg-elev);
+  }
+  .hs__media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+  .hs__media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, rgb(17 17 17 / 0.92) 0%, rgb(17 17 17 / 0.55) 45%, rgb(17 17 17 / 0.15) 100%),
+      radial-gradient(60% 50% at 70% 40%, rgb(1 66 166 / 0.25), transparent 70%);
+  }
+  .hs__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    padding-block: var(--s-12) var(--s-20);
+    max-width: var(--container);
+  }
+  .hs__eyebrow {
+    color: var(--accent-text, var(--dark-fg-muted));
+  }
+  .hs__title {
+    font-family: var(--font-display, var(--font-sans));
+    font-size: var(--fs-4xl);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    color: var(--dark-fg);
+  }
+  .hs__claim {
+    font-size: var(--fs-xl);
+    color: var(--dark-fg-muted);
+    max-width: 38ch;
+  }
+  .hs__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-2);
+  }
+  .hs__cta .btn--secondary {
+    --btn-fg: var(--dark-fg);
+    --btn-border: var(--n-600);
+  }
+  .hs__cta .btn--secondary:hover {
+    background: rgb(255 255 255 / 0.08);
+  }
+  .hs__controls {
+    position: absolute;
+    inset: auto 0 var(--s-6) 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    pointer-events: none;
+  }
+  .hs__controls > * {
+    pointer-events: auto;
+  }
+  .hs__arrow {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--r-full);
+    border: 1px solid var(--n-700);
+    background: rgb(17 17 17 / 0.6);
+    color: var(--dark-fg);
+    display: grid;
+    place-items: center;
+    backdrop-filter: blur(4px);
+  }
+  .hs__arrow:hover {
+    border-color: var(--n-400);
+  }
+  .hs__dots {
+    display: flex;
+    gap: var(--s-2);
+  }
+  .hs__dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: var(--r-full);
+    background: var(--n-600);
+    transition:
+      width var(--t-base) var(--ease),
+      background var(--t-base) var(--ease);
+  }
+  .hs__dot[aria-selected='true'] {
+    width: 2rem;
+    background: var(--dark-fg);
+  }
+  @media (min-width: 1024px) {
+    .hs__slide {
+      min-height: min(78dvh, 46rem);
+      align-items: center;
+    }
+    .hs__copy {
+      padding-block: var(--s-24);
+    }
+    .hs__media::after {
+      background:
+        linear-gradient(to right, rgb(17 17 17 / 0.9) 0%, rgb(17 17 17 / 0.55) 45%, rgb(17 17 17 / 0.1) 100%),
+        radial-gradient(60% 50% at 70% 40%, rgb(1 66 166 / 0.25), transparent 70%);
+    }
+  }
+</style>

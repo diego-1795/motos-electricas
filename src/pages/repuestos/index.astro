@@ -1,0 +1,177 @@
+---
+import Pic from '../../components/ui/Pic.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../../components/ui/SectionHeading.astro';
+import WhatsAppLink from '../../components/ui/WhatsAppLink.astro';
+import QuickAdd from '../../islands/QuickAdd';
+import { repos } from '../../data';
+import type { PartKind } from '../../domain/types';
+import { formatMoney } from '../../domain/money';
+import { availabilityLabel } from '../../domain/product';
+import { publicSrc } from '../../lib/images';
+import { breadcrumbSchema, itemListSchema } from '../../lib/seo/jsonld';
+import { PARTS_PATH, partPath } from '../../lib/routes';
+import { partKindLabel as kindLabels } from '../../lib/labels';
+
+const category = await repos.categories.bySlug('repuestos');
+const parts = await repos.parts.all();
+const groups = (Object.keys(kindLabels) as PartKind[])
+  .map((k) => ({ id: k, label: kindLabels[k], items: parts.filter((p) => p.kind === k).sort((a, b) => a.name.localeCompare(b.name, 'es')) }))
+  .filter((g) => g.items.length);
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Repuestos', url: PARTS_PATH },
+];
+const badgeOf = (a: string) => (a === 'en-stock' ? 'badge--stock' : a === 'bajo-pedido' ? 'badge--order' : a === 'proximamente' ? 'badge--soon' : '');
+---
+
+<BaseLayout
+  title={category?.title ?? 'Repuestos'}
+  description={category?.description ?? 'Repuestos originales RAIDEN para bicimotos y trimotos eléctricas.'}
+  path={PARTS_PATH}
+  image={category?.image ? publicSrc(category.image) : undefined}
+  jsonLd={[breadcrumbSchema(crumbs), itemListSchema(parts.map((a) => ({ name: a.name, url: partPath(a) })))]}
+>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading as="h1" eyebrow={category?.tagline ?? 'Repuestos'} title={category?.title ?? 'Repuestos'} text={category?.description} />
+
+    <nav class="rp__jump" aria-label="Tipos de repuesto">
+      <ul role="list">
+        {groups.map((g) => <li><a href={`#${g.id}`} class="badge">{g.label} · {g.items.length}</a></li>)}
+      </ul>
+    </nav>
+
+    {
+      groups.map((g) => (
+        <section class="rp__group" id={g.id} aria-labelledby={`h-${g.id}`}>
+          <h2 id={`h-${g.id}`}>{g.label}</h2>
+          <ul role="list" class="rp__grid">
+            {g.items.map((a) => (
+              <li class="card card--interactive rp__card" data-part-card={a.slug}>
+                <a href={partPath(a)} class="rp__media" tabindex="-1" aria-hidden="true">
+                  {a.image && <Pic image={a.image} alt="" width={480} height={600} widths={[320, 480]} sizes="(min-width:1024px) 18vw, (min-width:768px) 30vw, 45vw" />}
+                </a>
+                <div class="rp__body">
+                  <h3>
+                    <a href={partPath(a)}>{a.name}</a>
+                  </h3>
+                  <p class="muted rp__desc">{a.description}</p>
+                  <div class="rp__foot">
+                    <strong>
+                      {formatMoney(a.price)}
+                      {a.unit === 'PAR' && <span class="muted rp__unit"> por par</span>}
+                    </strong>
+                    <span class:list={['badge', badgeOf(a.availability)]}>{availabilityLabel[a.availability]}</span>
+                  </div>
+                  <QuickAdd
+                    client:visible
+                    kind="accessory"
+                    slug={a.slug}
+                    name={a.name}
+                    unitPrice={a.price}
+                    image={a.image ? { ...a.image, src: publicSrc(a.image) } : undefined}
+                    disabled={a.availability === 'agotado'}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+
+    <aside class="card rp__cta">
+      <h2>¿No encuentras el repuesto?</h2>
+      <p class="muted">Indícanos el modelo y la pieza que necesitas: la buscamos y te cotizamos con envío a todo el Perú.</p>
+      <WhatsAppLink source="product" class="btn btn--whatsapp" message="Hola 👋 Busco un repuesto para mi bicimoto RAIDEN. Modelo: ___ . Pieza: ___">
+        Consultar un repuesto
+      </WhatsAppLink>
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .rp__jump ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin-bottom: var(--s-6);
+  }
+  .rp__jump a:hover {
+    text-decoration: none;
+    border-color: var(--fg);
+    color: var(--fg);
+  }
+  .rp__group {
+    margin-top: var(--s-10);
+    scroll-margin-top: 5rem;
+  }
+  .rp__group h2 {
+    font-size: var(--fs-xl);
+    margin-bottom: var(--s-4);
+  }
+  .rp__grid {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  }
+  .rp__card {
+    display: flex;
+    flex-direction: column;
+  }
+  .rp__media {
+    display: block;
+    aspect-ratio: 4 / 5;
+    background: var(--bg-sunken);
+  }
+  .rp__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .rp__body {
+    padding: var(--s-4) var(--s-4) var(--s-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    flex: 1;
+  }
+  .rp__body h3 {
+    font-size: var(--fs-md);
+  }
+  .rp__desc {
+    font-size: var(--fs-sm);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+  .rp__foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-2);
+    flex-wrap: wrap;
+    margin-top: var(--s-1);
+  }
+  .rp__unit {
+    font-weight: 400;
+    font-size: var(--fs-xs);
+  }
+  .rp__cta {
+    margin-top: var(--s-12);
+    padding: var(--s-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    align-items: flex-start;
+  }
+  @media (min-width: 768px) {
+    .rp__grid {
+      gap: var(--s-6);
+    }
+  }
+</style>

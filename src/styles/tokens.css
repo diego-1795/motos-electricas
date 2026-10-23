@@ -1,11 +1,14 @@
 /* =====================================================================
    RAIDEN DESIGN TOKENS — única fuente de verdad visual (docs/02-design-system.md)
+   Marca Raiden (Perú): negro #111111 · azul #0142A6 · blanco #FFFFFF.
    Premium · tecnológico · minimalista · editorial. Sin glassmorphism, sin neón.
    ===================================================================== */
+@import './fonts.css';
+
 :root {
   color-scheme: light;
 
-  /* Neutros (cálidos, papel → tinta) */
+  /* Neutros (papel → tinta). --n-950 es el Raiden Black. */
   --n-0: #ffffff;
   --n-50: #f7f7f5;
   --n-100: #efefec;
@@ -15,15 +18,19 @@
   --n-500: #6b6f76;
   --n-600: #4a4e55;
   --n-700: #2c2f35;
-  --n-800: #1c1f26;
-  --n-900: #111315;
-  --n-950: #0b0c0f;
+  --n-800: #1f2124;
+  --n-900: #181a1d;
+  --n-950: #111111;
 
-  /* Acentos */
-  --volt: #d6ff3f;          /* acento de marca: solo sobre fondos oscuros */
-  --volt-ink: #1f2a00;
-  --electric: #0b5fff;      /* enlaces, foco, estados interactivos en claro */
-  --electric-700: #0747bf;
+  /* Marca */
+  --raiden-black: #111111;
+  --raiden-blue: #0142a6;       /* acento/marca: fondos de botón, enlaces y texto sobre claro */
+  --raiden-blue-700: #013585;   /* hover/pressed del azul */
+  --raiden-blue-tint: #7aa7ff;  /* azul para TEXTO sobre fondos oscuros (7,9:1 sobre #111111) */
+  --raiden-blue-100: #dde7f8;   /* fondos sutiles sobre claro */
+  --raiden-white: #ffffff;
+
+  /* Semánticos de estado */
   --success: #15704a;
   --warning: #8a5a10;
   --danger: #c42b2b;
@@ -37,32 +44,48 @@
   --fg-subtle: var(--n-400);
   --border: var(--n-200);
   --border-strong: var(--n-300);
-  --accent: var(--electric);
-  --accent-fg: #ffffff;
-  --focus: var(--electric);
+  --accent: var(--raiden-blue);        /* rellenos (botón primario, contador) — siempre azul sólido + blanco */
+  --accent-fg: var(--raiden-white);
+  --accent-text: var(--raiden-blue);   /* enlaces, badges y texto acentuado; en .surface-dark pasa al tint */
+  --accent-hover: var(--raiden-blue-700);
+  --focus: var(--raiden-blue);
+  --electric: var(--raiden-blue);      /* alias histórico de --accent-text */
+  --electric-700: var(--raiden-blue-700);
+
+  /* DEPRECATED (una release): el acento "volt" ya no existe. Mapea al azul de texto.
+     Sustituir var(--volt) por var(--accent-text) y var(--volt-ink) por var(--accent-fg). */
+  --volt: var(--accent-text);
+  --volt-ink: var(--accent-fg);
 
   /* Superficie oscura (showroom) — se aplica con .surface-dark */
-  --dark-bg: var(--n-950);
+  --dark-bg: var(--raiden-black);
   --dark-bg-elev: var(--n-900);
   --dark-fg: var(--n-50);
   --dark-fg-muted: var(--n-400);
   --dark-border: var(--n-800);
 
-  /* Tipografía */
-  --font-sans: 'Inter', 'SF Pro Text', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Tipografía — Montserrat (principal) + Integral CF (display, solo H1/títulos de sección) */
+  --font-sans: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Integral CF', 'Montserrat', system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
   --fs-xs: 0.75rem;                                  /* 12 */
   --fs-sm: 0.875rem;                                 /* 14 */
   --fs-md: 1rem;                                     /* 16 */
   --fs-lg: 1.125rem;                                 /* 18 */
   --fs-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);   /* 20→24 */
   --fs-2xl: clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem);  /* 24→36 */
-  --fs-3xl: clamp(2rem, 1.4rem + 2.6vw, 3.5rem);     /* 32→56 */
-  --fs-4xl: clamp(2.5rem, 1.6rem + 4vw, 4.5rem);     /* 40→72 */
+  --fs-3xl: clamp(1.75rem, 1.3rem + 2.2vw, 3rem);    /* 28→48 (H1 interior, Integral CF) */
+  --fs-4xl: clamp(2.25rem, 1.5rem + 3.4vw, 4rem);    /* 36→64 (H1 hero, Integral CF) */
   --lh-tight: 1.1;
   --lh-snug: 1.25;
   --lh-base: 1.5;
   --tracking-tight: -0.02em;
+  --tracking-display: 0.01em;
   --tracking-caps: 0.08em;
 
   /* Espaciado (base 4px) */
@@ -94,9 +117,9 @@
   --r-full: 999px;
 
   /* Sombras (suaves, sin halos) */
-  --sh-1: 0 1px 2px rgb(17 19 21 / 0.06);
-  --sh-2: 0 4px 12px rgb(17 19 21 / 0.08);
-  --sh-3: 0 16px 40px rgb(17 19 21 / 0.14);
+  --sh-1: 0 1px 2px rgb(17 17 17 / 0.06);
+  --sh-2: 0 4px 12px rgb(17 17 17 / 0.08);
+  --sh-3: 0 16px 40px rgb(17 17 17 / 0.14);
 
   /* Motion */
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);

@@ -1,4 +1,4 @@
-import { configureAnalytics, consoleAdapter, dataLayerAdapter, noopAdapter, track } from '../services/analytics/AnalyticsService';
+import { configureAnalytics, consoleAdapter, dataLayerAdapter, noopAdapter, track, type WhatsAppSource } from '../services/analytics/AnalyticsService';
 
 /**
  * Arranque de analítica en cliente. Ligero, sin trackers de terceros.
@@ -18,7 +18,7 @@ export function initAnalytics(): void {
     if (!a) return;
     track({
       name: 'whatsapp_click',
-      source: (a.dataset.waSource as 'product' | 'header' | 'footer' | 'floating') ?? 'footer',
+      source: (a.dataset.waSource as WhatsAppSource | undefined) ?? 'footer',
       slug: a.dataset.waSlug,
     });
   });

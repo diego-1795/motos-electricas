@@ -5,6 +5,7 @@ import { formatMoney } from '../domain/money';
 import { lineTotal } from '../domain/cart';
 import { site } from '../config/site';
 import { buildMessage } from '../services/whatsapp/WhatsAppMessageBuilder';
+import { ALL_PRODUCTS_PATH, FINDER_PATH } from '../lib/routes';
 import CartRequestButton from './CartRequestButton';
 
 /** Página /carrito: revisión completa + notas + vista previa del mensaje. */
@@ -22,14 +23,18 @@ export default function CartPage() {
   if (cart.items.length === 0) {
     return (
       <div class="cp" data-cart-page>
-      <div class="cp__empty card">
-        <h2>Tu solicitud está vacía</h2>
-        <p class="muted">Añade una moto desde el catálogo o deja que te recomendemos una.</p>
-        <div class="cp__actions">
-          <a href="/motos-electricas" class="btn btn--primary">Ver catálogo</a>
-          <a href="/encuentra-tu-moto" class="btn btn--secondary">Encuentra tu moto</a>
+        <div class="cp__empty card">
+          <h2>Tu solicitud está vacía</h2>
+          <p class="muted">Añade una bicimoto o un repuesto desde el catálogo, o deja que te recomendemos un modelo.</p>
+          <div class="cp__actions">
+            <a href={ALL_PRODUCTS_PATH} class="btn btn--primary">
+              Ver los productos
+            </a>
+            <a href={FINDER_PATH} class="btn btn--secondary">
+              Encuentra tu bicimoto
+            </a>
+          </div>
         </div>
-      </div>
       </div>
     );
   }
@@ -46,7 +51,7 @@ export default function CartPage() {
               <div class="cp__thumb">{i.image && <img src={i.image.src} alt="" width="96" height="96" loading="lazy" />}</div>
               <div class="cp__info">
                 <strong>{i.name}</strong>
-                <small class="muted">{[i.variantName, i.colorName].filter(Boolean).join(' · ') || (i.kind === 'accessory' ? 'Accesorio' : '')}</small>
+                <small class="muted">{[i.variantName, i.colorName].filter(Boolean).join(' · ') || (i.kind === 'accessory' ? 'Repuesto' : '')}</small>
                 <small class="muted">{formatMoney(i.unitPrice)} / ud.</small>
               </div>
               <div class="cp__controls">
@@ -90,7 +95,7 @@ export default function CartPage() {
           <textarea
             class="textarea"
             maxLength={500}
-            placeholder="Ciudad de entrega, dudas sobre financiación, fecha deseada…"
+            placeholder="Distrito o ciudad de entrega, dudas sobre la versión, fecha deseada…"
             value={cart.notes}
             onInput={(e) => setNotes((e.target as HTMLTextAreaElement).value)}
           />
@@ -98,7 +103,7 @@ export default function CartPage() {
         </label>
         <CartRequestButton source="cart" />
         <p class="hint">
-          Al pulsar se abrirá WhatsApp con el mensaje preparado. No se realiza ningún pago en esta web; un asesor confirmará disponibilidad, transporte y condiciones.
+          Al pulsar se abrirá WhatsApp con el mensaje preparado. No se realiza ningún pago en esta web; un asesor confirmará disponibilidad, entrega y condiciones.
         </p>
         <details class="accordion">
           <summary>Ver mensaje que se enviará</summary>

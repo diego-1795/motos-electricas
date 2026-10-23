@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
+import ContactForm from '../islands/ContactForm';
 import { site } from '../config/site';
 import { breadcrumbSchema } from '../lib/seo/jsonld';
 
@@ -10,83 +11,110 @@ const crumbs = [
   { name: 'Inicio', url: '/' },
   { name: 'Contacto', url: '/contacto' },
 ];
-const socialLabel: Record<keyof typeof site.social, string> = { instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube' };
-const socials = (Object.keys(site.social) as (keyof typeof site.social)[]).map((k) => ({ name: socialLabel[k], url: site.social[k] }));
+const socials = [
+  { name: 'Instagram', url: site.social.instagram },
+  { name: 'Facebook', url: site.social.facebook },
+  { name: 'TikTok', url: site.social.tiktok },
+].filter((s) => s.url);
 ---
 
 <BaseLayout
   title="Contacto"
-  description="Habla con un asesor de Raiden por WhatsApp o email. Resolvemos dudas sobre modelos, autonomía, envío a todo el Perú y garantía, de lunes a sábado en horario de Lima."
+  description={`Escríbenos por WhatsApp (${site.phoneDisplay}) o correo. Oficina en ${site.address}. ${site.hours}. Asesoría sobre bicimotos, repuestos y servicio técnico RAIDEN.`}
   path="/contacto"
   jsonLd={[breadcrumbSchema(crumbs)]}
 >
   <div class="container section">
     <Breadcrumbs items={crumbs} />
-    <SectionHeading as="h1" eyebrow="Contacto" title="Hablemos" text="Sin formularios ni esperas: te atiende una persona del equipo." />
+    <SectionHeading as="h1" eyebrow="Contacto" title="Hablemos" text="Escríbenos y te atiende una persona del equipo. El formulario abre WhatsApp o tu correo con el mensaje listo: nada se guarda en esta web." />
 
-    <ul role="list" class="contact__grid">
-      <li class="card contact__card contact__card--wa">
-        <p class="eyebrow">Canal principal</p>
-        <h2>WhatsApp</h2>
-        <p class="muted">Asesoría, cotizaciones (precios en soles, IGV incluido) y solicitudes de compra con envío a todo el Perú. Respondemos en minutos en horario de atención.</p>
-        <WhatsAppLink source="product" class="btn btn--whatsapp btn--lg">Abrir WhatsApp</WhatsAppLink>
-      </li>
+    <div class="contact">
+      <section class="card contact__form" aria-labelledby="form-h">
+        <h2 id="form-h">Envíanos un mensaje</h2>
+        <ContactForm client:visible />
+      </section>
 
-      <li class="card contact__card">
-        <p class="eyebrow">Email</p>
-        <h2>Escríbenos</h2>
-        <p class="muted">Para reclamaciones de garantía, documentación o consultas que necesiten adjuntos.</p>
-        <a href={`mailto:${site.contactEmail}`} class="contact__link">{site.contactEmail}</a>
-      </li>
+      <aside class="contact__info">
+        <section class="card contact__card contact__card--wa" aria-labelledby="wa-h">
+          <p class="eyebrow">Canal principal</p>
+          <h2 id="wa-h">WhatsApp</h2>
+          <p class="contact__big"><a href={`tel:+${site.whatsappNumber}`}>{site.phoneDisplay}</a></p>
+          <p class="muted">Asesoría, cotizaciones y solicitudes de compra con envío a todo el Perú.</p>
+          <WhatsAppLink source="contact" class="btn btn--whatsapp">Abrir WhatsApp</WhatsAppLink>
+        </section>
 
-      <li class="card contact__card">
-        <p class="eyebrow">Horario</p>
-        <h2>Atención</h2>
-        <dl class="contact__hours">
-          <div>
-            <dt>Lunes a viernes</dt>
-            <dd>9:00 – 18:00</dd>
-          </div>
-          <div>
-            <dt>Sábados</dt>
-            <dd>9:00 – 13:00</dd>
-          </div>
-          <div>
-            <dt>Domingos y feriados</dt>
-            <dd>Cerrado</dd>
-          </div>
-        </dl>
-        <p class="muted contact__note">Horario de Lima (GMT-5). Los mensajes recibidos fuera de horario se responden el siguiente día hábil.</p>
-      </li>
+        <section class="card contact__card" aria-labelledby="mail-h">
+          <p class="eyebrow">Correo</p>
+          <h2 id="mail-h">Escríbenos</h2>
+          <p><a href={`mailto:${site.contactEmail}`} class="contact__link">{site.contactEmail}</a></p>
+          <p class="muted">Para garantías, documentación o consultas con adjuntos.</p>
+        </section>
 
-      <li class="card contact__card">
-        <p class="eyebrow">Redes</p>
-        <h2>Síguenos</h2>
-        <ul role="list" class="contact__social">
-          {
-            socials.map((s) => (
-              <li>
-                <a href={s.url} target="_blank" rel="noopener">
-                  {s.name}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </li>
-    </ul>
+        <section class="card contact__card" aria-labelledby="hours-h">
+          <p class="eyebrow">Horario de atención</p>
+          <h2 id="hours-h">Atención</h2>
+          <p class="contact__hours">{site.hours}</p>
+          <p class="muted contact__note">Horario de Lima (GMT-5). Los mensajes fuera de horario se responden al día siguiente.</p>
+        </section>
+
+        <section class="card contact__card" aria-labelledby="addr-h">
+          <p class="eyebrow">Oficina principal</p>
+          <h2 id="addr-h">Visítanos</h2>
+          <address class="contact__address">
+            <p>{site.address}</p>
+            <p class="muted">{site.legalName} · RUC {site.ruc}</p>
+          </address>
+          <a href={site.mapsUrl} target="_blank" rel="noopener noreferrer" class="btn btn--secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 21s7-6.2 7-11.5a7 7 0 0 0-14 0C5 14.8 12 21 12 21z" />
+              <circle cx="12" cy="9.5" r="2.5" />
+            </svg>
+            Ver en Google Maps
+          </a>
+        </section>
+
+        <section class="card contact__card" aria-labelledby="social-h">
+          <p class="eyebrow">Redes</p>
+          <h2 id="social-h">Síguenos</h2>
+          <ul role="list" class="contact__social">
+            {
+              socials.map((s) => (
+                <li>
+                  <a href={s.url} target="_blank" rel="noopener noreferrer">
+                    {s.name}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+      </aside>
+    </div>
 
     <p class="muted contact__disclaimer">
-      No se realizan pagos online. Toda compra se gestiona como solicitud por WhatsApp y se confirma con nuestro equipo antes de cualquier pago; el asesor te indica los medios de pago disponibles. Enviamos a Lima y a todo el Perú vía courier o agencia.
+      No se realizan pagos online. Toda compra se gestiona como solicitud por WhatsApp y se confirma con nuestro equipo antes de cualquier pago. Enviamos a Lima, Callao y todo el Perú vía courier o agencia.
     </p>
   </div>
 </BaseLayout>
 
 <style>
-  .contact__grid {
+  .contact {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .contact__form {
+    padding: var(--s-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+  }
+  .contact__form h2 {
+    font-size: var(--fs-xl);
+  }
+  .contact__info {
     display: grid;
     gap: var(--s-4);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    align-content: start;
   }
   .contact__card {
     padding: var(--s-6);
@@ -95,14 +123,16 @@ const socials = (Object.keys(site.social) as (keyof typeof site.social)[]).map((
     gap: var(--s-3);
   }
   .contact__card h2 {
-    font-size: var(--fs-xl);
+    font-size: var(--fs-lg);
   }
   .contact__card .btn {
     align-self: flex-start;
-    margin-top: auto;
+    margin-top: var(--s-1);
   }
-  .contact__card--wa {
-    grid-column: 1 / -1;
+  .contact__big {
+    font-size: var(--fs-xl);
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
   }
   .contact__link {
     font-weight: 600;
@@ -111,19 +141,16 @@ const socials = (Object.keys(site.social) as (keyof typeof site.social)[]).map((
     word-break: break-all;
   }
   .contact__hours {
-    display: grid;
-    gap: var(--s-2);
-  }
-  .contact__hours div {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--s-4);
-  }
-  .contact__hours dd {
     font-weight: 600;
   }
   .contact__note {
     font-size: var(--fs-sm);
+  }
+  .contact__address {
+    font-style: normal;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
   }
   .contact__social {
     display: flex;
@@ -135,14 +162,65 @@ const socials = (Object.keys(site.social) as (keyof typeof site.social)[]).map((
     text-decoration: underline;
     text-underline-offset: 0.2em;
   }
+  .contact__social a:hover {
+    color: var(--accent-text, var(--accent));
+  }
   .contact__disclaimer {
     margin-top: var(--s-8);
     font-size: var(--fs-sm);
     max-width: var(--container-narrow);
   }
   @media (min-width: 768px) {
-    .contact__grid {
-      gap: var(--s-6);
+    .contact__info {
+      grid-template-columns: 1fr 1fr;
+    }
+    .contact__card--wa {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (min-width: 1024px) {
+    .contact {
+      grid-template-columns: 7fr 5fr;
+      gap: var(--s-10);
+      align-items: start;
+    }
+    .contact__form {
+      padding: var(--s-8);
+    }
+    .contact__info {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<style is:global>
+  /* Isla ContactForm.tsx (estilos aquí: src/styles/** pertenece al Design System) */
+  .cf {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .cf__row {
+    display: grid;
+    gap: var(--s-4);
+  }
+  .cf__err {
+    font-size: var(--fs-xs);
+    color: var(--danger);
+    font-weight: 600;
+  }
+  .cf [aria-invalid='true'] {
+    border-color: var(--danger);
+  }
+  .cf__actions {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    margin-top: var(--s-2);
+  }
+  @media (min-width: 640px) {
+    .cf__row {
+      grid-template-columns: 1fr 1fr;
     }
   }
 </style>

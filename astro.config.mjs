@@ -12,7 +12,7 @@ export default defineConfig({
   integrations: [
     preact({ compat: false }),
     sitemap({
-      filter: (page) => !page.includes('/carrito') && !page.includes('/comparar'),
+      filter: (page) => !page.includes('/carrito') && !page.includes('/comparar') && !page.includes('/dev'),
       changefreq: 'weekly',
     }),
   ],

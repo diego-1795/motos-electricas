@@ -1,0 +1,286 @@
+---
+import Pic from '../components/ui/Pic.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
+import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
+import { site } from '../config/site';
+import { breadcrumbSchema } from '../lib/seo/jsonld';
+import { ALL_PRODUCTS_PATH } from '../lib/routes';
+import type { ImageRef } from '../domain/types';
+
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Nosotros', url: '/nosotros' },
+];
+const cover: ImageRef = { src: '~/assets/nosotros/portada.png', alt: 'Equipo RAIDEN con bicimotos eléctricas', width: 1920, height: 819 };
+const office: ImageRef = { src: '~/assets/nosotros/oficina.png', alt: `Oficina de ${site.legalName} en ${site.address}`, width: 1536, height: 1024 };
+
+/* Textos EXACTOS del cliente */
+const about = [
+  'Somos una empresa peruana, que nace con el objetivo de ofrecer vehículos eléctricos, como motocicletas, bicimotos y trimotos, que respondan a las necesidades reales de nuestra comunidad de RAIDERS, combinando funcionalidad, diseño y una nueva visión de la movilidad.',
+  'Seleccionamos nuestros vehículos pensando en quienes buscan practicidad, ahorro y libertad para desplazarse. Queremos construir una relación cercana con nuestros clientes, brindándoles información, orientación y soluciones que les permitan elegir el vehículo adecuado para su estilo de vida o actividad económica.',
+  'Con RAIDEN, el futuro de la movilidad empieza hoy.',
+];
+const mission = 'Brindar soluciones de movilidad eléctrica eficientes y accesibles a las familias peruanas.';
+const vision = 'Ser la empresa peruana líder en movilidad eléctrica, reconocida por su innovación, calidad y compromiso con el futuro sostenible.';
+
+const values = [
+  { title: 'Compromiso con el cliente', icon: 'M20 7L9 18l-5-5', text: 'Te acompañamos antes, durante y después de la compra.' },
+  { title: 'Transparencia', icon: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z', text: 'Precios claros en soles, sin letra pequeña.' },
+  { title: 'Futuro sostenible', icon: 'M12 22c5-4 8-8 8-12a8 8 0 1 0-16 0c0 4 3 8 8 12zM12 10v4m-2-2h4', text: 'Cero emisiones en cada recorrido.' },
+  { title: 'Libertad', icon: 'M4 14l6-6 4 4 6-6M14 6h6v6', text: 'Muévete a tu ritmo, sin pasajes ni gasolina.' },
+  { title: 'Innovación', icon: 'M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z', text: 'Tecnología eléctrica pensada para el Perú.' },
+  { title: 'Seguridad', icon: 'M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4zm-3 10l2 2 4-4', text: 'Vehículos probados y servicio técnico propio.' },
+];
+---
+
+<BaseLayout
+  title={`Nosotros: ${site.legalName}, distribuidor oficial de ${site.name} en Perú`}
+  description="Somos una empresa peruana que ofrece bicimotos, trimotos y vehículos eléctricos para la comunidad de RAIDERS. Misión, visión y valores de RAIDEN."
+  path="/nosotros"
+  image="/og-default.png"
+  jsonLd={[breadcrumbSchema(crumbs)]}
+>
+  <article class="about">
+    <section class="about__hero">
+      <div class="about__cover">
+        <Pic image={cover} alt="" width={1600} height={683} widths={[800, 1200, 1600]} sizes="100vw" priority />
+      </div>
+      <div class="container about__herocopy">
+        <Breadcrumbs items={crumbs} />
+        <p class="eyebrow about__eyebrow">Sobre nosotros</p>
+        <h1 class="about__title">Descubre tu instinto</h1>
+        <p class="about__lead">{about[2]}</p>
+      </div>
+    </section>
+
+    <section class="container section about__text" aria-labelledby="about-h">
+      <h2 id="about-h">Sobre nosotros</h2>
+      <div class="about__cols">
+        <p>{about[0]}</p>
+        <p>{about[1]}</p>
+      </div>
+    </section>
+
+    <section class="surface-dark section about__mv" aria-label="Misión y visión">
+      <div class="container about__mvgrid">
+        <div class="about__mvcard">
+          <p class="eyebrow about__eyebrow">Misión</p>
+          <p class="about__mvtext">{mission}</p>
+        </div>
+        <div class="about__mvcard">
+          <p class="eyebrow about__eyebrow">Visión</p>
+          <p class="about__mvtext">{vision}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="container section" aria-labelledby="values-h">
+      <p class="eyebrow">Valores</p>
+      <h2 id="values-h" class="about__h2">Lo que nos mueve</h2>
+      <ul role="list" class="about__values">
+        {
+          values.map((v) => (
+            <li class="about__value">
+              <span class="about__icon" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d={v.icon} />
+                </svg>
+              </span>
+              <h3>{v.title}</h3>
+              <p class="muted">{v.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="container section about__office" aria-labelledby="office-h">
+      <div class="about__officemedia">
+        <Pic image={office} width={1200} height={800} widths={[640, 960, 1200]} sizes="(min-width: 1024px) 55vw, 100vw" />
+      </div>
+      <div class="about__officecopy">
+        <p class="eyebrow">Oficina principal</p>
+        <h2 id="office-h" class="about__h2">Visítanos en Callao</h2>
+        <address class="about__address">
+          <p><strong>{site.legalName}</strong> · RUC {site.ruc}</p>
+          <p>{site.address}</p>
+          <p class="muted">{site.hours}</p>
+          <p><a href={site.mapsUrl} target="_blank" rel="noopener noreferrer">Ver en Google Maps →</a></p>
+        </address>
+        <div class="about__cta">
+          <WhatsAppLink source="header" class="btn btn--whatsapp">Hablar con un asesor</WhatsAppLink>
+          <a href={ALL_PRODUCTS_PATH} class="btn btn--secondary">Ver los modelos</a>
+        </div>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .about__hero {
+    position: relative;
+    isolation: isolate;
+    background: var(--n-950);
+    color: var(--n-50);
+  }
+  .about__cover {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  .about__cover :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .about__cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(17 17 17 / 0.92), rgb(17 17 17 / 0.35));
+  }
+  .about__herocopy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    padding-block: var(--s-6) var(--s-16);
+    min-height: min(60dvh, 34rem);
+    justify-content: flex-end;
+  }
+  .about__herocopy :global(.crumbs) {
+    color: var(--n-300);
+  }
+  .about__herocopy :global(.crumbs span) {
+    color: var(--n-50);
+  }
+  .about__eyebrow {
+    color: var(--accent-text, var(--accent));
+  }
+  .about__title {
+    font-family: var(--font-display, var(--font-sans));
+    font-size: var(--fs-4xl);
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--n-50);
+  }
+  .about__lead {
+    font-size: var(--fs-xl);
+    color: var(--n-300);
+    max-width: 40ch;
+  }
+  .about__text h2,
+  .about__h2 {
+    margin-bottom: var(--s-6);
+  }
+  .about__cols {
+    display: grid;
+    gap: var(--s-6);
+    font-size: var(--fs-lg);
+    line-height: 1.6;
+  }
+  .about__mvgrid {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .about__mvcard {
+    padding: var(--s-8);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--bg-elev);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+  .about__mvtext {
+    font-size: var(--fs-xl);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--lh-snug);
+  }
+  .about__values {
+    display: grid;
+    gap: var(--s-4);
+  }
+  .about__value {
+    padding: var(--s-6);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--bg-elev);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+  .about__icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--r-lg);
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent-text, var(--accent));
+  }
+  .about__value h3 {
+    font-size: var(--fs-lg);
+  }
+  .about__value p {
+    font-size: var(--fs-sm);
+  }
+  .about__office {
+    display: grid;
+    gap: var(--s-8);
+  }
+  .about__officemedia {
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    background: var(--bg-sunken);
+    aspect-ratio: 3 / 2;
+  }
+  .about__officemedia :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .about__officecopy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    justify-content: center;
+  }
+  .about__officecopy .about__h2 {
+    margin-bottom: 0;
+  }
+  .about__address {
+    font-style: normal;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .about__address a {
+    color: var(--accent-text, var(--accent));
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    font-weight: 600;
+  }
+  .about__cta {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+  @media (min-width: 768px) {
+    .about__cols,
+    .about__mvgrid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .about__values {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  @media (min-width: 1024px) {
+    .about__office {
+      grid-template-columns: 11fr 9fr;
+      gap: var(--s-12);
+      align-items: center;
+    }
+  }
+</style>

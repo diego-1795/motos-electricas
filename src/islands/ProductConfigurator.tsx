@@ -1,24 +1,40 @@
-import { useMemo, useState } from 'preact/hooks';
-import type { Accessory, ImageRef, ProductColor, ProductVariant } from '../domain/types';
+import { useEffect, useMemo, useState } from 'preact/hooks';
+import type { ImageRef, Part, ProductColor, ProductVariant } from '../domain/types';
 import { formatMoney } from '../domain/money';
 import { add, pen } from '../domain/money';
-import { availabilityLabel } from '../domain/product';
+import { availabilityLabel, tierLabel } from '../domain/product';
 import { addToCart } from '../stores/cart';
 import { toast } from '../stores/toast';
 import { site } from '../config/site';
 
 /**
- * Configurador de producto (variante + color + cantidad + accesorios).
+ * Configurador de producto (versión + color + cantidad + repuestos).
  * Recibe datos serializados desde Astro; no conoce repositorios.
  * Solo calcula precio con funciones de dominio y delega en el store.
+ *
+ * Galería: la imagen principal se renderiza en el servidor (LCP) dentro de
+ * `[data-product-image]`; al cambiar de color la isla actualiza src/srcset/alt
+ * con las URLs optimizadas que le pasa la página (`colorImages`). Las miniaturas
+ * `[data-color-thumb]` también seleccionan el color.
  */
+export interface OptimizedImage {
+  src: string;
+  srcset?: string;
+  sizes?: string;
+  alt: string;
+}
+
 interface Props {
   slug: string;
   name: string;
   variants: ProductVariant[];
   colors: ProductColor[];
-  accessories: Accessory[];
+  /** Repuestos compatibles ofrecidos como extra */
+  parts: Part[];
+  /** Imagen para el carrito (URL pública) */
   image?: ImageRef;
+  /** Imagen optimizada por color (id → src/srcset) para la galería */
+  colorImages?: Record<string, OptimizedImage>;
 }
 
 const badgeClass: Record<ProductVariant['availability'], string> = {
@@ -28,7 +44,7 @@ const badgeClass: Record<ProductVariant['availability'], string> = {
   agotado: 'badge',
 };
 
-export default function ProductConfigurator({ slug, name, variants, colors, accessories, image }: Props) {
+export default function ProductConfigurator({ slug, name, variants, colors, parts, image, colorImages = {} }: Props) {
   const [variantId, setVariantId] = useState(variants.find((v) => v.isDefault)?.id ?? variants[0]!.id);
   const [colorId, setColorId] = useState(colors[0]?.id);
   const [qty, setQty] = useState(1);
@@ -37,16 +53,40 @@ export default function ProductConfigurator({ slug, name, variants, colors, acce
   const variant = variants.find((v) => v.id === variantId) ?? variants[0]!;
   const color = colors.find((c) => c.id === colorId);
   const unit = useMemo(() => (color?.priceDelta ? add(variant.price, color.priceDelta) : variant.price), [variant, color]);
-  const extrasTotal = useMemo(
-    () => accessories.filter((a) => extras.has(a.slug)).reduce((m, a) => add(m, a.price), pen(0)),
-    [accessories, extras],
-  );
+  const extrasTotal = useMemo(() => parts.filter((a) => extras.has(a.slug)).reduce((m, a) => add(m, a.price), pen(0)), [parts, extras]);
   const total = add(pen(unit.amount * qty), extrasTotal);
   const unavailable = variant.availability === 'agotado';
+
+  // Galería: sincroniza la imagen principal SSR y las miniaturas con el color elegido
+  useEffect(() => {
+    if (!colorId) return;
+    const img = document.querySelector<HTMLImageElement>('[data-product-image] img');
+    const opt = colorImages[colorId];
+    if (img && opt && img.currentSrc !== opt.src) {
+      img.src = opt.src;
+      if (opt.srcset) img.srcset = opt.srcset;
+      if (opt.sizes) img.sizes = opt.sizes;
+      img.alt = opt.alt;
+    }
+    document.querySelectorAll<HTMLElement>('[data-color-thumb]').forEach((t) => {
+      t.setAttribute('aria-pressed', String(t.dataset.colorThumb === colorId));
+    });
+  }, [colorId, colorImages]);
+
+  // Las miniaturas (HTML estático) seleccionan el color
+  useEffect(() => {
+    const onClick = (e: Event) => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>('[data-color-thumb]');
+      if (t?.dataset.colorThumb) setColorId(t.dataset.colorThumb);
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, []);
 
   const submit = (e: Event) => {
     e.preventDefault();
     if (unavailable) return;
+    const cartImage = colorId && colorImages[colorId] && image ? { ...image, src: colorImages[colorId]!.src } : image;
     addToCart({
       kind: 'product',
       slug,
@@ -57,9 +97,9 @@ export default function ProductConfigurator({ slug, name, variants, colors, acce
       colorName: color?.name,
       unitPrice: unit,
       quantity: qty,
-      image,
+      image: cartImage,
     });
-    for (const a of accessories) {
+    for (const a of parts) {
       if (extras.has(a.slug)) {
         addToCart({ kind: 'accessory', slug: a.slug, name: a.name, unitPrice: a.price, quantity: 1, image: a.image });
       }
@@ -80,6 +120,7 @@ export default function ProductConfigurator({ slug, name, variants, colors, acce
           {formatMoney(unit)}
         </span>
         <span class={badgeClass[variant.availability]}>{availabilityLabel[variant.availability]}</span>
+        {variants.length > 1 && <span class="muted" style="font-size:var(--fs-sm)">Versión {tierLabel[variant.tier]}</span>}
       </div>
 
       {variants.length > 1 && (
@@ -87,9 +128,9 @@ export default function ProductConfigurator({ slug, name, variants, colors, acce
           <legend class="label">Versión</legend>
           <div class="cfg__choices">
             {variants.map((v) => (
-              <label class="choice" key={v.id}>
+              <label class="choice" key={v.id} data-tier={v.tier}>
                 <input type="radio" name="variant" value={v.id} checked={v.id === variantId} onChange={() => setVariantId(v.id)} />
-                {v.name}
+                {tierLabel[v.tier]}
                 <span class="muted" style="font-weight:400">
                   · {formatMoney(v.price)}
                 </span>
@@ -116,14 +157,17 @@ export default function ProductConfigurator({ slug, name, variants, colors, acce
         </fieldset>
       )}
 
-      {accessories.length > 0 && (
+      {parts.length > 0 && (
         <fieldset class="cfg__group">
-          <legend class="label">Añadir accesorios</legend>
+          <legend class="label">Añadir repuestos</legend>
           <div class="cfg__extras">
-            {accessories.map((a) => (
+            {parts.map((a) => (
               <label class="cfg__extra" key={a.slug}>
                 <input type="checkbox" checked={extras.has(a.slug)} onChange={() => toggleExtra(a.slug)} />
-                <span>{a.name}</span>
+                <span>
+                  {a.name}
+                  {a.unit === 'PAR' && <span class="muted"> (par)</span>}
+                </span>
                 <span class="muted">+{formatMoney(a.price)}</span>
               </label>
             ))}

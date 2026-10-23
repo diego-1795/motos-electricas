@@ -1,20 +1,19 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import CatalogView from '../components/catalog/CatalogView.astro';
-import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
-import SectionHeading from '../components/ui/SectionHeading.astro';
-import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
-import { repos } from '../data';
-import { breadcrumbSchema, itemListSchema } from '../lib/seo/jsonld';
-import { publicSrc } from '../lib/images';
-import type { Category } from '../domain/types';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CatalogView from '../../components/catalog/CatalogView.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../../components/ui/SectionHeading.astro';
+import WhatsAppLink from '../../components/ui/WhatsAppLink.astro';
+import { repos } from '../../data';
+import { breadcrumbSchema, itemListSchema } from '../../lib/seo/jsonld';
+import { publicSrc } from '../../lib/images';
+import { ALL_PRODUCTS_PATH, categoryPath, productPath } from '../../lib/routes';
+import type { Category } from '../../domain/types';
 
-/** Páginas de categoría: /scooters-electricos, /bicimotos, /trimotos, /vehiculos-carga, /cuatrimotos */
+/** Páginas de categoría de vehículos: /bicimotos, /trimotos (repuestos tiene su propia ruta) */
 export async function getStaticPaths() {
   const cats = await repos.categories.all();
-  return cats
-    .filter((c) => c.slug !== 'motos-electricas' && c.slug !== 'accesorios')
-    .map((c) => ({ params: { categoria: c.slug }, props: { category: c } }));
+  return cats.filter((c) => c.slug !== 'repuestos').map((c) => ({ params: { categoria: c.slug }, props: { category: c } }));
 }
 
 const { category } = Astro.props as { category: Category };
@@ -23,16 +22,16 @@ const categories = await repos.categories.all();
 const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
 const crumbs = [
   { name: 'Inicio', url: '/' },
-  { name: category.name, url: `/${category.slug}` },
+  { name: category.name, url: categoryPath(category.slug) },
 ];
 ---
 
 <BaseLayout
   title={category.title}
   description={category.description}
-  path={`/${category.slug}`}
+  path={categoryPath(category.slug)}
   image={category.image ? publicSrc(category.image) : undefined}
-  jsonLd={[breadcrumbSchema(crumbs), itemListSchema(products.map((p) => ({ name: p.name, url: `/motos-electricas/${p.slug}` })))]}
+  jsonLd={[breadcrumbSchema(crumbs), itemListSchema(products.map((p) => ({ name: p.name, url: productPath(p) })))]}
 >
   <div class="container section">
     <Breadcrumbs items={crumbs} />
@@ -48,7 +47,7 @@ const crumbs = [
             <WhatsAppLink source="product" class="btn btn--whatsapp" message={`Hola 👋 Me interesan los modelos de ${category.name.toLowerCase()}. ¿Cuándo estarán disponibles?`}>
               Preguntar disponibilidad
             </WhatsAppLink>
-            <a href="/motos-electricas" class="btn btn--secondary">Ver catálogo completo</a>
+            <a href={ALL_PRODUCTS_PATH} class="btn btn--secondary">Ver todos los productos</a>
           </div>
         </div>
       )

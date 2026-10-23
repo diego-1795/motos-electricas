@@ -11,9 +11,9 @@ const crumbs = [
 ---
 
 <BaseLayout title="Tu solicitud de compra" description="Revisa tu selección y envía la solicitud de compra por WhatsApp." path="/carrito" noindex>
-  <div class="container section">
+  <div class="container section" data-pagefind-ignore>
     <Breadcrumbs items={crumbs} />
-    <SectionHeading as="h1" title="Tu solicitud de compra" text="Revisa modelos, versiones y accesorios. Cuando esté todo, la enviamos por WhatsApp." />
+    <SectionHeading as="h1" title="Tu solicitud de compra" text="Revisa modelos, versiones, colores y repuestos. Cuando esté todo, la enviamos por WhatsApp." />
     <CartPage client:load />
   </div>
 </BaseLayout>

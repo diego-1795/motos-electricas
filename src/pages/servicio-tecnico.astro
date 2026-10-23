@@ -1,0 +1,308 @@
+---
+import Pic from '../components/ui/Pic.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
+import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
+import { site } from '../config/site';
+import { breadcrumbSchema, faqSchema } from '../lib/seo/jsonld';
+import { PARTS_PATH } from '../lib/routes';
+import { SUPPORT_MESSAGE } from '../services/whatsapp/WhatsAppMessageBuilder';
+import type { ImageRef } from '../domain/types';
+
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Servicio técnico', url: '/servicio-tecnico' },
+];
+const hero: ImageRef = { src: '~/assets/hero/servicio-tecnico.jpg', alt: 'Técnico RAIDEN revisando una bicimoto eléctrica', width: 1614, height: 640 };
+
+/* Texto EXACTO del cliente */
+const intro =
+  'Contamos con atención especializada para revisar los principales componentes de tu bicimoto, incluyendo sistema eléctrico, motor, batería, frenos, acelerador, controlador, cableado y demás elementos esenciales. Realizamos diagnósticos y mantenimientos preventivos para ayudarte a detectar posibles inconvenientes antes de que afecten el rendimiento de tu vehículo.';
+
+const checks = [
+  { title: 'Sistema eléctrico', text: 'Conexiones, ramal eléctrico, fusibles y protecciones.' },
+  { title: 'Motor', text: 'Motor sin escobillas: ruidos, sensor Hall, rendimiento y temperatura.' },
+  { title: 'Batería', text: 'Estado de carga, voltaje por celda, bornes y cargador.' },
+  { title: 'Frenos', text: 'Tambores, cables, manijas y sensores de corte.' },
+  { title: 'Acelerador y mandos', text: 'Manija de velocidad, interruptor 3 en 1, bocina y luces.' },
+  { title: 'Controlador', text: 'Parámetros, conectores y respuesta en las 3 velocidades.' },
+  { title: 'Cableado e iluminación', text: 'Faros, direccionales, alarma y chapa de contacto.' },
+  { title: 'Llantas y suspensión', text: 'Presión, desgaste y ajuste de la suspensión.' },
+];
+const faqs = [
+  { question: '¿Dónde se realiza el servicio técnico?', answer: `En nuestra oficina de ${site.address}. Coordina tu visita por WhatsApp (${site.hours}).` },
+  { question: '¿El mantenimiento está cubierto por la garantía?', answer: 'La garantía de 12 meses cubre defectos de fabricación en batería y motor. El mantenimiento preventivo y las piezas de desgaste se cotizan aparte, siempre antes de intervenir.' },
+  { question: '¿Usan repuestos originales?', answer: 'Sí. Trabajamos con repuestos originales RAIDEN (baterías Chilwee, motores, controladores, cargadores, frenos y luces), disponibles también en nuestra tienda de repuestos.' },
+];
+---
+
+<BaseLayout
+  title="Servicio técnico para bicimotos eléctricas RAIDEN"
+  description="Diagnóstico y mantenimiento preventivo de bicimotos eléctricas en Callao: sistema eléctrico, motor, batería, frenos, acelerador y controlador. Solicita tu soporte técnico por WhatsApp."
+  path="/servicio-tecnico"
+  jsonLd={[breadcrumbSchema(crumbs), faqSchema(faqs)]}
+>
+  <article class="st">
+    <section class="st__hero">
+      <div class="st__cover">
+        <Pic image={hero} alt="" width={1600} height={634} widths={[800, 1200, 1600]} sizes="100vw" priority />
+      </div>
+      <div class="container st__herocopy">
+        <Breadcrumbs items={crumbs} />
+        <p class="eyebrow st__eyebrow">Servicio técnico</p>
+        <h1 class="st__title">Soporte técnico especializado</h1>
+        <p class="st__lead">Diagnóstico, mantenimiento preventivo y repuestos originales para tu bicimoto RAIDEN.</p>
+        <WhatsAppLink source="support" class="btn btn--whatsapp btn--lg st__cta" message={SUPPORT_MESSAGE}>
+          Solicita tu soporte técnico especializado aquí →
+        </WhatsAppLink>
+      </div>
+    </section>
+
+    <section class="container section st__intro" aria-labelledby="intro-h">
+      <h2 id="intro-h" class="visually-hidden">Qué hacemos</h2>
+      <p class="st__text">{intro}</p>
+    </section>
+
+    <section class="container section st__checks" aria-labelledby="checks-h">
+      <p class="eyebrow">Revisión</p>
+      <h2 id="checks-h">Qué revisamos</h2>
+      <ul role="list" class="st__grid">
+        {
+          checks.map((c, i) => (
+            <li class="st__check">
+              <span class="st__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{c.title}</h3>
+              <p class="muted">{c.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="surface-dark section" aria-labelledby="how-h">
+      <div class="container st__how">
+        <div>
+          <p class="eyebrow st__eyebrow">Cómo funciona</p>
+          <h2 id="how-h">Tres pasos y listo</h2>
+        </div>
+        <ol role="list" class="st__steps">
+          <li>
+            <strong>Escríbenos por WhatsApp</strong>
+            <span class="muted">Indica el modelo y qué le pasa a tu bicimoto. Te respondemos en horario de atención.</span>
+          </li>
+          <li>
+            <strong>Diagnóstico y cotización</strong>
+            <span class="muted">Revisamos el vehículo en nuestra oficina de Callao y te damos un presupuesto cerrado antes de intervenir.</span>
+          </li>
+          <li>
+            <strong>Reparación con repuestos originales</strong>
+            <span class="muted">Instalamos piezas RAIDEN y te entregamos la bicimoto probada.</span>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="container section st__parts" aria-labelledby="parts-h">
+      <div class="card st__partscard">
+        <div>
+          <p class="eyebrow">Repuestos</p>
+          <h2 id="parts-h">¿Prefieres hacerlo tú?</h2>
+          <p class="muted">Baterías Chilwee, motores de 350 W y 500 W, controladores, cargadores, frenos, luces y mandos originales, con envío a todo el Perú.</p>
+        </div>
+        <div class="st__partsbtns">
+          <a href={PARTS_PATH} class="btn btn--primary">Ver repuestos</a>
+          <WhatsAppLink source="support" class="btn btn--secondary" message={SUPPORT_MESSAGE}>Consultar un técnico</WhatsAppLink>
+        </div>
+      </div>
+    </section>
+
+    <section class="container section st__faq" aria-labelledby="faq-h">
+      <h2 id="faq-h">Preguntas frecuentes</h2>
+      <div class="st__faqlist">
+        {
+          faqs.map((f) => (
+            <details class="accordion">
+              <summary>{f.question}</summary>
+              <div>{f.answer}</div>
+            </details>
+          ))
+        }
+      </div>
+      <p class="muted st__hours">
+        Atención: {site.hours} · {site.address} · <a href={site.mapsUrl} target="_blank" rel="noopener noreferrer">Ver en Google Maps</a>
+      </p>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .st__hero {
+    position: relative;
+    isolation: isolate;
+    background: var(--n-950);
+    color: var(--n-50);
+  }
+  .st__cover {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  .st__cover :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .st__cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(17 17 17 / 0.94), rgb(17 17 17 / 0.4));
+  }
+  .st__herocopy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    align-items: flex-start;
+    padding-block: var(--s-6) var(--s-16);
+    min-height: min(60dvh, 34rem);
+    justify-content: flex-end;
+  }
+  .st__herocopy :global(.crumbs) {
+    color: var(--n-300);
+  }
+  .st__herocopy :global(.crumbs span) {
+    color: var(--n-50);
+  }
+  .st__eyebrow {
+    color: var(--accent-text, var(--accent));
+  }
+  .st__title {
+    font-family: var(--font-display, var(--font-sans));
+    font-size: var(--fs-3xl);
+    text-transform: uppercase;
+    line-height: 1.05;
+    color: var(--n-50);
+  }
+  .st__lead {
+    font-size: var(--fs-xl);
+    color: var(--n-300);
+    max-width: 40ch;
+  }
+  .st__cta {
+    margin-top: var(--s-2);
+    white-space: normal;
+    text-align: left;
+  }
+  .st__intro {
+    padding-bottom: 0;
+  }
+  .st__text {
+    font-size: var(--fs-xl);
+    line-height: 1.55;
+    max-width: 60ch;
+  }
+  .st__checks h2,
+  .st__faq h2 {
+    margin-bottom: var(--s-6);
+  }
+  .st__grid {
+    display: grid;
+    gap: var(--s-4);
+  }
+  .st__check {
+    padding: var(--s-5);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--bg-elev);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .st__num {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--accent-text, var(--accent));
+  }
+  .st__check h3 {
+    font-size: var(--fs-md);
+  }
+  .st__check p {
+    font-size: var(--fs-sm);
+  }
+  .st__how {
+    display: grid;
+    gap: var(--s-8);
+  }
+  .st__steps {
+    display: grid;
+    gap: var(--s-4);
+    counter-reset: step;
+  }
+  .st__steps li {
+    counter-increment: step;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
+    padding: var(--s-5);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--bg-elev);
+    font-size: var(--fs-sm);
+  }
+  .st__steps li::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: var(--font-mono);
+    color: var(--accent-text, var(--accent));
+    margin-bottom: var(--s-2);
+  }
+  .st__steps strong {
+    font-size: var(--fs-md);
+  }
+  .st__partscard {
+    padding: var(--s-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+  }
+  .st__partscard h2 {
+    margin-block: var(--s-2) var(--s-3);
+  }
+  .st__partsbtns {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+  .st__faqlist {
+    max-width: var(--container-narrow);
+  }
+  .st__hours {
+    margin-top: var(--s-6);
+    font-size: var(--fs-sm);
+  }
+  .st__hours a {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  @media (min-width: 768px) {
+    .st__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .st__steps {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .st__partscard {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+  @media (min-width: 1024px) {
+    .st__grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .st__how {
+      grid-template-columns: 1fr 2fr;
+      align-items: start;
+    }
+  }
+</style>

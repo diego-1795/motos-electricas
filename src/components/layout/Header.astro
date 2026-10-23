@@ -2,30 +2,92 @@
 import { site } from '../../config/site';
 import CartButton from '../../islands/CartButton';
 import Logo from '../ui/Logo.astro';
+import { ALL_PRODUCTS_PATH, COMPARE_PATH, FINDER_PATH, PARTS_PATH } from '../../lib/routes';
 
-const nav = [
-  { href: '/motos-electricas', label: 'Catálogo' },
-  { href: '/scooters-electricos', label: 'Scooters' },
-  { href: '/comparar', label: 'Comparar' },
-  { href: '/encuentra-tu-moto', label: 'Encuentra tu moto' },
-  { href: '/accesorios', label: 'Accesorios' },
-  { href: '/blog', label: 'Blog' },
+/**
+ * Cabecera. Navegación del cliente: PRODUCTOS ▼ · BLOG · SERVICIO TÉCNICO · CONTACTO · NOSOTROS
+ * + búsqueda (abre SearchModal) + carrito. El desplegable es un botón aria-expanded + lista;
+ * en móvil se convierte en acordeón <details> (funciona sin JS).
+ */
+interface Props {
+  /** Cabecera sobre fondo oscuro (home) */
+  dark?: boolean;
+}
+const { dark = false } = Astro.props;
+
+const productLinks = [
+  { href: '/bicimotos', label: 'Bicimotos', desc: '25 km/h · sin licencia' },
+  { href: '/trimotos', label: 'Trimotos', desc: 'Carga y trabajo' },
+  { href: PARTS_PATH, label: 'Repuestos', desc: 'Baterías, motores y más' },
+  { href: ALL_PRODUCTS_PATH, label: 'Todos los productos', desc: 'Catálogo completo' },
 ];
-const current = Astro.url.pathname;
+const productTools = [
+  { href: COMPARE_PATH, label: 'Comparar modelos' },
+  { href: FINDER_PATH, label: 'Encuentra tu bicimoto' },
+];
+const nav = [
+  { href: '/blog', label: 'Blog' },
+  { href: '/servicio-tecnico', label: 'Servicio técnico' },
+  { href: '/contacto', label: 'Contacto' },
+  { href: '/nosotros', label: 'Nosotros' },
+];
+const current = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isCurrent = (href: string) => current === href || current.startsWith(href + '/');
+const productsActive = [...productLinks, ...productTools].some((l) => isCurrent(l.href));
 ---
 
-<header class="header">
+<header class:list={['header', { 'header--dark': dark }]} data-pagefind-ignore>
   <div class="container header__inner">
     <a href="/" class="header__brand" aria-label={`${site.name} — inicio`}>
-      <Logo />
+      <Logo invert={dark} />
     </a>
 
     <nav class="header__nav" aria-label="Principal">
       <ul role="list">
+        <li class="header__item" data-dropdown>
+          <button
+            type="button"
+            class:list={['header__link header__dd-btn', { 'is-active': productsActive }]}
+            aria-expanded="false"
+            aria-controls="nav-productos"
+            aria-haspopup="true"
+            data-dropdown-btn
+          >
+            Productos
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <div id="nav-productos" class="header__dd" hidden data-dropdown-panel>
+            <ul role="list" class="header__dd-main">
+              {
+                productLinks.map((l) => (
+                  <li>
+                    <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>
+                      <strong>{l.label}</strong>
+                      <span class="muted">{l.desc}</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+            <ul role="list" class="header__dd-tools">
+              {
+                productTools.map((l) => (
+                  <li>
+                    <a href={l.href} aria-current={isCurrent(l.href) ? 'page' : undefined}>
+                      {l.label} →
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </li>
         {
           nav.map((item) => (
-            <li>
-              <a href={item.href} aria-current={current === item.href || current.startsWith(item.href + '/') ? 'page' : undefined}>
+            <li class="header__item">
+              <a href={item.href} class="header__link" aria-current={isCurrent(item.href) ? 'page' : undefined}>
                 {item.label}
               </a>
             </li>
@@ -35,6 +97,12 @@ const current = Astro.url.pathname;
     </nav>
 
     <div class="header__actions">
+      <button type="button" class="btn btn--ghost btn--icon" aria-label="Buscar" data-search-open>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M20 20l-3.5-3.5" />
+        </svg>
+      </button>
       <CartButton client:idle />
       <button class="header__menu btn btn--ghost btn--icon" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-toggle>
         <span class="visually-hidden">Menú</span>
@@ -48,6 +116,15 @@ const current = Astro.url.pathname;
 
   <nav id="mobile-nav" class="mobile-nav" aria-label="Principal móvil" hidden>
     <ul role="list" class="container">
+      <li>
+        <details class="mobile-nav__acc" open={productsActive}>
+          <summary>Productos</summary>
+          <ul role="list">
+            {productLinks.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+            {productTools.map((l) => <li><a href={l.href} class="muted">{l.label}</a></li>)}
+          </ul>
+        </details>
+      </li>
       {
         nav.map((item) => (
           <li>
@@ -63,16 +140,60 @@ const current = Astro.url.pathname;
 </header>
 
 <script>
+  // Menú móvil
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
-  const nav = document.getElementById('mobile-nav');
+  const mobile = document.getElementById('mobile-nav');
   toggle?.addEventListener('click', () => {
     const open = toggle.getAttribute('aria-expanded') === 'true';
     toggle.setAttribute('aria-expanded', String(!open));
-    if (nav) nav.hidden = open;
+    if (mobile) mobile.hidden = open;
     document.documentElement.classList.toggle('nav-open', !open);
   });
+
+  // Desplegable "Productos" (escritorio): click, hover con puntero fino, teclado y Esc
+  const dd = document.querySelector<HTMLElement>('[data-dropdown]');
+  const btn = dd?.querySelector<HTMLButtonElement>('[data-dropdown-btn]');
+  const panel = dd?.querySelector<HTMLElement>('[data-dropdown-panel]');
+  let hoverTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function setOpen(open: boolean) {
+    if (!btn || !panel) return;
+    btn.setAttribute('aria-expanded', String(open));
+    panel.hidden = !open;
+  }
+  const isOpen = () => btn?.getAttribute('aria-expanded') === 'true';
+
+  btn?.addEventListener('click', () => setOpen(!isOpen()));
+  btn?.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setOpen(true);
+      panel?.querySelector<HTMLAnchorElement>('a')?.focus();
+    }
+  });
+  if (dd && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    dd.addEventListener('mouseenter', () => {
+      clearTimeout(hoverTimer);
+      setOpen(true);
+    });
+    dd.addEventListener('mouseleave', () => {
+      hoverTimer = setTimeout(() => setOpen(false), 150);
+    });
+  }
+  dd?.addEventListener('focusout', (e) => {
+    if (!dd.contains(e.relatedTarget as Node | null)) setOpen(false);
+  });
+  document.addEventListener('click', (e) => {
+    if (dd && !dd.contains(e.target as Node)) setOpen(false);
+  });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') toggle.click();
+    if (e.key !== 'Escape') return;
+    if (isOpen()) {
+      setOpen(false);
+      btn?.focus();
+    } else if (toggle?.getAttribute('aria-expanded') === 'true') {
+      toggle.click();
+    }
   });
 </script>
 
@@ -102,23 +223,86 @@ const current = Astro.url.pathname;
   .header__nav {
     display: none;
   }
-  .header__nav ul {
+  .header__nav > ul {
     display: flex;
     gap: var(--s-1);
   }
-  .header__nav a {
-    display: inline-block;
+  .header__item {
+    position: relative;
+  }
+  .header__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-1);
     padding: var(--s-2) var(--s-3);
     border-radius: var(--r-md);
-    font-size: var(--fs-sm);
-    font-weight: 500;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--fg-muted);
+    line-height: 1.4;
   }
-  .header__nav a:hover,
-  .header__nav a[aria-current='page'] {
+  .header__link:hover,
+  .header__link[aria-current='page'],
+  .header__link.is-active,
+  .header__link[aria-expanded='true'] {
     color: var(--fg);
     text-decoration: none;
     background: var(--bg-sunken);
+  }
+  .header__dd-btn svg {
+    transition: transform var(--t-fast) var(--ease);
+  }
+  .header__dd-btn[aria-expanded='true'] svg {
+    transform: rotate(180deg);
+  }
+  .header__dd {
+    position: absolute;
+    top: calc(100% + var(--s-2));
+    left: 0;
+    min-width: 20rem;
+    padding: var(--s-3);
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-3);
+    display: grid;
+    gap: var(--s-2);
+  }
+  .header__dd[hidden] {
+    display: none;
+  }
+  .header__dd-main a {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--r-md);
+    font-size: var(--fs-sm);
+  }
+  .header__dd-main a span {
+    font-size: var(--fs-xs);
+  }
+  .header__dd-main a:hover,
+  .header__dd-main a[aria-current='page'],
+  .header__dd-tools a:hover {
+    background: var(--bg-sunken);
+    text-decoration: none;
+  }
+  .header__dd-tools {
+    border-top: 1px solid var(--border);
+    padding-top: var(--s-2);
+    display: flex;
+    flex-direction: column;
+  }
+  .header__dd-tools a {
+    display: block;
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--r-md);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--accent);
   }
   .header__actions {
     display: flex;
@@ -137,18 +321,46 @@ const current = Astro.url.pathname;
   .mobile-nav {
     border-top: 1px solid var(--border);
     background: var(--bg-elev);
+    max-height: calc(100dvh - 3.75rem);
+    overflow-y: auto;
   }
-  .mobile-nav ul {
+  .mobile-nav > ul {
     display: flex;
     flex-direction: column;
-    padding-block: var(--s-2);
+    padding-block: var(--s-2) var(--s-4);
   }
-  .mobile-nav a {
+  .mobile-nav a,
+  .mobile-nav summary {
     display: block;
     padding: var(--s-3) 0;
     font-size: var(--fs-lg);
     font-weight: 500;
     border-bottom: 1px solid var(--border);
+  }
+  .mobile-nav summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .mobile-nav summary::-webkit-details-marker {
+    display: none;
+  }
+  .mobile-nav summary::after {
+    content: '+';
+    color: var(--fg-muted);
+  }
+  .mobile-nav__acc[open] summary::after {
+    content: '−';
+  }
+  .mobile-nav__acc ul {
+    padding-left: var(--s-4);
+  }
+  .mobile-nav__acc ul a {
+    font-size: var(--fs-md);
+    border-bottom-color: transparent;
+    padding-block: var(--s-2);
   }
   @media (min-width: 1024px) {
     .header__nav {

@@ -1,22 +1,30 @@
 {
-  "group": "Garantía y servicio",
+  "group": "Garantía y servicio técnico",
   "order": 2,
   "items": [
     {
-      "question": "¿Qué garantía tienen los vehículos Raiden?",
-      "answer": "Todos los vehículos tienen 2 años de garantía contra defectos de fabricación, válida en todo el Perú. La batería cuenta con 12 o 24 meses según el modelo, siempre indicado en la ficha del producto. No cubre desgaste, caídas ni manipulaciones."
+      "question": "¿Qué garantía tienen las bicimotos y trimotos RAIDEN?",
+      "answer": "Todos los modelos tienen 12 meses de garantía en batería y motor contra defectos de fabricación, contados desde la fecha de entrega. Conserva tu boleta o factura: es tu comprobante de garantía."
+    },
+    {
+      "question": "¿Qué no cubre la garantía?",
+      "answer": "No cubre el desgaste normal (llantas, cables de freno, manijas), golpes o caídas, daños por agua a presión o inmersión, descarga profunda o almacenamiento prolongado de la batería sin carga, uso de cargadores no originales, sobrecarga por encima del peso máximo ni modificaciones del controlador o del sistema eléctrico para aumentar la velocidad."
     },
     {
       "question": "¿Dónde se hace el servicio técnico?",
-      "answer": "Tenemos taller propio en Lima y red de talleres colaboradores en las principales ciudades del país. Para incidencias pequeñas enviamos el repuesto a tu domicilio o a tu taller de confianza con instrucciones; para las grandes coordinamos el recojo del vehículo."
+      "answer": "En el Servicio técnico RAIDEN de nuestra tienda en Bocanegra, Callao (lunes a domingo, de 10 a. m. a 8 p. m.), con técnicos propios y repuestos originales. Agenda tu visita por WhatsApp. Si estás en provincias, te orientamos por videollamada y enviamos el repuesto por agencia."
     },
     {
       "question": "¿Hay repuestos disponibles?",
-      "answer": "Sí. Mantenemos stock en Lima de baterías, cargadores, controladores, pantallas, frenos, plásticos y componentes de desgaste de todos los modelos del catálogo, con despacho en 24-48 h hábiles a Lima y según plazos de courier a provincias."
+      "answer": "Sí. Mantenemos stock de repuestos originales para todos los modelos: baterías Chilwee 48V 12Ah y 20Ah, cargadores, motores de 350 W y 500 W, controladores, cables y manijas de freno, llantas, faros, direccionales, alarma, claxon y más. Puedes verlos en la sección Repuestos y pedirlos por WhatsApp."
     },
     {
-      "question": "¿Qué mantenimiento necesita una moto eléctrica?",
-      "answer": "Mucho menos que una de gasolina: sin aceite, filtros ni bujías. Recomendamos una revisión anual de frenos, neumáticos, ajuste de pernos y actualización de software, y mantener la batería entre el 20 y el 80 % cuando no se use."
+      "question": "¿Cuánto dura la batería y cuánto cuesta cambiarla?",
+      "answer": "La batería Chilwee de plomo-ácido tiene una vida útil estimada de 2 años o 350-400 ciclos de carga completa, según el uso y el cuidado. Cuando toque reponerla, la batería 48V 12Ah cuesta S/ 120 y la 48V 20Ah S/ 150 (IGV incluido), y el servicio técnico la instala."
+    },
+    {
+      "question": "¿Qué mantenimiento necesita una bicimoto eléctrica?",
+      "answer": "Mucho menos que una moto a gasolina: sin aceite, filtros ni bujías. Recomendamos revisar frenos, llantas y luces cada semana, ajustar cables de freno y tornillería cada mes, cargar la batería después de cada uso y pasar por el servicio técnico cada 6 meses para una revisión general."
     }
   ]
 }

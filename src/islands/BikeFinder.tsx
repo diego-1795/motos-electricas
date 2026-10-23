@@ -1,14 +1,16 @@
 import { useState } from 'preact/hooks';
 import type { CategorySlug, Product, UseCase } from '../domain/types';
 import { recommend, useCaseLabel, type FinderAnswers, type Recommendation } from '../domain/recommendation';
-import { USE_CASES, TYPES } from '../domain/catalog';
 import { formatMoney } from '../domain/money';
-import { fromPrice, effectiveSpecs, maxRange, kw } from '../domain/product';
+import { fromPrice, effectiveSpecs, maxRange, powerLabel } from '../domain/product';
 import { track } from '../services/analytics/AnalyticsService';
+import { ALL_PRODUCTS_PATH, productPath } from '../lib/routes';
 
 /**
- * "Encuentra tu moto": 3 pasos, sin dependencias. Recibe los productos
- * completos serializados (el catálogo es pequeño); la puntuación vive en domain.
+ * "Encuentra tu bicimoto": 3 pasos, sin dependencias. Recibe los productos
+ * serializados (el catálogo es pequeño); la puntuación vive en domain/recommendation.
+ * Pasos: ¿para qué la usarás? · ¿cuántos km al día? + presupuesto · ¿llevarás carga?
+ * (todas las bicimotos van a 25 km/h, por eso no se pregunta la velocidad).
  */
 interface Props {
   products: Product[];
@@ -16,24 +18,25 @@ interface Props {
   categoryNames: Record<string, string>;
 }
 
+const USES: UseCase[] = ['ciudad', 'trabajo', 'reparto', 'ocio', 'carga'];
 const BUDGETS = [
+  { label: 'Hasta S/ 1,000', value: 100000 },
+  { label: 'Hasta S/ 1,500', value: 150000 },
+  { label: 'Hasta S/ 2,000', value: 200000 },
   { label: 'Hasta S/ 3,000', value: 300000 },
-  { label: 'Hasta S/ 6,000', value: 600000 },
-  { label: 'Hasta S/ 10,000', value: 1000000 },
-  { label: 'Hasta S/ 15,000', value: 1500000 },
   { label: 'Sin límite', value: undefined },
 ];
-const RANGES = [
-  { label: 'Menos de 60 km', value: 40 },
-  { label: '60-100 km', value: 60 },
-  { label: '100-150 km', value: 100 },
-  { label: 'Más de 150 km', value: 150 },
+/* km/día → autonomía mínima recomendada (margen para no cargar a diario) */
+const DAILY_KM = [
+  { label: 'Menos de 15 km', value: 20 },
+  { label: '15-30 km', value: 30 },
+  { label: '30-45 km', value: 45 },
+  { label: 'Más de 45 km', value: 60 },
 ];
-const SPEEDS = [
-  { label: '25 km/h (sin licencia)', value: 25 },
-  { label: '45 km/h (urbana)', value: 45 },
-  { label: '80 km/h (125 cc eq.)', value: 80 },
-  { label: '100+ km/h', value: 100 },
+const CARGO: { label: string; hint: string; types: CategorySlug[]; use?: UseCase }[] = [
+  { label: 'No, solo yo (y a veces un acompañante)', hint: 'Bicimotos', types: ['bicimotos'] },
+  { label: 'Sí, mercadería o carga pesada', hint: 'Trimotos de carga', types: ['trimotos'], use: 'carga' },
+  { label: 'A veces, cosas ligeras', hint: 'Cualquier modelo', types: [] },
 ];
 
 export default function BikeFinder({ products, images, categoryNames }: Props) {
@@ -41,19 +44,19 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
   const [useCases, setUseCases] = useState<UseCase[]>([]);
   const [budget, setBudget] = useState<number | undefined | null>(null);
   const [range, setRange] = useState<number | null>(null);
-  const [speed, setSpeed] = useState<number | null>(null);
-  const [types, setTypes] = useState<CategorySlug[]>([]);
+  const [cargo, setCargo] = useState<number | null>(null);
   const [results, setResults] = useState<Recommendation[] | null>(null);
 
   const toggle = <T,>(list: T[], v: T, set: (l: T[]) => void) => set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
   const finish = () => {
+    const c = cargo !== null ? CARGO[cargo] : undefined;
+    const uses = c?.use && !useCases.includes(c.use) ? [...useCases, c.use] : useCases;
     const answers: FinderAnswers = {
-      useCases,
+      useCases: uses,
       budgetMax: budget ?? undefined,
       rangeMin: range ?? undefined,
-      speedMin: speed ?? undefined,
-      types,
+      types: c?.types ?? [],
     };
     const r = recommend(products, answers, 4);
     setResults(r);
@@ -67,8 +70,7 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
     setUseCases([]);
     setBudget(null);
     setRange(null);
-    setSpeed(null);
-    setTypes([]);
+    setCargo(null);
     setResults(null);
   };
 
@@ -76,7 +78,7 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
     <div class="bf" data-finder>
       {step < 3 && (
         <ol class="bf__progress" role="list" aria-label="Progreso">
-          {['Uso', 'Preferencias', 'Tipo'].map((l, i) => (
+          {['Uso', 'Distancia y presupuesto', 'Carga'].map((l, i) => (
             <li key={l} class={i === step ? 'is-current' : i < step ? 'is-done' : ''} aria-current={i === step ? 'step' : undefined}>
               {l}
             </li>
@@ -87,11 +89,11 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
       {step === 0 && (
         <fieldset class="bf__step">
           <legend>
-            <h2>¿Para qué la vas a usar?</h2>
+            <h2>¿Para qué la usarás?</h2>
             <p class="muted">Elige todo lo que aplique.</p>
           </legend>
           <div class="bf__choices">
-            {USE_CASES.map((u) => (
+            {USES.map((u) => (
               <label class="choice" key={u}>
                 <input type="checkbox" checked={useCases.includes(u)} onChange={() => toggle(useCases, u, setUseCases)} />
                 {useCaseLabel(u)}
@@ -108,7 +110,19 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
 
       {step === 1 && (
         <div class="bf__step">
-          <h2>Tus preferencias</h2>
+          <h2>Distancia y presupuesto</h2>
+          <fieldset class="bf__group">
+            <legend class="label">¿Cuántos km recorrerás al día?</legend>
+            <div class="bf__choices">
+              {DAILY_KM.map((r) => (
+                <label class="choice" key={r.label}>
+                  <input type="radio" name="range" checked={range === r.value} onChange={() => setRange(r.value)} />
+                  {r.label}
+                </label>
+              ))}
+            </div>
+            <p class="hint">Las bicimotos RAIDEN recorren 30-50 km por carga según la versión; la trimoto, hasta 40 km.</p>
+          </fieldset>
           <fieldset class="bf__group">
             <legend class="label">Presupuesto</legend>
             <div class="bf__choices">
@@ -116,28 +130,6 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
                 <label class="choice" key={b.label}>
                   <input type="radio" name="budget" checked={budget !== null && budget === b.value} onChange={() => setBudget(b.value)} />
                   {b.label}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <fieldset class="bf__group">
-            <legend class="label">Autonomía que necesitas</legend>
-            <div class="bf__choices">
-              {RANGES.map((r) => (
-                <label class="choice" key={r.label}>
-                  <input type="radio" name="range" checked={range === r.value} onChange={() => setRange(r.value)} />
-                  {r.label}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <fieldset class="bf__group">
-            <legend class="label">Velocidad / potencia</legend>
-            <div class="bf__choices">
-              {SPEEDS.map((s) => (
-                <label class="choice" key={s.label}>
-                  <input type="radio" name="speed" checked={speed === s.value} onChange={() => setSpeed(s.value)} />
-                  {s.label}
                 </label>
               ))}
             </div>
@@ -156,14 +148,17 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
       {step === 2 && (
         <fieldset class="bf__step">
           <legend>
-            <h2>¿Tienes un tipo en mente?</h2>
-            <p class="muted">Opcional. Si no eliges, buscamos en todo el catálogo.</p>
+            <h2>¿Llevarás carga?</h2>
+            <p class="muted">Si transportas mercadería, te recomendaremos una trimoto.</p>
           </legend>
-          <div class="bf__choices">
-            {TYPES.map((t) => (
-              <label class="choice" key={t}>
-                <input type="checkbox" checked={types.includes(t)} onChange={() => toggle(types, t, setTypes)} />
-                {categoryNames[t] ?? t}
+          <div class="bf__choices bf__choices--stack">
+            {CARGO.map((c, i) => (
+              <label class="choice" key={c.label}>
+                <input type="radio" name="cargo" checked={cargo === i} onChange={() => setCargo(i)} />
+                {c.label}
+                <span class="muted" style="font-weight:400">
+                  · {c.hint}
+                </span>
               </label>
             ))}
           </div>
@@ -180,30 +175,32 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
 
       {step === 3 && results && (
         <section id="finder-results" tabindex={-1} class="bf__results" aria-live="polite">
-          <h2>Estas son las motos que mejor encajan contigo</h2>
+          <h2>Estas son las bicimotos que mejor encajan contigo</h2>
           <p class="muted">Ordenadas por compatibilidad con tus respuestas.</p>
           <ol role="list" class="bf__list">
             {results.map((r, i) => {
               const s = effectiveSpecs(r.product);
               return (
                 <li key={r.product.slug} class="card bf__card" data-finder-result>
-                  <img src={images[r.product.slug]} alt="" width="320" height="200" loading={i === 0 ? 'eager' : 'lazy'} />
+                  <img src={images[r.product.slug]} alt="" width="320" height="400" loading={i === 0 ? 'eager' : 'lazy'} />
                   <div class="bf__cardbody">
                     <div class="bf__score" aria-label={`Compatibilidad ${r.score}%`}>
                       <span style={`--w:${r.score}%`} />
                       <strong>{r.score}%</strong>
                     </div>
                     <h3>{r.product.name}</h3>
-                    <p class="muted">{r.product.subtitle}</p>
+                    <p class="muted">
+                      {categoryNames[r.product.category] ?? r.product.category} · {r.product.subtitle}
+                    </p>
                     <p class="specs-inline">
+                      <span>
+                        <strong>{powerLabel(s.powerW)}</strong>
+                      </span>
                       <span>
                         <strong>{maxRange(r.product)}</strong> km
                       </span>
                       <span>
                         <strong>{s.topSpeedKmh}</strong> km/h
-                      </span>
-                      <span>
-                        <strong>{kw(s.powerW)}</strong>
                       </span>
                     </p>
                     {r.reasons.length > 0 && (
@@ -217,7 +214,7 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
                       <span>
                         Desde <strong>{formatMoney(fromPrice(r.product))}</strong>
                       </span>
-                      <a href={`/motos-electricas/${r.product.slug}`} class="btn btn--primary btn--sm">
+                      <a href={productPath(r.product)} class="btn btn--primary btn--sm">
                         Ver modelo
                       </a>
                     </div>
@@ -230,8 +227,8 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
             <button type="button" class="btn btn--ghost" onClick={restart}>
               Volver a empezar
             </button>
-            <a href="/motos-electricas" class="btn btn--secondary">
-              Ver todo el catálogo
+            <a href={ALL_PRODUCTS_PATH} class="btn btn--secondary">
+              Ver todos los productos
             </a>
           </div>
         </section>

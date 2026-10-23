@@ -7,17 +7,23 @@ import { formatMoney } from '../domain/money';
 /** Resumen serializable de producto para comparar (generado en Astro). */
 export interface CompareRow {
   slug: string;
+  href: string;
   name: string;
   subtitle: string;
+  category: string;
   image: string;
   priceFrom: number;
+  tiers: string;
   rangeKm: number;
+  rangeLabel: string;
   topSpeedKmh: number;
   powerW: number;
+  powerLabel: string;
   battery: string;
   chargeHours: string;
-  weightKg: number;
-  dimensions: string;
+  maxLoadKg: number;
+  weightKg?: number;
+  dimensions?: string;
   seats: number;
   license: string;
   warranty: string;
@@ -25,15 +31,26 @@ export interface CompareRow {
 }
 
 type Key = keyof CompareRow;
-const ROWS: { key: Key; label: string; fmt?: (v: CompareRow[Key]) => string; best?: 'max' | 'min' }[] = [
+interface RowDef {
+  key: Key;
+  label: string;
+  fmt?: (v: CompareRow[Key], row: CompareRow) => string;
+  /** Clave numérica usada para resaltar el mejor valor */
+  bestKey?: Key;
+  best?: 'max' | 'min';
+}
+const ROWS: RowDef[] = [
+  { key: 'category', label: 'Categoría' },
   { key: 'priceFrom', label: 'Precio desde', fmt: (v) => formatMoney({ amount: v as number, currency: 'PEN' }), best: 'min' },
-  { key: 'rangeKm', label: 'Autonomía', fmt: (v) => `${v} km`, best: 'max' },
+  { key: 'tiers', label: 'Versiones' },
+  { key: 'rangeLabel', label: 'Autonomía', bestKey: 'rangeKm', best: 'max' },
   { key: 'topSpeedKmh', label: 'Velocidad máx.', fmt: (v) => `${v} km/h`, best: 'max' },
-  { key: 'powerW', label: 'Potencia', fmt: (v) => `${(v as number) / 1000} kW`, best: 'max' },
+  { key: 'powerLabel', label: 'Potencia', bestKey: 'powerW', best: 'max' },
   { key: 'battery', label: 'Batería' },
   { key: 'chargeHours', label: 'Carga' },
-  { key: 'weightKg', label: 'Peso', fmt: (v) => `${v} kg`, best: 'min' },
-  { key: 'dimensions', label: 'Dimensiones' },
+  { key: 'maxLoadKg', label: 'Carga máxima', fmt: (v) => `${v} kg`, best: 'max' },
+  { key: 'weightKg', label: 'Peso', fmt: (v) => (v === undefined ? '—' : `${v} kg`), best: 'min' },
+  { key: 'dimensions', label: 'Dimensiones', fmt: (v) => (v ? String(v) : '—') },
   { key: 'seats', label: 'Plazas', best: 'max' },
   { key: 'license', label: 'Licencia' },
   { key: 'warranty', label: 'Garantía' },
@@ -45,10 +62,14 @@ export default function CompareTable({ products }: { products: CompareRow[] }) {
   const [pick, setPick] = useState('');
   const selected = slugs.map((s) => products.find((p) => p.slug === s)).filter((p): p is CompareRow => !!p);
   const remaining = products.filter((p) => !slugs.includes(p.slug));
+  // Filas opcionales: se ocultan si ningún modelo seleccionado tiene el dato
+  const rows = ROWS.filter((r) => (r.key === 'weightKg' || r.key === 'dimensions' ? selected.some((p) => p[r.key] !== undefined) : true));
 
-  const bestOf = (row: (typeof ROWS)[number]) => {
+  const bestOf = (row: RowDef) => {
     if (!row.best || selected.length < 2) return undefined;
-    const vals = selected.map((p) => p[row.key] as number);
+    const k = row.bestKey ?? row.key;
+    const vals = selected.map((p) => p[k]).filter((v): v is number => typeof v === 'number');
+    if (vals.length < 2) return undefined;
     return row.best === 'max' ? Math.max(...vals) : Math.min(...vals);
   };
 
@@ -96,8 +117,8 @@ export default function CompareTable({ products }: { products: CompareRow[] }) {
                 {selected.map((p) => (
                   <th scope="col" key={p.slug}>
                     <div class="cmp__head">
-                      <img src={p.image} alt="" width="160" height="100" loading="lazy" />
-                      <a href={`/motos-electricas/${p.slug}`}>{p.name}</a>
+                      <img src={p.image} alt="" width="160" height="200" loading="lazy" />
+                      <a href={p.href}>{p.name}</a>
                       <small class="muted">{p.subtitle}</small>
                       <button type="button" class="btn btn--ghost btn--sm" onClick={() => removeCompare(p.slug)} aria-label={`Quitar ${p.name}`}>
                         Quitar
@@ -108,17 +129,18 @@ export default function CompareTable({ products }: { products: CompareRow[] }) {
               </tr>
             </thead>
             <tbody>
-              {ROWS.map((r) => {
+              {rows.map((r) => {
                 const best = bestOf(r);
                 return (
                   <tr key={r.key}>
                     <th scope="row">{r.label}</th>
                     {selected.map((p) => {
                       const v = p[r.key];
-                      const isBest = best !== undefined && v === best;
+                      const cmpVal = p[r.bestKey ?? r.key];
+                      const isBest = best !== undefined && cmpVal === best;
                       return (
                         <td key={p.slug} class={isBest ? 'cmp__best' : undefined}>
-                          {r.fmt ? r.fmt(v) : String(v)}
+                          {r.fmt ? r.fmt(v, p) : v === undefined ? '—' : String(v)}
                           {isBest && <span class="visually-hidden"> (mejor)</span>}
                         </td>
                       );
@@ -132,7 +154,7 @@ export default function CompareTable({ products }: { products: CompareRow[] }) {
                 </th>
                 {selected.map((p) => (
                   <td key={p.slug}>
-                    <a href={`/motos-electricas/${p.slug}`} class="btn btn--primary btn--sm">
+                    <a href={p.href} class="btn btn--primary btn--sm">
                       Ver modelo
                     </a>
                   </td>

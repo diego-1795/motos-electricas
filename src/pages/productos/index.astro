@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CatalogView from '../../components/catalog/CatalogView.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import SectionHeading from '../../components/ui/SectionHeading.astro';
+import { repos } from '../../data';
+import { site } from '../../config/site';
+import { breadcrumbSchema, itemListSchema } from '../../lib/seo/jsonld';
+import { ALL_PRODUCTS_PATH, PARTS_PATH, productPath } from '../../lib/routes';
+
+const products = (await repos.products.all()).filter((p) => p.category !== 'repuestos');
+const categories = await repos.categories.all();
+const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Productos', url: ALL_PRODUCTS_PATH },
+];
+---
+
+<BaseLayout
+  title={`Bicimotos y trimotos eléctricas ${site.name}: todos los modelos`}
+  description="Catálogo completo RAIDEN: bicimotos Golden Eagle, Royal Tiger y Vortex Kobra y la trimoto de carga Titan Rhino. Versiones Estándar y Premium, precios en soles. Solicita tu compra por WhatsApp."
+  path={ALL_PRODUCTS_PATH}
+  jsonLd={[breadcrumbSchema(crumbs), itemListSchema(products.map((p) => ({ name: p.name, url: productPath(p) })))]}
+>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <SectionHeading as="h1" eyebrow="Descubre tu instinto" title="Todos los productos" text="Bicimotos y trimotos eléctricas RAIDEN. Filtra por precio, versión o modelo y compara hasta tres.">
+      <p class="muted all__parts">
+        ¿Buscas baterías, motores o accesorios? Ve a <a href={PARTS_PATH}>repuestos</a>.
+      </p>
+    </SectionHeading>
+    <CatalogView products={products} categoryNames={categoryNames} />
+  </div>
+</BaseLayout>
+
+<style>
+  .all__parts {
+    font-size: var(--fs-sm);
+  }
+  .all__parts a {
+    color: var(--accent-text, var(--accent));
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+</style>

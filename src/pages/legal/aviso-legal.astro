@@ -22,16 +22,15 @@ const crumbs = [
     <Breadcrumbs items={crumbs} />
     <SectionHeading as="h1" eyebrow="Legal" title="Términos y condiciones" />
     <div class="prose">
-      <p class="muted">Los campos entre corchetes son marcadores pendientes de completar por el titular antes de la puesta en producción.</p>
-
       <h2>1. Datos del titular</h2>
       <p>El titular de este sitio web, accesible en <a href={site.url}>{site.url}</a>, es:</p>
       <ul>
-        <li><strong>Razón social:</strong> <mark>[RAZÓN SOCIAL]</mark></li>
-        <li><strong>RUC:</strong> <mark>[RUC]</mark></li>
-        <li><strong>Domicilio fiscal:</strong> <mark>[DIRECCIÓN]</mark>, <mark>[CIUDAD]</mark>, Perú</li>
+        <li><strong>Razón social:</strong> {site.legalName}</li>
+        <li><strong>RUC:</strong> {site.ruc}</li>
+        <li><strong>Domicilio fiscal:</strong> {site.address}, Perú</li>
+        <li><strong>Teléfono / WhatsApp:</strong> {site.phoneDisplay}</li>
         <li><strong>Correo electrónico:</strong> <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></li>
-        <li><strong>Nombre comercial:</strong> {site.name}</li>
+        <li><strong>Nombre comercial:</strong> {site.name} (distribuidor oficial)</li>
       </ul>
 
       <h2>2. Objeto</h2>
@@ -49,7 +48,7 @@ const crumbs = [
 
       <h2>4. Propiedad intelectual e industrial</h2>
       <p>
-        Los textos, imágenes, marcas, logotipos, diseño y código fuente del sitio son titularidad de <mark>[RAZÓN SOCIAL]</mark> o de terceros que han
+        Los textos, imágenes, marcas, logotipos, diseño y código fuente del sitio son titularidad de {site.legalName}, de la marca {site.name} o de terceros que han
         autorizado su uso. Queda prohibida su reproducción, distribución o transformación sin autorización expresa.
       </p>
 
@@ -71,7 +70,7 @@ const crumbs = [
       <p>
         Conforme a la normativa de protección al consumidor supervisada por INDECOPI, {site.name} pone a disposición de los usuarios un <strong>Libro de
         Reclamaciones</strong>, tanto en su establecimiento físico como en formato virtual. Puedes solicitarlo escribiendo a
-        <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a> o en <mark>[ENLACE AL LIBRO DE RECLAMACIONES VIRTUAL]</mark>.
+        <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>, por WhatsApp al {site.phoneDisplay} o en nuestro establecimiento de {site.address}.
       </p>
 
       <h2>8. Exclusión de responsabilidad</h2>
@@ -84,7 +83,7 @@ const crumbs = [
       <h2>9. Legislación aplicable</h2>
       <p>
         Estos términos y condiciones se rigen por la legislación de la República del Perú. Para cualquier controversia, las partes se someten a la competencia de
-        los jueces y tribunales de <mark>[CIUDAD]</mark>, sin perjuicio de los derechos que la normativa de protección al consumidor reconoce al usuario.
+        los jueces y tribunales del Callao, sin perjuicio de los derechos que la normativa de protección al consumidor reconoce al usuario.
       </p>
     </div>
   </div>

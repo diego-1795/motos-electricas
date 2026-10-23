@@ -88,7 +88,7 @@ export function scoreProduct(p: Product, a: FinderAnswers): Recommendation {
 
 export function recommend(products: Product[], answers: FinderAnswers, limit = 6): Recommendation[] {
   return products
-    .filter((p) => p.category !== 'accesorios')
+    .filter((p) => p.category !== 'repuestos')
     .map((p) => scoreProduct(p, answers))
     .sort((x, y) => y.score - x.score || y.product.featured - x.product.featured)
     .slice(0, limit);

@@ -7,6 +7,7 @@ import SeoHead from '../components/seo/SeoHead.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import FloatingWhatsApp from '../components/layout/FloatingWhatsApp.astro';
+import SearchModal from '../components/layout/SearchModal.astro';
 import CartDrawer from '../islands/CartDrawer';
 import Toaster from '../islands/Toaster';
 import type { PageMeta } from '../lib/seo/meta';
@@ -21,6 +22,8 @@ interface Props extends PageMeta {
 const { jsonLd = [], dark = false, ...meta } = Astro.props;
 const showFab = Astro.url.pathname.replace(/\/+$/, '') !== '/carrito';
 const schemas = meta.path === '/' ? [organizationSchema(), websiteSchema(), ...jsonLd] : jsonLd;
+// Pagefind: solo se indexan las páginas con data-pagefind-body (las noindex quedan fuera del buscador).
+const searchable = !meta.noindex;
 ---
 
 <!doctype html>
@@ -28,23 +31,30 @@ const schemas = meta.path === '/' ? [organizationSchema(), websiteSchema(), ...j
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content={dark ? '#0b0c0f' : '#f7f7f5'} />
+    <meta name="theme-color" content={dark ? '#111111' : '#ffffff'} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/montserrat/Montserrat[wght].woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/integral-cf/IntegralCF-Bold.woff2" />
     <meta name="generator" content={Astro.generator} />
     <SeoHead {...meta} jsonLd={schemas} />
     <slot name="head" />
   </head>
   <body class:list={{ 'surface-dark': dark }}>
     <a href="#main" class="skip-link">Saltar al contenido</a>
-    <Header />
-    <main id="main" tabindex="-1">
+    <Header dark={dark} />
+    <main id="main" tabindex="-1" data-pagefind-body={searchable ? '' : undefined}>
       <slot />
     </main>
     {showFab && <FloatingWhatsApp />}
     <Footer />
-    <CartDrawer client:idle />
-    <Toaster client:idle />
+    <SearchModal />
+    <div data-pagefind-ignore>
+      <CartDrawer client:idle />
+      <Toaster client:idle />
+    </div>
     <script>
       import { initAnalytics } from '../lib/analytics-init';
       initAnalytics();

@@ -1,9 +1,10 @@
 ---
 import Pic from '../ui/Pic.astro';
-import type { Product } from '../../domain/types';
-import { defaultVariant, effectiveSpecs, fromPrice, kw, maxRange, productAvailability, availabilityLabel } from '../../domain/product';
+import type { Product, VariantTier } from '../../domain/types';
+import { defaultVariant, effectiveSpecs, fromPrice, maxRange, powerLabel, productAvailability, availabilityLabel, tierLabel } from '../../domain/product';
 import { formatMoney } from '../../domain/money';
 import { publicSrc } from '../../lib/images';
+import { productPath } from '../../lib/routes';
 import QuickAdd from '../../islands/QuickAdd';
 import CompareToggle from '../../islands/CompareToggle';
 
@@ -14,20 +15,29 @@ interface Props {
   showCompare?: boolean;
   /** Nivel de encabezado según el contexto (h2 en listados bajo h1, h3 bajo secciones) */
   headingLevel?: 'h2' | 'h3';
+  /** Nombre visible de la categoría (badge). Si no se pasa, se deriva del slug. */
+  categoryLabel?: string;
 }
-const { product: p, priority = false, showCompare = true, headingLevel = 'h3' } = Astro.props;
+const { product: p, priority = false, showCompare = true, headingLevel = 'h3', categoryLabel } = Astro.props;
 const Heading = headingLevel;
 const specs = effectiveSpecs(p);
 const img = p.images[0]!;
-const href = `/motos-electricas/${p.slug}`;
+const href = productPath(p);
 const variant = defaultVariant(p);
 const avail = productAvailability(p);
 const badge = avail === 'en-stock' ? 'badge--stock' : avail === 'bajo-pedido' ? 'badge--order' : avail === 'proximamente' ? 'badge--soon' : '';
+const tiers = (['estandar', 'premium'] as VariantTier[]).filter((t) => p.variants.some((v) => v.tier === t));
+const minRange = Math.min(...p.variants.map((v) => effectiveSpecs(p, v).rangeMinKm ?? effectiveSpecs(p, v).rangeKm));
+const range = minRange !== maxRange(p) ? `${minRange}-${maxRange(p)} km` : `${maxRange(p)} km`;
+const powers = [...new Set(p.variants.map((v) => effectiveSpecs(p, v).powerW))].sort((a, b) => a - b);
+const power = powers.length > 1 ? `${powers[0]}-${powers[powers.length - 1]} W` : powerLabel(specs.powerW);
+const catLabel = categoryLabel ?? p.category.charAt(0).toUpperCase() + p.category.slice(1);
 ---
 
 <article class="pc card card--interactive" data-product-card={p.slug}>
   <a href={href} class="pc__media" tabindex="-1" aria-hidden="true">
-    <Pic image={img} alt="" width={800} height={500} widths={[400, 640, 800]} sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 92vw" priority={priority} />
+    <Pic image={img} alt="" width={640} height={800} widths={[320, 480, 640]} sizes="(min-width: 1024px) 22vw, (min-width: 768px) 45vw, 92vw" priority={priority} />
+    <span class="badge pc__cat">{catLabel}</span>
     {p.isNew && <span class="badge badge--new pc__new">Nuevo</span>}
   </a>
   <div class="pc__body">
@@ -36,16 +46,23 @@ const badge = avail === 'en-stock' ? 'badge--stock' : avail === 'bajo-pedido' ? 
       <p class="pc__sub muted">{p.subtitle}</p>
     </div>
     <dl class="specs-inline pc__specs">
-      <div><dt class="visually-hidden">Autonomía</dt><dd><strong>{maxRange(p)}</strong> km</dd></div>
+      <div><dt class="visually-hidden">Potencia</dt><dd><strong>{power}</strong></dd></div>
+      <div><dt class="visually-hidden">Autonomía</dt><dd><strong>{range}</strong></dd></div>
       <div><dt class="visually-hidden">Velocidad</dt><dd><strong>{specs.topSpeedKmh}</strong> km/h</dd></div>
-      <div><dt class="visually-hidden">Potencia</dt><dd><strong>{kw(specs.powerW)}</strong></dd></div>
     </dl>
+    {
+      tiers.length > 0 && (
+        <p class="pc__tiers muted" aria-label="Versiones disponibles">
+          {tiers.map((t) => tierLabel[t]).join(' · ')}
+        </p>
+      )
+    }
     <div class="pc__price">
       <span>Desde <strong>{formatMoney(fromPrice(p))}</strong></span>
       <span class:list={['badge', badge]}>{availabilityLabel[avail]}</span>
     </div>
     <div class="pc__actions">
-      <a href={href} class="btn btn--secondary btn--sm">Ver modelo</a>
+      <a href={href} class="btn btn--secondary btn--sm">Saber más</a>
       <QuickAdd
         client:visible
         kind="product"
@@ -72,19 +89,33 @@ const badge = avail === 'en-stock' ? 'badge--stock' : avail === 'bajo-pedido' ? 
   .pc__media {
     position: relative;
     display: block;
-    aspect-ratio: 8 / 5;
-    background: var(--n-950);
+    aspect-ratio: 4 / 5;
+    background: var(--bg-sunken);
     overflow: hidden;
   }
   .pc__media img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform var(--t-slow) var(--ease);
+  }
+  @media (hover: hover) {
+    .pc:hover .pc__media img {
+      transform: scale(1.03);
+    }
+  }
+  .pc__cat {
+    position: absolute;
+    top: var(--s-3);
+    left: var(--s-3);
+    background: color-mix(in srgb, var(--bg-elev) 85%, transparent);
+    backdrop-filter: blur(4px);
+    color: var(--fg);
   }
   .pc__new {
     position: absolute;
     top: var(--s-3);
-    left: var(--s-3);
+    right: var(--s-3);
   }
   .pc__body {
     display: flex;
@@ -94,6 +125,9 @@ const badge = avail === 'en-stock' ? 'badge--stock' : avail === 'bajo-pedido' ? 
   }
   .pc__name {
     font-size: var(--fs-lg);
+    font-family: var(--font-display, var(--font-sans));
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
   }
   .pc__name a:hover {
     text-decoration: none;
@@ -107,6 +141,12 @@ const badge = avail === 'en-stock' ? 'badge--stock' : avail === 'bajo-pedido' ? 
   .pc__specs dd {
     display: inline;
     margin: 0;
+  }
+  .pc__tiers {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
   .pc__price {
     display: flex;

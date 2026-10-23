@@ -1,0 +1,295 @@
+---
+import type { ImageRef, Specs } from '../../domain/types';
+import SpecTiles from './SpecTiles.astro';
+import Pic from '../ui/Pic.astro';
+import WhatsAppLink from '../ui/WhatsAppLink.astro';
+
+/**
+ * Pestañas de la ficha: Ficha técnica · Especificaciones · Manual de uso · Video.
+ * Progresivas: todos los paneles se renderizan; el script activa el patrón tablist
+ * (WAI-ARIA, flechas, Home/End). Sin JS los paneles se muestran apilados con sus títulos.
+ */
+interface Props {
+  name: string;
+  slug: string;
+  specs: Specs;
+  specRows: [string, string][];
+  features: string[];
+  manualUrl?: string;
+  videoUrl?: string;
+  /** Póster del facade de vídeo (se usa la primera foto del producto) */
+  poster: ImageRef;
+}
+const { name, slug, specs, specRows, features, manualUrl, videoUrl, poster } = Astro.props;
+
+function youtubeId(url?: string): string | undefined {
+  if (!url) return undefined;
+  const m = url.match(/(?:youtu\.be\/|v=|\/embed\/|\/shorts\/)([\w-]{11})/);
+  return m?.[1];
+}
+const ytId = youtubeId(videoUrl);
+
+const tabs = [
+  { id: 'ficha', label: 'Ficha técnica' },
+  { id: 'especificaciones', label: 'Especificaciones' },
+  { id: 'manual', label: 'Manual de uso' },
+  { id: 'video', label: 'Video' },
+];
+---
+
+<div class="ptabs" data-tabs>
+  <div class="tabs ptabs__list" role="tablist" aria-label={`Información de ${name}`}>
+    {
+      tabs.map((t, i) => (
+        <button
+          type="button"
+          class="tab"
+          role="tab"
+          id={`tab-${t.id}`}
+          aria-controls={`panel-${t.id}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? 0 : -1}
+          data-tab
+        >
+          {t.label}
+        </button>
+      ))
+    }
+  </div>
+
+  <section class="ptabs__panel" role="tabpanel" id="panel-ficha" aria-labelledby="tab-ficha" tabindex="0" data-panel>
+    <h3 class="ptabs__title">Ficha técnica</h3>
+    <SpecTiles specs={specs} />
+    <div class="table-wrap ptabs__table">
+      <table class="table">
+        <tbody>
+          {
+            specRows.map(([k, v]) => (
+              <tr>
+                <th scope="row">{k}</th>
+                <td>{v}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="ptabs__panel" role="tabpanel" id="panel-especificaciones" aria-labelledby="tab-especificaciones" tabindex="0" hidden data-panel>
+    <h3 class="ptabs__title">Especificaciones</h3>
+    {
+      features.length > 0 ? (
+        <ul class="ptabs__features">
+          {features.map((f) => <li>{f}</li>)}
+        </ul>
+      ) : (
+        <p class="muted">Consulta la ficha técnica o pregúntanos por WhatsApp.</p>
+      )
+    }
+  </section>
+
+  <section class="ptabs__panel" role="tabpanel" id="panel-manual" aria-labelledby="tab-manual" tabindex="0" hidden data-panel>
+    <h3 class="ptabs__title">Manual de uso</h3>
+    {
+      manualUrl ? (
+        <div class="ptabs__manual">
+          <p class="muted">Descarga el manual de uso y mantenimiento de {name} en PDF.</p>
+          <a href={manualUrl} class="btn btn--primary" download>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+            </svg>
+            Descargar manual (PDF)
+          </a>
+        </div>
+      ) : (
+        <div class="ptabs__manual">
+          <p class="muted">
+            <strong>Disponible próximamente.</strong> Mientras tanto, nuestro equipo te envía las indicaciones de uso y carga por WhatsApp.
+          </p>
+          <WhatsAppLink source="product" slug={slug} class="btn btn--whatsapp" message={`Hola 👋 ¿Me pueden enviar el manual de uso de la ${name}?`}>
+            Pedir el manual por WhatsApp
+          </WhatsAppLink>
+        </div>
+      )
+    }
+  </section>
+
+  <section class="ptabs__panel" role="tabpanel" id="panel-video" aria-labelledby="tab-video" tabindex="0" hidden data-panel>
+    <h3 class="ptabs__title">Video</h3>
+    {
+      ytId ? (
+        <div class="ptabs__video" data-video={ytId}>
+          <button type="button" class="ptabs__play" aria-label={`Reproducir el video de ${name}`} data-video-play>
+            <Pic image={poster} alt="" width={960} height={540} widths={[640, 960]} sizes="(min-width: 1024px) 60vw, 100vw" class="ptabs__poster" />
+            <span class="ptabs__playicon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </span>
+          </button>
+          <p class="hint">El video se carga desde YouTube solo al pulsar reproducir.</p>
+        </div>
+      ) : (
+        <p class="muted ptabs__soon">
+          Lanzamiento oficial <strong>1 de diciembre de 2026</strong> en nuestro canal de YouTube.
+        </p>
+      )
+    }
+  </section>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((root) => {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-tab]'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-panel]'));
+    if (!tabs.length) return;
+    root.classList.add('is-js');
+
+    function select(i: number, focus = true) {
+      tabs.forEach((t, j) => {
+        const on = i === j;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        if (panels[j]) panels[j]!.hidden = !on;
+      });
+      if (focus) tabs[i]?.focus();
+    }
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(i, false));
+      t.addEventListener('keydown', (e) => {
+        const map: Record<string, number> = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 };
+        if (!(e.key in map)) return;
+        e.preventDefault();
+        select((map[e.key]! + tabs.length) % tabs.length);
+      });
+    });
+    // Estado inicial: todos visibles sin JS → solo el primero con JS
+    select(0, false);
+
+    // Facade de YouTube: el iframe solo se crea al pulsar
+    root.querySelectorAll<HTMLElement>('[data-video]').forEach((box) => {
+      box.querySelector('[data-video-play]')?.addEventListener('click', () => {
+        const id = box.dataset.video!;
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+        iframe.title = 'Video del producto';
+        iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('loading', 'lazy');
+        box.replaceChildren(iframe);
+      });
+    });
+  });
+</script>
+
+<style>
+  .ptabs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-6);
+  }
+  /* Sin JS: lista de pestañas oculta, paneles apilados con título */
+  .ptabs:not(.is-js) .ptabs__list {
+    display: none;
+  }
+  .ptabs:not(.is-js) .ptabs__panel {
+    display: block !important;
+  }
+  .ptabs:not(.is-js) .ptabs__panel[hidden] {
+    display: block !important;
+  }
+  .ptabs.is-js .ptabs__title {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .ptabs__title {
+    font-size: var(--fs-xl);
+    margin-bottom: var(--s-4);
+  }
+  .ptabs__panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-6);
+    outline-offset: 4px;
+  }
+  .ptabs__panel[hidden] {
+    display: none;
+  }
+  .ptabs__table .table th {
+    width: 40%;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--fs-sm);
+  }
+  .ptabs__features {
+    columns: 1;
+    display: grid;
+    gap: var(--s-2);
+    font-size: var(--fs-sm);
+    padding-left: 1.1em;
+  }
+  .ptabs__manual {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    align-items: flex-start;
+  }
+  .ptabs__video {
+    position: relative;
+    max-width: 56rem;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    background: var(--n-950);
+  }
+  .ptabs__video :global(iframe) {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .ptabs__play {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .ptabs__play :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.75;
+  }
+  .ptabs__playicon {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: var(--r-full);
+    background: var(--accent);
+    color: var(--accent-fg);
+    display: grid;
+    place-items: center;
+    box-shadow: var(--sh-3);
+  }
+  .ptabs__video .hint {
+    position: absolute;
+    bottom: var(--s-3);
+    left: var(--s-4);
+    color: var(--n-300);
+  }
+  .ptabs__soon {
+    font-size: var(--fs-lg);
+  }
+  @media (min-width: 768px) {
+    .ptabs__features {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s-2) var(--s-8);
+    }
+  }
+</style>

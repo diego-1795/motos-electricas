@@ -1,0 +1,237 @@
+---
+import Pic from '../../components/ui/Pic.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import WhatsAppLink from '../../components/ui/WhatsAppLink.astro';
+import QuickAdd from '../../islands/QuickAdd';
+import { repos } from '../../data';
+import type { Part } from '../../domain/types';
+import { formatMoney } from '../../domain/money';
+import { availabilityLabel } from '../../domain/product';
+import { publicSrc } from '../../lib/images';
+import { breadcrumbSchema, partSchema } from '../../lib/seo/jsonld';
+import { canonical } from '../../lib/seo/meta';
+import { PARTS_PATH, partPath, productPath } from '../../lib/routes';
+import { partKindLabel, partKindSingular } from '../../lib/labels';
+
+export async function getStaticPaths() {
+  const parts = await repos.parts.all();
+  return parts.map((a) => ({ params: { slug: a.slug }, props: { part: a } }));
+}
+
+const { part: a } = Astro.props as { part: Part };
+const compatible = await repos.products.bySlugs(a.compatibleWith);
+const sameKind = (await repos.parts.all()).filter((p) => p.kind === a.kind && p.slug !== a.slug).slice(0, 4);
+const path = partPath(a);
+const url = canonical(path);
+const imageSrc = a.image ? publicSrc(a.image) : undefined;
+const imageUrl = imageSrc ? `${Astro.site?.origin ?? ''}${imageSrc}` : undefined;
+const badge = a.availability === 'en-stock' ? 'badge--stock' : a.availability === 'bajo-pedido' ? 'badge--order' : a.availability === 'proximamente' ? 'badge--soon' : '';
+const crumbs = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Repuestos', url: PARTS_PATH },
+  { name: a.name, url: path },
+];
+---
+
+<BaseLayout
+  title={`${a.name}: ${partKindSingular[a.kind].toLowerCase()} para bicimoto eléctrica`}
+  description={a.description}
+  path={path}
+  image={imageSrc}
+  type="product"
+  jsonLd={[breadcrumbSchema(crumbs), partSchema(a, url, imageUrl)]}
+>
+  <article class="container section rpd">
+    <Breadcrumbs items={crumbs} />
+    <div class="rpd__top">
+      <div class="rpd__media">
+        {a.image && <Pic image={a.image} width={800} height={1000} widths={[480, 800, 1200]} sizes="(min-width: 1024px) 45vw, 100vw" priority />}
+      </div>
+
+      <div class="rpd__buy">
+        <p class="eyebrow">
+          <a href={`${PARTS_PATH}#${a.kind}`}>{partKindLabel[a.kind]}</a>
+          {a.code && <span class="muted"> · {a.code}</span>}
+        </p>
+        <h1 class="rpd__title">{a.name}</h1>
+        <p class="muted">{a.description}</p>
+        <div class="rpd__price">
+          <strong>{formatMoney(a.price)}</strong>
+          <span class="muted rpd__unit">{a.unit === 'PAR' ? 'por par' : 'por unidad'}</span>
+          <span class:list={['badge', badge]}>{availabilityLabel[a.availability]}</span>
+        </div>
+        <p class="muted rpd__iva">IGV incluido. Se añade a tu solicitud de compra; no se realizan pagos online.</p>
+
+        <div class="rpd__actions">
+          <QuickAdd
+            client:load
+            kind="accessory"
+            slug={a.slug}
+            name={a.name}
+            unitPrice={a.price}
+            image={a.image ? { ...a.image, src: publicSrc(a.image) } : undefined}
+            disabled={a.availability === 'agotado'}
+            label="Añadir a la solicitud"
+            class="btn btn--primary btn--lg"
+          />
+          <WhatsAppLink source="product" slug={a.slug} productName={a.name} class="btn btn--secondary">Consultar por WhatsApp</WhatsAppLink>
+        </div>
+
+        <section class="rpd__compat" aria-labelledby="compat-h">
+          <h2 id="compat-h">Compatible con</h2>
+          {
+            compatible.length > 0 ? (
+              <ul role="list" class="rpd__compatlist">
+                {compatible.map((p) => (
+                  <li>
+                    <a href={productPath(p)}>{p.name}</a>
+                    <span class="muted">{p.subtitle}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="muted">Compatible con toda la gama RAIDEN. Si tienes dudas sobre tu modelo, consúltanos por WhatsApp.</p>
+            )
+          }
+        </section>
+
+        <p class="hint">
+          ¿Necesitas instalación? Nuestro <a href="/servicio-tecnico">servicio técnico</a> en Callao revisa e instala repuestos originales.
+        </p>
+      </div>
+    </div>
+
+    {
+      sameKind.length > 0 && (
+        <section class="rpd__more" aria-labelledby="more-h">
+          <h2 id="more-h">Más en {partKindLabel[a.kind].toLowerCase()}</h2>
+          <ul role="list" class="rpd__moregrid">
+            {sameKind.map((p) => (
+              <li class="card card--interactive rpd__morecard">
+                <a href={partPath(p)}>
+                  {p.image && <Pic image={p.image} alt="" width={320} height={400} widths={[240, 320]} sizes="(min-width:768px) 20vw, 45vw" />}
+                  <span class="rpd__morebody">
+                    <strong>{p.name}</strong>
+                    <span class="muted">{formatMoney(p.price)}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .rpd__top {
+    display: grid;
+    gap: var(--s-8);
+    margin-top: var(--s-6);
+  }
+  .rpd__media {
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    background: var(--bg-sunken);
+    aspect-ratio: 4 / 5;
+  }
+  .rpd__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .rpd__buy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+  .rpd__buy .eyebrow a:hover {
+    color: var(--fg);
+  }
+  .rpd__title {
+    font-size: var(--fs-3xl);
+    font-weight: 700;
+  }
+  .rpd__price {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-3);
+    font-size: var(--fs-2xl);
+    flex-wrap: wrap;
+  }
+  .rpd__unit {
+    font-size: var(--fs-sm);
+  }
+  .rpd__iva {
+    font-size: var(--fs-sm);
+  }
+  .rpd__actions {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+  .rpd__compat {
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--border);
+  }
+  .rpd__compat h2 {
+    font-size: var(--fs-lg);
+    margin-bottom: var(--s-3);
+  }
+  .rpd__compatlist {
+    display: grid;
+    gap: var(--s-2);
+  }
+  .rpd__compatlist li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-4);
+    font-size: var(--fs-sm);
+  }
+  .rpd__compatlist a,
+  .hint a {
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .rpd__more {
+    margin-top: var(--s-16);
+  }
+  .rpd__more h2 {
+    font-size: var(--fs-xl);
+    margin-bottom: var(--s-4);
+  }
+  .rpd__moregrid {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+  }
+  .rpd__morecard a {
+    display: block;
+  }
+  .rpd__morecard a:hover {
+    text-decoration: none;
+  }
+  .rpd__morecard img {
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    object-fit: cover;
+    background: var(--bg-sunken);
+  }
+  .rpd__morebody {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--s-3) var(--s-4) var(--s-4);
+    font-size: var(--fs-sm);
+  }
+  @media (min-width: 1024px) {
+    .rpd__top {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s-12);
+      align-items: start;
+    }
+  }
+</style>

@@ -6,14 +6,16 @@ import BikeFinder from '../islands/BikeFinder';
 import { repos } from '../data';
 import { publicSrc } from '../lib/images';
 import { breadcrumbSchema } from '../lib/seo/jsonld';
+import { FINDER_PATH } from '../lib/routes';
 import type { Product } from '../domain/types';
 
-const all = (await repos.products.all()).filter((p) => p.category !== 'accesorios');
+const all = (await repos.products.all()).filter((p) => p.category !== 'repuestos');
 // Reducimos el payload: la isla solo necesita lo que usa el motor de recomendación y la tarjeta.
 const products = all.map(
   (p): Product => ({
     ...p,
     images: [],
+    heroImage: undefined,
     technology: [],
     faqs: [],
     reviews: [],
@@ -22,25 +24,26 @@ const products = all.map(
     highlights: [],
     accessories: [],
     related: [],
+    specs: { ...p.specs, features: [] },
   }),
 );
 const images = Object.fromEntries(all.map((p) => [p.slug, publicSrc(p.images[0]!)]));
 const categoryNames = Object.fromEntries((await repos.categories.all()).map((c) => [c.slug, c.name]));
 const crumbs = [
   { name: 'Inicio', url: '/' },
-  { name: 'Encuentra tu moto', url: '/encuentra-tu-moto' },
+  { name: 'Encuentra tu bicimoto', url: FINDER_PATH },
 ];
 ---
 
 <BaseLayout
-  title="Encuentra tu moto eléctrica ideal"
-  description="Responde tres preguntas sobre uso, presupuesto y autonomía y te recomendamos las motos eléctricas que mejor encajan contigo."
-  path="/encuentra-tu-moto"
+  title="Encuentra tu bicimoto eléctrica ideal"
+  description="Responde tres preguntas sobre uso, kilómetros diarios, presupuesto y carga, y te recomendamos la bicimoto o trimoto eléctrica RAIDEN que mejor encaja contigo."
+  path={FINDER_PATH}
   jsonLd={[breadcrumbSchema(crumbs)]}
 >
   <div class="container container--narrow section">
     <Breadcrumbs items={crumbs} />
-    <SectionHeading as="h1" eyebrow="Asistente" title="Encuentra tu moto" text="Tres preguntas. Sin registro. Te mostramos los modelos ordenados por compatibilidad." />
+    <SectionHeading as="h1" eyebrow="Asistente" title="Encuentra tu bicimoto" text="Tres preguntas. Sin registro. Te mostramos los modelos ordenados por compatibilidad." />
     <BikeFinder client:load products={products} images={images} categoryNames={categoryNames} />
   </div>
 </BaseLayout>

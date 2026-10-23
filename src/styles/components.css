@@ -42,9 +42,30 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* Primario: Raiden Blue + blanco en ambas superficies (9,0:1) */
 .btn--primary {
   --btn-bg: var(--accent);
   --btn-fg: var(--accent-fg);
+}
+.btn--primary:hover {
+  background: var(--accent-hover);
+  filter: none;
+}
+/* Oscuro: Raiden Black + blanco, para superficies claras (18,9:1). En .surface-dark se invierte. */
+.btn--dark {
+  --btn-bg: var(--raiden-black);
+  --btn-fg: var(--raiden-white);
+}
+.btn--dark:hover {
+  background: var(--n-800);
+  filter: none;
+}
+.surface-dark .btn--dark {
+  --btn-bg: var(--raiden-white);
+  --btn-fg: var(--raiden-black);
+}
+.surface-dark .btn--dark:hover {
+  background: var(--n-100);
 }
 .btn--secondary {
   --btn-bg: transparent;
@@ -112,19 +133,15 @@
   background: color-mix(in srgb, var(--warning) 8%, transparent);
 }
 .badge--soon {
-  color: var(--electric);
-  border-color: color-mix(in srgb, var(--electric) 30%, transparent);
-  background: color-mix(in srgb, var(--electric) 8%, transparent);
+  color: var(--accent-text);
+  border-color: color-mix(in srgb, var(--accent-text) 30%, transparent);
+  background: color-mix(in srgb, var(--accent-text) 8%, transparent);
 }
+/* Nuevo: Raiden Blue sólido + blanco en ambas superficies */
 .badge--new {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
-}
-.surface-dark .badge--new {
-  background: var(--volt);
-  color: var(--volt-ink);
-  border-color: var(--volt);
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
 }
 
 /* ---------- Inputs ---------- */
@@ -396,7 +413,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgb(11 12 15 / 0.5);
+  background: rgb(17 17 17 / 0.55);
   z-index: var(--z-drawer);
   animation: fade var(--t-base) var(--ease);
 }
@@ -434,6 +451,10 @@
   padding: var(--s-3) var(--s-5);
   background: var(--n-900);
   color: var(--n-50);
+  /* El toast es siempre oscuro: el azul de texto debe ser el tint también en superficie clara */
+  --accent-text: var(--raiden-blue-tint);
+  --volt: var(--raiden-blue-tint);
+  --focus: var(--raiden-blue-tint);
   border-radius: var(--r-full);
   box-shadow: var(--sh-3);
   font-size: var(--fs-sm);

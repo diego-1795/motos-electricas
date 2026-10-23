@@ -11,7 +11,7 @@ export default function Toaster() {
           {t.actionHref && (
             <>
               {' · '}
-              <a href={t.actionHref} style="color:var(--volt);font-weight:600">
+              <a href={t.actionHref} style="color:var(--accent-text);font-weight:600">
                 {t.actionLabel}
               </a>
             </>

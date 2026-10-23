@@ -4,6 +4,7 @@ import SpecTiles from '../../components/product/SpecTiles.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import { repos } from '../../data';
 import ProductCard from '../../components/product/ProductCard.astro';
+import Logo from '../../components/ui/Logo.astro';
 
 /**
  * Styleguide del Design System (docs/02-design-system.md).
@@ -18,7 +19,8 @@ const demo = (await repos.products.hero())!;
 const swatches = [
   ['--n-950', 'n-950'], ['--n-900', 'n-900'], ['--n-700', 'n-700'], ['--n-500', 'n-500'],
   ['--n-300', 'n-300'], ['--n-100', 'n-100'], ['--n-50', 'n-50'],
-  ['--volt', 'volt'], ['--electric', 'electric'], ['--success', 'success'], ['--warning', 'warning'], ['--danger', 'danger'],
+  ['--raiden-blue', 'raiden-blue'], ['--raiden-blue-700', 'raiden-blue-700'], ['--raiden-blue-tint', 'raiden-blue-tint'], ['--raiden-blue-100', 'raiden-blue-100'],
+  ['--success', 'success'], ['--warning', 'warning'], ['--danger', 'danger'],
 ];
 ---
 
@@ -40,13 +42,30 @@ const swatches = [
       </ul>
     </section>
 
+    <section aria-labelledby="ui-logo">
+      <h2 id="ui-logo">Logo</h2>
+      <div class="ui__row">
+        <Logo variant="full" height={32} />
+        <Logo variant="wordmark" height={32} />
+        <Logo variant="mark" height={32} />
+        <Logo variant="full" height={48} />
+      </div>
+      <div class="ui__row surface-dark ui__dark" style="margin-top: var(--s-4)">
+        <Logo variant="full" invert height={32} />
+        <Logo variant="wordmark" invert height={32} />
+        <Logo variant="mark" invert height={32} />
+      </div>
+    </section>
+
     <section aria-labelledby="ui-type">
       <h2 id="ui-type">Tipografía</h2>
-      <p style="font-size: var(--fs-4xl); font-weight: 700; letter-spacing: -0.035em">Display 4xl</p>
-      <p style="font-size: var(--fs-3xl); font-weight: 600">Heading 3xl</p>
-      <p style="font-size: var(--fs-2xl); font-weight: 600">Heading 2xl</p>
-      <p style="font-size: var(--fs-xl)">Heading xl</p>
-      <p>Body md — La ODIN 1.0 es la moto eléctrica insignia de Raiden.</p>
+      <p class="muted" style="font-size: var(--fs-sm)">Montserrat (principal) + Integral CF (display, solo H1 / títulos de sección).</p>
+      <p style="font-family: var(--font-display); font-size: var(--fs-4xl); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: var(--tracking-display); line-height: var(--lh-tight)">Display 4xl</p>
+      <p style="font-family: var(--font-display); font-size: var(--fs-3xl); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: var(--tracking-display); line-height: var(--lh-tight)">H1 3xl Integral</p>
+      <p style="font-size: var(--fs-2xl); font-weight: var(--fw-extrabold); letter-spacing: var(--tracking-tight)">Heading 2xl ExtraBold</p>
+      <p style="font-size: var(--fs-xl); font-weight: var(--fw-semibold)">Heading xl SemiBold</p>
+      <p>Body md Regular — La bicimoto eléctrica Raiden para moverte por Lima sin gasolina.</p>
+      <p><em>Italic</em> y <strong>SemiBold 600</strong> dentro del cuerpo. Precio: S/ 3 990 · 45 km/h · 60 V.</p>
       <p class="muted" style="font-size: var(--fs-sm)">Muted sm</p>
       <p class="eyebrow">Eyebrow</p>
     </section>
@@ -55,6 +74,7 @@ const swatches = [
       <h2 id="ui-btn">Botones</h2>
       <div class="ui__row">
         <button class="btn btn--primary">Primario</button>
+        <button class="btn btn--dark">Oscuro</button>
         <button class="btn btn--secondary">Secundario</button>
         <button class="btn btn--ghost">Ghost</button>
         <a href="#" class="btn btn--whatsapp">WhatsApp</a>
@@ -85,8 +105,8 @@ const swatches = [
       <div class="ui__row" style="margin-top: var(--s-4)">
         <label class="choice"><input type="checkbox" checked /> Chip seleccionado</label>
         <label class="choice"><input type="checkbox" /> Chip</label>
-        <label class="swatch" style="background: #111315"><input type="radio" name="sw" checked /><span class="visually-hidden">Negro</span></label>
-        <label class="swatch" style="background: #0b5fff"><input type="radio" name="sw" /><span class="visually-hidden">Azul</span></label>
+        <label class="swatch" style="background: var(--raiden-black)"><input type="radio" name="sw" checked /><span class="visually-hidden">Negro</span></label>
+        <label class="swatch" style="background: var(--raiden-blue)"><input type="radio" name="sw" /><span class="visually-hidden">Azul</span></label>
         <div class="stepper"><button type="button">−</button><input type="number" value="1" aria-label="Cantidad" /><button type="button">+</button></div>
       </div>
     </section>
@@ -117,11 +137,15 @@ const swatches = [
     <section aria-labelledby="ui-dark" class="surface-dark ui__dark">
       <h2 id="ui-dark">Superficie oscura</h2>
       <div class="ui__row">
-        <button class="btn btn--primary">Primario (volt)</button>
+        <button class="btn btn--primary">Primario (Raiden Blue)</button>
+        <button class="btn btn--dark">Oscuro (invertido)</button>
         <button class="btn btn--secondary">Secundario</button>
         <span class="badge badge--stock">En stock</span>
+        <span class="badge badge--order">Bajo pedido</span>
+        <span class="badge badge--soon">Próximamente</span>
         <span class="badge badge--new">Nuevo</span>
         <p class="eyebrow" style="margin: 0">Eyebrow oscuro</p>
+        <a href="#" style="color: var(--accent-text)">Enlace (blue-tint)</a>
       </div>
     </section>
   </div>

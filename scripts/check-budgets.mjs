@@ -10,8 +10,9 @@ import { join } from 'node:path';
 const DIST = 'dist';
 const BUDGETS = {
   '/': { js: 30, css: 12, html: 20 },
-  '/motos-electricas': { js: 30, css: 12, html: 24 },
-  '/motos-electricas/odin-1-0': { js: 60, css: 12, html: 24 },
+  '/productos': { js: 30, css: 12, html: 24 },
+  '/bicimotos/golden-eagle': { js: 60, css: 12, html: 24 },
+  '/repuestos': { js: 30, css: 12, html: 24 },
   '/carrito': { js: 40, css: 12, html: 12 },
   '/comparar': { js: 40, css: 12, html: 16 },
   '/encuentra-tu-moto': { js: 45, css: 12, html: 20 },

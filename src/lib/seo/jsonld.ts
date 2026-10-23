@@ -9,9 +9,16 @@ export function organizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: site.name,
+    legalName: site.legalName,
+    taxID: site.ruc,
     url: site.url,
     logo: `${site.url}/favicon.svg`,
-    sameAs: Object.values(site.social),
+    sameAs: Object.values(site.social).filter(Boolean),
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: site.address,
+      addressCountry: site.country,
+    },
     contactPoint: [
       {
         '@type': 'ContactPoint',

@@ -84,14 +84,21 @@ h3,
 h4 {
   line-height: var(--lh-tight);
   letter-spacing: var(--tracking-tight);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   text-wrap: balance;
 }
+/* H1: Integral CF Bold, mayúsculas (manual de marca). Es una fuente ancha: tamaños 3xl/4xl ya reducidos en tokens. */
 h1 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
   font-size: var(--fs-3xl);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-display);
 }
+/* H2: Montserrat ExtraBold · H3/H4: Montserrat SemiBold */
 h2 {
   font-size: var(--fs-2xl);
+  font-weight: var(--fw-extrabold);
 }
 h3 {
   font-size: var(--fs-xl);
@@ -115,7 +122,7 @@ table {
   border-radius: var(--r-sm);
 }
 .surface-dark :focus-visible {
-  outline-color: var(--volt);
+  outline-color: var(--focus);
 }
 
 /* Utilidades mínimas */
@@ -156,16 +163,25 @@ table {
   --fg-subtle: var(--n-500);
   --border: var(--dark-border);
   --border-strong: var(--n-700);
-  --accent: var(--volt);
-  --accent-fg: var(--volt-ink);
+  /* El azul sólido (#0142A6) no es legible como texto sobre #111111 (2,1:1):
+     los rellenos (--accent) siguen azul + blanco; texto/enlaces/foco usan el tint. */
+  --accent: var(--raiden-blue);
+  --accent-fg: var(--raiden-white);
+  --accent-text: var(--raiden-blue-tint);
+  --accent-hover: var(--raiden-blue-700);
+  --focus: var(--raiden-blue-tint);
+  --electric: var(--raiden-blue-tint);
   --success: #4ade80;
   --warning: #fbbf24;
-  --electric: #7aa7ff;
   color-scheme: dark;
+}
+/* Logo (ui/Logo.astro): dentro de una superficie oscura pasa a blanco automáticamente (regla de marca). */
+.surface-dark .logo img {
+  filter: brightness(0) invert(1);
 }
 .eyebrow {
   font-size: var(--fs-xs);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   color: var(--fg-muted);
@@ -179,8 +195,8 @@ table {
   left: var(--s-4);
   z-index: 1000;
   padding: var(--s-3) var(--s-4);
-  background: var(--n-900);
-  color: var(--n-0);
+  background: var(--raiden-black);
+  color: var(--raiden-white);
   border-radius: var(--r-md);
 }
 .skip-link:focus {
@@ -201,7 +217,7 @@ table {
   font-size: var(--fs-lg);
 }
 .prose a {
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }

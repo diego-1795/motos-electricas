@@ -10,26 +10,25 @@ Raiden (nombre provisional) vende movilidad eléctrica con un showroom digital c
 | Precisión | Cifras con unidad y condición ("hasta 120 km a 45 km/h") | "Gran autonomía" |
 | Honestidad | Indicar que la autonomía declarada depende de peso y vía | Promesas absolutas |
 | Longitud | Frases cortas, un dato por frase | Párrafos de marketing |
-| Vocabulario | Moto eléctrica, scooter eléctrico, batería extraíble, licencia B-IIa/B-IIb, SOAT | Anglicismos innecesarios ("e-bike" salvo en bicimotos) |
-| Llamada a la acción | "Pide tu presupuesto por WhatsApp" | "Compra ahora" (no hay pago online) |
+| Vocabulario | Bicimoto eléctrica, trimoto eléctrica de carga, batería Chilwee de plomo-ácido, versión Estándar / Premium, repuestos originales, Servicio técnico RAIDEN | Anglicismos innecesarios ("e-bike", "scooter"); "moto eléctrica" para referirse a las bicimotos |
+| Velocidad y licencia | "25 km/h; en general no requiere licencia ni placa; verifica con el MTC o tu municipalidad" | Afirmaciones absolutas ("no necesitas brevete"), números de leyes o decretos, "80 km/h", clases B-IIa/B-IIb (solo como contraste en el artículo de licencia) |
+| Llamada a la acción | "Cotiza por WhatsApp", "Pruébala en tienda" | "Compra ahora" (no hay pago online) |
 
-Keywords de referencia (Perú): "moto eléctrica Perú", "scooter eléctrico Lima", "precio en soles", "licencia B-IIa", "SOAT". Detalle por página en [08-seo](./08-seo.md).
+Keywords de referencia (Perú, ADR-015): "bicimoto eléctrica Lima", "bicimoto eléctrica precio Perú", "bicimoto 500w", "bicimoto 350w", "bicimoto eléctrica sin licencia", "repuestos bicimoto", "batería Chilwee 48V", "trimoto eléctrica carga", "trimoto eléctrica Perú". Secundarias: "cómo manejar una bicimoto eléctrica", "cuánto cuesta cargar una bicimoto", "bicimoto para delivery". Detalle por página en [08-seo](./08-seo.md).
 
-Claim provisional: "Movilidad eléctrica sin complicaciones." Se usa en `<title>` de la home y en Open Graph hasta que el cliente confirme el nombre.
+Claim de marca: "The Future of Power" (`site.tagline`). Claims por modelo en `claim` de cada ficha ("Escoge la libertad que te impulsa", "Define la forma de moverte").
+
+Datos fijos que todo contenido debe respetar (fuente: ficha del fabricante, 2026-10-22): velocidad máxima 25 km/h; motor 350 W (Estándar) o 500 W (Premium), 800 W en Titan Rhino; batería Chilwee plomo-ácido 48V 12Ah / 48V 20Ah (60V 20Ah en Titan Rhino); autonomía 30-35 km / 40-50 km (35-40 km Titan Rhino); carga 6-8 h a 220 V; vida útil 2 años o 350-400 ciclos; carga máxima 150 kg (250 kg Titan Rhino); garantía 12 meses en batería y motor; precios desde S/ 1,200 (Golden Eagle, Vortex Kobra), S/ 1,400 (Royal Tiger) y S/ 2,700 (Titan Rhino), IGV incluido.
 
 ## 2. Taxonomía del catálogo
 
-| Categoría | Slug | Descripción | Carnet habitual |
+| Categoría | Slug | Descripción | Licencia |
 |---|---|---|---|
-| Scooters eléctricos | `scooters-electricos` | Scooters de 45–120 km/h de uso urbano | B-I / B-IIa |
-| Motos eléctricas urbanas | `motos-electricas-urbanas` | Motos tipo naked o trail ligera | B-IIa / B-IIb |
-| Bicimotos | `bicimotos` | Bicicletas con motor y pedales, estilo retro o cargo ligero | Sin licencia o B-I según potencia (normativa MTC) |
-| Trimotos | `trimotos` | Vehículos de tres ruedas para pasajeros o reparto | B-IIb / B-IIc |
-| Vehículos de carga | `vehiculos-carga` | Triciclos y motocarros con caja o furgón | B-IIb / B-IIc |
-| Cuatrimotos | `cuatrimotos` | Quads y cuadriciclos ligeros eléctricos | B-IIb / B-IIc |
-| Accesorios | `accesorios` | Cascos, baterías adicionales, cargadores, baúles, candados | — |
+| Bicimotos | `bicimotos` | Bicimotos eléctricas de baja velocidad (25 km/h): Golden Eagle, Royal Tiger, Vortex Kobra. Versiones Estándar (350 W · 48V 12Ah) y Premium (500 W · 48V 20Ah) | En general no requiere (verificar MTC / municipalidad) |
+| Trimotos | `trimotos` | Trimotos eléctricas de carga (25 km/h): Titan Rhino, 800 W, 250 kg | En general no requiere; confirmar uso comercial |
+| Repuestos | `repuestos` | 26 repuestos originales: baterías Chilwee, cargadores, motores, controladores, frenos, llantas, iluminación, mandos, seguridad | — |
 
-La página `/motos-electricas` agrupa todas las categorías de vehículo. Las marcas (`Brand`) son entidad propia para filtros y JSON-LD, pero no generan páginas en el MVP.
+La página `/productos` agrupa todo el catálogo (ADR-015). Las categorías anteriores (scooters, motos urbanas, vehículos de carga, cuatrimotos, accesorios) se eliminaron junto con el catálogo ficticio.
 
 ## 3. Ficha de producto
 
@@ -93,44 +92,34 @@ Sin texto ni marcas de agua en las imágenes. Las fotos del proveedor se renombr
 
 ## 6. Blog
 
-Pilares de contenido: (1) Guías de compra y normativa, (2) Mantenimiento y baterías, (3) Comparativas de modelos del catálogo, (4) Ahorro y ayudas públicas, (5) Uso profesional (reparto y carga).
+Pilares de contenido: (1) Guías de uso y normativa de bicimotos, (2) Batería de plomo-ácido y mantenimiento, (3) Comparativas entre modelos del catálogo, (4) Ahorro frente a pasaje y gasolina, (5) Uso profesional (reparto y carga). Los artículos 1-3 los redactó el cliente (EG Motors, 2026-10-22) y se publican casi literalmente; el resto los adapta el equipo de contenidos a partir del catálogo real.
 
-| Mes | Título | Pilar | Enlaza a |
-|---|---|---|---|
-| 1 | Qué licencia (B-I, B-IIa, B-IIb, B-IIc) necesitas para conducir una moto eléctrica en el Perú | 1 | Scooters, urbanas |
-| 1 | Autonomía real de un scooter eléctrico: qué influye y cómo calcularla | 2 | Encuentra tu moto |
-| 2 | Batería extraíble o fija: cuál te conviene si vives en piso | 2 | Accesorios (batería) |
-| 2 | Cuánto cuesta cargar una moto eléctrica en casa | 4 | Scooters |
-| 3 | Scooter eléctrico de 45 km/h frente a 80 km/h: guía de decisión | 3 | Comparar |
-| 3 | SOAT, placa e inscripción en SUNARP de una moto eléctrica: guía paso a paso | 4 | Contacto |
-| 4 | Mantenimiento de una moto eléctrica: qué revisar cada mes | 2 | Garantía |
-| 4 | Bicimotos: qué son y cuándo tienen sentido frente a una bici eléctrica | 1 | Bicimotos |
-| 5 | Vehículos eléctricos de carga para reparto de última milla | 5 | Vehículos de carga |
-| 5 | Cómo elegir casco para scooter eléctrico | 1 | Accesorios (casco) |
-| 6 | Trimotos eléctricas para movilidad reducida y reparto ligero | 5 | Trimotos |
-| 6 | Cuánto dura la batería de una moto eléctrica y cómo alargar su vida | 2 | Garantía |
+Calendario editorial vigente (`src/content/blog/<slug>.md`):
 
-Formato: 900–1.500 palabras, H2 cada 200–300 palabras, una tabla o lista de datos, CTA final a la categoría relacionada. Ficha en `src/content/blog/<slug>.json` con `title`, `slug`, `publishedAt`, `updatedAt`, `author`, `pillar`, `summary`, `body` (Markdown), `cover`, `relatedProducts[]`.
+| Publicación | Slug | Categoría | Pilar | Enlaza a |
+|---|---|---|---|---|
+| 2026-10-23 | `necesito-licencia-para-una-bicimoto-electrica-en-peru` | legislacion | 1 | Bicimotos, Titan Rhino, Encuentra tu moto |
+| 2026-10-27 | `como-cuidar-la-bateria-de-tu-bicimoto-electrica` | baterias | 2 | Repuestos (baterías, cargadores), Servicio técnico |
+| 2026-10-30 | `bicimoto-electrica-que-es-como-funciona-y-ventajas` (cliente) | guias | 1 | /bicimotos |
+| 2026-11-03 | `cuanto-cuesta-cargar-una-bicimoto-electrica-en-peru` | autonomia | 4 | Golden Eagle, Vortex Kobra, Titan Rhino |
+| 2026-11-06 | `como-elegir-una-bicimoto-electrica` (cliente) | compra | 1 | /bicimotos |
+| 2026-11-10 | `mantenimiento-de-una-bicimoto-electrica-que-revisar` | mantenimiento | 2 | Repuestos, Servicio técnico, Garantía |
+| 2026-11-13 | `como-manejar-una-bicimoto-electrica-manual-para-principiantes` (cliente) | guias | 1 | /bicimotos |
+| 2026-11-17 | `bicimoto-o-trimoto-electrica-para-reparto-y-carga` | comparativas | 3 / 5 | Royal Tiger, Titan Rhino, Comparar |
+
+Próximos temas propuestos (pendientes de aprobación del cliente): "Golden Eagle, Royal Tiger o Vortex Kobra: en qué se diferencian" (comparativas), "Estándar o Premium: cuál elegir" (compra), "Cómo cambiar la batería Chilwee de tu bicimoto" (mantenimiento), "Guía de repuestos RAIDEN: qué se desgasta y cuánto cuesta" (mantenimiento).
+
+Formato: 600–900 palabras (los artículos del cliente conservan su extensión original), H2 cada 150–250 palabras, una tabla o lista de datos, CTA final con enlace interno (`/bicimotos`, `/trimotos/titan-rhino`, `/repuestos`, `/servicio-tecnico`, `/encuentra-tu-moto`, `/comparar`). Frontmatter: `title`, `description`, `category`, `publishedAt`, `updatedAt?`, `author` ("Equipo Raiden"), `readingMinutes`, `image?` (`~/assets/blog/<slug>.jpg`, 1264×848), `relatedProducts[]` (slugs reales; lo valida `npm run validate:content`, que además prohíbe "€", "EUR", "carnet" e "IVA").
 
 ## 7. FAQ inicial
 
-1. ¿Necesito licencia de conducir (clase B) para un scooter eléctrico?
-2. ¿Cuánta autonomía tiene realmente una moto eléctrica?
-3. ¿Se puede cargar la batería en casa con un enchufe normal?
-4. ¿Cuánto tarda en cargarse la batería?
-5. ¿La batería es extraíble?
-6. ¿Cuánto dura la batería y qué garantía tiene?
-7. ¿Puedo llevar pasajero?
-8. ¿Puede circular por autovía o autopista?
-9. ¿Cómo hago el pedido si no hay pago online? (El asesor puede ofrecer transferencia, Yape o Plin; nunca se cobra desde la web.)
-10. ¿Qué ocurre después de enviar la solicitud por WhatsApp?
-11. ¿Hacen envíos a todo el Perú? ¿Y a provincias (Arequipa, Trujillo, Cusco)?
-12. ¿Viene con placa e inscrita en SUNARP o la inscribo yo? ¿Incluye SOAT?
-13. ¿Qué garantía tiene el vehículo y dónde se repara?
-14. ¿Puedo probar la moto antes de comprarla?
-15. ¿Existen ayudas o beneficios para comprar una moto eléctrica en el Perú?
+Tres grupos en `src/content/faqs/{compra,garantia,tecnica}.json` (24 preguntas en total):
 
-Fichero `src/content/faqs/<slug>.json` con `question`, `answer` (Markdown), `category` (`compra`, `tecnica`, `legal`, `postventa`), `order`. Se renderizan en `/faq` y, filtradas, en fichas de producto, con JSON-LD `FAQPage` ([08-seo](./08-seo.md)).
+- **Compra y pedido (8):** cómo se compra por WhatsApp; sin pago online y medios de pago (Visa/Mastercard/Amex en tienda; Yape, Plin y transferencia a consultar con el asesor); boleta o factura (EG Motors SAC, IGV incluido); plazos de entrega (Lima y Callao 3-7 días hábiles, provincias 7-15); envíos a provincias; prueba de manejo en tienda de Bocanegra, Callao (L-D 10 a. m.–8 p. m.); la bicimoto llega lista; qué pasa tras la solicitud.
+- **Garantía y servicio técnico (6):** 12 meses en batería y motor; qué no cubre; dónde se hace el servicio técnico; repuestos disponibles; vida útil y precio de la batería de repuesto; mantenimiento necesario.
+- **Técnica, autonomía y normativa (10):** velocidad 25 km/h; licencia y placa (con hedge MTC / municipalidad); autonomía por versión; Estándar vs Premium; tiempo y lugar de carga; cuidados de la batería de plomo-ácido; carga máxima 150 / 250 kg; sierra y subidas; lluvia y garúa; costo de carga.
+
+Cada fichero tiene `group`, `order` e `items[] { question, answer }`. Se renderizan en `/faq` con JSON-LD `FAQPage` ([08-seo](./08-seo.md)); cada ficha de producto lleva además sus propias `faqs` (6 por modelo: licencia, autonomía, Estándar vs Premium o carga, batería, garantía y compra/entrega).
 
 ## 8. Páginas legales (`/legal/*`)
 

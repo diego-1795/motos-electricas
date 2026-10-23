@@ -22,25 +22,24 @@ const crumbs = [
     <Breadcrumbs items={crumbs} />
     <SectionHeading as="h1" eyebrow="Legal" title="Política de privacidad" />
     <div class="prose">
-      <p class="muted">Los campos entre corchetes son marcadores pendientes de completar por el titular antes de la puesta en producción.</p>
-
       <h2>1. Titular del banco de datos</h2>
       <p>
         Esta política se elabora conforme a la Ley de Protección de Datos Personales del Perú (Ley N.º 29733) y su reglamento. El titular responsable del
         tratamiento es:
       </p>
       <ul>
-        <li><strong>Razón social:</strong> <mark>[RAZÓN SOCIAL]</mark></li>
-        <li><strong>RUC:</strong> <mark>[RUC]</mark></li>
-        <li><strong>Domicilio:</strong> <mark>[DIRECCIÓN]</mark>, <mark>[CIUDAD]</mark>, Perú</li>
-        <li><strong>Contacto:</strong> <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></li>
+        <li><strong>Razón social:</strong> {site.legalName}</li>
+        <li><strong>RUC:</strong> {site.ruc}</li>
+        <li><strong>Domicilio:</strong> {site.address}, Perú</li>
+        <li><strong>Contacto:</strong> <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a> · {site.phoneDisplay}</li>
       </ul>
 
       <h2>2. Qué datos tratamos y cómo los obtenemos</h2>
       <p>
-        Este sitio web <strong>no contiene formularios</strong> ni recoge datos personales durante la navegación. Los únicos datos que tratamos son los que tú nos
-        facilitas voluntariamente al contactar por <strong>WhatsApp</strong> o <strong>correo electrónico</strong>: nombre, número de teléfono o dirección de
-        correo, localidad y el contenido de tu consulta o solicitud de compra.
+        Este sitio web <strong>no almacena ni envía a ningún servidor propio</strong> los datos que escribes. El formulario de contacto solo compone un mensaje
+        que se abre en tu propia aplicación de <strong>WhatsApp</strong> o de <strong>correo electrónico</strong> para que lo envíes tú. Los únicos datos que
+        tratamos son los que nos facilitas voluntariamente por esos canales: nombre, número de teléfono o dirección de correo, localidad y el contenido de tu
+        consulta o solicitud de compra.
       </p>
       <p>
         El carrito y el comparador se guardan únicamente en el almacenamiento local de tu navegador (<code>localStorage</code>) y no se envían a ningún servidor.

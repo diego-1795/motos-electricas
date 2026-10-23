@@ -5,44 +5,54 @@ import SectionHeading from '../components/ui/SectionHeading.astro';
 import CompareTable, { type CompareRow } from '../islands/CompareTable';
 import { repos } from '../data';
 import { site } from '../config/site';
-import { availabilityLabel, batteryLabel, chargeLabel, effectiveSpecs, fromPrice, licenseLabel, maxRange, productAvailability } from '../domain/product';
+import { availabilityLabel, batteryLabel, chargeLabel, effectiveSpecs, fromPrice, licenseLabel, maxRange, powerLabel, productAvailability, rangeLabel, tierLabel } from '../domain/product';
 import { publicSrc } from '../lib/images';
+import { COMPARE_PATH, productPath } from '../lib/routes';
 
-const products = (await repos.products.all()).filter((p) => p.category !== 'accesorios');
+const products = (await repos.products.all()).filter((p) => p.category !== 'repuestos');
+const categories = await repos.categories.all();
+const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
 const rows: CompareRow[] = products.map((p) => {
   const s = effectiveSpecs(p);
+  const powers = [...new Set(p.variants.map((v) => effectiveSpecs(p, v).powerW))].sort((a, b) => a - b);
   return {
     slug: p.slug,
+    href: productPath(p),
     name: p.name,
     subtitle: p.subtitle,
+    category: categoryNames[p.category] ?? p.category,
     image: publicSrc(p.images[0]!),
     priceFrom: fromPrice(p).amount,
+    tiers: p.variants.map((v) => tierLabel[v.tier]).join(' · '),
     rangeKm: maxRange(p),
+    rangeLabel: p.variants.length > 1 ? p.variants.map((v) => `${rangeLabel(effectiveSpecs(p, v))} (${tierLabel[v.tier]})`).join(' · ') : rangeLabel(s),
     topSpeedKmh: s.topSpeedKmh,
-    powerW: s.powerW,
-    battery: batteryLabel(s),
+    powerW: powers[powers.length - 1]!,
+    powerLabel: powers.length > 1 ? `${powers[0]}-${powers[powers.length - 1]} W` : powerLabel(s.powerW),
+    battery: p.variants.length > 1 ? p.variants.map((v) => `${batteryLabel(effectiveSpecs(p, v))} (${tierLabel[v.tier]})`).join(' · ') : batteryLabel(s),
     chargeHours: chargeLabel(s),
+    maxLoadKg: s.maxLoadKg,
     weightKg: s.weightKg,
-    dimensions: `${s.dimensionsMm.join(' × ')} mm`,
+    dimensions: s.dimensionsMm ? `${s.dimensionsMm.join(' × ')} mm` : undefined,
     seats: s.seats,
     license: licenseLabel[s.license],
-    warranty: `${s.warrantyMonths} meses`,
+    warranty: `${s.warrantyMonths} meses (batería y motor)`,
     availability: availabilityLabel[productAvailability(p)],
   };
 });
 const crumbs = [
   { name: 'Inicio', url: '/' },
-  { name: 'Comparador', url: '/comparar' },
+  { name: 'Comparador', url: COMPARE_PATH },
 ];
 ---
 
 <BaseLayout
-  title="Comparador de motos eléctricas"
-  description={`Compara hasta ${site.compareLimit} motos eléctricas lado a lado: precio, autonomía, velocidad, potencia, batería, carga, peso y garantía.`}
-  path="/comparar"
+  title="Comparador de bicimotos eléctricas"
+  description={`Compara hasta ${site.compareLimit} bicimotos y trimotos eléctricas RAIDEN lado a lado: precio, versiones, autonomía, potencia, batería, carga máxima y garantía.`}
+  path={COMPARE_PATH}
   noindex
 >
-  <div class="container section">
+  <div class="container section" data-pagefind-ignore>
     <Breadcrumbs items={crumbs} />
     <SectionHeading as="h1" title="Comparador" text={`Hasta ${site.compareLimit} modelos lado a lado. Los mejores valores de cada fila se resaltan.`} />
     <CompareTable client:load products={rows} />

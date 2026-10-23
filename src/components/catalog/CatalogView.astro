@@ -1,24 +1,28 @@
 ---
-import type { Product, CategorySlug } from '../../domain/types';
-import { USE_CASES, TYPES, sortLabels, type SortKey } from '../../domain/catalog';
-import { effectiveSpecs, fromPrice, maxRange, productAvailability } from '../../domain/product';
-import { useCaseLabel } from '../../domain/recommendation';
+import type { Product, CategorySlug, VariantTier } from '../../domain/types';
+import { TYPES, sortLabels, type SortKey } from '../../domain/catalog';
+import { fromPrice, maxRange, productAvailability, tierLabel } from '../../domain/product';
 import ProductCard from '../product/ProductCard.astro';
 
 /**
- * Vista de catálogo con filtros progresivos:
+ * Vista de catálogo con filtros progresivos adaptados al catálogo real (ADR-015):
  * - HTML completo de todos los productos (SEO, sin JS funciona como listado).
  * - Un script ligero filtra/ordena en cliente leyendo data-* y sincroniza la URL.
+ * Filtros: precio, categoría, etiqueta (Estándar/Premium), modelo y disponibilidad.
  */
 interface Props {
   products: Product[];
-  /** Si se fija, oculta el filtro de tipo */
+  /** Si se fija, oculta el filtro de categoría */
   lockedType?: CategorySlug;
   categoryNames: Record<string, string>;
 }
 const { products, lockedType, categoryNames } = Astro.props;
-const sortKeys = Object.keys(sortLabels) as SortKey[];
-const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount)) / 100 / 1000) * 1000;
+const sortKeys: SortKey[] = ['recomendados', 'precio-asc', 'precio-desc', 'novedades', 'autonomia'];
+const TIERS: VariantTier[] = ['estandar', 'premium'];
+const maxPrice = Math.max(500, Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount)) / 100 / 100) * 100);
+const minPrice = 500;
+const models = [...products].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+const tiersOf = (p: Product) => TIERS.filter((t) => p.variants.some((v) => v.tier === t));
 ---
 
 <div class="catalog" data-catalog>
@@ -28,70 +32,67 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
       <span class="filters__count muted" data-count>{products.length} modelos</span>
     </button>
     <div class="filters__body" id="filters-body">
-        {
-          !lockedType && (
-            <div class="field">
-              <label class="label" for="f-tipo">Tipo</label>
-              <select id="f-tipo" name="tipo" class="select">
-                <option value="">Todos</option>
-                {TYPES.map((t) => (
-                  <option value={t}>{categoryNames[t] ?? t}</option>
-                ))}
-              </select>
-            </div>
-          )
-        }
-        <div class="field">
-          <label class="label" for="f-precio">Precio máximo: <output for="f-precio" data-out="precio">S/ {maxPrice}</output></label>
-          <input id="f-precio" name="precio" type="range" min="1000" max={maxPrice} step="500" value={maxPrice} />
+      {
+        !lockedType && (
+          <div class="field">
+            <label class="label" for="f-tipo">Categoría</label>
+            <select id="f-tipo" name="tipo" class="select">
+              <option value="">Todas</option>
+              {TYPES.map((t) => (
+                <option value={t}>{categoryNames[t] ?? t}</option>
+              ))}
+            </select>
+          </div>
+        )
+      }
+      <div class="field">
+        <label class="label" for="f-precio">Precio máximo: <output for="f-precio" data-out="precio">S/ {maxPrice}</output></label>
+        <input id="f-precio" name="precio" type="range" min={minPrice} max={maxPrice} step="100" value={maxPrice} />
+      </div>
+      <fieldset class="field filters__group">
+        <legend class="label">Etiqueta</legend>
+        <div class="filters__choices">
+          {
+            TIERS.map((t) => (
+              <label class="choice">
+                <input type="checkbox" name="etiqueta" value={t} />
+                {tierLabel[t]}
+              </label>
+            ))
+          }
         </div>
-        <div class="field">
-          <label class="label" for="f-autonomia">Autonomía mínima: <output for="f-autonomia" data-out="autonomia">0 km</output></label>
-          <input id="f-autonomia" name="autonomia" type="range" min="0" max="200" step="10" value="0" />
+      </fieldset>
+      <fieldset class="field filters__group">
+        <legend class="label">Modelo</legend>
+        <div class="filters__checks">
+          {
+            models.map((p) => (
+              <label class="filters__check">
+                <input type="checkbox" name="modelo" value={p.slug} />
+                <span>{p.name}</span>
+              </label>
+            ))
+          }
         </div>
-        <div class="field">
-          <label class="label" for="f-velocidad">Velocidad mínima: <output for="f-velocidad" data-out="velocidad">0 km/h</output></label>
-          <input id="f-velocidad" name="velocidad" type="range" min="0" max="120" step="5" value="0" />
-        </div>
-        <div class="field">
-          <label class="label" for="f-potencia">Potencia mínima: <output for="f-potencia" data-out="potencia">0 kW</output></label>
-          <input id="f-potencia" name="potencia" type="range" min="0" max="10" step="0.5" value="0" />
-        </div>
-        <div class="field">
-          <label class="label" for="f-bateria">Batería mínima: <output for="f-bateria" data-out="bateria">0 kWh</output></label>
-          <input id="f-bateria" name="bateria" type="range" min="0" max="8" step="0.5" value="0" />
-        </div>
-        <div class="field">
-          <label class="label" for="f-plazas">Plazas</label>
-          <select id="f-plazas" name="plazas" class="select">
-            <option value="">Cualquiera</option>
-            <option value="1">1</option>
-            <option value="2">2 o más</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="label" for="f-uso">Uso</label>
-          <select id="f-uso" name="uso" class="select">
-            <option value="">Cualquiera</option>
-            {USE_CASES.map((u) => <option value={u}>{useCaseLabel(u)}</option>)}
-          </select>
-        </div>
-        <div class="field">
-          <label class="label" for="f-disp">Disponibilidad</label>
-          <select id="f-disp" name="disponibilidad" class="select">
-            <option value="">Cualquiera</option>
-            <option value="en-stock">En stock</option>
-            <option value="bajo-pedido">Bajo pedido</option>
-            <option value="proximamente">Próximamente</option>
-          </select>
-        </div>
-        <button type="reset" class="btn btn--ghost btn--sm">Limpiar filtros</button>
+      </fieldset>
+      <div class="field">
+        <label class="label" for="f-disp">Disponibilidad</label>
+        <select id="f-disp" name="disponibilidad" class="select">
+          <option value="">Cualquiera</option>
+          <option value="en-stock">En stock</option>
+          <option value="bajo-pedido">Bajo pedido</option>
+          <option value="proximamente">Próximamente</option>
+        </select>
+      </div>
+      <button type="reset" class="btn btn--ghost btn--sm">Limpiar filtros</button>
     </div>
   </form>
 
   <div class="results">
     <div class="results__bar">
-      <p class="muted" aria-live="polite"><span data-count-inline>{products.length}</span> modelos</p>
+      <p class="muted" aria-live="polite" data-results-text>
+        1 – <span data-count-inline>{products.length}</span> de {products.length} resultados
+      </p>
       <label class="results__sort">
         <span class="visually-hidden">Ordenar por</span>
         <select name="orden" class="select" data-sort form="">
@@ -102,28 +103,21 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
 
     <ul role="list" class="grid-products" data-grid>
       {
-        products.map((p, i) => {
-          const s = effectiveSpecs(p);
-          return (
-            <li
-              data-item
-              data-slug={p.slug}
-              data-tipo={p.category}
-              data-precio={fromPrice(p).amount / 100}
-              data-autonomia={maxRange(p)}
-              data-velocidad={s.topSpeedKmh}
-              data-potencia={s.powerW / 1000}
-              data-bateria={s.battery.capacityKwh}
-              data-plazas={s.seats}
-              data-uso={p.useCases.join(' ')}
-              data-disponibilidad={productAvailability(p)}
-              data-featured={p.featured}
-              data-fecha={p.publishedAt}
-            >
-              <ProductCard product={p} priority={i === 0} headingLevel="h2" />
-            </li>
-          );
-        })
+        products.map((p, i) => (
+          <li
+            data-item
+            data-slug={p.slug}
+            data-tipo={p.category}
+            data-precio={fromPrice(p).amount / 100}
+            data-autonomia={maxRange(p)}
+            data-tiers={tiersOf(p).join(' ')}
+            data-disponibilidad={productAvailability(p)}
+            data-featured={p.featured}
+            data-fecha={p.publishedAt}
+          >
+            <ProductCard product={p} priority={i === 0} headingLevel="h2" categoryLabel={categoryNames[p.category]} />
+          </li>
+        ))
       }
     </ul>
     <p class="results__empty" data-empty hidden>
@@ -140,8 +134,9 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
     const grid = root.querySelector<HTMLElement>('[data-grid]')!;
     const items = Array.from(grid.querySelectorAll<HTMLElement>('[data-item]'));
     const empty = root.querySelector<HTMLElement>('[data-empty]')!;
-    const counts = root.querySelectorAll<HTMLElement>('[data-count], [data-count-inline]');
-    const units: Record<string, string> = { autonomia: ' km', velocidad: ' km/h', potencia: ' kW', bateria: ' kWh' };
+    const countBadge = root.querySelector<HTMLElement>('[data-count]');
+    const resultsText = root.querySelector<HTMLElement>('[data-results-text]');
+    const total = items.length;
 
     const num = (el: HTMLElement, k: string) => Number(el.dataset[k] ?? 0);
 
@@ -151,12 +146,8 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
       return {
         tipo: get('tipo'),
         precio: Number(get('precio') || Infinity),
-        autonomia: Number(get('autonomia') || 0),
-        velocidad: Number(get('velocidad') || 0),
-        potencia: Number(get('potencia') || 0),
-        bateria: Number(get('bateria') || 0),
-        plazas: Number(get('plazas') || 0),
-        uso: get('uso'),
+        etiquetas: fd.getAll('etiqueta').map(String),
+        modelos: fd.getAll('modelo').map(String),
         disponibilidad: get('disponibilidad'),
         orden: sort.value,
       };
@@ -166,15 +157,12 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
       const f = read();
       let visible = 0;
       for (const el of items) {
+        const tiers = (el.dataset.tiers ?? '').split(' ');
         const ok =
           (!f.tipo || el.dataset.tipo === f.tipo) &&
           num(el, 'precio') <= f.precio &&
-          num(el, 'autonomia') >= f.autonomia &&
-          num(el, 'velocidad') >= f.velocidad &&
-          num(el, 'potencia') >= f.potencia &&
-          num(el, 'bateria') >= f.bateria &&
-          num(el, 'plazas') >= f.plazas &&
-          (!f.uso || (el.dataset.uso ?? '').split(' ').includes(f.uso)) &&
+          (f.etiquetas.length === 0 || f.etiquetas.some((t) => tiers.includes(t))) &&
+          (f.modelos.length === 0 || f.modelos.includes(el.dataset.slug ?? '')) &&
           (!f.disponibilidad || el.dataset.disponibilidad === f.disponibilidad);
         el.hidden = !ok;
         if (ok) visible++;
@@ -187,8 +175,6 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
             return num(b, 'precio') - num(a, 'precio');
           case 'autonomia':
             return num(b, 'autonomia') - num(a, 'autonomia');
-          case 'potencia':
-            return num(b, 'potencia') - num(a, 'potencia');
           case 'novedades':
             return (b.dataset.fecha ?? '').localeCompare(a.dataset.fecha ?? '');
           default:
@@ -198,20 +184,27 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
       const current = Array.from(grid.children);
       if (sorted.some((el, i) => el !== current[i])) sorted.forEach((el) => grid.appendChild(el));
       empty.hidden = visible > 0;
-      counts.forEach((c) => (c.textContent = c.hasAttribute('data-count') ? `${visible} modelos` : String(visible)));
+      if (countBadge) countBadge.textContent = `${visible} ${visible === 1 ? 'modelo' : 'modelos'}`;
+      if (resultsText) {
+        resultsText.innerHTML = visible
+          ? `1 – <span data-count-inline>${visible}</span> de ${total} resultados`
+          : `<span data-count-inline>0</span> de ${total} resultados`;
+      }
 
-      // Outputs de rangos
-      form.querySelectorAll<HTMLOutputElement>('[data-out]').forEach((o) => {
-        const k = o.dataset.out!;
-        const input = form.elements.namedItem(k) as HTMLInputElement | null;
-        if (input) o.textContent = k === 'precio' ? `S/ ${input.value}` : `${input.value}${units[k] ?? ''}`;
-      });
+      // Output del rango de precio
+      const out = form.querySelector<HTMLOutputElement>('[data-out="precio"]');
+      const price = form.elements.namedItem('precio') as HTMLInputElement | null;
+      if (out && price) out.textContent = `S/ ${price.value}`;
 
       // URL compartible (sin recargar)
       const params = new URLSearchParams();
       for (const el of Array.from(form.elements) as HTMLInputElement[]) {
         if (!el.name || el.type === 'reset' || el.type === 'button') continue;
-        const def = el.type === 'range' ? (el.name === 'precio' ? el.max : el.min) : '';
+        if (el.type === 'checkbox') {
+          if (el.checked) params.append(el.name, el.value);
+          continue;
+        }
+        const def = el.type === 'range' ? el.max : '';
         if (el.value !== def && el.value !== '') params.set(el.name, el.value);
       }
       if (sort.value !== 'recomendados') params.set('orden', sort.value);
@@ -221,10 +214,22 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
 
     // Restaurar desde URL
     const initial = new URLSearchParams(location.search);
-    initial.forEach((v, k) => {
-      const el = (form.elements.namedItem(k) as HTMLInputElement | null) ?? (k === 'orden' ? sort : null);
-      if (el) el.value = v;
-    });
+    for (const [k, v] of initial.entries()) {
+      if (k === 'orden') {
+        sort.value = v;
+        continue;
+      }
+      const field = form.elements.namedItem(k);
+      if (!field) continue;
+      if (field instanceof RadioNodeList || (field instanceof HTMLInputElement && field.type === 'checkbox')) {
+        const boxes = field instanceof RadioNodeList ? (Array.from(field) as HTMLInputElement[]) : [field];
+        boxes.forEach((b) => {
+          if (b.value === v) b.checked = true;
+        });
+      } else {
+        (field as HTMLInputElement).value = v;
+      }
+    }
 
     form.addEventListener('input', apply);
     form.addEventListener('reset', () => requestAnimationFrame(apply));
@@ -268,16 +273,50 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
     display: grid;
   }
   .filters__body {
-    gap: var(--s-4);
+    gap: var(--s-5);
     padding: var(--s-4);
     border: 1px solid var(--border);
     border-top: 0;
     border-radius: 0 0 var(--r-lg) var(--r-lg);
     background: var(--bg-elev);
   }
+  .filters__group {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+  .filters__group legend {
+    padding: 0;
+    margin-bottom: var(--s-2);
+  }
+  .filters__choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+  .filters__checks {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .filters__check {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-size: var(--fs-sm);
+    cursor: pointer;
+    min-height: 1.75rem;
+  }
+  .filters__check input {
+    width: 1.125rem;
+    height: 1.125rem;
+    accent-color: var(--accent);
+    margin: 0;
+  }
   input[type='range'] {
     width: 100%;
-    accent-color: var(--fg);
+    accent-color: var(--accent);
   }
   .results__bar {
     display: flex;
@@ -285,6 +324,9 @@ const maxPrice = Math.ceil(Math.max(...products.map((p) => fromPrice(p).amount))
     justify-content: space-between;
     gap: var(--s-3);
     margin-bottom: var(--s-4);
+  }
+  .results__bar p {
+    font-size: var(--fs-sm);
   }
   .results__sort .select {
     min-width: 12rem;

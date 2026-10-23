@@ -1,30 +1,46 @@
 {
-  "group": "Técnica y autonomía",
+  "group": "Técnica, autonomía y normativa",
   "order": 3,
   "items": [
     {
-      "question": "¿La autonomía anunciada es real?",
-      "answer": "La autonomía de la ficha se mide en modo Eco, a velocidad constante y con un conductor de unos 75 kg. En uso real urbano espera entre un 70 y un 85 % de esa cifra. El frío, las subidas, el peso y el modo Sport la reducen."
+      "question": "¿Qué velocidad alcanza una bicimoto RAIDEN?",
+      "answer": "Todos los modelos, incluida la trimoto Titan Rhino, están limitados de fábrica a 25 km/h. Es una velocidad pensada para moverte con seguridad por tu distrito y que, en general, no requiere licencia de conducir. Las modificaciones para superar ese límite anulan la garantía."
     },
     {
-      "question": "¿Puedo cargar la batería en casa?",
-      "answer": "Sí. Todas las baterías extraíbles se cargan en un tomacorriente doméstico normal de 220 V con el cargador incluido, igual que una laptop. Las baterías fijas de los vehículos de carga se cargan conectando el vehículo directamente."
+      "question": "¿Necesito licencia de conducir o placa?",
+      "answer": "Las bicimotos de baja velocidad limitadas a 25 km/h en general no requieren licencia de conducir ni placa en el Perú. La normativa puede variar según la ciudad y el uso (personal o comercial), así que te recomendamos verificar con el MTC o tu municipalidad y consultar a nuestro asesor. Usa casco siempre y respeta las normas de tránsito."
     },
     {
-      "question": "¿Cuánto dura la batería?",
-      "answer": "Las baterías NMC están diseñadas para unos 800-1.000 ciclos completos manteniendo más del 80 % de capacidad; las LiFePO4, para más de 2.000. En uso diario normal, hablamos de entre 5 y 8 años de vida útil."
+      "question": "¿Cuánta autonomía tienen?",
+      "answer": "La versión Estándar (350 W, batería 48V 12Ah) recorre entre 30 y 35 km por carga; la Premium (500 W, batería 48V 20Ah), entre 40 y 50 km. La trimoto Titan Rhino (800 W, 60V 20Ah) recorre entre 35 y 40 km. La autonomía real depende del peso que lleves, las subidas y la velocidad seleccionada."
     },
     {
-      "question": "¿Funcionan bien en la sierra y en altura?",
-      "answer": "Sí. A diferencia de un motor de gasolina, el motor eléctrico no pierde potencia con la altura, por lo que rinde igual en Lima que en Cusco o Arequipa. Lo que sí influye es el frío de la sierra: por debajo de 5 °C la batería rinde temporalmente entre un 15 y un 25 % menos, así que guárdala bajo techo y cárgala a temperatura ambiente. Las pendientes pronunciadas también elevan el consumo; para rutas con mucha subida recomendamos la variante de mayor batería."
+      "question": "¿Cuál es la diferencia entre la versión Estándar y la Premium?",
+      "answer": "La Estándar monta motor de 350 W y batería Chilwee 48V 12Ah (30-35 km de autonomía); la Premium, motor de 500 W y batería 48V 20Ah (40-50 km). Ambas alcanzan 25 km/h y tienen el mismo equipamiento. Si recorres más de 15 km al día, llevas pasajero a menudo o tienes subidas, la Premium es la recomendada."
     },
     {
-      "question": "¿Qué significan las licencias B-I, B-IIa y B-IIb?",
-      "answer": "En el Perú, los vehículos menores (bicimotos, motos, trimotos) se conducen con licencia de clase B, dividida en categorías según el tipo de vehículo: de forma general, B-IIa para ciclomotores y bicimotos motorizadas, B-IIb para motocicletas y motonetas, y B-I / B-IIc para vehículos de tres o más ruedas. Las bicimotos limitadas a 25 km/h no requieren licencia. Cada ficha indica la categoría referencial; verifica siempre tu caso con la normativa vigente del MTC o con nuestro asesor."
+      "question": "¿Cuánto tarda en cargar y dónde se carga?",
+      "answer": "Entre 6 y 8 horas con el cargador de 220 V incluido, en cualquier tomacorriente doméstico. No necesitas instalar nada. En la versión Estándar de Golden Eagle y Vortex Kobra la batería es extraíble y puedes cargarla dentro de casa; en el resto se carga conectando la bicimoto."
     },
     {
-      "question": "¿Se pueden usar con lluvia y con la humedad de Lima?",
-      "answer": "Sí. Todos los vehículos tienen protección IP65 o superior en motor, batería y electrónica, suficiente para circular con lluvia, garúa y la humedad costera. Evita lavar a presión directamente sobre conectores y pantalla, y si vives cerca del mar enjuaga el salitre con agua dulce de vez en cuando."
+      "question": "¿Cómo cuido la batería de plomo-ácido?",
+      "answer": "Cárgala después de cada uso, nunca la dejes descargarse a fondo ni guardada vacía, usa solo el cargador original y, si no la usas, dale una carga cada 15-30 días. Con esos hábitos llega a su vida útil estimada de 2 años o 350-400 ciclos. Tienes la guía completa en nuestro blog."
+    },
+    {
+      "question": "¿Cuánto peso soportan?",
+      "answer": "Las bicimotos Golden Eagle, Royal Tiger y Vortex Kobra soportan hasta 150 kg entre conductor, pasajero y carga, y tienen dos plazas. La trimoto Titan Rhino soporta hasta 250 kg en una plaza. Superar el límite reduce la autonomía, alarga la frenada y acelera el desgaste."
+    },
+    {
+      "question": "¿Sirven para la sierra y para subidas?",
+      "answer": "El motor eléctrico no pierde potencia con la altura, así que funciona igual en Lima que en Arequipa o Cusco. Lo que sí cuesta es la pendiente: las bicimotos están pensadas para ciudad con cuestas moderadas. En zonas con subidas largas o frecuentes recomendamos la versión Premium de 500 W y, para carga, la Titan Rhino de 800 W. El frío intenso reduce temporalmente la autonomía de cualquier batería: guárdala bajo techo."
+    },
+    {
+      "question": "¿Se pueden usar con lluvia o garúa?",
+      "answer": "Sí, están preparadas para la garúa y la humedad de la costa en uso normal. Evita charcos profundos, no las laves con agua a presión sobre la pantalla, el controlador y los conectores, y sécalas después de mojarse. Si vives cerca del mar, enjuaga el salitre con un paño húmedo de vez en cuando."
+    },
+    {
+      "question": "¿Cuánto cuesta cargarlas?",
+      "answer": "Con una tarifa residencial referencial de S/ 0.70 por kWh, una carga completa cuesta alrededor de S/ 0.50 en la versión Estándar, S/ 0.80 en la Premium y S/ 1.00 en la Titan Rhino. Unos 500 km al mes salen por menos de S/ 15 de electricidad."
     }
   ]
 }

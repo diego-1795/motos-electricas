@@ -1,76 +1,79 @@
 ---
 import Pic from '../components/ui/Pic.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroSlider from '../components/home/HeroSlider.astro';
 import ProductCard from '../components/product/ProductCard.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
 import { repos } from '../data';
 import { site } from '../config/site';
-import { effectiveSpecs, fromPrice, kw, maxRange } from '../domain/product';
-import { formatMoney } from '../domain/money';
 import { publicSrc } from '../lib/images';
+import { ALL_PRODUCTS_PATH, PARTS_PATH } from '../lib/routes';
+import { SUPPORT_MESSAGE } from '../services/whatsapp/WhatsAppMessageBuilder';
+import { blogCategoryLabel } from '../lib/labels';
+import type { ImageRef, Review } from '../domain/types';
 
-const hero = (await repos.products.hero())!;
-const featured = (await repos.products.featured(6)).filter((p) => p.slug !== hero.slug).slice(0, 3);
+const products = (await repos.products.all()).filter((p) => p.category !== 'repuestos');
+const hero = products.find((p) => p.isHero) ?? products[0]!;
+const recent = [...products].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt) || b.featured - a.featured).slice(0, 4);
 const categories = await repos.categories.all();
+const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
 const posts = (await repos.blog.all()).slice(0, 3);
-const heroSpecs = effectiveSpecs(hero);
-const heroImg = hero.images[0]!;
+const fmtDate = new Intl.DateTimeFormat(site.locale, { day: 'numeric', month: 'short' });
 
-const steps = [
-  { n: '01', t: 'Descubre', d: 'Explora el catálogo o deja que "Encuentra tu moto" te recomiende el modelo ideal.' },
-  { n: '02', t: 'Compara y configura', d: 'Hasta 3 modelos lado a lado. Elige batería, color y accesorios.' },
-  { n: '03', t: 'Solicita por WhatsApp', d: 'Tu carrito se convierte en un mensaje. Un asesor confirma disponibilidad y condiciones.' },
-];
+/* Galería de clientes (fotos del cliente, 960x1280) */
+const raiders: ImageRef[] = Array.from({ length: 9 }, (_, i) => ({
+  src: `~/assets/clientes/raider-${i + 1}.jpg`,
+  alt: 'Cliente RAIDEN con su bicimoto',
+  width: 960,
+  height: 1280,
+}));
+
+/* Testimonios: reseñas reales de los productos si existen; si no, 3 TEXTOS DE MUESTRA
+   (placeholder) que el cliente debe sustituir por testimonios reales antes del lanzamiento. */
+const realReviews: (Review & { model: string })[] = products.flatMap((p) => (p.reviews ?? []).map((r) => ({ ...r, model: p.name })));
+const testimonials =
+  realReviews.length >= 3
+    ? realReviews.slice(0, 3)
+    : [
+        { author: 'Raider', rating: 5 as const, text: 'Uso mi bicimoto todos los días para ir al trabajo y ya no gasto en pasajes. Silenciosa, cómoda y la batería me dura varios días.', date: '', model: hero.name },
+        { author: 'Raider', rating: 5 as const, text: 'La atención por WhatsApp fue rápida y clara. Me ayudaron a elegir la versión Premium y la entrega fue puntual.', date: '', model: 'Versión Premium' },
+        { author: 'Raider', rating: 5 as const, text: 'Con la trimoto llevo mi mercadería sin problema. Tiene fuerza, estabilidad y el servicio técnico siempre responde.', date: '', model: 'Trimoto de carga' },
+      ];
+const isPlaceholder = realReviews.length < 3;
+
+const serviceImg: ImageRef = { src: '~/assets/hero/servicio-tecnico.jpg', alt: 'Técnico RAIDEN revisando una bicimoto eléctrica', width: 1614, height: 640 };
+const catIcons: Record<string, string> = {
+  bicimotos: 'M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM5 14l4-7h4l3 7M9 7h5l2 3',
+  trimotos: 'M3 17h2m14 0h2M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0zm10 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM7 17V9h8l3 5v3M3 9h4',
+  repuestos: 'M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2-2z',
+};
 ---
 
 <BaseLayout
-  title={`${site.name} — Motos eléctricas, scooters y movilidad eléctrica`}
+  title={`${site.name} — Bicimotos y trimotos eléctricas en Perú. ${site.tagline}`}
   description={site.description}
   path="/"
-  image={publicSrc(heroImg)}
+  image={hero.heroImage ? publicSrc(hero.heroImage) : publicSrc(hero.images[0]!)}
   dark
 >
-  <!-- HERO -->
-  <section class="hero">
-    <div class="container hero__grid">
-      <div class="hero__copy">
-        <p class="eyebrow hero__eyebrow">{hero.subtitle}</p>
-        <h1 class="hero__title">{hero.name}</h1>
-        <p class="hero__claim">{hero.claim}</p>
-        <dl class="hero__specs">
-          <div><dt>Autonomía</dt><dd>{maxRange(hero)} km</dd></div>
-          <div><dt>Velocidad</dt><dd>{heroSpecs.topSpeedKmh} km/h</dd></div>
-          <div><dt>Potencia</dt><dd>{kw(heroSpecs.powerW)}</dd></div>
-          <div><dt>Desde</dt><dd>{formatMoney(fromPrice(hero))}</dd></div>
-        </dl>
-        <div class="hero__cta">
-          <a href={`/motos-electricas/${hero.slug}`} class="btn btn--primary btn--lg">Descubrir modelo</a>
-          <a href="/encuentra-tu-moto" class="btn btn--secondary btn--lg">Encontrar mi moto</a>
-        </div>
-      </div>
-      <div class="hero__media">
-        <Pic image={heroImg} width={1200} height={750} widths={[640, 960, 1200, 1600]} sizes="(min-width: 1024px) 58vw, 100vw" priority />
-      </div>
-    </div>
-  </section>
+  <!-- 1. HERO: DESCUBRE TU INSTINTO -->
+  <HeroSlider products={products} />
 
-  <!-- CATEGORÍAS (editorial) -->
-  <section class="section cats">
+  <!-- 1b. CATEGORÍAS (3 tiles compactos) -->
+  <section class="section cats" aria-label="Categorías">
     <div class="container">
-      <SectionHeading eyebrow="Showroom" title="Elige tu tipo de vehículo" text="Una gama pensada para ciudad, trabajo, reparto y ocio. Sin ruido, sin gasolina." />
-      <ul role="list" class="cats__list">
+      <ul role="list" class="cats__row">
         {
-          categories.map((c, i) => (
-            <li class:list={['cats__item', { 'cats__item--wide': i === 0 }]}>
-              <a href={`/${c.slug}`} class="cats__link">
-                {c.image && (
-                  <Pic image={c.image} alt="" width={800} height={533} widths={[480, 800]} sizes="(min-width: 768px) 45vw, 92vw" />
-                )}
-                <span class="cats__text">
-                  <span class="cats__name">{c.name}</span>
-                  <span class="cats__tag">{c.tagline}</span>
-                </span>
+          categories.map((c) => (
+            <li>
+              <a href={`/${c.slug}`} class="cats__tile">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d={catIcons[c.slug]} />
+                </svg>
+                <span class="cats__name">{c.name}</span>
+                <span class="cats__tag muted">{c.tagline}</span>
+                <span class="cats__arrow" aria-hidden="true">→</span>
               </a>
             </li>
           ))
@@ -79,54 +82,103 @@ const steps = [
     </div>
   </section>
 
-  <!-- DESTACADOS -->
-  <section class="section featured">
+  <!-- 2. PRODUCTOS RECIENTES -->
+  <section class="section recent" aria-labelledby="recent-h">
     <div class="container">
-      <SectionHeading eyebrow="Modelos destacados" title="Los más solicitados" />
-      <div class="grid-products">
-        {featured.map((p) => <ProductCard product={p} />)}
+      <SectionHeading eyebrow="Productos recientes" title="Descubre tu instinto RAIDEN" text="Bicimotos de 25 km/h sin licencia y una trimoto de carga. Versiones Estándar y Premium, garantía de 12 meses en batería y motor." />
+      <div class="grid-products recent__grid">
+        {recent.map((p) => <ProductCard product={p} categoryLabel={categoryNames[p.category]} />)}
       </div>
-      <p class="featured__more">
-        <a href="/motos-electricas" class="btn btn--secondary">Ver todo el catálogo</a>
+      <p class="recent__more">
+        <a href={ALL_PRODUCTS_PATH} class="btn btn--secondary">Ver todos los productos</a>
+        <a href={PARTS_PATH} class="btn btn--ghost">Repuestos →</a>
       </p>
     </div>
   </section>
 
-  <!-- CÓMO FUNCIONA -->
-  <section class="section how">
+  <!-- 3. RAIDERS SATISFECHOS -->
+  <section class="section raiders" aria-labelledby="raiders-h">
     <div class="container">
-      <SectionHeading eyebrow="Cómo funciona" title="De la idea a la moto en tres pasos" text="Sin pagos online ni formularios interminables. Configuras, solicitas y hablas con una persona." />
-      <ol role="list" class="how__steps">
+      <SectionHeading eyebrow="Raiders satisfechos" title="Somos parte de cada momento, de cada historia" align="center" />
+      <ul role="list" class="raiders__masonry">
         {
-          steps.map((s) => (
-            <li class="how__step">
-              <span class="how__n">{s.n}</span>
-              <h3>{s.t}</h3>
-              <p class="muted">{s.d}</p>
+          raiders.map((img) => (
+            <li>
+              <Pic image={img} width={480} height={640} widths={[320, 480, 640]} sizes="(min-width: 1024px) 30vw, (min-width: 480px) 45vw, 92vw" />
             </li>
           ))
         }
-      </ol>
-      <div class="how__cta">
-        <WhatsAppLink source="header" class="btn btn--whatsapp btn--lg">Hablar con un asesor</WhatsAppLink>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4. COMUNIDAD RAIDEN -->
+  <section class="section community" aria-labelledby="community-h">
+    <div class="container">
+      <SectionHeading eyebrow="Comunidad RAIDEN" title="Nuestros Raiders nos recomiendan" align="center" />
+      <ul role="list" class="community__list">
+        {
+          testimonials.map((t) => (
+            <li class="community__card">
+              <p class="community__stars" aria-label={`${t.rating} de 5 estrellas`}>
+                {'★★★★★'.slice(0, t.rating)}
+              </p>
+              <blockquote>
+                <p>“{t.text}”</p>
+              </blockquote>
+              <footer class="muted">
+                <strong>{t.author}</strong> · {t.model}
+              </footer>
+            </li>
+          ))
+        }
+      </ul>
+      {isPlaceholder && <p class="visually-hidden">Testimonios de muestra.</p>}
+    </div>
+  </section>
+
+  <!-- 5. SERVICIO TÉCNICO -->
+  <section class="section service" aria-labelledby="service-h">
+    <div class="container">
+      <div class="service__banner">
+        <div class="service__media">
+          <Pic image={serviceImg} alt="" width={1200} height={476} widths={[640, 960, 1200]} sizes="(min-width: 1024px) 60vw, 100vw" />
+        </div>
+        <div class="service__copy">
+          <p class="eyebrow service__eyebrow">Servicio técnico</p>
+          <h2 id="service-h">Tu bicimoto, siempre a punto</h2>
+          <p class="muted">Diagnóstico y mantenimiento preventivo de sistema eléctrico, motor, batería, frenos y controlador, con repuestos originales y atención especializada en Callao.</p>
+          <div class="service__cta">
+            <a href="/servicio-tecnico" class="btn btn--primary">Conocer el servicio</a>
+            <WhatsAppLink source="support" class="btn btn--whatsapp" message={SUPPORT_MESSAGE}>Solicitar soporte</WhatsAppLink>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- BLOG -->
+  <!-- 6. BLOG -->
   {
     posts.length > 0 && (
-      <section class="section blog">
+      <section class="section blog" aria-labelledby="blog-h">
         <div class="container">
-          <SectionHeading eyebrow="Guías" title="Aprende antes de decidir" />
+          <div class="blog__head">
+            <SectionHeading eyebrow="Blog" title="Aprende antes de decidir" />
+            <a href="/blog" class="btn btn--ghost">Todos los artículos →</a>
+          </div>
           <ul role="list" class="blog__list">
             {posts.map((post) => (
               <li class="card blog__card">
                 <a href={`/blog/${post.slug}`}>
-                  <p class="eyebrow">{post.category}</p>
-                  <h3>{post.title}</h3>
-                  <p class="muted">{post.description}</p>
-                  <small class="muted">{post.readingMinutes} min de lectura</small>
+                  {post.image && <Pic image={post.image} alt="" width={640} height={400} widths={[400, 640]} sizes="(min-width: 768px) 30vw, 92vw" class="blog__img" />}
+                  <span class="blog__body">
+                    <span class="eyebrow">{blogCategoryLabel[post.category]}</span>
+                    <h3>{post.title}</h3>
+                    <span class="muted blog__desc">{post.description}</span>
+                    <small class="muted">
+                      <time datetime={post.publishedAt}>{fmtDate.format(new Date(post.publishedAt))}</time> · {post.readingMinutes} min de lectura
+                    </small>
+                  </span>
                 </a>
               </li>
             ))}
@@ -138,178 +190,199 @@ const steps = [
 </BaseLayout>
 
 <style>
-  .hero {
-    padding-block: var(--s-10) var(--s-16);
-    background:
-      radial-gradient(60% 50% at 70% 40%, rgb(214 255 63 / 0.08), transparent 70%),
-      var(--dark-bg);
+  /* Categorías */
+  .cats {
+    padding-block: var(--s-10);
   }
-  .hero__grid {
-    display: grid;
-    gap: var(--s-8);
-    align-items: center;
-  }
-  .hero__copy {
-    display: flex;
-    flex-direction: column;
-    gap: var(--s-5);
-    order: 2;
-  }
-  .hero__eyebrow {
-    color: var(--volt);
-  }
-  .hero__title {
-    font-size: var(--fs-4xl);
-    font-weight: 700;
-    letter-spacing: -0.035em;
-  }
-  .hero__claim {
-    font-size: var(--fs-xl);
-    color: var(--dark-fg-muted);
-    max-width: 40ch;
-  }
-  .hero__specs {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--s-4) var(--s-6);
-    padding-top: var(--s-4);
-    border-top: 1px solid var(--dark-border);
-  }
-  .hero__specs dt {
-    font-size: var(--fs-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-caps);
-    color: var(--dark-fg-muted);
-  }
-  .hero__specs dd {
-    font-size: var(--fs-xl);
-    font-weight: 600;
-    letter-spacing: var(--tracking-tight);
-  }
-  .hero__cta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s-3);
-  }
-  .hero__media {
-    order: 1;
-    border-radius: var(--r-xl);
-    overflow: hidden;
-    aspect-ratio: 16 / 10;
-    background: var(--dark-bg-elev);
-  }
-  .hero__media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  @media (min-width: 1024px) {
-    .hero {
-      padding-block: var(--s-16) var(--s-24);
-    }
-    .hero__grid {
-      grid-template-columns: 5fr 7fr;
-      gap: var(--s-12);
-    }
-    .hero__copy {
-      order: 1;
-    }
-    .hero__media {
-      order: 2;
-    }
-    .hero__specs {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
-  .cats__list {
+  .cats__row {
     display: grid;
     gap: var(--s-4);
-    grid-template-columns: 1fr;
   }
-  .cats__link {
-    position: relative;
+  .cats__tile {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'icon name arrow'
+      'icon tag arrow';
+    column-gap: var(--s-4);
+    align-items: center;
+    padding: var(--s-5) var(--s-6);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--bg-elev);
+    transition:
+      border-color var(--t-base) var(--ease),
+      transform var(--t-base) var(--ease);
+  }
+  .cats__tile:hover {
+    text-decoration: none;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .cats__tile svg {
+    grid-area: icon;
+    color: var(--accent-text, var(--accent));
+  }
+  .cats__name {
+    grid-area: name;
+    font-family: var(--font-display, var(--font-sans));
+    font-size: var(--fs-lg);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .cats__tag {
+    grid-area: tag;
+    font-size: var(--fs-sm);
+  }
+  .cats__arrow {
+    grid-area: arrow;
+    color: var(--fg-muted);
+  }
+  @media (min-width: 768px) {
+    .cats__row {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Recientes */
+  .recent__grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  }
+  .recent__more {
+    margin-top: var(--s-8);
+    display: flex;
+    gap: var(--s-3);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Raiders */
+  .raiders__masonry {
+    columns: 2;
+    column-gap: var(--s-3);
+  }
+  .raiders__masonry li {
+    break-inside: avoid;
+    margin-bottom: var(--s-3);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    background: var(--bg-elev);
+  }
+  .raiders__masonry li:nth-child(3n + 2) {
+    border-radius: var(--r-xl);
+  }
+  .raiders__masonry :global(img) {
+    width: 100%;
+    height: auto;
     display: block;
+    transition: transform var(--t-slow) var(--ease);
+  }
+  @media (hover: hover) {
+    .raiders__masonry li:hover :global(img) {
+      transform: scale(1.02);
+    }
+  }
+  @media (min-width: 768px) {
+    .raiders__masonry {
+      columns: 3;
+      column-gap: var(--s-4);
+    }
+    .raiders__masonry li {
+      margin-bottom: var(--s-4);
+    }
+  }
+
+  /* Comunidad */
+  .community__list {
+    display: grid;
+    gap: var(--s-4);
+  }
+  .community__card {
+    padding: var(--s-6);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    background: var(--bg-elev);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+  .community__stars {
+    color: var(--accent-text, var(--accent));
+    letter-spacing: 0.15em;
+    font-size: var(--fs-sm);
+  }
+  .community__card blockquote p {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-snug);
+  }
+  .community__card footer {
+    font-size: var(--fs-sm);
+    margin-top: auto;
+  }
+  .community__card footer strong {
+    color: var(--fg);
+  }
+  @media (min-width: 768px) {
+    .community__list {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--s-6);
+    }
+  }
+
+  /* Servicio técnico */
+  .service__banner {
+    display: grid;
     border-radius: var(--r-xl);
     overflow: hidden;
-    background: var(--dark-bg-elev);
-    aspect-ratio: 3 / 2;
-    border: 1px solid var(--dark-border);
-    transition: border-color var(--t-base) var(--ease);
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
   }
-  .cats__link:hover {
-    text-decoration: none;
-    border-color: var(--n-600);
+  .service__media {
+    aspect-ratio: 16 / 9;
+    background: var(--bg-sunken);
   }
-  .cats__link img {
+  .service__media :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.9;
   }
-  .cats__text {
-    position: absolute;
-    inset: auto 0 0 0;
-    padding: var(--s-5);
+  .service__copy {
+    padding: var(--s-8);
     display: flex;
     flex-direction: column;
-    gap: var(--s-1);
-    background: linear-gradient(to top, rgb(11 12 15 / 0.9), transparent);
+    gap: var(--s-4);
+    justify-content: center;
   }
-  .cats__name {
-    font-size: var(--fs-xl);
-    font-weight: 600;
-    letter-spacing: var(--tracking-tight);
+  .service__eyebrow {
+    color: var(--accent-text, var(--accent));
   }
-  .cats__tag {
-    font-size: var(--fs-sm);
-    color: var(--dark-fg-muted);
+  .service__cta {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    margin-top: var(--s-2);
   }
-  @media (min-width: 768px) {
-    .cats__list {
-      grid-template-columns: repeat(3, 1fr);
+  @media (min-width: 1024px) {
+    .service__banner {
+      grid-template-columns: 3fr 2fr;
     }
-    .cats__item--wide {
-      grid-column: span 2;
-    }
-    .cats__item--wide .cats__link {
+    .service__media {
       aspect-ratio: auto;
-      height: 100%;
+      min-height: 22rem;
+    }
+    .service__copy {
+      padding: var(--s-12);
     }
   }
 
-  .featured__more {
-    margin-top: var(--s-8);
-    text-align: center;
-  }
-
-  .how__steps {
-    display: grid;
-    gap: var(--s-6);
-  }
-  .how__step {
-    padding: var(--s-6);
-    border: 1px solid var(--dark-border);
-    border-radius: var(--r-xl);
-    background: var(--dark-bg-elev);
+  /* Blog */
+  .blog__head {
     display: flex;
-    flex-direction: column;
-    gap: var(--s-2);
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--s-4);
+    flex-wrap: wrap;
   }
-  .how__n {
-    font-family: var(--font-mono);
-    color: var(--volt);
-    font-size: var(--fs-sm);
-  }
-  .how__cta {
-    margin-top: var(--s-8);
-  }
-  @media (min-width: 768px) {
-    .how__steps {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
   .blog__list {
     display: grid;
     gap: var(--s-4);
@@ -317,19 +390,33 @@ const steps = [
   .blog__card a {
     display: flex;
     flex-direction: column;
-    gap: var(--s-2);
-    padding: var(--s-6);
     height: 100%;
   }
   .blog__card a:hover {
     text-decoration: none;
   }
+  .blog__card :global(.blog__img) {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    background: var(--bg-sunken);
+  }
+  .blog__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    padding: var(--s-6);
+  }
   .blog__card h3 {
     font-size: var(--fs-lg);
+  }
+  .blog__desc {
+    font-size: var(--fs-sm);
   }
   @media (min-width: 768px) {
     .blog__list {
       grid-template-columns: repeat(3, 1fr);
+      gap: var(--s-6);
     }
   }
 </style>

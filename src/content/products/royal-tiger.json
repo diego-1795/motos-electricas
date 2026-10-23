@@ -3,8 +3,8 @@
   "slug": "royal-tiger",
   "name": "Royal Tiger",
   "subtitle": "Bicimoto eléctrica con carácter",
-  "claim": "Afronta nuevas rutas con tu",
-  "description": "Fuerza que se hace notar. Royal Tiger representa potencia, carácter y confianza para afrontar cada recorrido con una actitud imparable.",
+  "claim": "Afronta nuevas rutas con tu Royal Tiger",
+  "description": "Fuerza que se hace notar. Royal Tiger representa potencia, carácter y confianza para afrontar cada recorrido con una actitud imparable: llantas más anchas de 14 x 2.75\", cesta delantera y dos plazas con hasta 150 kg de carga. Ideal para trabajar y para moverte por la ciudad. Disponible en negro, naranja y rosa.",
   "category": "bicimotos",
   "brand": "Raiden",
   "images": [
@@ -216,59 +216,81 @@
     "reparto"
   ],
   "highlights": [
-    "25 km/h · sin licencia",
-    "Batería Chilwee 48 V",
-    "Versiones Estándar (350 W) y Premium (500 W)",
+    "25 km/h · sin licencia (en general)",
+    "Llantas anchas 14 x 2.75\" y hasta 150 kg",
+    "Premium 500 W: 40-50 km por carga",
     "Garantía 12 meses en batería y motor"
   ],
   "technology": [
     {
       "title": "Motor",
-      "text": "Motor sin escobillas integrado en la rueda, disponible en 350 W (Estándar) y 500 W (Premium). Entrega silenciosa y sin mantenimiento de bujías ni aceite."
+      "text": "Motor sin escobillas (brushless) integrado en la rueda, disponible en 350 W (Estándar) y 500 W (Premium), con controlador de 6 tubos SineWave. Arranque suave, funcionamiento silencioso y sin aceite, bujías ni cadena que mantener."
     },
     {
       "title": "Batería",
-      "text": "Batería Chilwee de plomo-ácido de 48 V (12 Ah o 20 Ah según versión) con vida útil estimada de 2 años o 350-400 ciclos. Carga completa en 6-8 horas con el cargador de 220 V incluido."
+      "text": "Batería Chilwee de plomo-ácido de 48 V: 12 Ah en la Estándar (30-35 km) y 20 Ah en la Premium (40-50 km). Vida útil estimada de 2 años o 350-400 ciclos; carga completa en 6-8 horas con el cargador de 220 V incluido. Repuesto original disponible."
     },
     {
       "title": "Frenos",
-      "text": "Frenos de tambor delantero y trasero con manijas ergonómicas. Mantenimiento sencillo y repuestos disponibles en nuestro catálogo."
+      "text": "Frenos de tambor delantero y trasero con manijas ergonómicas: sencillos, duraderos y fáciles de ajustar. Cables y manijas de freno disponibles como repuesto original."
     },
     {
-      "title": "Suspensión",
-      "text": "Horquilla hidráulica delantera y suspensión trasera que absorben las irregularidades de la pista urbana de Lima."
+      "title": "Suspensión y llantas",
+      "text": "Horquilla hidráulica delantera y suspensión trasera que absorben las irregularidades de la pista, sobre llantas de 14 x 2.75\" sin cámara."
     },
     {
-      "title": "Iluminación",
-      "text": "Faro delantero multicolor, luces intermitentes delanteras y traseras y faro posterior para circular con visibilidad de noche."
+      "title": "Iluminación y seguridad",
+      "text": "Faro delantero multicolor, luces intermitentes delanteras y traseras, espejos retrovisores, bocina y alarma antirrobo de serie."
     },
     {
       "title": "Pantalla y modos de conducción",
-      "text": "Pantalla LCD con nivel de batería y velocidad, interruptor de 3 velocidades, alarma antirrobo y bocina. Royal Tiger está lista para la ciudad desde el primer día."
+      "text": "Pantalla LCD con nivel de batería y velocidad e interruptor de 3 velocidades para adaptar la respuesta a cada tramo. Reposapiés, cesta delantera y parante trasero incluidos: la Royal Tiger sale de la caja lista para la ciudad."
     }
   ],
   "faqs": [
     {
       "question": "¿Necesito licencia para manejar la Royal Tiger?",
-      "answer": "La Royal Tiger es una bicimoto eléctrica de baja velocidad (25 km/h). En general no requiere licencia de conducir; te recomendamos usar casco y respetar las normas de tránsito. Confírmalo con nuestro asesor según la normativa vigente del MTC."
+      "answer": "La Royal Tiger es una bicimoto eléctrica de baja velocidad (25 km/h). En general no requiere licencia de conducir ni placa; te recomendamos usar casco y respetar las normas de tránsito. Verifica la normativa vigente del MTC o de tu municipalidad y confírmalo con nuestro asesor."
     },
     {
       "question": "¿Cuál es la autonomía real?",
-      "answer": "La versión Estándar (48V 12Ah) recorre entre 30 y 35 km por carga y la Premium (48V 20Ah) entre 40 y 50 km. La autonomía varía con el peso, el terreno y la velocidad seleccionada."
+      "answer": "La versión Estándar (350 W, batería 48V 12Ah) recorre entre 30 y 35 km por carga y la Premium (500 W, batería 48V 20Ah) entre 40 y 50 km. La autonomía varía con el peso que lleves, las subidas y la velocidad seleccionada en el interruptor de 3 velocidades de la Royal Tiger."
     },
     {
-      "question": "¿Qué garantía tiene?",
-      "answer": "12 meses de garantía en batería y motor, con servicio técnico propio en nuestra oficina de Bocanegra, Callao, y repuestos originales disponibles."
+      "question": "¿Estándar o Premium: cuál me conviene?",
+      "answer": "Si recorres menos de 15 km al día por zonas planas, la Royal Tiger Estándar (350 W, 30-35 km) es suficiente. Si llevas pasajero a menudo, tienes subidas o quieres recorrer más de 20 km sin pensar en la carga, elige la Premium (500 W, 40-50 km). Ambas alcanzan 25 km/h y comparten el mismo equipamiento."
     },
     {
-      "question": "¿Cuánto tarda la entrega?",
-      "answer": "En Lima y Callao coordinamos la entrega en 3-7 días hábiles; a provincias enviamos por agencia en 7-15 días hábiles (referencial). Te confirmamos el plazo por WhatsApp."
+      "question": "¿Cuánto tarda en cargar y qué cuidados necesita la batería?",
+      "answer": "La carga completa toma entre 6 y 8 horas con el cargador de 220 V incluido, en cualquier tomacorriente doméstico. La batería Chilwee de plomo-ácido se cuida con hábitos sencillos: cárgala después de cada uso, no la dejes descargarse a fondo, usa solo el cargador original y, si no la usas, dale una carga cada 15-30 días. Su vida útil estimada es de 2 años o 350-400 ciclos."
+    },
+    {
+      "question": "¿Qué garantía tiene y dónde se repara?",
+      "answer": "12 meses de garantía en batería y motor, con Servicio técnico RAIDEN propio en nuestra tienda de Bocanegra, Callao (lunes a domingo, de 10 a. m. a 8 p. m.) y repuestos originales en stock: baterías, cargadores, controladores, cables de freno, llantas, faros y más."
+    },
+    {
+      "question": "¿Cómo se compra y cuánto tarda la entrega?",
+      "answer": "Envías tu solicitud por WhatsApp y un asesor confirma modelo, versión, color, precio final y medios de pago (no hay pago online). En Lima y Callao coordinamos la entrega en 3-7 días hábiles; a provincias enviamos por agencia en 7-15 días hábiles (referencial). También puedes probarla en tienda antes de decidir."
+    }
+  ],
+  "reviews": [
+    {
+      "author": "Miguel",
+      "rating": 5,
+      "text": "Hago delivery en San Miguel y Bellavista con la Premium. Me rinde el turno completo y me ahorro la gasolina de la moto que tenía antes.",
+      "date": "2026-09-27"
+    },
+    {
+      "author": "Rosa",
+      "rating": 4,
+      "text": "Se siente firme y estable, las llantas anchas ayudan en las pistas malas. La probé en la tienda de Bocanegra antes de comprarla.",
+      "date": "2026-10-12"
     }
   ],
   "featured": 90,
   "publishedAt": "2026-10-01",
   "seo": {
-    "title": "Royal Tiger: bicimoto eléctrica RAIDEN | Precio en soles",
-    "description": "Bicimoto eléctrica RAIDEN Royal Tiger: 25 km/h sin licencia, batería Chilwee 48 V, versiones Estándar y Premium. Desde S/ 1,400. Garantía 12 meses."
+    "title": "Royal Tiger: bicimoto eléctrica RAIDEN | Desde S/ 1,400",
+    "description": "Bicimoto eléctrica RAIDEN Royal Tiger: 25 km/h, en general sin licencia, llantas anchas 14 x 2.75\", batería Chilwee 48 V, hasta 150 kg. Desde S/ 1,400 con garantía de 12 meses. Ideal para reparto."
   }
 }

@@ -1,25 +1,57 @@
 ---
+/**
+ * Logo Raiden (docs/02-design-system.md §5).
+ * Renderiza el logotipo real del cliente (PNG transparente) vía astro:assets.
+ *
+ * - variant 'full'     → marca + wordmark + tagline (por defecto; ratio 5.25:1)
+ * - variant 'wordmark' → marca + RAIDEN sin tagline (misma altura, más legible en cabeceras pequeñas)
+ * - variant 'mark'     → solo el rayo (ratio 1.14:1), p. ej. móvil o avatares
+ * - invert             → blanco sobre fondos oscuros (footer, hero oscuro)
+ * - height             → altura en px (28–32 en header; 40–48 en footer)
+ */
+import { Image } from 'astro:assets';
 import { site } from '../../config/site';
+import logoFull from '../../assets/brand/logo-trim.png';
+import logoWordmark from '../../assets/brand/logo-wordmark.png';
+import logoMark from '../../assets/brand/logo-mark.png';
+
 interface Props {
   class?: string;
+  variant?: 'full' | 'wordmark' | 'mark';
+  invert?: boolean;
+  height?: number;
 }
+
+const { variant = 'full', invert = false, height = 32 } = Astro.props;
+const src = variant === 'mark' ? logoMark : variant === 'wordmark' ? logoWordmark : logoFull;
+const width = Math.round((height * src.width) / src.height);
 ---
 
-<span class:list={['logo', Astro.props.class]}>
-  <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
-    <rect width="26" height="26" rx="7" fill="currentColor" />
-    <path d="M14.5 3.5 6.5 14.5h5.5L10.5 22.5l9-12h-5.5z" fill="var(--volt)" />
-  </svg>
-  <span class="logo__name">{site.name}</span>
+<span class:list={['logo', `logo--${variant}`, { 'logo--invert': invert }, Astro.props.class]} style={`--logo-h: ${height}px`}>
+  <Image
+    src={src}
+    alt={site.name}
+    width={width}
+    height={height}
+    densities={[1, 2, 3]}
+    loading="eager"
+    decoding="async"
+    fetchpriority="high"
+  />
 </span>
 
 <style>
   .logo {
     display: inline-flex;
     align-items: center;
-    gap: var(--s-2);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    font-size: 1.125rem;
+    line-height: 0;
+  }
+  .logo img {
+    height: var(--logo-h, 32px);
+    width: auto;
+    max-width: none;
+  }
+  .logo--invert img {
+    filter: brightness(0) invert(1);
   }
 </style>

@@ -1,16 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
+import { ALL_PRODUCTS_PATH, FINDER_PATH } from '../lib/routes';
 ---
 
 <BaseLayout title="Página no encontrada" description="La página que buscas no existe o ha cambiado de dirección." path="/404" noindex>
   <div class="container section nf">
     <p class="eyebrow">Error 404</p>
     <h1>Esta ruta no lleva a ningún sitio</h1>
-    <p class="muted nf__text">La página que buscas no existe o ha cambiado de dirección. Pero el catálogo sigue ahí, cargado al 100 %.</p>
+    <p class="muted nf__text">La página que buscas no existe o ha cambiado de dirección. Pero las bicimotos siguen ahí, cargadas al 100 %.</p>
     <div class="nf__actions">
-      <a href="/motos-electricas" class="btn btn--primary btn--lg">Ver el catálogo</a>
-      <a href="/encuentra-tu-moto" class="btn btn--secondary btn--lg">Encuentra tu moto</a>
+      <a href={ALL_PRODUCTS_PATH} class="btn btn--primary btn--lg">Ver los productos</a>
+      <a href={FINDER_PATH} class="btn btn--secondary btn--lg">Encuentra tu bicimoto</a>
+      <button type="button" class="btn btn--ghost btn--lg" data-search-open>Buscar en el sitio</button>
       <WhatsAppLink source="product" class="btn btn--ghost btn--lg">Preguntar por WhatsApp</WhatsAppLink>
     </div>
   </div>

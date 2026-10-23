@@ -1,13 +1,14 @@
 ---
 import { site } from '../../config/site';
 import { buildInquiryMessage, buildUrl } from '../../services/whatsapp/WhatsAppMessageBuilder';
+import type { WhatsAppSource } from '../../services/analytics/AnalyticsService';
 
 /**
  * Enlace de WhatsApp estático (sin JS). Para el carrito se usa la isla CartDrawer,
  * que construye el mensaje dinámicamente con el mismo servicio.
  */
 interface Props {
-  source: 'product' | 'header' | 'footer' | 'floating';
+  source: Exclude<WhatsAppSource, 'cart'>;
   productName?: string;
   variantName?: string;
   message?: string;
@@ -16,7 +17,7 @@ interface Props {
 }
 const { source, productName, variantName, message, slug, class: cls } = Astro.props;
 const text =
-  message ?? (productName ? buildInquiryMessage(productName, variantName) : `Hola 👋 Me gustaría recibir asesoramiento para elegir un vehículo eléctrico.`);
+  message ?? (productName ? buildInquiryMessage(productName, variantName) : `Hola 👋 Me gustaría recibir asesoría para elegir mi bicimoto eléctrica RAIDEN.`);
 const href = buildUrl(site.whatsappNumber, text);
 ---
 

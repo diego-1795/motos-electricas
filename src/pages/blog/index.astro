@@ -1,23 +1,14 @@
 ---
+import Pic from '../../components/ui/Pic.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import SectionHeading from '../../components/ui/SectionHeading.astro';
 import { repos } from '../../data';
-import type { BlogPost } from '../../domain/types';
 import { site } from '../../config/site';
 import { breadcrumbSchema, itemListSchema } from '../../lib/seo/jsonld';
+import { blogCategoryLabel } from '../../lib/labels';
 
 const posts = await repos.blog.all();
-const categoryLabel: Record<BlogPost['category'], string> = {
-  guias: 'Guías',
-  comparativas: 'Comparativas',
-  autonomia: 'Autonomía',
-  baterias: 'Baterías',
-  mantenimiento: 'Mantenimiento',
-  legislacion: 'Legislación',
-  movilidad: 'Movilidad eléctrica',
-  compra: 'Consejos de compra',
-};
 const fmtDate = new Intl.DateTimeFormat(site.locale, { day: 'numeric', month: 'long', year: 'numeric' });
 const crumbs = [
   { name: 'Inicio', url: '/' },
@@ -26,8 +17,8 @@ const crumbs = [
 ---
 
 <BaseLayout
-  title="Blog: guías sobre motos eléctricas"
-  description="Guías, comparativas y consejos sobre autonomía, baterías, licencias y mantenimiento de motos y scooters eléctricos."
+  title="Blog: guías sobre bicimotos eléctricas"
+  description="Guías, comparativas y consejos sobre bicimotos y trimotos eléctricas en el Perú: autonomía, baterías, licencias, mantenimiento y compra."
   path="/blog"
   jsonLd={[breadcrumbSchema(crumbs), itemListSchema(posts.map((p) => ({ name: p.title, url: `/blog/${p.slug}` })))]}
 >
@@ -36,17 +27,24 @@ const crumbs = [
     <SectionHeading as="h1" eyebrow="Blog" title="Guías y consejos" text="Todo lo que necesitas saber antes y después de pasarte a la movilidad eléctrica." />
     <ul role="list" class="blog__grid">
       {
-        posts.map((p) => (
+        posts.map((p, i) => (
           <li class="card card--interactive blog__card">
             <article>
-              <p class="eyebrow">{categoryLabel[p.category]}</p>
-              <h2>
-                <a href={`/blog/${p.slug}`}>{p.title}</a>
-              </h2>
-              <p class="muted blog__desc">{p.description}</p>
-              <p class="muted blog__meta">
-                <time datetime={p.publishedAt}>{fmtDate.format(new Date(p.publishedAt))}</time> · {p.readingMinutes} min de lectura
-              </p>
+              {p.image && (
+                <a href={`/blog/${p.slug}`} class="blog__media" tabindex="-1" aria-hidden="true">
+                  <Pic image={p.image} alt="" width={640} height={400} widths={[400, 640]} sizes="(min-width: 768px) 30vw, 92vw" priority={i === 0} />
+                </a>
+              )}
+              <div class="blog__body">
+                <p class="eyebrow">{blogCategoryLabel[p.category]}</p>
+                <h2>
+                  <a href={`/blog/${p.slug}`}>{p.title}</a>
+                </h2>
+                <p class="muted blog__desc">{p.description}</p>
+                <p class="muted blog__meta">
+                  <time datetime={p.publishedAt}>{fmtDate.format(new Date(p.publishedAt))}</time> · {p.readingMinutes} min de lectura
+                </p>
+              </div>
             </article>
           </li>
         ))
@@ -62,13 +60,29 @@ const crumbs = [
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
   }
   .blog__card {
-    padding: var(--s-6);
+    position: relative;
   }
   .blog__card article {
     display: flex;
     flex-direction: column;
-    gap: var(--s-3);
     height: 100%;
+  }
+  .blog__media {
+    display: block;
+    aspect-ratio: 16 / 10;
+    background: var(--bg-sunken);
+  }
+  .blog__media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .blog__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-6);
+    flex: 1;
   }
   .blog__card h2 {
     font-size: var(--fs-xl);
@@ -77,9 +91,6 @@ const crumbs = [
     content: '';
     position: absolute;
     inset: 0;
-  }
-  .blog__card {
-    position: relative;
   }
   .blog__desc {
     font-size: var(--fs-sm);

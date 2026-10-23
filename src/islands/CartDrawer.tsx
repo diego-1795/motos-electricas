@@ -68,8 +68,8 @@ export default function CartDrawer() {
           {cart.items.length === 0 ? (
             <div class="cd__empty">
               <p class="muted">Tu carrito está vacío.</p>
-              <a href="/motos-electricas" class="btn btn--secondary" onClick={closeCart}>
-                Ver catálogo
+              <a href="/productos" class="btn btn--secondary" onClick={closeCart}>
+                Ver los productos
               </a>
             </div>
           ) : (
