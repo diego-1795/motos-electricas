@@ -1,8 +1,8 @@
 # Documentación — Raiden
 
-Showroom digital de movilidad eléctrica. Plataforma web premium de motos eléctricas (scooters, motos urbanas, bicimotos, trimotos, vehículos de carga, cuatrimotos y accesorios) construida con Astro 7 en modo estático, islas Preact y solicitud de pedido por WhatsApp. Sin pagos online. MVP de coste cero, arquitectura agnóstica del proveedor.
+Showroom digital de movilidad eléctrica. Plataforma web de RAIDEN (distribuidor oficial EG Motors SAC, Bocanegra, Callao) con bicimotos, trimotos de carga y repuestos, construida con Astro 7 en modo estático, islas Preact y solicitud de pedido por WhatsApp. Sin pagos online. MVP de coste cero, arquitectura agnóstica del proveedor.
 
-> "Raiden" es un nombre provisional pendiente de decisión del cliente (ver [ADR-012](./21-decisions.md)).
+> Catálogo real RAIDEN desde el 2026-10-22: 4 modelos y 26 repuestos en 3 categorías (ver [ADR-015](./21-decisions.md)). La marca vive en `src/config/site.ts`.
 
 ## Flujo de negocio
 
@@ -35,7 +35,7 @@ DESCUBRIMIENTO → PRODUCTO → COMPARAR → CONFIGURAR → CARRITO → SOLICITU
 | 18 | [Analítica](./18-analytics.md) | `AnalyticsService`, catálogo de eventos, adaptadores, embudo |
 | 19 | [Despliegue](./19-deployment.md) | Pipeline en Cloudflare Pages, verificación, rollback, alternativas |
 | 20 | [Migración](./20-migration.md) | Cambio de hosting, SSG → SSR, JSON → Supabase, Business API |
-| 21 | [Decisiones (ADR)](./21-decisions.md) | ADR-001 a ADR-012 |
+| 21 | [Decisiones (ADR)](./21-decisions.md) | ADR-001 a ADR-015 |
 | 22 | [Roadmap](./22-roadmap.md) | Fases del MVP y post-MVP |
 
 ## Agentes

@@ -6,10 +6,10 @@ Responsable del contenido de Raiden: fichas de producto, textos de categoría, b
 
 ## Responsabilidades
 
-- Redactar y mantener `src/content/products/*.json` con los campos definidos por Backend: nombre, slug, categoría, marca, variantes (p. ej. `72V 50Ah`), colores, precio en PEN (céntimos de sol), especificaciones (autonomía, velocidad, potencia, batería, peso, carga), imágenes con `alt`, FAQs propias.
-- Redactar textos de las siete categorías (`/scooters-electricos`, `/motos-electricas-urbanas`, `/bicimotos`, `/trimotos`, `/vehiculos-carga`, `/cuatrimotos`, `/accesorios`) y del catálogo general `/motos-electricas`.
-- Mantener `src/content/accessories/`, `src/content/blog/`, `src/content/faqs/` y los textos de `/garantia`, `/contacto`, `/legal/*` y `404`.
-- Definir la plantilla del mensaje de WhatsApp y sus variantes (con y sin notas, con accesorios, con batería adicional) en coordinación con Backend y QA.
+- Redactar y mantener `src/content/products/*.json` con los campos definidos por Backend: nombre, slug, categoría, marca, variantes con `tier` (p. ej. Estándar 350 W · 48V 12Ah y Premium 500 W · 48V 20Ah), colores, precio en PEN (céntimos de sol), especificaciones (autonomía, velocidad, potencia, batería, peso, carga), imágenes con `alt`, FAQs propias.
+- Redactar textos de las tres categorías (`/bicimotos`, `/trimotos`, `/repuestos`) y del catálogo general `/productos`.
+- Mantener `src/content/repuestos/` (26 repuestos con `unit` y `code`), `src/content/blog/`, `src/content/faqs/` y los textos de `/garantia`, `/contacto`, `/legal/*` y `404`.
+- Definir la plantilla del mensaje de WhatsApp y sus variantes (con y sin notas, con repuestos, con batería adicional) en coordinación con Backend y QA.
 - Escribir microcopy de interfaz: botones ("Añadir al carrito", "Comparar", "Solicitar por WhatsApp"), estados vacíos, errores de validación, toasts.
 - Mantener la guía de estilo: español del Perú, tratamiento de "tú", registro premium sin exageración, unidades en km, km/h, kW, Ah, V.
 - Planificar el calendario editorial del blog con SEO.
@@ -55,18 +55,18 @@ Responsable del contenido de Raiden: fichas de producto, textos de categoría, b
 | Legal | `/legal/privacidad`, `/legal/aviso-legal`, `/legal/cookies` redactados para un sitio sin cookies de seguimiento |
 | Ortografía | Revisión con corrector es-PE sin errores |
 
-Ejemplo de ficha mínima:
+Ejemplo de ficha mínima (abreviada; la plantilla completa es `src/content/products/golden-eagle.json`):
 
 ```json
 {
-  "slug": "odin-1-0",
-  "name": "ODIN 1.0",
-  "category": "motos-electricas-urbanas",
+  "slug": "golden-eagle",
+  "name": "Golden Eagle",
+  "category": "bicimotos",
   "brand": "Raiden",
-  "variants": [{ "id": "72v-50ah", "label": "72V 50Ah", "price": 5499 }],
-  "colors": [{ "id": "negro", "label": "Negro", "hex": "#111315" }],
-  "specs": { "autonomia_km": 120, "velocidad_max_kmh": 95, "potencia_kw": 5 },
-  "images": [{ "src": "odin-1-0/frontal.jpg", "alt": "ODIN 1.0 en negro, vista frontal" }]
+  "variants": [{ "id": "estandar", "name": "Estándar", "tier": "estandar", "price": { "amount": 120000, "currency": "PEN" } }],
+  "colors": [{ "id": "negro", "name": "Negro", "hex": "#111315" }],
+  "specs": { "rangeKm": 35, "topSpeedKmh": 25, "powerW": 350 },
+  "images": [{ "src": "~/assets/products/golden-eagle-negro.jpg", "alt": "Golden Eagle en color negro", "width": 2020, "height": 2486 }]
 }
 ```
 
@@ -77,7 +77,7 @@ Ejemplo de ficha mínima:
 - [ ] `title` y `description` dentro de los límites y únicos.
 - [ ] `alt` descriptivo en todas las imágenes.
 - [ ] Sin datos de contacto hardcodeados.
-- [ ] Unidades y formato numérico peruano (`S/ 4,999`, `120 km`).
+- [ ] Unidades y formato numérico peruano (`S/ 1,200`, `35 km`).
 - [ ] Mensaje de WhatsApp revisado con QA si cambia la plantilla.
 - [ ] Textos legales revisados con el cliente.
 - [ ] Tono coherente con la guía de estilo.

@@ -2,6 +2,7 @@
 import Pic from '../components/ui/Pic.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroSlider from '../components/home/HeroSlider.astro';
+import PreloadImage from '../components/ui/PreloadImage.astro';
 import ProductCard from '../components/product/ProductCard.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import WhatsAppLink from '../components/ui/WhatsAppLink.astro';
@@ -15,6 +16,8 @@ import type { ImageRef, Review } from '../domain/types';
 
 const products = (await repos.products.all()).filter((p) => p.category !== 'repuestos');
 const hero = products.find((p) => p.isHero) ?? products[0]!;
+/* Primera diapositiva del hero (misma lógica que HeroSlider: productos con heroImage) */
+const firstSlide = products.find((p) => p.heroImage);
 const recent = [...products].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt) || b.featured - a.featured).slice(0, 4);
 const categories = await repos.categories.all();
 const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
@@ -55,8 +58,8 @@ const catIcons: Record<string, string> = {
   description={site.description}
   path="/"
   image={hero.heroImage ? publicSrc(hero.heroImage) : publicSrc(hero.images[0]!)}
-  dark
 >
+  {firstSlide?.heroImage && <PreloadImage slot="head" image={firstSlide.heroImage} widths={[480, 720, 960, 1280, 1600]} sizes="100vw" />}
   <!-- 1. HERO: DESCUBRE TU INSTINTO -->
   <HeroSlider products={products} />
 
@@ -97,7 +100,7 @@ const catIcons: Record<string, string> = {
   </section>
 
   <!-- 3. RAIDERS SATISFECHOS -->
-  <section class="section raiders" aria-labelledby="raiders-h">
+  <section class="section raiders surface-dark" aria-labelledby="raiders-h">
     <div class="container">
       <SectionHeading eyebrow="Raiders satisfechos" title="Somos parte de cada momento, de cada historia" align="center" />
       <ul role="list" class="raiders__masonry">
@@ -138,7 +141,7 @@ const catIcons: Record<string, string> = {
   </section>
 
   <!-- 5. SERVICIO TÉCNICO -->
-  <section class="section service" aria-labelledby="service-h">
+  <section class="section service surface-dark" aria-labelledby="service-h">
     <div class="container">
       <div class="service__banner">
         <div class="service__media">

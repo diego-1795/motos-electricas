@@ -39,7 +39,8 @@ export default defineConfig({
     timeout: 180_000,
     env: {
       PUBLIC_SITE_URL: 'https://raiden.test',
-      PUBLIC_WHATSAPP_NUMBER: '51987654321',
+      // Número comercial del cliente (ADR-015). helpers.ts lee la misma variable.
+      PUBLIC_WHATSAPP_NUMBER: process.env.PUBLIC_WHATSAPP_NUMBER ?? '51989853431',
       // Astro 7 detecta entornos "agente" (CI/IA) y lanza `astro preview` como daemon,
       // con lo que Playwright ve que el proceso termina. Esta variable fuerza primer plano.
       ASTRO_PREVIEW_BACKGROUND: '1',

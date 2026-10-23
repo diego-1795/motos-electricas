@@ -6,12 +6,12 @@ Responsable del dominio, los servicios y la capa de datos de Raiden: `src/domain
 
 ## Responsabilidades
 
-- Definir y mantener las entidades de `src/domain/`: Product, ProductVariant, ProductColor, Category, Brand, Battery, Accessory, Cart, CartItem, OrderRequest, Customer, WhatsAppRequest, BlogPost, FAQ, Review.
-- Implementar funciones puras de dominio: pricing (totales en PEN, formato `S/ 4,999`), scoring de compatibilidad del finder, comparación de productos.
+- Definir y mantener las entidades de `src/domain/`: Product, ProductVariant, ProductColor, Category, Brand, Battery, Part (repuesto), Cart, CartItem, OrderRequest, Customer, WhatsAppRequest, BlogPost, FAQ, Review.
+- Implementar funciones puras de dominio: pricing (totales en PEN, formato `S/ 1,650`), scoring de compatibilidad del finder, comparación de productos.
 - Implementar servicios: `WhatsAppMessageBuilder`, `CartService`, `RecommendationService`, `AnalyticsService` (interfaz + adaptadores noop/console/dataLayer/beacon), `StorageService`, `CacheService`, `EmailService` (interfaz sin implementación real en MVP).
-- Mantener `ProductRepository` y sus implementaciones: `JsonProductRepository` (content collections sobre `src/content/products/*.json`) y el esqueleto de `SupabaseProductRepository`. Lo mismo para categorías, accesorios, blog y FAQs.
+- Mantener `ProductRepository` y sus implementaciones: `JsonProductRepository` (content collections sobre `src/content/products/*.json`) y el esqueleto de `SupabaseProductRepository`. Lo mismo para categorías, repuestos, blog y FAQs.
 - Definir el esquema de content collections con validación manual (sin zod como dependencia adicional más allá de lo que Astro incluya).
-- Diseñar el esquema Postgres futuro: products, variants, colors, accessories, categories, brands, order_requests, customers, whatsapp_requests, blog_posts, faqs, reviews, con RLS.
+- Diseñar el esquema Postgres futuro: products, variants, colors, parts, categories, brands, order_requests, customers, whatsapp_requests, blog_posts, faqs, reviews, con RLS.
 - Garantizar que el mensaje de WhatsApp sigue el formato del brief y se codifica con `encodeURIComponent`.
 
 ## Objetivos
@@ -35,7 +35,7 @@ Responsable del dominio, los servicios y la capa de datos de Raiden: `src/domain
 ## Dependencias
 
 - Tech Lead: aprobación de cualquier cambio en interfaces de `src/domain` y `src/services`.
-- Content: estructura y campos de los JSON de productos, accesorios, blog y FAQs.
+- Content: estructura y campos de los JSON de productos, repuestos, blog y FAQs.
 - Frontend: consumidor de `CartService`, `WhatsAppMessageBuilder`, `RecommendationService`.
 - Security: revisión de validadores de entrada del finder y carrito, y del adaptador beacon.
 - QA: tests de contrato y unidad.
@@ -47,7 +47,7 @@ Responsable del dominio, los servicios y la capa de datos de Raiden: `src/domain
 | `WhatsAppMessageBuilder` produce el mensaje del brief | Test con snapshot: cabecera, bloques por ítem, `Total estimado`, `Notas`, cierre |
 | Salida URL-encoded válida | Test: `decodeURIComponent(href)` devuelve el mensaje original y el enlace empieza por `https://wa.me/<PUBLIC_WHATSAPP_NUMBER>?text=` |
 | Reducer del carrito | Tests: añadir, incrementar, decrementar a 0 elimina, variante distinta crea línea nueva |
-| Pricing | Total con variante + accesorios + baterías, formato `S/ 21,996` |
+| Pricing | Total con variante + repuestos (p. ej. batería adicional), formato `S/ 1,650` |
 | Scoring del finder | Entradas inválidas rechazadas; puntuación determinista y ordenada |
 | `JsonProductRepository` | Devuelve todos los productos por categoría y por slug; slug inexistente devuelve `null` |
 | `AnalyticsService` noop | No lanza, no hace red, no bloquea |

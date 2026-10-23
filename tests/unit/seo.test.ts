@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { absolute, buildTitle, canonical, clampDescription } from '../../src/lib/seo/meta';
 import {
-  accessorySchema,
+  partSchema,
   articleSchema,
   breadcrumbSchema,
   faqSchema,
@@ -12,7 +12,7 @@ import {
 } from '../../src/lib/seo/jsonld';
 import { site } from '../../src/config/site';
 import { pen } from '../../src/domain/money';
-import { makeProduct, variant } from './fixtures';
+import { makePart, makeProduct, variant } from './fixtures';
 
 const BASE = site.url;
 
@@ -29,7 +29,7 @@ describe('meta.buildTitle', () => {
   });
   it('no duplica la marca si ya está incluida', () => {
     expect(buildTitle('Raiden: motos eléctricas')).toBe('Raiden: motos eléctricas');
-    expect(buildTitle('Casco Raiden')).toBe('Casco Raiden');
+    expect(buildTitle('Repuestos Raiden')).toBe('Repuestos Raiden');
   });
 });
 
@@ -40,9 +40,9 @@ describe('meta.canonical', () => {
     expect(canonical('///')).toBe(BASE);
   });
   it('elimina barras finales', () => {
-    expect(canonical('/motos-electricas/')).toBe(`${BASE}/motos-electricas`);
-    expect(canonical('/motos-electricas//')).toBe(`${BASE}/motos-electricas`);
-    expect(canonical('/motos-electricas/odin-1-0')).toBe(`${BASE}/motos-electricas/odin-1-0`);
+    expect(canonical('/bicimotos/')).toBe(`${BASE}/bicimotos`);
+    expect(canonical('/bicimotos//')).toBe(`${BASE}/bicimotos`);
+    expect(canonical('/bicimotos/golden-eagle')).toBe(`${BASE}/bicimotos/golden-eagle`);
   });
 });
 
@@ -76,14 +76,14 @@ describe('meta.clampDescription', () => {
 
 describe('jsonld.productSchema', () => {
   const p = makeProduct({
-    slug: 'odin',
-    name: 'ODIN',
+    slug: 'golden-eagle',
+    name: 'Golden Eagle',
     variants: [
       variant({ id: 'a', price: pen(499900), availability: 'agotado', sku: 'SKU-A' }),
       variant({ id: 'b', price: pen(549900), availability: 'bajo-pedido' }),
     ],
   });
-  const url = `${BASE}/motos-electricas/odin`;
+  const url = `${BASE}/bicimotos/golden-eagle`;
 
   it('precios low/high en soles con 2 decimales y offerCount', () => {
     const s = productSchema(p, url, ['img1']);
@@ -127,13 +127,13 @@ describe('jsonld.breadcrumbSchema', () => {
   it('posiciones consecutivas y URLs absolutas', () => {
     const s = breadcrumbSchema([
       { name: 'Inicio', url: '/' },
-      { name: 'Motos', url: '/motos-electricas' },
+      { name: 'Bicimotos', url: '/bicimotos' },
       { name: 'Ext', url: 'https://ext.example/x' },
     ]);
     expect(s['@type']).toBe('BreadcrumbList');
     expect(s.itemListElement.map((i) => i.position)).toEqual([1, 2, 3]);
     expect(s.itemListElement[0]!.item).toBe(`${BASE}/`);
-    expect(s.itemListElement[1]!.item).toBe(`${BASE}/motos-electricas`);
+    expect(s.itemListElement[1]!.item).toBe(`${BASE}/bicimotos`);
     expect(s.itemListElement[2]!.item).toBe('https://ext.example/x');
   });
 });
@@ -156,15 +156,19 @@ describe('jsonld: otros esquemas', () => {
     expect(o.contactPoint[0]!.telephone).toBe('+51987654321');
     expect(websiteSchema().url).toBe(BASE);
   });
-  it('accessorySchema con precio y availability', () => {
-    const s = accessorySchema(
-      { id: 'acc', slug: 'casco', name: 'Casco', description: 'd', price: pen(12900), availability: 'en-stock', kind: 'casco', compatibleWith: [] },
-      `${BASE}/accesorios/casco`,
-      'img',
-    );
-    expect(s.offers.price).toBe('129.00');
-    expect(s.offers.availability).toBe('https://schema.org/InStock');
+  it('partSchema: Product con Offer en PEN, precio con 2 decimales, sku = id, imagen opcional', () => {
+    const part = makePart({ id: 'rp-04', slug: 'motor-350w', name: 'Motor 350 W', price: pen(35000), kind: 'motor', availability: 'bajo-pedido' });
+    const s = partSchema(part, `${BASE}/repuestos/motor-350w`, 'img');
+    expect(s['@type']).toBe('Product');
+    expect(s.sku).toBe('rp-04');
+    expect(s.category).toBe('Repuestos');
+    expect(s.offers['@type']).toBe('Offer');
+    expect(s.offers.priceCurrency).toBe('PEN');
+    expect(s.offers.price).toBe('350.00');
+    expect(s.offers.availability).toBe('https://schema.org/BackOrder');
+    expect(s.offers.url).toBe(`${BASE}/repuestos/motor-350w`);
     expect(s.image).toEqual(['img']);
+    expect(partSchema(part, 'u')).not.toHaveProperty('image');
   });
   it('articleSchema usa publishedAt como dateModified si no hay updatedAt', () => {
     const post = { slug: 's', title: 'T', description: 'D', category: 'guias' as const, publishedAt: '2025-01-01', author: 'Raiden', readingMinutes: 3, relatedProducts: [] };

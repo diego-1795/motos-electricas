@@ -1,8 +1,10 @@
 /* =====================================================================
    FUENTES SELF-HOSTED (docs/02-design-system.md §1.3)
-   Montserrat (principal, variable 100–900) + Integral CF (display, 400/600/700/800).
-   Subconjunto latino (Basic Latin, Latin-1, Latin Extended-A, puntuación, moneda).
-   Preload recomendado en BaseLayout: Montserrat[wght].woff2 e IntegralCF-Bold.woff2.
+   Montserrat (principal, variable 100–900) + Integral CF (display, un solo fichero).
+   Nombres sin corchetes: con "[wght]" el preload y el CSS codificaban la URL distinto
+   y la fuente se descargaba dos veces. Un único peso de Integral CF (Bold) cubre
+   400–800 para que cualquier uso de display provoque UNA sola descarga y un solo re-layout.
+   Fallbacks con métricas ajustadas (size-adjust) para minimizar el CLS durante el swap.
    ===================================================================== */
 
 @font-face {
@@ -10,8 +12,7 @@
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url('/fonts/montserrat/Montserrat[wght].woff2') format('woff2-variations'),
-    url('/fonts/montserrat/Montserrat[wght].woff2') format('woff2');
+  src: url('/fonts/montserrat/montserrat-wght.woff2') format('woff2-variations'), url('/fonts/montserrat/montserrat-wght.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF, U+2122, U+2190-2199, U+2212, U+2215;
 }
 @font-face {
@@ -19,40 +20,32 @@
   font-style: italic;
   font-weight: 100 900;
   font-display: swap;
-  src: url('/fonts/montserrat/Montserrat-Italic[wght].woff2') format('woff2-variations'),
-    url('/fonts/montserrat/Montserrat-Italic[wght].woff2') format('woff2');
+  src: url('/fonts/montserrat/montserrat-italic-wght.woff2') format('woff2-variations'), url('/fonts/montserrat/montserrat-italic-wght.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF, U+2122, U+2190-2199, U+2212, U+2215;
 }
-
 @font-face {
   font-family: 'Integral CF';
   font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/integral-cf/IntegralCF-Regular.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF;
-}
-@font-face {
-  font-family: 'Integral CF';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/integral-cf/IntegralCF-DemiBold.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF;
-}
-@font-face {
-  font-family: 'Integral CF';
-  font-style: normal;
-  font-weight: 700;
+  font-weight: 400 800;
   font-display: swap;
   src: url('/fonts/integral-cf/IntegralCF-Bold.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF;
 }
+
+/* Fallbacks métricos: mismo ancho aproximado que la webfont para que el texto no salte al cargar */
 @font-face {
-  font-family: 'Integral CF';
-  font-style: normal;
-  font-weight: 800;
-  font-display: swap;
-  src: url('/fonts/integral-cf/IntegralCF-ExtraBold.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0100-017F, U+2000-206F, U+20A0-20CF;
+  font-family: 'Montserrat Fallback';
+  src: local('Arial'), local('Helvetica Neue'), local('Roboto');
+  size-adjust: 112%;
+  ascent-override: 92%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Integral CF Fallback';
+  src: local('Arial Black'), local('Impact'), local('Arial Bold');
+  size-adjust: 104%;
+  ascent-override: 88%;
+  descent-override: 22%;
+  line-gap-override: 0%;
 }

@@ -51,15 +51,16 @@ describe('scoreProduct', () => {
   });
 
   it('tipo: coincide o no', () => {
-    expect(scoreProduct(city, { ...none, types: ['motos-electricas'] }).score).toBe(100);
-    expect(scoreProduct(city, { ...none, types: ['bicimotos'] }).score).toBe(0);
+    expect(scoreProduct(city, { ...none, types: ['bicimotos'] }).score).toBe(100);
+    expect(scoreProduct(city, { ...none, types: ['trimotos'] }).score).toBe(0);
+    expect(scoreProduct(city, { ...none, types: ['bicimotos', 'trimotos'] }).score).toBe(100);
   });
 
   it('combina criterios con pesos (useCases 3, budget 2.5, range 2, speed 1.5, power 1, type 2)', () => {
     // useCases 0 (peso 3) + budget 1 (peso 2.5) → 2.5 / 5.5 = 45.45 → 45
     expect(scoreProduct(city, { ...none, useCases: ['carga'], budgetMax: 300000 }).score).toBe(45);
     // type 0 (2) + range 1 (2) + speed 1 (1.5) → 3.5/5.5 → 64
-    expect(scoreProduct(city, { ...none, types: ['bicimotos'], rangeMin: 10, speedMin: 10 }).score).toBe(64);
+    expect(scoreProduct(city, { ...none, types: ['trimotos'], rangeMin: 10, speedMin: 10 }).score).toBe(64);
   });
 
   it('máximo 3 razones', () => {
@@ -72,9 +73,9 @@ describe('recommend', () => {
   const a = makeProduct({ slug: 'a', featured: 10, useCases: ['ciudad'] });
   const b = makeProduct({ slug: 'b', featured: 90, useCases: ['ciudad'] });
   const c = makeProduct({ slug: 'c', featured: 100, useCases: ['carga'] });
-  const acc = makeProduct({ slug: 'acc', category: 'accesorios', featured: 999, useCases: ['ciudad'] });
+  const acc = makeProduct({ slug: 'acc', category: 'repuestos', featured: 999, useCases: ['ciudad'] });
 
-  it('excluye accesorios y ordena por score desc', () => {
+  it('excluye repuestos y ordena por score desc', () => {
     const r = recommend([c, a, b, acc], { ...none, useCases: ['ciudad'] });
     expect(r.map((x) => x.product.slug)).toEqual(['b', 'a', 'c']);
     expect(r[0]!.score).toBe(100);

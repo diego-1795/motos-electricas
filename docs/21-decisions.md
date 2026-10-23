@@ -234,3 +234,9 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 **Consecuencias.** Reescritura de contenido, páginas y tests; los artículos del blog sobre motos de alta potencia se retiran o adaptan a bicimotos. Las fotos reales sustituyen a los SVG placeholder (Astro genera AVIF/WebP).
 
 **Estado.** Aceptada (2026-10-22).
+
+### Addendum ADR-015 (2026-10-23) — ajustes del cliente tras la primera revisión
+- **Portada:** fondos alternos negro/blanco (hero y bandas "Raiders"/"Servicio técnico" en negro; catálogo, comunidad y blog en blanco). La marca es **azul**: el logo se muestra en su color sobre fondos claros (cabecera blanca) y, en el pie oscuro, sobre una placa blanca; no se invierte a blanco.
+- **Repuestos aparte:** la ficha de un vehículo no ofrece añadir repuestos al pedido; se compran desde `/repuestos`. La sección "Repuestos compatibles" es solo informativa (enlaces).
+- **WhatsApp flotante:** visible en móvil y escritorio, solo icono (nombre accesible oculto).
+- **Rendimiento con fotografía real:** LCP objetivo 2,5 s (umbral "bueno" de CWV) como aviso en Lighthouse CI; performance ≥ 0,90 como error. Medido 2,5–2,7 s en móvil simulado con imágenes de 14–21 KB: el límite lo marca la cadena de red, no el peso. Fuentes: Montserrat sin corchetes en el nombre (evita doble descarga), un único fichero de Integral CF y fallbacks métricos (`size-adjust`) → CLS 0,002 y "Style & Layout" de 1058 ms a ~120 ms.

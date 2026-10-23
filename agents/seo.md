@@ -6,7 +6,7 @@ Responsable del posicionamiento orgánico de Raiden: arquitectura de URLs, metad
 
 ## Responsabilidades
 
-- Definir la arquitectura de URLs: categorías en raíz (`/scooters-electricos`, `/motos-electricas-urbanas`, `/bicimotos`, `/trimotos`, `/vehiculos-carga`, `/cuatrimotos`, `/accesorios`), catálogo general en `/motos-electricas`, fichas en `/motos-electricas/[slug]` y `/accesorios/[slug]`, blog en `/blog/[slug]`.
+- Definir la arquitectura de URLs: categorías en raíz (`/bicimotos`, `/trimotos`, `/repuestos`), catálogo general en `/productos`, fichas en `/bicimotos/[slug]`, `/trimotos/[slug]` y `/repuestos/[slug]`, blog en `/blog/[slug]`.
 - Mantener el builder de metadatos (`title`, `description`, canonical, Open Graph, Twitter Card) en `src/lib/seo/`.
 - Mantener los builders JSON-LD: Organization, Product (con `offers` sin precio oculto y `availability`), BreadcrumbList, FAQPage, Article.
 - Configurar `@astrojs/sitemap`: exclusión de `/carrito` y `/comparar`, `changefreq: weekly`, `site` desde `PUBLIC_SITE_URL`.

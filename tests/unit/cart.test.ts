@@ -14,14 +14,14 @@ import {
   setQuantity,
 } from '../../src/domain/cart';
 import { pen } from '../../src/domain/money';
-import { accessoryItem, odinItem } from './fixtures';
+import { partItem, bikeItem } from './fixtures';
 
 const MAX = 10;
 const NOW = new Date('2025-06-01T12:00:00.000Z');
 
 describe('itemKey', () => {
   it('incluye variante y color para productos', () => {
-    expect(itemKey(odinItem())).toBe('product:odin-1-0:bat-72v-50ah:negro-mate');
+    expect(itemKey(bikeItem())).toBe('product:aguila-test:premium:negro');
     expect(itemKey({ kind: 'product', slug: 'x' })).toBe('product:x::');
   });
   it('solo usa slug para accesorios', () => {
@@ -45,50 +45,50 @@ describe('clampQty', () => {
 
 describe('addItem', () => {
   it('añade una línea nueva con key calculada y updatedAt', () => {
-    const cart = addItem(emptyCart(), odinItem(), MAX, NOW);
+    const cart = addItem(emptyCart(), bikeItem(), MAX, NOW);
     expect(cart.items).toHaveLength(1);
-    expect(cart.items[0]!.key).toBe('product:odin-1-0:bat-72v-50ah:negro-mate');
+    expect(cart.items[0]!.key).toBe('product:aguila-test:premium:negro');
     expect(cart.items[0]!.quantity).toBe(1);
     expect(cart.updatedAt).toBe(NOW.toISOString());
   });
 
   it('fusiona la misma key sumando cantidades', () => {
-    let cart = addItem(emptyCart(), odinItem({ quantity: 2 }), MAX);
-    cart = addItem(cart, odinItem({ quantity: 3 }), MAX);
+    let cart = addItem(emptyCart(), bikeItem({ quantity: 2 }), MAX);
+    cart = addItem(cart, bikeItem({ quantity: 3 }), MAX);
     expect(cart.items).toHaveLength(1);
     expect(cart.items[0]!.quantity).toBe(5);
   });
 
   it('limita la suma a maxQty', () => {
     let cart = emptyCart();
-    for (let i = 0; i < 12; i++) cart = addItem(cart, odinItem(), MAX);
+    for (let i = 0; i < 12; i++) cart = addItem(cart, bikeItem(), MAX);
     expect(cart.items).toHaveLength(1);
     expect(cart.items[0]!.quantity).toBe(10);
   });
 
   it('variante o color distintos crean líneas distintas', () => {
-    let cart = addItem(emptyCart(), odinItem(), MAX);
-    cart = addItem(cart, odinItem({ variantId: 'bat-72v-40ah', variantName: 'Batería 72V 40Ah' }), MAX);
-    cart = addItem(cart, odinItem({ colorId: 'rojo', colorName: 'Rojo' }), MAX);
+    let cart = addItem(emptyCart(), bikeItem(), MAX);
+    cart = addItem(cart, bikeItem({ variantId: 'estandar', variantName: 'Estándar' }), MAX);
+    cart = addItem(cart, bikeItem({ colorId: 'rojo', colorName: 'Rojo' }), MAX);
     expect(cart.items).toHaveLength(3);
   });
 
   it('clampa la cantidad inicial de una línea nueva', () => {
-    const cart = addItem(emptyCart(), odinItem({ quantity: 99 }), MAX);
+    const cart = addItem(emptyCart(), bikeItem({ quantity: 99 }), MAX);
     expect(cart.items[0]!.quantity).toBe(10);
-    const zero = addItem(emptyCart(), odinItem({ quantity: 0 }), MAX);
+    const zero = addItem(emptyCart(), bikeItem({ quantity: 0 }), MAX);
     expect(zero.items[0]!.quantity).toBe(1);
   });
 
   it('no muta el carrito original', () => {
     const original = emptyCart();
-    addItem(original, odinItem(), MAX);
+    addItem(original, bikeItem(), MAX);
     expect(original.items).toHaveLength(0);
   });
 });
 
 describe('setQuantity / removeItem', () => {
-  const cart = addItem(addItem(emptyCart(), odinItem(), MAX), accessoryItem('casco', 'Casco', 10000), MAX);
+  const cart = addItem(addItem(emptyCart(), bikeItem(), MAX), partItem('casco', 'Casco', 10000), MAX);
   const key = cart.items[0]!.key;
 
   it('actualiza la cantidad con clamp', () => {
@@ -126,13 +126,13 @@ describe('setNotes / clearCart', () => {
 });
 
 describe('totales', () => {
-  const cart = addItem(addItem(emptyCart(), odinItem({ quantity: 2 }), MAX), accessoryItem('casco', 'Casco', 12900, 3), MAX);
+  const cart = addItem(addItem(emptyCart(), bikeItem({ quantity: 2 }), MAX), partItem('casco', 'Casco', 12900, 3), MAX);
 
   it('lineTotal = precio × cantidad', () => {
-    expect(lineTotal(cart.items[0]!)).toEqual(pen(1099800));
+    expect(lineTotal(cart.items[0]!)).toEqual(pen(300000));
   });
   it('cartTotal suma líneas; cartCount suma unidades', () => {
-    expect(cartTotal(cart)).toEqual(pen(1099800 + 38700));
+    expect(cartTotal(cart)).toEqual(pen(300000 + 38700));
     expect(cartCount(cart)).toBe(5);
   });
   it('carrito vacío → 0', () => {
@@ -171,17 +171,17 @@ describe('sanitizeCart', () => {
   it('recalcula keys y clampa cantidades', () => {
     const raw = {
       items: [
-        { ...odinItem({ quantity: 999 }), key: 'tampered' },
-        { ...odinItem({ quantity: -3, colorId: 'rojo' }), key: 'x' },
-        { ...accessoryItem('casco', 'Casco', 100, NaN as unknown as number) },
+        { ...bikeItem({ quantity: 999 }), key: 'tampered' },
+        { ...bikeItem({ quantity: -3, colorId: 'rojo' }), key: 'x' },
+        { ...partItem('casco', 'Casco', 100, NaN as unknown as number) },
       ],
       notes: 'n'.repeat(600),
       updatedAt: '2024-01-01T00:00:00.000Z',
     };
     const c = sanitizeCart(raw, MAX);
     expect(c.items.map((i) => [i.key, i.quantity])).toEqual([
-      ['product:odin-1-0:bat-72v-50ah:negro-mate', 10],
-      ['product:odin-1-0:bat-72v-50ah:rojo', 1],
+      ['product:aguila-test:premium:negro', 10],
+      ['product:aguila-test:premium:rojo', 1],
       ['accessory:casco', 1],
     ]);
     expect(c.notes).toHaveLength(500);

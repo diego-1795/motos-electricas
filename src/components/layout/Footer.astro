@@ -99,7 +99,7 @@ const socials = [
 
   <div class="container footer__bottom">
     <div class="footer__brand">
-      <Logo invert />
+      <span class="footer__logo-tile"><Logo height={36} /></span>
       <p class="footer__legalname">
         {site.legalName} · RUC {site.ruc} · Distribuidor oficial de {site.name.toUpperCase()}
       </p>
@@ -227,6 +227,16 @@ const socials = [
     flex-direction: column;
     gap: var(--s-3);
     align-items: flex-start;
+  }
+  /* La marca es azul: el logo va sobre una placa blanca, no invertido */
+  .footer__logo-tile {
+    display: inline-flex;
+    padding: var(--s-2) var(--s-4);
+    background: var(--raiden-white, #fff);
+    border-radius: var(--r-md);
+  }
+  .footer__logo-tile :global(.logo img) {
+    filter: none;
   }
   .footer__legalname {
     font-size: var(--fs-sm);

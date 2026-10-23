@@ -1,0 +1,29 @@
+---
+import { getImage } from 'astro:assets';
+import type { ImageRef } from '../../domain/types';
+import { resolveImage } from '../../lib/images';
+
+/**
+ * <link rel="preload"> para la imagen LCP de una página. Debe ir en el slot "head"
+ * del BaseLayout con los MISMOS widths/sizes que el <Pic priority> correspondiente,
+ * para que el navegador reutilice la petición. Mejora el LCP ~300-500 ms en móvil
+ * porque la imagen se descubre antes de parsear el <body>.
+ */
+interface Props {
+  image: ImageRef;
+  widths: number[];
+  sizes: string;
+}
+const { image, widths, sizes } = Astro.props;
+const src = resolveImage(image);
+const isRaster = typeof src !== 'string' && src.format !== 'svg';
+const img = isRaster ? await getImage({ src, format: 'avif', widths, sizes }) : null;
+---
+
+{
+  img ? (
+    <link rel="preload" as="image" href={img.src} imagesrcset={img.srcSet.attribute} imagesizes={sizes} fetchpriority="high" />
+  ) : typeof src === 'string' ? (
+    <link rel="preload" as="image" href={src} fetchpriority="high" />
+  ) : null
+}

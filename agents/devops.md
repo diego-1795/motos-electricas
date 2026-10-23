@@ -51,7 +51,7 @@ Responsable del pipeline, el despliegue y la operación de Raiden con coste cero
 | Cabeceras | `curl -I` de producción devuelve CSP, HSTS, nosniff, Referrer-Policy, Permissions-Policy |
 | Caché | `/_astro/*` con `Cache-Control: public, max-age=31536000, immutable` |
 | Redirecciones | `_redirects` con 301 para slugs retirados; sin bucles |
-| `trailingSlash: 'never'` | `/motos-electricas/` redirige o sirve `/motos-electricas` sin duplicar contenido |
+| `trailingSlash: 'never'` | `/bicimotos/` redirige o sirve `/bicimotos` sin duplicar contenido |
 | Rollback probado | Restauración de compilación anterior documentada y ejecutada una vez |
 | Equivalencia Vercel | `vercel.json` de ejemplo en [20-migration](../docs/20-migration.md) con las mismas cabeceras y redirecciones |
 

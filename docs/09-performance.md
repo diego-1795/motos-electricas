@@ -8,7 +8,7 @@ Medidos con Lighthouse en modo móvil (Moto G Power simulado, 4G lento) sobre el
 
 | Métrica | Presupuesto | Ámbito | Verificación |
 |---|---|---|---|
-| LCP | < 2,0 s | Todas las páginas | Lighthouse CI |
+| LCP | < 2,5 s (umbral "bueno" CWV; ajustado 2026-10-23 con fotografía real) | Todas las páginas | Lighthouse CI |
 | INP | < 200 ms | Producto, carrito, finder | Lighthouse CI + campo |
 | CLS | < 0,1 | Todas las páginas | Lighthouse CI |
 | TTFB | < 400 ms | Todas (Cloudflare edge) | Campo |

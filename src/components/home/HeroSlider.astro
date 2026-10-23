@@ -17,7 +17,7 @@ const { products } = Astro.props;
 const slides = products.filter((p) => p.heroImage);
 ---
 
-<section class="hs" aria-roledescription="carrusel" aria-label="Modelos RAIDEN" data-slider>
+<section class="hs surface-dark" aria-roledescription="carrusel" aria-label="Modelos RAIDEN" data-slider>
   <ul role="list" class="hs__track" data-track>
     {
       slides.map((p, i) => {
@@ -25,7 +25,7 @@ const slides = products.filter((p) => p.heroImage);
         return (
           <li class="hs__slide" data-slide aria-roledescription="diapositiva" aria-label={`${i + 1} de ${slides.length}: ${p.name}`}>
             <div class="hs__media">
-              <Pic image={p.heroImage!} alt="" width={1577} height={672} widths={[640, 960, 1280, 1600]} sizes="100vw" priority={i === 0} />
+              <Pic image={p.heroImage!} alt="" width={1577} height={672} widths={[480, 720, 960, 1280, 1600]} sizes="100vw" priority={i === 0} />
             </div>
             <div class="container hs__copy">
               <p class="eyebrow hs__eyebrow">Descubre tu instinto</p>

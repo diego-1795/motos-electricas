@@ -3,6 +3,7 @@ import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import Pic from '../../components/ui/Pic.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PreloadImage from '../../components/ui/PreloadImage.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import ProductCard from '../../components/product/ProductCard.astro';
 import ProductTabs from '../../components/product/ProductTabs.astro';
@@ -29,7 +30,6 @@ const { product: p } = Astro.props as { product: Product };
 const category = await repos.categories.bySlug(p.category);
 const categories = await repos.categories.all();
 const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
-const configParts = await repos.parts.bySlugs(p.accessories);
 const compatibleParts = (await repos.parts.compatibleWith(p.slug)).slice(0, 6);
 const related = await repos.products.bySlugs(p.related);
 const specs = effectiveSpecs(p);
@@ -99,6 +99,7 @@ const specRows: [string, string][] = [
   type="product"
   jsonLd={[breadcrumbSchema(crumbs), productSchema(p, url, imageUrls), ...(p.faqs.length ? [faqSchema(p.faqs)] : [])]}
 >
+  <PreloadImage slot="head" image={mainImage} widths={[480, 720, 960, 1200]} sizes={gallerySizes} />
   <article class="pdp" data-pagefind-meta={`image:${mainOptimizedSrc}`}>
     <div class="container">
       <Breadcrumbs items={crumbs} />
@@ -108,7 +109,7 @@ const specRows: [string, string][] = [
     <section class="container pdp__top">
       <div class="pdp__gallery">
         <div class="pdp__main" data-product-image>
-          <Pic image={mainImage} width={1000} height={1230} widths={[640, 960, 1200]} sizes={gallerySizes} priority />
+          <Pic image={mainImage} width={1000} height={1230} widths={[480, 720, 960, 1200]} sizes={gallerySizes} priority />
         </div>
         {
           galleryColors.length > 1 ? (
@@ -153,7 +154,6 @@ const specRows: [string, string][] = [
           name={p.name}
           variants={p.variants}
           colors={p.colors}
-          parts={configParts}
           image={{ ...p.images[0]!, src: publicSrc(p.images[0]!) }}
           colorImages={colorImages}
         />

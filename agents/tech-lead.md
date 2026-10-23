@@ -79,7 +79,7 @@ Una propuesta con tres o más respuestas negativas se rechaza o se reformula.
 | Cada cambio transversal tiene ADR | Entrada en `docs/21-decisions.md` con fecha y alternativas |
 | Sin teléfono ni secreto hardcodeado | `grep` de números y claves fuera de `src/config/site.ts` y `.env` devuelve 0 |
 | Build estático funcional | `output: 'static'` sin adapter, sin rutas SSR |
-| Presupuesto de rendimiento | Lighthouse CI en verde en `/motos-electricas/[slug]` |
+| Presupuesto de rendimiento | Lighthouse CI en verde en `/bicimotos/golden-eagle` |
 
 ## Checklist
 
@@ -105,8 +105,8 @@ Una propuesta con tres o más respuestas negativas se rechaza o se reformula.
 
 Como instancia final, el Tech Lead escala únicamente al cliente:
 
-- Nombre definitivo de la marca (Raiden es provisional).
+- Cambios de marca o de datos de empresa (RAIDEN / EG Motors SAC; viven en `src/config/site.ts`).
 - Número de WhatsApp de ventas (`PUBLIC_WHATSAPP_NUMBER`) y dominio (`PUBLIC_SITE_URL`).
 - Cualquier propuesta que implique coste recurrente.
 - Incorporación de pagos online (fuera del alcance por decisión de producto).
-- Cambios de alcance de catálogo (nuevas categorías fuera de las siete definidas más accesorios).
+- Cambios de alcance de catálogo (nuevas categorías fuera de las tres definidas: bicimotos, trimotos y repuestos).

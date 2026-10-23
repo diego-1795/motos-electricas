@@ -14,7 +14,7 @@ const cheap = makeProduct({
 });
 const mid = makeProduct({
   slug: 'mid',
-  category: 'scooters-electricos',
+  category: 'trimotos',
   featured: 80,
   publishedAt: '2025-03-01',
   useCases: ['ciudad', 'trabajo'],
@@ -23,7 +23,7 @@ const mid = makeProduct({
 });
 const big = makeProduct({
   slug: 'big',
-  category: 'motos-electricas',
+  category: 'trimotos',
   featured: 100,
   publishedAt: '2025-01-01',
   useCases: ['trayectos-largos', 'dos-personas'],
@@ -39,6 +39,7 @@ describe('applyFilters', () => {
   });
   it('type', () => {
     expect(slugs(applyFilters(all, { type: 'bicimotos' }))).toEqual(['cheap']);
+    expect(slugs(applyFilters(all, { type: 'trimotos' }))).toEqual(['mid', 'big']);
   });
   it('priceMax usa el precio "desde" (variante más barata)', () => {
     expect(slugs(applyFilters(all, { priceMax: 300000 }))).toEqual(['mid', 'cheap']);
@@ -130,11 +131,12 @@ describe('parseFilters', () => {
     expect(parse('disponibilidad=en-stock').availability).toBe('en-stock');
     expect(parse('disponibilidad=x').availability).toBeUndefined();
     expect(parse('tipo=bicimotos').type).toBe('bicimotos');
-    expect(parse('tipo=accesorios').type).toBeUndefined();
+    expect(parse('tipo=repuestos').type).toBeUndefined();
+    expect(parse('tipo=motos-electricas').type).toBeUndefined();
   });
   it('constantes exportadas', () => {
     expect(USE_CASES).toHaveLength(7);
     expect(AVAILABILITIES).toHaveLength(4);
-    expect(TYPES).not.toContain('accesorios');
+    expect(TYPES).toEqual(['bicimotos', 'trimotos']);
   });
 });

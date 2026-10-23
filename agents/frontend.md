@@ -6,7 +6,7 @@ Implementa la capa de presentación de Raiden: páginas Astro, componentes en `s
 
 ## Responsabilidades
 
-- Construir todas las rutas de `src/pages/`: `/`, `/motos-electricas`, `/motos-electricas/[slug]`, `/scooters-electricos`, `/motos-electricas-urbanas`, `/bicimotos`, `/trimotos`, `/vehiculos-carga`, `/cuatrimotos`, `/accesorios`, `/accesorios/[slug]`, `/comparar`, `/encuentra-tu-moto`, `/carrito`, `/blog`, `/blog/[slug]`, `/garantia`, `/contacto`, `/faq`, `/legal/*`, `404`.
+- Construir todas las rutas de `src/pages/`: `/`, `/productos`, `/bicimotos`, `/trimotos`, `/bicimotos/[slug]`, `/trimotos/[slug]`, `/repuestos`, `/repuestos/[slug]`, `/comparar`, `/encuentra-tu-moto`, `/carrito`, `/blog`, `/blog/[slug]`, `/nosotros`, `/servicio-tecnico`, `/garantia`, `/contacto`, `/faq`, `/legal/*`, `404`.
 - Mantener los componentes Astro por carpeta: `ui/` (Button, Card, Input, Select, Badge, Tabs, Modal, Drawer, Toast, Table), `layout/`, `product/` (ProductCard, SpecTile, ColorSwatch, QuantityStepper), `catalog/`, `home/`, `seo/`.
 - Implementar las cuatro islas Preact y solo esas: drawer del carrito, añadir-al-carrito/configurador, comparador (CompareTable), buscador "Encuentra tu moto". Resto de la página: HTML sin JS.
 - Gestionar el estado del carrito con `@nanostores/persistent` en la clave `raiden:cart:v1`, consumiendo `CartService` y `WhatsAppMessageBuilder` de `src/services/`.
@@ -18,7 +18,7 @@ Implementa la capa de presentación de Raiden: páginas Astro, componentes en `s
 
 | Objetivo | Métrica | Umbral |
 |---|---|---|
-| JS mínimo | JS transferido en `/motos-electricas/[slug]` | < 60 KB gz |
+| JS mínimo | JS transferido en `/bicimotos/golden-eagle` | < 60 KB gz |
 | Estabilidad visual | CLS | < 0,1 |
 | Interacción | INP en drawer y configurador | < 200 ms |
 | Hidratación diferida | Islas con `client:load` | Solo el drawer del carrito y el configurador |

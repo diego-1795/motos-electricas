@@ -9,7 +9,7 @@ Garantiza la calidad funcional, de accesibilidad y de rendimiento de Raiden medi
 - Mantener tests unitarios Vitest de: `WhatsAppMessageBuilder`, reducer del carrito, pricing, scoring del finder, builders SEO.
 - Mantener tests E2E Playwright del flujo crítico: catálogo → filtro → producto → variante → carrito → cantidad → eliminar → enlace WhatsApp, en viewport móvil (360 × 640) y escritorio (1280 × 800).
 - Ejecutar axe-core en cada página del flujo E2E y en `/encuentra-tu-moto`, `/comparar`, `/faq`.
-- Configurar Lighthouse CI con presupuesto: LCP < 2,0 s, INP < 200 ms, CLS < 0,1, JS < 60 KB gz en `/motos-electricas/[slug]`.
+- Configurar Lighthouse CI con presupuesto: LCP < 2,0 s, INP < 200 ms, CLS < 0,1, JS < 60 KB gz en `/bicimotos/golden-eagle`.
 - Verificar la persistencia del carrito en `raiden:cart:v1` tras recarga y navegación.
 - Validar que el `href` del enlace WhatsApp es `https://wa.me/<número>?text=<mensaje codificado>` y que el mensaje decodificado coincide con el formato del brief.
 - Reportar defectos con pasos de reproducción, viewport, navegador y captura.
@@ -45,7 +45,7 @@ Garantiza la calidad funcional, de accesibilidad y de rendimiento de Raiden medi
 
 | Escenario | Resultado esperado |
 |---|---|
-| Añadir producto con variante 72V 50Ah y color Negro | Drawer muestra línea con variante, color y cantidad 1; evento `add_to_cart` emitido |
+| Añadir Golden Eagle Premium (500 W · 48V 20Ah) en color Negro | Drawer muestra línea con variante, color y cantidad 1; evento `add_to_cart` emitido |
 | Incrementar cantidad a 3 y decrementar a 0 | La línea desaparece; total recalculado |
 | Recargar `/carrito` | Estado restaurado desde `raiden:cart:v1` |
 | Pulsar "Solicitar por WhatsApp" | `href` apunta a `wa.me` con el número de `PUBLIC_WHATSAPP_NUMBER`; evento `purchase_request` y `whatsapp_click` |

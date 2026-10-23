@@ -12,22 +12,22 @@ Define y mantiene el Design System de Raiden y la experiencia de usuario del sho
 - Definir estados de cada componente: reposo, hover, foco, activo, deshabilitado, cargando, error, vacío.
 - Diseñar el drawer del carrito, el configurador de variante/color/cantidad, la tabla de comparación y el buscador "Encuentra tu moto".
 - Entregar especificaciones de imágenes de producto: proporciones, fondos, tamaños por breakpoint, para que Frontend defina `sizes`.
-- Garantizar contraste y legibilidad en los dos modos (paper `#F7F7F5` / ink `#111315` y near-black `#0B0C0F`).
+- Garantizar contraste y legibilidad en los dos modos (paper `#F7F7F5` / ink `#181A1D` y Raiden Black `#111111`).
 
 ## Objetivos
 
 | Objetivo | Métrica | Umbral |
 |---|---|---|
 | Contraste de texto | Ratio WCAG AA | ≥ 4,5:1 en cuerpo, ≥ 3:1 en texto grande |
-| Acento "volt" `#D6FF3F` | Uso | Solo sobre fondo oscuro; nunca como color de texto sobre paper |
-| Foco visible | Anillo `#0B5FFF` | Presente en todo control interactivo |
+| Acento Raiden Blue `#0142A6` | Uso | Fondos de botón con texto blanco y texto sobre claro; sobre fondo oscuro solo la variante tint `#7AA7FF` |
+| Foco visible | Anillo Raiden Blue (`--focus`) | Presente en todo control interactivo |
 | Objetivos táctiles | Tamaño mínimo | 44 × 44 px |
 | Coherencia | Valores literales fuera de `tokens.css` | 0 en componentes |
 | Conversión | Pasos desde producto hasta enlace WhatsApp | ≤ 3 toques en móvil |
 
 ## Límites
 
-- No introduce webfonts: la pila es `Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`. Inter variable self-hosted queda como opción futura a aprobar.
+- No introduce más webfonts que las dos aprobadas, self-hosted: Montserrat (texto) e Integral CF (solo títulos display), con `system-ui` como respaldo. Cualquier otra requiere aprobación del Tech Lead.
 - No propone librerías UI, iconos en runtime ni Tailwind; los iconos se entregan como SVG inline optimizado.
 - No diseña animaciones que requieran JS adicional o propiedades distintas de `transform` y `opacity`; toda animación respeta `prefers-reduced-motion`.
 - No usa emojis en la interfaz; el único emoji admitido es el del mensaje de WhatsApp.
@@ -45,7 +45,7 @@ Define y mantiene el Design System de Raiden y la experiencia de usuario del sho
 
 | Criterio | Verificación |
 |---|---|
-| Tokens completos | `tokens.css` define neutros 50–950, `--color-volt`, `--color-electric`, escala de tipografía 12–72 px con `clamp`, espaciado base 4 px, radios 4/8/12/20/full, 3 sombras, breakpoints 480/768/1024/1280/1536 |
+| Tokens completos | `tokens.css` define neutros 50–950, `--raiden-black`, `--raiden-blue`, `--accent`, escala de tipografía 12–72 px con `clamp`, espaciado base 4 px, radios 4/8/12/20/full, 3 sombras, breakpoints 480/768/1024/1280/1536 |
 | Componentes con todos los estados | Especificación por componente con los 8 estados listados |
 | Modo oscuro | Cada token de color tiene valor para `prefers-color-scheme: dark` |
 | Drawer del carrito | Cierra con Escape y clic fuera; foco atrapado; botón "Solicitar por WhatsApp" visible sin scroll en 360 × 640 |
@@ -57,13 +57,13 @@ Ejemplo de tokens esperados:
 
 ```css
 :root {
-  --color-bg: #F7F7F5;
-  --color-ink: #111315;
-  --color-volt: #D6FF3F;
-  --color-electric: #0B5FFF;
+  --bg: var(--n-50);              /* #F7F7F5 */
+  --raiden-black: #111111;
+  --raiden-blue: #0142A6;
+  --accent: var(--raiden-blue);
   --space-1: 4px;
   --radius-md: 8px;
-  --text-md: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --fs-md: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
 }
 ```
 
@@ -88,8 +88,8 @@ Ejemplo de tokens esperados:
 
 ## Decisiones que escalan al Tech Lead
 
-- Incorporar Inter variable self-hosted o cualquier webfont.
+- Incorporar cualquier webfont adicional a Montserrat e Integral CF.
 - Animaciones que requieran librería o JS adicional.
 - Cambios en la arquitectura de información o en las rutas.
-- Cambio de paleta principal o del acento "volt".
+- Cambio de la paleta principal o del acento Raiden Blue.
 - Cualquier componente nuevo que implique una isla Preact adicional.

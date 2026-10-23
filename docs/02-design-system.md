@@ -104,16 +104,16 @@ Fuentes self-hosted en `public/fonts/` y declaradas en `src/styles/fonts.css` (`
 
 | Familia | Fichero | Peso | Tamaño |
 |---|---|---|---|
-| Montserrat (variable, normal) | `montserrat/Montserrat[wght].woff2` | `100 900` | 70 KB (subconjunto latino: Basic Latin, Latin-1, Latin Ext-A, puntuación, moneda) |
-| Montserrat (variable, italic) | `montserrat/Montserrat-Italic[wght].woff2` | `100 900` | 74 KB |
-| Integral CF | `integral-cf/IntegralCF-{Regular,DemiBold,Bold,ExtraBold}.woff2` | 400 / 600 / 700 / 800 | ~19 KB c/u |
+| Montserrat (variable, normal) | `montserrat/montserrat-wght.woff2` | `100 900` | 70 KB (subconjunto latino: Basic Latin, Latin-1, Latin Ext-A, puntuación, moneda) |
+| Montserrat (variable, italic) | `montserrat/montserrat-italic-wght.woff2` | `100 900` | 74 KB |
+| Integral CF | `integral-cf/IntegralCF-Bold.woff2` (único fichero; cubre `400 800`) | `400 800` | 19 KB |
 
 Licencia Montserrat: OFL (`public/fonts/montserrat/OFL.txt`). Integral CF: licencia comercial del cliente.
 
 **Preload (pendiente en `BaseLayout.astro`):** añadir en `<head>` los dos ficheros críticos del primer pintado:
 
 ```html
-<link rel="preload" href="/fonts/montserrat/Montserrat[wght].woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/montserrat/montserrat-wght.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="/fonts/integral-cf/IntegralCF-Bold.woff2" as="font" type="font/woff2" crossorigin />
 ```
 

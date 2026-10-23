@@ -1,12 +1,12 @@
 # Raiden — Digital Electric Mobility Showroom
 
-Showroom digital de motos eléctricas para el **Perú** (scooters, motos, bicimotos, trimotos, cuatrimotos y vehículos de carga). El visitante compara, configura y **solicita su compra por WhatsApp**: no hay pagos online, cuentas de usuario ni backend propio en el MVP.
+Showroom digital de **RAIDEN** para el **Perú**, operado por EG Motors SAC (distribuidor oficial, Bocanegra, Callao): 4 modelos (bicimotos Golden Eagle, Royal Tiger y Vortex Kobra; trimoto de carga Titan Rhino) y 26 repuestos. El visitante compara, configura y **solicita su compra por WhatsApp**: no hay pagos online, cuentas de usuario ni backend propio en el MVP.
 
 - Sitio **100 % estático** (`astro build` → `dist/`), desplegable en cualquier CDN.
 - **Coste de infraestructura: S/ 0/mes** (Cloudflare Pages Free + GitHub Actions Free; solo el dominio se paga).
 - Sin cookies, sin trackers, sin datos personales almacenados.
-- **Mercado Perú:** precios en soles (`PEN`, formato `S/ 4,999`, IGV incluido), locale `es-PE`, licencias MTC clase B, WhatsApp `+51`. Los precios del catálogo actual son placeholders pendientes de validación del cliente ([ADR-014](./docs/21-decisions.md)).
-- **Marca placeholder:** "Raiden" es un nombre provisional; todas las referencias de marca viven en `src/config/site.ts` ([ADR-012](./docs/21-decisions.md)).
+- **Mercado Perú:** precios en soles (`PEN`, formato `S/ 4,999`, IGV incluido), locale `es-PE`, licencias MTC clase B, WhatsApp `+51`. El catálogo es el real de RAIDEN, con los precios vigentes del cliente ([ADR-014](./docs/21-decisions.md), [ADR-015](./docs/21-decisions.md)).
+- **Marca:** RAIDEN, con EG Motors SAC (RUC 20615247384) como distribuidor oficial; todas las referencias de marca y empresa viven en `src/config/site.ts` ([ADR-012](./docs/21-decisions.md), [ADR-015](./docs/21-decisions.md)).
 
 Documentación completa en [`/docs`](./docs/README.md) y perfiles de cada rol en [`/agents`](./agents).
 
@@ -62,16 +62,16 @@ Solo existen variables con prefijo `PUBLIC_` (se leen en build y llegan al bundl
 | Variable | Ejemplo | Uso |
 |---|---|---|
 | `PUBLIC_SITE_URL` | `https://raiden.pe` | URL canónica: canonicals, sitemap, JSON-LD, OG |
-| `PUBLIC_WHATSAPP_NUMBER` | `34612345678` | Número de ventas, formato internacional sin `+` |
-| `PUBLIC_CONTACT_EMAIL` | `hola@raiden.pe` | Email del pie y del JSON-LD |
+| `PUBLIC_WHATSAPP_NUMBER` | `51989853431` | Número de ventas, formato internacional sin `+` |
+| `PUBLIC_CONTACT_EMAIL` | `raiden.peru@gmail.com` | Email del pie y del JSON-LD |
 | `PUBLIC_ANALYTICS` | `console` \| `datalayer` \| vacío | Adaptador de analítica (vacío = noop) |
 | `PUBLIC_CF_BEACON_TOKEN` | vacío | Token del beacon de Cloudflare Web Analytics (solo producción) |
 
-Copia `.env.example` a `.env` para desarrollo local (`.env` está ignorado por git). Ejemplo: `PUBLIC_WHATSAPP_NUMBER=51987654321` (formato internacional sin `+`).
+Copia `.env.example` a `.env` para desarrollo local (`.env` está ignorado por git). Ejemplo: `PUBLIC_WHATSAPP_NUMBER=51989853431` (formato internacional sin `+`).
 
 ### Cómo se configura el número de WhatsApp
 
-El número vive **solo** en [`src/config/site.ts`](./src/config/site.ts), que lee `PUBLIC_WHATSAPP_NUMBER` con un valor por defecto de pruebas (`51987654321`). Ningún componente lo hardcodea; [`src/services/whatsapp/WhatsAppMessageBuilder.ts`](./src/services/whatsapp/WhatsAppMessageBuilder.ts) construye `https://wa.me/<número>?text=<mensaje codificado con encodeURIComponent>`. Para cambiarlo en producción: actualizar la variable en el hosting y relanzar el build (se lee en tiempo de build). Runbook en [docs/14-devops §9](./docs/14-devops.md).
+El número vive **solo** en [`src/config/site.ts`](./src/config/site.ts), que lee `PUBLIC_WHATSAPP_NUMBER` con el número de ventas de EG Motors como valor por defecto (`51989853431`, +51 989 853 431). Ningún componente lo hardcodea; [`src/services/whatsapp/WhatsAppMessageBuilder.ts`](./src/services/whatsapp/WhatsAppMessageBuilder.ts) construye `https://wa.me/<número>?text=<mensaje codificado con encodeURIComponent>`. Para cambiarlo en producción: actualizar la variable en el hosting y relanzar el build (se lee en tiempo de build). Runbook en [docs/14-devops §9](./docs/14-devops.md).
 
 ## Estructura
 
@@ -92,8 +92,8 @@ El número vive **solo** en [`src/config/site.ts`](./src/config/site.ts), que le
 │   ├── components/                  # .astro: layout, catalog, product, seo, ui
 │   ├── islands/                     # Preact: carrito, comparador, configurador, finder, toasts
 │   ├── layouts/BaseLayout.astro
-│   ├── pages/                       # rutas: /, /[categoria], /motos-electricas/[slug], /carrito, /comparar…
-│   ├── content/                     # products/, accessories/, categories/, faqs/, blog/ (JSON)
+│   ├── pages/                       # rutas: /, /productos, /[categoria]/[slug], /repuestos, /carrito, /comparar…
+│   ├── content/                     # products/, repuestos/, categories/, faqs/ (JSON), blog/ (MD)
 │   ├── content.config.ts            # esquemas zod de las colecciones
 │   ├── config/site.ts               # única fuente de verdad de marca, contacto y límites
 │   ├── domain/                      # tipos y lógica pura (carrito, precios, recomendación)
@@ -102,19 +102,19 @@ El número vive **solo** en [`src/config/site.ts`](./src/config/site.ts), que le
 │   ├── stores/                      # nanostores: cart, compare, toast
 │   ├── lib/                         # seo/, images, analytics-init
 │   └── styles/                      # tokens.css, base.css, components.css
-├── docs/                            # 00–22: producto, arquitectura, seguridad, despliegue…
+├── docs/                            # 00–23: producto, arquitectura, seguridad, despliegue…
 └── agents/                          # perfiles de rol (tech-lead, frontend, security, devops…)
 ```
 
 ## Cómo añadir un producto
 
-1. Crea `src/content/products/<slug>.json` (el nombre del fichero es el `slug` de la URL `/motos-electricas/<slug>` o la categoría correspondiente).
-2. Rellena los campos del esquema de [`src/content.config.ts`](./src/content.config.ts): `id` (UUID), `slug`, `name`, `subtitle`, `claim`, `description`, `category` (uno de los slugs de categoría), `brand`, `images[]` (`src` apuntando a `~/assets/products/...`, `alt`, `width`, `height`), `specs` (autonomía, velocidad, potencia, batería, licencia…), `variants[]`, colores, precio (`{ amount: céntimos de sol, currency: "PEN" }`), `availability` y `useCases`.
+1. Crea `src/content/products/<slug>.json` (el nombre del fichero es el `slug`; la URL es `/<categoria>/<slug>`, p. ej. `/bicimotos/golden-eagle` o `/trimotos/titan-rhino`).
+2. Rellena los campos del esquema de [`src/content.config.ts`](./src/content.config.ts): `id`, `slug`, `name`, `subtitle`, `claim`, `description`, `category` (`bicimotos` o `trimotos`), `brand`, `images[]` (`src` apuntando a `~/assets/products/...`, `alt`, `width`, `height`), `specs` (autonomía, velocidad, potencia, batería, licencia…), `variants[]` (cada una con `tier`: `estandar` o `premium`, y precio `{ amount: céntimos de sol, currency: "PEN" }`), colores, `availability` y `useCases`.
 3. Añade las imágenes en `src/assets/products/` (máximo 4 anchos por imagen, ver [docs/09-performance](./docs/09-performance.md)).
 4. `npm run build`: el esquema valida en build; un JSON inválido rompe la compilación con el campo exacto.
 5. Abre una PR desde una rama `content/<tema>`; la preview de Cloudflare Pages se publica en la PR.
 
-Usa [`src/content/products/odin-1-0.json`](./src/content/products/odin-1-0.json) como plantilla. Más detalle en [docs/15-content-strategy](./docs/15-content-strategy.md).
+Usa [`src/content/products/golden-eagle.json`](./src/content/products/golden-eagle.json) como plantilla; los repuestos van en `src/content/repuestos/<slug>.json`. Más detalle en [docs/15-content-strategy](./docs/15-content-strategy.md).
 
 ## Despliegue en Cloudflare Pages
 

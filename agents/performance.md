@@ -6,7 +6,7 @@ Custodia el presupuesto de rendimiento de Raiden y revisa todo cambio que pueda 
 
 ## Responsabilidades
 
-- Definir y mantener el presupuesto de Lighthouse CI: LCP < 2,0 s, INP < 200 ms, CLS < 0,1, JS < 60 KB gz en `/motos-electricas/[slug]`.
+- Definir y mantener el presupuesto de Lighthouse CI: LCP < 2,0 s, INP < 200 ms, CLS < 0,1, JS < 60 KB gz en `/bicimotos/golden-eagle`.
 - Revisar el tamaño del bundle de cada isla Preact (drawer, configurador, comparador, finder) y del runtime de Preact ^10.29.
 - Auditar imágenes: `<Image>`/`<Picture>` con AVIF/WebP, `width`/`height`, `sizes` ajustado a los breakpoints 480/768/1024/1280/1536, `loading="eager"` y `fetchpriority="high"` solo en el LCP.
 - Supervisar la configuración de build: `build.inlineStylesheets: 'auto'`, `vite.build.cssCodeSplit`, `prefetch` en hover, `image.responsiveStyles: true`.
@@ -18,10 +18,10 @@ Custodia el presupuesto de rendimiento de Raiden y revisa todo cambio que pueda 
 
 | Métrica | Página | Umbral |
 |---|---|---|
-| LCP | `/motos-electricas/[slug]` y `/` | < 2,0 s |
+| LCP | `/bicimotos/golden-eagle` y `/` | < 2,0 s |
 | INP | Drawer del carrito y configurador | < 200 ms |
 | CLS | Todas las rutas | < 0,1 |
-| JS transferido | `/motos-electricas/[slug]` | < 60 KB gz |
+| JS transferido | `/bicimotos/golden-eagle` | < 60 KB gz |
 | JS transferido | Páginas sin islas (`/garantia`, `/faq`, `/legal/*`, `/blog/[slug]`) | 0 KB salvo prefetch |
 | CSS crítico | Inline por página | < 14 KB |
 | Imagen LCP | Peso en móvil | < 120 KB |

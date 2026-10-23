@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import type { ImageRef, Part, ProductColor, ProductVariant } from '../domain/types';
+import type { ImageRef, ProductColor, ProductVariant } from '../domain/types';
 import { formatMoney } from '../domain/money';
 import { add, pen } from '../domain/money';
 import { availabilityLabel, tierLabel } from '../domain/product';
@@ -29,8 +29,6 @@ interface Props {
   name: string;
   variants: ProductVariant[];
   colors: ProductColor[];
-  /** Repuestos compatibles ofrecidos como extra */
-  parts: Part[];
   /** Imagen para el carrito (URL pública) */
   image?: ImageRef;
   /** Imagen optimizada por color (id → src/srcset) para la galería */
@@ -44,17 +42,16 @@ const badgeClass: Record<ProductVariant['availability'], string> = {
   agotado: 'badge',
 };
 
-export default function ProductConfigurator({ slug, name, variants, colors, parts, image, colorImages = {} }: Props) {
+export default function ProductConfigurator({ slug, name, variants, colors, image, colorImages = {} }: Props) {
   const [variantId, setVariantId] = useState(variants.find((v) => v.isDefault)?.id ?? variants[0]!.id);
   const [colorId, setColorId] = useState(colors[0]?.id);
   const [qty, setQty] = useState(1);
-  const [extras, setExtras] = useState<Set<string>>(new Set());
 
   const variant = variants.find((v) => v.id === variantId) ?? variants[0]!;
   const color = colors.find((c) => c.id === colorId);
   const unit = useMemo(() => (color?.priceDelta ? add(variant.price, color.priceDelta) : variant.price), [variant, color]);
-  const extrasTotal = useMemo(() => parts.filter((a) => extras.has(a.slug)).reduce((m, a) => add(m, a.price), pen(0)), [parts, extras]);
-  const total = add(pen(unit.amount * qty), extrasTotal);
+  // Los repuestos se compran aparte desde /repuestos (decisión del cliente, 2026-10-23)
+  const total = pen(unit.amount * qty);
   const unavailable = variant.availability === 'agotado';
 
   // Galería: sincroniza la imagen principal SSR y las miniaturas con el color elegido
@@ -99,18 +96,7 @@ export default function ProductConfigurator({ slug, name, variants, colors, part
       quantity: qty,
       image: cartImage,
     });
-    for (const a of parts) {
-      if (extras.has(a.slug)) {
-        addToCart({ kind: 'accessory', slug: a.slug, name: a.name, unitPrice: a.price, quantity: 1, image: a.image });
-      }
-    }
     toast(`${name} añadido a tu solicitud`);
-  };
-
-  const toggleExtra = (s: string) => {
-    const next = new Set(extras);
-    next.has(s) ? next.delete(s) : next.add(s);
-    setExtras(next);
   };
 
   return (
@@ -151,24 +137,6 @@ export default function ProductConfigurator({ slug, name, variants, colors, part
               <label class="swatch" style={`background:${c.hex}`} key={c.id} title={c.name}>
                 <input type="radio" name="color" value={c.id} checked={c.id === colorId} onChange={() => setColorId(c.id)} />
                 <span class="visually-hidden">{c.name}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      )}
-
-      {parts.length > 0 && (
-        <fieldset class="cfg__group">
-          <legend class="label">Añadir repuestos</legend>
-          <div class="cfg__extras">
-            {parts.map((a) => (
-              <label class="cfg__extra" key={a.slug}>
-                <input type="checkbox" checked={extras.has(a.slug)} onChange={() => toggleExtra(a.slug)} />
-                <span>
-                  {a.name}
-                  {a.unit === 'PAR' && <span class="muted"> (par)</span>}
-                </span>
-                <span class="muted">+{formatMoney(a.price)}</span>
               </label>
             ))}
           </div>

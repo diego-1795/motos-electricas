@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PreloadImage from '../../components/ui/PreloadImage.astro';
 import CatalogView from '../../components/catalog/CatalogView.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import SectionHeading from '../../components/ui/SectionHeading.astro';
@@ -23,6 +24,7 @@ const crumbs = [
   path={ALL_PRODUCTS_PATH}
   jsonLd={[breadcrumbSchema(crumbs), itemListSchema(products.map((p) => ({ name: p.name, url: productPath(p) })))]}
 >
+  {products[0] && <PreloadImage slot="head" image={products[0].images[0]!} widths={[320, 480, 640]} sizes="(min-width: 1024px) 22vw, (min-width: 768px) 45vw, 92vw" />}
   <div class="container section">
     <Breadcrumbs items={crumbs} />
     <SectionHeading as="h1" eyebrow="Descubre tu instinto" title="Todos los productos" text="Bicimotos y trimotos eléctricas RAIDEN. Filtra por precio, versión o modelo y compara hasta tres.">
