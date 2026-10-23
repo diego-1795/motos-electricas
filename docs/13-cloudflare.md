@@ -81,9 +81,11 @@ Notas:
 # Canonical: www -> apex
 https://www.raiden.pe/*  https://raiden.pe/:splat  301
 
-# Rutas antiguas (mantener al renombrar categorías)
-/scooters            /scooters-electricos        301
-/motos               /motos-electricas           301
+# Rutas del catálogo anterior (ADR-015): solo si llegaron a indexarse
+/motos-electricas          /productos     301
+/accesorios                /repuestos     301
+/scooters-electricos       /bicimotos     301
+/motos-electricas-urbanas  /bicimotos     301
 
 # Sin trailing slash (trailingSlash: 'never')
 /*/                  /:splat                     301

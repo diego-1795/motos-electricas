@@ -38,7 +38,8 @@ Regla: las flechas de import solo apuntan hacia abajo. Dominio no importa nada d
 ```
 src/
 ├── assets/                  # imágenes optimizadas en build (sharp)
-│   ├── products/<slug>/
+│   ├── products/            # <slug>-<color>.jpg
+│   ├── hero/ repuestos/ blog/ nosotros/
 │   └── brand/
 ├── components/
 │   ├── ui/                  # Button, Card, Input, Select, Badge, Tabs, Table, SpecTile, ColorSwatch…
@@ -53,17 +54,16 @@ src/
 │   ├── config.ts            # definición de colecciones
 │   ├── products/*.json
 │   ├── categories/*.json
-│   ├── accessories/*.json
-│   ├── brands/*.json
+│   ├── repuestos/*.json
 │   ├── blog/*.md
 │   └── faqs/*.json
 ├── data/
-│   ├── repositories/        # interfaces: ProductRepository, CategoryRepository, AccessoryRepository, BlogRepository, FaqRepository
+│   ├── repositories/        # interfaces: ProductRepository, CategoryRepository, PartRepository, BlogRepository, FaqRepository
 │   ├── json/                # JsonProductRepository, JsonCategoryRepository…
 │   ├── supabase/            # SupabaseProductRepository… (futuro, misma interfaz)
 │   └── index.ts             # composición: exporta la implementación activa
 ├── domain/
-│   ├── entities/            # Product, ProductVariant, ProductColor, Category, Brand, Battery, Accessory,
+│   ├── entities/            # Product, ProductVariant, ProductColor, Category, Brand, Battery, Part (repuesto),
 │   │                        # Cart, CartItem, OrderRequest, Customer, WhatsAppRequest, BlogPost, FAQ, Review
 │   ├── pricing.ts           # lineTotal, cartTotal, formatPrice
 │   ├── compare.ts           # diffSpecs, compareRows
@@ -111,7 +111,7 @@ src/
 2. `JsonProductRepository` expone `findAll`, `findBySlug`, `findByCategory`.
 3. Cada página llama al repositorio en el frontmatter y genera HTML + JSON-LD + imágenes optimizadas.
 4. `@astrojs/sitemap` genera el sitemap excluyendo `/carrito` y `/comparar`.
-5. Las islas reciben sus datos como **props serializables** (producto, variantes, colores, accesorios compatibles). No hacen peticiones en runtime.
+5. Las islas reciben sus datos como **props serializables** (producto, variantes, colores, repuestos compatibles). No hacen peticiones en runtime.
 
 **Runtime (navegador)**
 
@@ -178,7 +178,7 @@ export const productRepository: ProductRepository = new JsonProductRepository();
 | Variable | Obligatoria | Ejemplo | Uso |
 |---|---|---|---|
 | `PUBLIC_SITE_URL` | Sí en producción | `https://raiden.pe` | `site` en `astro.config.mjs`, canónicas, sitemap |
-| `PUBLIC_WHATSAPP_NUMBER` | Sí | `51987654321` (sin `+`) | Enlace `wa.me` |
+| `PUBLIC_WHATSAPP_NUMBER` | Sí | `51989853431` (sin `+`) | Enlace `wa.me` |
 | `PUBLIC_ANALYTICS_ADAPTER` | No | `noop` \| `console` \| `cloudflare` \| `datalayer` | Selección del adaptador |
 | `PUBLIC_CF_ANALYTICS_TOKEN` | No | token del beacon | Solo si adapter = `cloudflare` |
 | `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` | No (futuro) | — | `SupabaseProductRepository` |

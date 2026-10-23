@@ -11,7 +11,7 @@ Rutas de evolución previstas para Raiden. Cada una se diseñó para que el camb
 | (c) JSON → Supabase | `ProductRepository` activo, script de import | Páginas y componentes (consumen la interfaz) | 2–3 días | Sí, doble lectura |
 | (d) wa.me → WhatsApp Business API | `WhatsAppSender`, necesita backend | `WhatsAppMessageBuilder`, carrito | 3–5 días | Sí, feature flag |
 | (e) noop analytics → otro proveedor | Variable de entorno y/o nuevo adaptador | Llamadas `analytics.track` | 0,5 día | Sí |
-| (f) Fuentes de sistema → Inter self-hosted | `tokens.css`, `@font-face`, preload | Componentes | 0,5 día | Sí |
+| (f) Cambio de tipografías self-hosted (hoy Montserrat + Integral CF) | `fonts.css`, `tokens.css`, preload en `BaseLayout.astro` | Componentes | 0,5 día | Sí |
 
 ## (a) Cloudflare Pages → Vercel / Netlify / Nginx
 
@@ -91,7 +91,7 @@ Motivos previstos: rutas `/admin`, stock en tiempo real, formularios con backend
 
 1. Instalar el adapter del hosting activo: `@astrojs/cloudflare`, `@astrojs/vercel` o `@astrojs/node` (standalone para Nginx).
 2. `astro.config.mjs`: `output: 'static'` se mantiene; añadir `adapter: cloudflare()` (o el que toque). En Astro 5+ las páginas son estáticas por defecto y se vuelven dinámicas página a página.
-3. Marcar `export const prerender = false` solo en: `src/pages/admin/**`, `src/pages/api/**` y, si se decide stock en vivo, `src/pages/motos-electricas/[slug].astro`.
+3. Marcar `export const prerender = false` solo en: `src/pages/admin/**`, `src/pages/api/**` y, si se decide stock en vivo, `src/pages/[categoria]/[slug].astro`.
 4. Todo el resto (home, listados, blog, legal, comparar, carrito, finder) sigue prerenderizado: no cambia rendimiento ni SEO.
 5. Variables no `PUBLIC_*` (claves de servicio) pasan a estar disponibles solo en código servidor; nunca en islas.
 6. Repetir Lighthouse CI: las páginas prerenderizadas deben dar el mismo resultado que antes.
@@ -100,9 +100,9 @@ Reversión: retirar el adapter y los `prerender = false`; las páginas dinámica
 
 ## (c) JSON → Supabase
 
-1. Crear el esquema de [06-database](./06-database.md) con las migraciones SQL del repo (`supabase/migrations`). RLS: lectura pública en `products`, `variants`, `colors`, `accessories`, `categories`, `brands`; escritura solo rol `admin`.
-2. Implementar `src/data/supabase/SupabaseProductRepository.ts` cumpliendo `ProductRepository` (`getAll`, `getBySlug`, `getByCategory`, `getRelated`). Mapear filas a `Product` del dominio en un `mapper.ts`; el dominio no conoce columnas.
-3. Script de import `scripts/import-products.ts`: lee `src/content/products/*.json`, valida con los validadores manuales de `src/domain`, hace `upsert` por `slug` con la clave de servicio (solo en local/CI, nunca en build de Pages).
+1. Crear el esquema de [06-database](./06-database.md) con las migraciones SQL del repo (`supabase/migrations`). RLS: lectura pública en `products`, `product_variants`, `product_colors`, `parts`, `product_parts`, `categories`, `brands`; escritura solo rol `admin`.
+2. Implementar `src/data/supabase/SupabaseProductRepository.ts` cumpliendo `ProductRepository` (`all`, `bySlug`, `byCategory`, `bySlugs`) y `PartRepository` (`all`, `bySlug`, `compatibleWith`). Mapear filas a `Product` del dominio en un `mapper.ts`; el dominio no conoce columnas.
+3. Script de import `scripts/import-products.ts`: lee `src/content/products/*.json` y `src/content/repuestos/*.json`, valida con los validadores manuales de `src/domain`, hace `upsert` por `slug` con la clave de servicio (solo en local/CI, nunca en build de Pages).
 4. Doble lectura durante la transición: `src/data/index.ts` exporta el repositorio según `PUBLIC_PRODUCT_SOURCE` (`json|supabase`). En build, un test compara que ambos repositorios devuelven el mismo conjunto de slugs y precios; si difieren, el build falla.
 5. En SSG, Supabase se consulta en tiempo de build (la clave anónima es `PUBLIC_SUPABASE_ANON_KEY`); cada cambio en datos exige un rebuild vía webhook de Supabase → Deploy Hook de Pages.
 6. Tras dos semanas con `supabase` en producción sin discrepancias, retirar los JSON y el repositorio JSON del path de producción (se conservan como fixtures de tests).
@@ -130,15 +130,17 @@ Reversión: `PUBLIC_WHATSAPP_MODE=link`.
 
 Reversión: `PUBLIC_ANALYTICS_PROVIDER=noop`.
 
-## (f) Fuentes de sistema → Inter self-hosted
+## (f) Cambio de tipografías self-hosted
 
-1. Descargar `InterVariable.woff2` (licencia OFL) a `public/fonts/`.
-2. En `base.css`: `@font-face { font-family: 'Inter'; src: url('/fonts/InterVariable.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }`.
-3. En `BaseLayout.astro`: `<link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>`.
-4. Ajustar `size-adjust`/`ascent-override` en una `@font-face` de fallback para que el intercambio no produzca CLS.
-5. Medir: el fichero (~100 KB) no cuenta en el presupuesto JS, pero LCP no puede superar 2,0 s en 4G simulado. Si lo supera, subconjunto latino con `pyftsubset`.
+Estado actual: Montserrat (variable) e Integral CF self-hosted en `public/fonts/`, declaradas en `src/styles/fonts.css` ([02-design-system](./02-design-system.md)). Para sustituirlas o añadir otra:
 
-Reversión: eliminar `@font-face` y preload; la pila de sistema ya tiene `Inter` en primera posición, de modo que sin `@font-face` el navegador usa la siguiente disponible.
+1. Colocar el `woff2` (subconjunto latino, licencia verificada: Montserrat es OFL; Integral CF es licencia comercial del cliente) en `public/fonts/<familia>/` con nombre sin corchetes.
+2. Declarar el `@font-face` en `fonts.css` con `font-display: swap` y actualizar `--font-sans` / `--font-display` en `tokens.css`.
+3. En `BaseLayout.astro`: `<link rel="preload" href="/fonts/..." as="font" type="font/woff2" crossorigin>` solo para las fuentes del primer render.
+4. Ajustar `size-adjust`/`ascent-override` en el `@font-face` de fallback para que el intercambio no produzca CLS.
+5. Medir: el fichero no cuenta en el presupuesto JS, pero LCP debe seguir dentro de presupuesto ([09-performance](./09-performance.md)).
+
+Reversión: restaurar `fonts.css`, `tokens.css` y el preload anteriores; la pila `system-ui` actúa de respaldo.
 
 ## Riesgos
 

@@ -8,37 +8,35 @@ Idioma objetivo: español del Perú (`es-PE`). Sin versión multi-idioma en MVP 
 
 | Categoría | Keyword principal | Secundarias | Intención | Ruta |
 |---|---|---|---|---|
-| Home | movilidad eléctrica | showroom motos eléctricas, comprar moto eléctrica | Navegacional / comercial | `/` |
-| Motos (hub) | motos eléctricas | moto eléctrica precio, moto eléctrica Perú, precio en soles | Comercial | `/motos-electricas` |
-| Scooters | scooter eléctrico | scooter eléctrico 125, patinete vs scooter | Comercial | `/scooters-electricos` |
-| Urbanas | moto eléctrica urbana | moto eléctrica ciudad, licencia B-IIa moto eléctrica, scooter eléctrico Lima | Comercial | `/motos-electricas-urbanas` |
-| Bicimotos | bicimoto eléctrica | moto lineal eléctrica, bicimoto sin licencia | Comercial | `/bicimotos` |
-| Trimotos | trimoto eléctrica | moto tres ruedas eléctrica | Comercial | `/trimotos` |
-| Carga | vehículo eléctrico de carga | moto de carga eléctrica, reparto eléctrico | Comercial B2B | `/vehiculos-carga` |
-| Cuatrimotos | cuatrimoto eléctrica | quad eléctrico | Comercial | `/cuatrimotos` |
-| Accesorios | accesorios moto eléctrica | batería adicional, casco, cargador | Transaccional | `/accesorios` |
-| Producto | `{marca} {modelo}` | `{modelo} precio`, `{modelo} autonomía` | Transaccional | `/motos-electricas/[slug]` |
-| Comparador | comparar motos eléctricas | `{modelo A} vs {modelo B}` | Informacional | `/comparar` (noindex) |
-| Finder | qué moto eléctrica comprar | moto eléctrica para ciudad | Informacional | `/encuentra-tu-moto` |
-| Blog | guías movilidad eléctrica | autonomía real, licencia MTC, SOAT | Informacional | `/blog/[slug]` |
-| Garantía / FAQ | garantía moto eléctrica | mantenimiento batería litio | Informacional | `/garantia`, `/faq` |
+| Home | bicimotos eléctricas RAIDEN | trimoto eléctrica de carga, bicimoto eléctrica en Lima, distribuidor oficial RAIDEN | Navegacional / comercial | `/` |
+| Catálogo (hub) | bicimotos y trimotos eléctricas | precio en soles, comprar bicimoto eléctrica Perú | Comercial | `/productos` |
+| Bicimotos | bicimoto eléctrica | bicimoto eléctrica sin licencia, bicimoto eléctrica Lima, Golden Eagle, Royal Tiger, Vortex Kobra | Comercial | `/bicimotos` |
+| Trimotos | trimoto eléctrica de carga | moto de carga eléctrica, trimoto eléctrica Perú, Titan Rhino | Comercial B2B | `/trimotos` |
+| Repuestos | repuestos bicimoto eléctrica | batería Chilwee 48V, motor 500 W, controlador, cargador | Transaccional | `/repuestos` |
+| Producto | `{modelo}` RAIDEN | `{modelo} precio`, `{modelo} autonomía` | Transaccional | `/bicimotos/[slug]`, `/trimotos/[slug]` |
+| Repuesto | `{repuesto}` RAIDEN | `{repuesto} precio`, `{repuesto} {modelo}` | Transaccional | `/repuestos/[slug]` |
+| Comparador | comparar bicimotos eléctricas | `{modelo A} vs {modelo B}` | Informacional | `/comparar` (noindex) |
+| Finder | qué bicimoto eléctrica comprar | bicimoto eléctrica para ciudad | Informacional | `/encuentra-tu-moto` |
+| Blog | guías bicimoto eléctrica | autonomía real, licencia MTC (¿necesito licencia?), cuidado de la batería | Informacional | `/blog/[slug]` |
+| Garantía / FAQ / Servicio técnico | garantía bicimoto eléctrica | mantenimiento batería Chilwee, servicio técnico en Callao | Informacional | `/garantia`, `/faq` |
 
 Reglas: una keyword principal por URL; no canibalizar (una sola página por categoría); las keywords informacionales van al blog y enlazan a categoría/producto.
 
 ## 2. Arquitectura de URLs y metadatos
 
-`trailingSlash: 'never'`, minúsculas, guiones, sin acentos ni parámetros. Slugs derivados del nombre del producto (`odin-1-0`). Las URLs son contratos: un cambio de slug exige redirección 301 en `public/_redirects`.
+`trailingSlash: 'never'`, minúsculas, guiones, sin acentos ni parámetros. Slugs derivados del nombre del producto (`golden-eagle`, `titan-rhino`). Las URLs son contratos: un cambio de slug exige redirección 301 en `public/_redirects`.
 
 | Ruta | Patrón `<title>` (≤ 60 car.) | Patrón `description` (≤ 155 car.) | Index |
 |---|---|---|---|
-| `/` | Raiden — Motos eléctricas y movilidad urbana | Showroom de motos, scooters y vehículos eléctricos. Compara, configura y pide por WhatsApp. | sí |
-| `/motos-electricas` | Motos eléctricas — Catálogo \| Raiden | Todas las motos eléctricas: urbanas, scooters, bicimotos y más. Precios y autonomía. | sí |
-| `/motos-electricas/[slug]` | `{nombre}` — Moto eléctrica `{autonomía} km` \| Raiden | `{nombre}`: `{potencia}`, `{autonomía}` km, desde S/ `{precio}`. Configura color y batería. | sí |
-| `/scooters-electricos` y resto de categorías | `{Categoría}` eléctricos \| Raiden | `{descripción corta de la categoría}` | sí |
-| `/accesorios` | Accesorios para moto eléctrica \| Raiden | Baterías, cascos, cargadores y más. | sí |
-| `/accesorios/[slug]` | `{nombre}` \| Accesorios Raiden | `{descripción corta}` | sí |
-| `/comparar` | Comparar motos eléctricas \| Raiden | — | noindex |
-| `/encuentra-tu-moto` | Encuentra tu moto eléctrica \| Raiden | Responde 4 preguntas y te recomendamos el modelo ideal. | sí |
+| `/` | Raiden — Bicimotos y trimotos eléctricas en Lima | Bicimotos y trimotos eléctricas RAIDEN: Golden Eagle, Royal Tiger, Vortex Kobra y Titan Rhino. Pide por WhatsApp. | sí |
+| `/productos` | Bicimotos y trimotos eléctricas — Catálogo \| Raiden | Todos los modelos RAIDEN con precios en soles, autonomía y versiones Estándar y Premium. | sí |
+| `/bicimotos/[slug]`, `/trimotos/[slug]` | `{nombre}`: `{tipo}` eléctrica RAIDEN \| Desde S/ `{precio}` (ej. `/bicimotos/golden-eagle`) | `{nombre}`: `{velocidad}` km/h, `{licencia}`, batería Chilwee, `{autonomía}` km. Desde S/ `{precio}` con garantía. | sí |
+| `/bicimotos`, `/trimotos` | Campo `title` del JSON de la categoría (p. ej. "Bicimotos eléctricas en Lima, Perú") | Campo `description` del JSON de la categoría | sí |
+| `/repuestos` | Repuestos para bicimotos eléctricas | Baterías Chilwee, motores, controladores, cargadores y más. Envío a todo el Perú. | sí |
+| `/repuestos/[slug]` | `{nombre}` \| Repuestos Raiden | `{descripción corta}` | sí |
+| `/nosotros`, `/servicio-tecnico` | `{Sección}` \| Raiden | `{texto fijo}` | sí |
+| `/comparar` | Comparar bicimotos eléctricas \| Raiden | — | noindex |
+| `/encuentra-tu-moto` | Encuentra tu bicimoto eléctrica \| Raiden | Responde 4 preguntas y te recomendamos el modelo ideal. | sí |
 | `/carrito` | Tu solicitud de pedido \| Raiden | — | noindex |
 | `/blog` | Blog de movilidad eléctrica \| Raiden | Guías, comparativas y consejos. | sí |
 | `/blog/[slug]` | `{título}` \| Blog Raiden | `{extracto}` | sí |
@@ -99,32 +97,32 @@ Un `<script type="application/ld+json">` por entidad. `@context` siempre `https:
 ```
 
 ```json
-{ "@type": "Product", "name": "ODIN 1.0", "brand": { "@type": "Brand", "name": "Raiden" },
-  "sku": "odin-1-0-72v50ah", "image": ["https://raiden.example.com/_astro/odin-1.avif"],
-  "description": "Moto eléctrica urbana, 72V 50Ah, 120 km de autonomía.",
-  "offers": { "@type": "Offer", "price": "21996", "priceCurrency": "PEN",
+{ "@type": "Product", "name": "Golden Eagle", "brand": { "@type": "Brand", "name": "Raiden" },
+  "sku": "RD-GOLDENEAGLE-350", "image": ["https://raiden.example.com/_astro/golden-eagle-negro.avif"],
+  "description": "Bicimoto eléctrica urbana, 25 km/h, batería Chilwee 48V 12Ah, 30-35 km de autonomía.",
+  "offers": { "@type": "Offer", "price": "1200", "priceCurrency": "PEN",
     "availability": "https://schema.org/InStock",
-    "url": "https://raiden.example.com/motos-electricas/odin-1-0", "itemCondition": "https://schema.org/NewCondition" } }
+    "url": "https://raiden.example.com/bicimotos/golden-eagle", "itemCondition": "https://schema.org/NewCondition" } }
 ```
 
-Reglas de `Product`: precio de la variante base; `availability` derivada del campo `stock` del JSON (`InStock`, `PreOrder`, `OutOfStock`); `aggregateRating` solo cuando existan reseñas reales en `reviews`.
+Reglas de `Product`: precio de la variante base; `availability` derivada del campo `availability` del JSON (`en-stock` → `InStock`, `bajo-pedido` → `PreOrder`, `agotado` → `OutOfStock`); `aggregateRating` solo cuando existan reseñas reales en `reviews`.
 
 ```json
 { "@type": "BreadcrumbList", "itemListElement": [
   { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://raiden.example.com/" },
-  { "@type": "ListItem", "position": 2, "name": "Motos eléctricas", "item": "https://raiden.example.com/motos-electricas" },
-  { "@type": "ListItem", "position": 3, "name": "ODIN 1.0" } ] }
+  { "@type": "ListItem", "position": 2, "name": "Bicimotos", "item": "https://raiden.example.com/bicimotos" },
+  { "@type": "ListItem", "position": 3, "name": "Golden Eagle" } ] }
 ```
 
 ```json
 { "@type": "FAQPage", "mainEntity": [ { "@type": "Question", "name": "¿Necesito licencia?",
-  "acceptedAnswer": { "@type": "Answer", "text": "Depende de la potencia: las bicimotos no requieren licencia; scooters y motos requieren licencia MTC clase B (B-I, B-IIa o superior)." } } ] }
+  "acceptedAnswer": { "@type": "Answer", "text": "Las bicimotos RAIDEN de 25 km/h en general no requieren licencia de conducir (confirma la norma vigente con el MTC)." } } ] }
 ```
 
 ```json
-{ "@type": "Article", "headline": "Autonomía real de una moto eléctrica", "datePublished": "2026-09-01",
+{ "@type": "Article", "headline": "¿Necesito licencia para una bicimoto eléctrica en Perú?", "datePublished": "2026-09-01",
   "dateModified": "2026-09-01", "author": { "@type": "Organization", "name": "Raiden" },
-  "image": "https://raiden.example.com/blog/autonomia.jpg", "mainEntityOfPage": "https://raiden.example.com/blog/autonomia-real" }
+  "image": "https://raiden.example.com/blog/necesito-licencia.jpg", "mainEntityOfPage": "https://raiden.example.com/blog/necesito-licencia-para-una-bicimoto-electrica-en-peru" }
 ```
 
 `FAQPage` solo en `/faq` y en productos con bloque de preguntas visible; nunca ocultar el texto.
@@ -148,7 +146,7 @@ Sitemap: https://raiden.example.com/sitemap-index.xml
 ## 6. Open Graph, Twitter e imágenes
 
 - OG/Twitter salen de `buildMeta`. Imagen por defecto `public/og/default.jpg` (1200×630). Productos: imagen principal del producto renderizada a 1200×630 en build.
-- Imágenes de producto en `src/assets/products/{slug}/{slug}-{vista}.jpg` (p. ej. `odin-1-0-lateral.jpg`). `alt` descriptivo y específico: "ODIN 1.0 en color negro, vista lateral". Nunca `alt` vacío en imágenes de contenido; `alt=""` solo en decorativas.
+- Imágenes de producto en `src/assets/products/{slug}-{color}.jpg` (p. ej. `golden-eagle-negro.jpg`) y de repuestos en `src/assets/repuestos/`. `alt` descriptivo y específico: "Golden Eagle en color negro". Nunca `alt` vacío en imágenes de contenido; `alt=""` solo en decorativas.
 - AVIF/WebP con `<Picture>`; `width`/`height` explícitos (evitan CLS, factor de ranking vía Core Web Vitals).
 
 ## 7. Core Web Vitals
@@ -158,14 +156,14 @@ Google usa CWV como señal. Presupuestos en [09-performance](./09-performance.md
 ## 8. Enlazado interno
 
 - Breadcrumbs en todas las páginas de catálogo y blog (visibles + JSON-LD).
-- Producto → categoría, 3 productos relacionados (misma categoría), accesorios compatibles, artículo del blog relevante.
+- Producto → categoría, modelos relacionados (campo `related`), repuestos compatibles, artículo del blog relevante.
 - Categoría → todos sus productos, enlace al finder y a la comparativa de la categoría.
-- Blog → producto/categoría con anchor descriptivo ("ver la ODIN 1.0"), nunca "clic aquí".
-- Footer: categorías, garantía, FAQ, contacto, legal. Máximo 3 niveles de profundidad desde la home.
+- Blog → producto/categoría con anchor descriptivo ("ver la Golden Eagle"), nunca "clic aquí".
+- Footer: categorías, nosotros, servicio técnico, garantía, FAQ, contacto, legal. Máximo 3 niveles de profundidad desde la home.
 
 ## 9. Blog y contenido
 
-El blog sostiene las keywords informacionales (licencia MTC, SOAT, autonomía, mantenimiento). Cada artículo: H1 único, H2 por sección, 900–1.500 palabras, `Article` JSON-LD, fecha visible, enlace a producto. Calendario y tono en [15-content-strategy](./15-content-strategy.md). Contenido en `src/content/blog/*.md`.
+El blog sostiene las keywords informacionales (licencia MTC, autonomía, carga de la batería, mantenimiento). Cada artículo: H1 único, H2 por sección, 900–1.500 palabras, `Article` JSON-LD, fecha visible, enlace a producto. Calendario y tono en [15-content-strategy](./15-content-strategy.md). Contenido en `src/content/blog/*.md`.
 
 ## 10. Checklist por página
 

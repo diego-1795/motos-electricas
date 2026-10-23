@@ -53,7 +53,7 @@ Reglas: una isla no importa otra isla; comunican mediante stores de nanostores. 
 
 ## 5. Fuentes
 
-Pila de sistema (`Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`). Cero descargas, cero FOUT/FOIT. Si en el futuro se aprueba Inter variable self-hosted: un único `woff2`, subconjunto latín, `font-display: swap`, `<link rel="preload">`, y presupuesto de +40 KB revisado por Performance.
+Montserrat (variable, 70 KB) e Integral CF (un único `woff2` de 19 KB, solo títulos) self-hosted en `public/fonts/`, subconjunto latino, `font-display: swap`, `<link rel="preload">` de ambas y fallbacks métricos (`size-adjust`) para minimizar CLS; el nombre de fichero no lleva corchetes para evitar doble descarga. Detalle en [02-design-system](./02-design-system.md). Cualquier fuente adicional exige revisión de Performance.
 
 ## 6. CSS
 
@@ -92,7 +92,7 @@ module.exports = {
   ci: {
     collect: {
       staticDistDir: './dist',
-      url: ['/', '/motos-electricas', '/motos-electricas/odin-1-0', '/carrito', '/encuentra-tu-moto'],
+      url: ['/', '/productos', '/bicimotos/golden-eagle', '/carrito', '/encuentra-tu-moto'],
       numberOfRuns: 3,
       settings: { preset: 'mobile' }
     },

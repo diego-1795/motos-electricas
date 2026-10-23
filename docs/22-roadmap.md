@@ -13,7 +13,7 @@ Las fases se ejecutan en el orden de la tabla; las que comparten dependencias pu
 | 3 | Navigation | Esqueleto navegable del sitio | `BaseLayout`, Header con menú móvil, Footer, breadcrumbs, 404, rutas vacías de todas las páginas de [01-architecture](./01-architecture.md) | frontend | 2 | Todas las rutas responden 200; menú usable con teclado; axe sin errores críticos |
 | 4 | Home | Primera impresión y entrada a los flujos | Hero, categorías, productos destacados, bloque "Encuentra tu moto", propuesta de valor, CTA WhatsApp | designer, frontend, content | 3 | LCP < 2,0 s en móvil simulado; copy aprobado por content |
 | 5 | Catalog | Descubrimiento por categoría con filtros | Listados por categoría, `ProductCard`, filtros por precio/autonomía/potencia (query params, sin JS obligatorio), orden | frontend, backend | 3 | Filtros funcionan sin JS; E2E catálogo → filtro → producto |
-| 6 | Product | Ficha que resuelve dudas y lleva al carrito | `/motos-electricas/[slug]`, galería `<Picture>`, specs, selector de variante y color, precio calculado, accesorios compatibles, FAQ, JSON-LD Product | frontend, backend, seo | 5 | JS de la ficha < 60 KB gz; Rich Results válido; tests de pricing |
+| 6 | Product | Ficha que resuelve dudas y lleva al carrito | `/bicimotos/[slug]` y `/trimotos/[slug]`, galería `<Picture>`, specs, selector de versión (`tier`) y color, precio calculado, repuestos compatibles, FAQ, JSON-LD Product | frontend, backend, seo | 5 | JS de la ficha < 60 KB gz; Rich Results válido; tests de pricing |
 | 7 | Compare | Ayuda a la decisión entre modelos | `CompareBar` (isla), `/comparar` con `CompareTable`, hasta 3 productos, persistencia en nanostores | frontend | 6 | Comparar 3 modelos en móvil sin scroll horizontal roto; evento `compare_add` |
 | 8 | Cart | Construir la solicitud de pedido | Reducer de carrito, `CartDrawer`, `/carrito`, cantidades, eliminar, notas, total estimado, persistencia `raiden:cart:v1` | frontend, backend | 6 | Tests del reducer al 100 %; E2E añadir → cantidad → eliminar; estado sobrevive a recarga |
 | 9 | WhatsApp | Entregar el pedido a ventas | `WhatsAppMessageBuilder`, enlace `wa.me` con `encodeURIComponent`, botón flotante, CTA en ficha y contacto | backend, frontend | 8 | Mensaje idéntico al formato de [16-whatsapp-commerce](./16-whatsapp-commerce.md); tests unitarios con emojis y tildes; número solo desde env |
@@ -34,7 +34,7 @@ Prioridad: P1 (siguiente trimestre), P2 (cuando haya volumen), P3 (expansión).
 | Iniciativa | Prioridad | Prerequisitos | Descripción breve |
 |---|---|---|---|
 | Supabase como origen de datos | P1 | Fase 12; ruta c de [20-migration](./20-migration.md) | Catálogo en Postgres con doble lectura y test de paridad |
-| Admin | P1 | Supabase; SSR con adapter (ruta b) | Supabase Auth + RLS, CRUD de productos/variantes/accesorios, subida de imágenes; ver [17-admin-panel](./17-admin-panel.md) |
+| Admin | P1 | Supabase; SSR con adapter (ruta b) | Supabase Auth + RLS, CRUD de productos/variantes/repuestos, subida de imágenes; ver [17-admin-panel](./17-admin-panel.md) |
 | Stock y disponibilidad | P1 | Admin | Campo `stock` por variante, badge "Disponible / Bajo pedido", ficha con `prerender = false` solo si se exige tiempo real |
 | CRM ligero | P1 | Supabase | Tablas `customers`, `order_requests`, `whatsapp_requests`; estado del pedido; registro manual desde admin |
 | Usuarios | P2 | Supabase Auth | Cuenta opcional para guardar carrito y ver solicitudes; nunca obligatoria para pedir |
@@ -80,3 +80,12 @@ Prioridad: P1 (siguiente trimestre), P2 (cuando haya volumen), P3 (expansión).
 - Una fase no puede empezar si alguna dependencia no ha cerrado, salvo autorización explícita del Tech Lead registrada en la issue.
 - Cualquier desviación de los ADR de [21-decisions](./21-decisions.md) durante una fase se trata como nueva ADR, nunca como excepción tácita.
 - El checklist de decisión de [01-architecture](./01-architecture.md) (UX, conversión, SEO, performance, seguridad, mantenibilidad, necesidad, dependencias, agnosticismo) se aplica a toda propuesta de post-MVP antes de asignarle prioridad.
+
+## 4. Hito 2026-10: catálogo real RAIDEN
+
+El 2026-10-22 el cliente (EG Motors SAC, distribuidor oficial RAIDEN) entregó su brief y se sustituyó el catálogo placeholder por el real ([ADR-015](./21-decisions.md)).
+
+- **Catálogo:** 4 modelos (Golden Eagle, Royal Tiger, Vortex Kobra, Titan Rhino) con versiones Estándar/Premium (`tier`) y 26 repuestos; 3 categorías (`bicimotos`, `trimotos`, `repuestos`) en lugar de 7. Rutas `/bicimotos/<slug>`, `/trimotos/titan-rhino`, `/repuestos/<slug>` y `/productos`; se eliminan `/motos-electricas*` y `/accesorios*`.
+- **Marca y contenido:** paleta Raiden Black / Raiden Blue `#0142A6`, fuentes Montserrat + Integral CF self-hosted, fotos reales, páginas `/nosotros`, `/servicio-tecnico` y `/contacto` (formulario hacia WhatsApp), blog reescrito para bicimotos.
+- **Pendiente con el cliente:** confirmar precios de Royal Tiger y Vortex Kobra (la versión Estándar figura más cara que la Premium), licencia de Integral CF y confirmación de la norma MTC sobre licencia de bicimotos de 25 km/h.
+- **Siguiente:** Cloudflare Pages (despliegue pospuesto al final), sincronizar el esquema Supabase con `parts`/`tier` ([06-database](./06-database.md)) y publicar los temas de blog propuestos ([15-content-strategy](./15-content-strategy.md)).

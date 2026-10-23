@@ -1,50 +1,46 @@
 # 00 — Visión de producto: Raiden
 
-> "Raiden" es un nombre provisional pendiente de decisión del cliente. Todas las referencias de marca se centralizan en `src/config/site.ts` para que el cambio de nombre sea un commit de una línea.
+> Catálogo real RAIDEN desde el 2026-10-22 ([ADR-015](./21-decisions.md)). Marca y datos de empresa (EG Motors SAC, RUC 20615247384, distribuidor oficial RAIDEN, Bocanegra, Callao) se centralizan en `src/config/site.ts`.
 
 ## 1. Visión
 
-Raiden es un **showroom digital de movilidad eléctrica**: una web premium, rápida y mobile-first para descubrir, comparar y configurar motos eléctricas, y convertir esa intención en una **solicitud de pedido por WhatsApp** que cierra el equipo de ventas. No es una tienda con pasarela de pago; es el escaparate y el embudo previo a la venta asistida.
+Raiden es un **showroom digital de movilidad eléctrica**: una web rápida y mobile-first para descubrir, comparar y configurar bicimotos y trimotos eléctricas RAIDEN (más sus repuestos), y convertir esa intención en una **solicitud de pedido por WhatsApp** que cierra el equipo de ventas. No es una tienda con pasarela de pago; es el escaparate y el embudo previo a la venta asistida.
 
-**Mercado: Perú.** Precios en soles (`PEN`, formato `S/ 4,999`, IGV incluido), locale `es-PE`, licencias de conducir MTC clase B (B-I, B-IIa, B-IIb, B-IIc), WhatsApp con prefijo `+51` y envío a todo el Perú (Lima y provincias). Ver [ADR-014](./21-decisions.md).
+**Mercado: Perú.** Precios en soles (`PEN`, formato `S/ 1,200`, IGV incluido), locale `es-PE`, licencias de conducir MTC clase B (B-I, B-IIa, B-IIb, B-IIc) cuando aplican, WhatsApp con prefijo `+51` (ventas: +51 989 853 431) y envío a todo el Perú (Lima y provincias). Ver [ADR-014](./21-decisions.md).
 
 ## 2. Propuesta de valor
 
 | Para quién | Qué obtiene | Por qué Raiden y no otro |
 |---|---|---|
 | Comprador particular urbano | Catálogo claro, fichas con especificaciones reales (autonomía, potencia, batería), comparador y buscador guiado | Decide en minutos desde el móvil sin registrarse ni pagar online |
-| Negocio de reparto / flota | Vehículos de carga, trimotos y cuatrimotos con datos de carga útil y autonomía | Solicitud de pedido con varias unidades y accesorios en un solo mensaje |
+| Negocio de reparto / flota | Trimoto de carga Titan Rhino (250 kg) y bicimotos con datos de carga útil y autonomía | Solicitud de pedido con varias unidades y repuestos en un solo mensaje |
 | Equipo de ventas | Mensaje de WhatsApp estructurado con modelo, variante, color, cantidad y total estimado | Cero transcripción manual; la conversación empieza con el pedido ya definido |
 
 ## 3. Público objetivo
 
-- **Primario:** personas de 25–45 años en ciudades españolas que buscan sustituir el transporte público o el coche en trayectos cortos. Compran desde el móvil y comparan precio/autonomía.
-- **Secundario:** autónomos y pymes de reparto de última milla (vehículos de carga, trimotos).
-- **Terciario:** compradores de ocio (cuatrimotos, bicimotos) y clientes existentes que buscan accesorios y baterías adicionales.
+- **Primario:** personas de 25–45 años en Lima, Callao y otras ciudades del Perú que buscan sustituir el transporte público o el taxi en trayectos cortos con un vehículo que en general no requiere licencia. Compran desde el móvil y comparan precio/autonomía.
+- **Secundario:** autónomos y pymes de reparto de última milla (trimoto de carga Titan Rhino).
+- **Terciario:** compradores de ocio y clientes existentes que buscan repuestos (baterías, cargadores, motores, controladores).
 
 ## 4. Catálogo
 
 | Categoría | Ruta | Ejemplos de atributos clave |
 |---|---|---|
-| Scooters eléctricos | `/scooters-electricos` | Autonomía, velocidad máxima, batería extraíble, peso |
-| Motos eléctricas urbanas | `/motos-electricas-urbanas` | Potencia (kW), voltaje/capacidad (72V 50Ah), homologación L1e/L3e |
-| Bicimotos | `/bicimotos` | Asistencia, autonomía, peso, plegable |
-| Trimotos | `/trimotos` | Carga útil, estabilidad, anchura |
-| Vehículos de carga | `/vehiculos-carga` | Volumen y peso de carga, autonomía con carga |
-| Cuatrimotos | `/cuatrimotos` | Tracción, suspensión, uso off-road |
-| Accesorios | `/accesorios` | Cascos, baterías adicionales, cargadores, baúles, candados |
+| Bicimotos | `/bicimotos` | Golden Eagle (desde S/ 1,200), Royal Tiger (S/ 1,400) y Vortex Kobra (S/ 1,200): 25 km/h, motor 350/500 W, batería Chilwee 48V, autonomía, carga máx. |
+| Trimotos | `/trimotos` | Titan Rhino (S/ 2,700): trimoto de carga, 800 W, 250 kg, modo reversa, batería 60V 20Ah |
+| Repuestos | `/repuestos` | 26 repuestos: baterías, motores, controladores, cargadores, faros, frenos, cables y mandos; unidad (UND/PAR) y código |
 
-Cada producto tiene **variantes** (p. ej. batería 72V 30Ah / 72V 50Ah), **colores** y opcionalmente **accesorios compatibles**. El catálogo vive en JSON dentro del repositorio en el MVP (git como CMS); ver [01-architecture](./01-architecture.md) y [15-content-strategy](./15-content-strategy.md).
+Las bicimotos de 25 km/h en general no requieren licencia (confirmar con el MTC); ver [ADR-015](./21-decisions.md). Cada modelo tiene **versiones** (variantes con `tier`: Estándar 350 W · 48V 12Ah y Premium 500 W · 48V 20Ah), **colores** y **repuestos compatibles**. El catálogo vive en JSON dentro del repositorio en el MVP (git como CMS); ver [01-architecture](./01-architecture.md) y [15-content-strategy](./15-content-strategy.md).
 
 ## 5. Flujo completo: DESCUBRIMIENTO → VENTAS
 
 | Paso | Página / componente | Qué ocurre | Evento analítico |
 |---|---|---|---|
 | 1. Descubrimiento | Home, categorías, blog, SEO | El usuario llega por búsqueda orgánica o enlace y explora categorías con filtros (precio, autonomía, potencia) | `page_view` |
-| 2. Producto | `/motos-electricas/[slug]` | Ficha con galería, especificaciones (SpecTile), variantes, colores, accesorios compatibles, FAQ y garantía | `product_view` |
+| 2. Producto | `/bicimotos/[slug]`, `/trimotos/[slug]` | Ficha con galería, especificaciones (SpecTile), versiones, colores, repuestos compatibles, FAQ y garantía | `product_view` |
 | 3. Comparar | `/comparar` | Hasta 3 modelos lado a lado (CompareTable) con diferencias resaltadas | `compare_add` |
 | 4. Configurar | Isla configurador en la ficha | Elección de variante, color y cantidad; precio recalculado al instante | — |
-| 5. Carrito | Drawer + `/carrito` | Lista de líneas (vehículos y accesorios), cantidades, total estimado, notas libres | `add_to_cart`, `cart_open` |
+| 5. Carrito | Drawer + `/carrito` | Lista de líneas (vehículos y repuestos), cantidades, total estimado, notas libres | `add_to_cart`, `cart_open` |
 | 6. Solicitud de pedido | `/carrito` | Se genera un `OrderRequest` con líneas, total y notas; validación manual de cantidades y texto | `purchase_request` |
 | 7. WhatsApp | Botón "Enviar pedido por WhatsApp" | Abre `https://wa.me/<número>?text=<mensaje URL-encoded>` con el mensaje autogenerado | `whatsapp_click` |
 | 8. Ventas | Fuera de la web | El equipo confirma disponibilidad, condiciones, entrega y cobro por sus canales | — |
@@ -90,18 +86,18 @@ Alternativa al paso 1–2: el buscador **"Encuentra tu moto"** (`/encuentra-tu-m
 
 ## 9. Referencia conceptual: kayencorp.com
 
-Se toma como referencia de *categoría* (showroom de vehículos eléctricos con enfoque comercial directo), no como plantilla. Lo que se adopta es la idea: catálogo por tipo de vehículo, ficha con especificaciones técnicas prominentes y conversión hacia un canal de mensajería. Lo que se diferencia: comparador y finder propios, Design System oscuro con acento "volt", rendimiento con presupuesto, SEO estructurado y arquitectura portable. No se copian textos, imágenes, estructura de navegación ni estilos.
+Se tomó como referencia de *categoría* (showroom de vehículos eléctricos con enfoque comercial directo), no como plantilla. Lo que se adopta es la idea: catálogo por tipo de vehículo, ficha con especificaciones técnicas prominentes y conversión hacia un canal de mensajería. Lo que se diferencia: comparador y finder propios, Design System con acento Raiden Blue (`#0142A6`) y fuentes Montserrat + Integral CF, rendimiento con presupuesto, SEO estructurado y arquitectura portable. No se copian textos, imágenes, estructura de navegación ni estilos.
 
 ## 10. Glosario
 
 | Término | Definición |
 |---|---|
 | **Solicitud de pedido** (`OrderRequest`) | Conjunto de líneas del carrito, total estimado y notas que el usuario envía por WhatsApp. No es un pedido confirmado. |
-| **Variante** (`ProductVariant`) | Configuración de un producto con precio propio (normalmente batería/voltaje). |
+| **Variante** (`ProductVariant`) | Versión comercial de un modelo con precio propio y `tier` (`estandar` o `premium`). |
 | **Color** (`ProductColor`) | Acabado disponible para una variante, con nombre y valor hex para el `ColorSwatch`. |
-| **Accesorio** (`Accessory`) | Producto complementario con precio propio, opcionalmente ligado a modelos compatibles. |
+| **Repuesto** (`Part`) | Pieza o complemento con precio, unidad (`UND`/`PAR`) y código propios, ligado a los modelos compatibles. Sustituye a la antigua entidad `Accessory` ([ADR-015](./21-decisions.md)). |
 | **Finder** | Buscador guiado "Encuentra tu moto" basado en `RecommendationService`. |
 | **Isla** | Componente Preact hidratado en cliente; el resto de la página es HTML estático. |
 | **Total estimado** | Suma de líneas según precios publicados; el precio final lo confirma ventas. |
 | **SSG** | Generación estática en build (`output: 'static'`). |
-| **Volt** | Color de acento `#D6FF3F` del Design System ([02-design-system](./02-design-system.md)). |
+| **Raiden Blue** | Color de acento `#0142A6` del Design System ([02-design-system](./02-design-system.md)). |

@@ -19,13 +19,13 @@ Proporción objetivo: ~70 % unitario, ~20 % componente/contenido, ~10 % E2E.
 
 | Módulo | Casos obligatorios |
 |---|---|
-| `WhatsAppMessageBuilder` | Mensaje con 1 moto; moto + accesorios; varias cantidades; notas vacías/largas; total formateado `S/ 21,996`; URL `wa.me/<num>?text=` con `encodeURIComponent`; truncado a 1.800 caracteres; sin número hardcodeado (lee `SITE`) |
+| `WhatsAppMessageBuilder` | Mensaje con 1 bicimoto; bicimoto + repuestos; varias cantidades; notas vacías/largas; total formateado `S/ 1,650`; URL `wa.me/<num>?text=` con `encodeURIComponent`; truncado a 1.800 caracteres; sin número hardcodeado (lee `SITE`) |
 | Reducer del carrito (`CartService`) | `add` nuevo ítem; `add` del mismo ítem suma cantidad; `setQuantity` 0 elimina; máximo 10; `remove`; `clear`; variante/color distintos son ítems distintos; hidratación con estado inválido → carrito vacío; versión de esquema distinta → reinicio |
-| `pricing.ts` | Precio base de variante; suplemento de color; accesorios; total por cantidad; redondeo a céntimos; formato `S/ 4,999` (coma de miles, punto decimal); precio nunca negativo |
+| `pricing.ts` | Precio base de variante; suplemento de color; repuestos; total por cantidad; redondeo a céntimos; formato `S/ 1,200` (coma de miles, punto decimal); precio nunca negativo |
 | Scoring del finder (`RecommendationService`) | Cada respuesta suma el peso esperado; empate → orden por precio ascendente; sin respuestas → lista por popularidad; nunca recomienda productos sin stock; devuelve 3 resultados máximo |
 | Builders SEO | `buildMeta`: canonical absoluta, title truncado a 60, description a 155, `noindex`; JSON-LD `Product` con `offers.priceCurrency = 'PEN'` y `availability` correcta según stock; `BreadcrumbList` con posiciones consecutivas; `FAQPage` vacío → no se emite; `Article` con fechas ISO |
 | Validadores (`validation.ts`) | `sanitizeNotes` elimina control chars, recorta a 300, rechaza URLs; `quantity` fuera de rango; ids inexistentes; enums del finder; `PUBLIC_WHATSAPP_NUMBER` con formato inválido lanza error |
-| Comparación (`compare.ts`) | Máximo 4 productos; diferencias resaltadas; unidades homogéneas (km, kW, kg) |
+| Comparación (`compare.ts`) | Máximo 3 productos; diferencias resaltadas; unidades homogéneas (km, kW, kg) |
 | Esquema del catálogo | Todos los JSON tienen `slug` único, `category` válida, al menos una variante con precio > 0, imágenes existentes en `src/assets/` |
 
 ## 3. Ejemplos de tests
@@ -34,21 +34,21 @@ Proporción objetivo: ~70 % unitario, ~20 % componente/contenido, ~10 % E2E.
 // tests/unit/services/WhatsAppMessageBuilder.test.ts
 import { describe, it, expect } from 'vitest';
 import { buildMessage, buildWhatsAppUrl } from '@/services/WhatsAppMessageBuilder';
-import { cartOdinWithHelmet } from '../../fixtures/carts';
+import { cartGoldenEaglePremiumWithBattery } from '../../fixtures/carts';
 
 describe('WhatsAppMessageBuilder', () => {
-  it('incluye moto, variante, color, accesorios y total', () => {
-    const msg = buildMessage(cartOdinWithHelmet, '');
-    expect(msg).toContain('🏍️ ODIN 1.0');
-    expect(msg).toContain('Variante: 72V 50Ah');
-    expect(msg).toContain('🪖 Casco');
-    expect(msg).toContain('💰 Total estimado: S/ 21,996');
+  it('incluye bicimoto, variante, color, repuestos y total', () => {
+    const msg = buildMessage(cartGoldenEaglePremiumWithBattery, '');
+    expect(msg).toContain('🏍️ Golden Eagle');
+    expect(msg).toContain('Variante: Premium');
+    expect(msg).toContain('🔋 Batería Chilwee 48V 20Ah');
+    expect(msg).toContain('💰 Total estimado: S/ 1,650');
     expect(msg).not.toContain('Notas:');
   });
 
   it('genera una URL wa.me codificada y limitada', () => {
-    const url = buildWhatsAppUrl(cartOdinWithHelmet, 'a'.repeat(5000));
-    expect(url.startsWith('https://wa.me/51987654321?text=')).toBe(true);
+    const url = buildWhatsAppUrl(cartGoldenEaglePremiumWithBattery, 'a'.repeat(5000));
+    expect(url.startsWith('https://wa.me/51989853431?text=')).toBe(true);
     expect(url).not.toContain(' ');
     expect(decodeURIComponent(url.split('text=')[1]).length).toBeLessThanOrEqual(1800);
   });
@@ -59,7 +59,7 @@ describe('WhatsAppMessageBuilder', () => {
 // tests/unit/domain/cart.test.ts
 it('sumar el mismo ítem incrementa la cantidad hasta el máximo', () => {
   let cart = emptyCart();
-  for (let i = 0; i < 12; i++) cart = cartReducer(cart, { type: 'add', item: odinBlack });
+  for (let i = 0; i < 12; i++) cart = cartReducer(cart, { type: 'add', item: goldenEagleBlack });
   expect(cart.items).toHaveLength(1);
   expect(cart.items[0].quantity).toBe(10);
 });
@@ -71,32 +71,32 @@ Proyecto principal: `Mobile Chrome` (Pixel 7, 412×915). Secundario: `Desktop Ch
 
 Flujo crítico `tests/e2e/critical-flow.spec.ts`, paso a paso:
 
-1. Abrir `/motos-electricas`; comprobar H1 y que existen ≥ 6 `ProductCard`.
-2. Aplicar filtro de categoría "Urbanas" (enlace, no JS); la URL pasa a `/motos-electricas-urbanas`.
-3. Pulsar la tarjeta "ODIN 1.0"; URL `/motos-electricas/odin-1-0`; H1 "ODIN 1.0"; precio visible.
-4. Seleccionar variante "72V 50Ah" y color "Negro" (botones con `aria-pressed`).
+1. Abrir `/productos`; comprobar H1 y que existen 4 `ProductCard` de modelos (Golden Eagle, Royal Tiger, Vortex Kobra, Titan Rhino).
+2. Aplicar filtro de categoría "Bicimotos" (enlace, no JS); la URL pasa a `/bicimotos`.
+3. Pulsar la tarjeta "Golden Eagle"; URL `/bicimotos/golden-eagle`; H1 "Golden Eagle"; precio visible.
+4. Seleccionar la versión "Premium" y el color "Negro" (botones con `aria-pressed`).
 5. Pulsar "Añadir a la solicitud"; aparece Toast (`role="status"`) y el contador de la cabecera muestra 1.
 6. Abrir el drawer; el foco está dentro; `Escape` lo cierra y devuelve el foco al botón.
 7. Ir a `/carrito`; incrementar cantidad a 2 con QuantityStepper; total actualizado.
-8. Añadir accesorio "Casco" desde "Accesorios compatibles"; aparece como segunda línea.
-9. Eliminar la línea del casco; queda una línea.
-10. Escribir notas "Entrega en Lima"; el botón "Enviar pedido por WhatsApp" tiene `href` que empieza por `https://wa.me/` y contiene `ODIN%201.0`, `Cantidad%3A%202` y `Entrega%20en%20Lima`.
+8. Añadir el repuesto "Batería Chilwee 48V 20Ah" desde `/repuestos`; aparece como segunda línea.
+9. Eliminar la línea del repuesto; queda una línea.
+10. Escribir notas "Entrega en Lima"; el botón "Enviar pedido por WhatsApp" tiene `href` que empieza por `https://wa.me/` y contiene `Golden%20Eagle`, `Cantidad%3A%202` y `Entrega%20en%20Lima`.
 11. Recargar la página; el carrito persiste (localStorage `raiden:cart:v1`).
 12. Vaciar el carrito; estado vacío con enlace al catálogo.
 
-Otros specs: `navigation.spec.ts` (menú móvil, breadcrumbs, 404), `compare.spec.ts` (añadir 2 productos, tabla, máximo 4), `finder.spec.ts` (4 preguntas → 3 resultados), `seo.spec.ts` (title, canonical, JSON-LD válido por plantilla).
+Otros specs: `navigation.spec.ts` (menú móvil, breadcrumbs, 404), `compare.spec.ts` (añadir 2 productos, tabla, máximo 3), `finder.spec.ts` (4 preguntas → 3 resultados), `seo.spec.ts` (title, canonical, JSON-LD válido por plantilla).
 
 Ejemplo:
 
 ```ts
 test('el enlace de WhatsApp contiene el pedido', async ({ page }) => {
-  await page.goto('/motos-electricas/odin-1-0');
+  await page.goto('/bicimotos/golden-eagle');
   await page.getByRole('button', { name: 'Negro' }).click();
   await page.getByRole('button', { name: 'Añadir a la solicitud' }).click();
   await page.goto('/carrito');
   const href = await page.getByRole('link', { name: /WhatsApp/ }).getAttribute('href');
   expect(href).toMatch(/^https:\/\/wa\.me\/\d+\?text=/);
-  expect(decodeURIComponent(href!)).toContain('ODIN 1.0');
+  expect(decodeURIComponent(href!)).toContain('Golden Eagle');
 });
 ```
 
@@ -121,7 +121,7 @@ tests/
     critical-flow.spec.ts, navigation.spec.ts, compare.spec.ts, finder.spec.ts,
     seo.spec.ts, a11y.spec.ts
   fixtures/
-    products.json, accessories.json, carts.ts, finder-answers.json
+    products.json, parts.json, carts.ts, finder-answers.json
   setup/
     vitest.setup.ts
 vitest.config.ts
@@ -151,11 +151,11 @@ Dependencias de desarrollo a añadir cuando se implemente: `@axe-core/playwright
 
 ## 9. Datos de prueba
 
-- `tests/fixtures/products.json`: 6 productos (uno por categoría principal), con variantes, colores, stock variado (`InStock`, `PreOrder`, `OutOfStock`) e imágenes apuntando a un placeholder de `src/assets/test/`.
-- `tests/fixtures/carts.ts`: `emptyCart`, `cartOdin`, `cartOdinWithHelmet`, `cartMaxQuantity`, `cartInvalidPersisted` (ids inexistentes, cantidad -1, versión antigua).
+- `tests/fixtures/products.json`: 4 productos (los modelos RAIDEN o equivalentes de prueba), con variantes `estandar`/`premium`, colores, disponibilidad variada (`en-stock`, `bajo-pedido`, `agotado`) e imágenes apuntando a un placeholder de `src/assets/test/`.
+- `tests/fixtures/carts.ts`: `emptyCart`, `cartGoldenEaglePremium`, `cartGoldenEaglePremiumWithBattery`, `cartMaxQuantity`, `cartInvalidPersisted` (ids inexistentes, cantidad -1, versión antigua).
 - `tests/fixtures/finder-answers.json`: combinaciones de respuestas con el resultado esperado.
 - Los tests unitarios inyectan un `ProductRepository` en memoria construido a partir de las fixtures; nunca leen `src/content/` directamente salvo el test de esquema.
-- `PUBLIC_WHATSAPP_NUMBER=51987654321` y `PUBLIC_SITE_URL=https://raiden.test` en `vitest.setup.ts` y en el job de CI.
+- `PUBLIC_WHATSAPP_NUMBER=51989853431` y `PUBLIC_SITE_URL=https://raiden.test` en `vitest.setup.ts` y en el job de CI.
 
 ## 10. CI en GitHub Actions
 

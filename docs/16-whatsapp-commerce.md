@@ -22,7 +22,7 @@ Decisión: `wa.me` hasta que el volumen (> 150 solicitudes/mes) o la necesidad d
 https://wa.me/<número E.164 sin +>?text=<encodeURIComponent(mensaje)>
 ```
 
-- Número: solo dígitos, con prefijo de país y sin `+`, espacios ni guiones. Perú: `51` + 9 dígitos (móviles empiezan por 9). Ejemplo: `51987654321`.
+- Número: solo dígitos, con prefijo de país y sin `+`, espacios ni guiones. Perú: `51` + 9 dígitos (móviles empiezan por 9). Ejemplo: `51989853431` (+51 989 853 431, EG Motors SAC).
 - `text`: mensaje completo codificado con `encodeURIComponent`. Los saltos de línea se codifican como `%0A`; los emojis quedan como secuencias UTF-8 percent-encoded.
 - Se usa `wa.me` y no `api.whatsapp.com/send`: es el dominio oficial corto y redirige correctamente a app, escritorio o web según el dispositivo.
 - Longitud: los navegadores aceptan URLs de más de 8.000 caracteres, pero WhatsApp recorta textos pre-rellenados largos en algunas versiones. Se limita el mensaje a **1.500 caracteres** antes de codificar.
@@ -33,7 +33,7 @@ https://wa.me/<número E.164 sin +>?text=<encodeURIComponent(mensaje)>
 
 ```ts
 export interface WhatsAppMessageInput {
-  items: CartItem[];          // producto o accesorio, variante, color, cantidad, precio unitario
+  items: CartItem[];          // producto o repuesto, variante, color, cantidad, precio unitario
   total: number;              // calculado por pricing.ts; nunca se recibe del cliente
   currency: 'PEN';
   locale: 'es-PE';
@@ -60,15 +60,15 @@ Es una función pura: sin acceso a `window`, a nanostores ni a `import.meta.env`
 1. Saludo fijo: `Hola 👋`
 2. Intención: `Estoy interesado en realizar el siguiente pedido:`
 3. Línea en blanco.
-4. Por cada ítem, en el orden del carrito (vehículos primero, accesorios después):
-   - Cabecera con emoji por tipo: `🏍️` vehículo, `🔋` batería, `🪖` casco, `🧰` otro accesorio.
-   - `Variante: …` solo si el producto tiene más de una variante.
+4. Por cada ítem, en el orden del carrito (vehículos primero, repuestos después):
+   - Cabecera con emoji por tipo: `🏍️` vehículo, `🔋` batería, `🔌` cargador, `🔒` alarma, `🧩` cualquier otro repuesto.
+   - `Variante: …` (versión Estándar o Premium) solo si el producto tiene más de una variante.
    - `Color: …` solo si tiene más de un color.
    - `Cantidad: N`
    - Línea en blanco.
-5. `💰 Total estimado: S/ 21,980`
-6. Línea en blanco y `Notas: …` solo si el cliente escribió notas.
-7. Línea en blanco y cierre fijo: `¿Podéis confirmarme disponibilidad y condiciones de compra?`
+5. `💰 Total estimado: S/ 1,650`
+6. Línea en blanco y `📝 Notas: …` solo si el cliente escribió notas.
+7. Línea en blanco y cierre fijo: `¿Pueden confirmarme disponibilidad y condiciones de compra?`
 
 ### Ejemplo de salida
 
@@ -76,27 +76,24 @@ Es una función pura: sin acceso a `window`, a nanostores ni a `import.meta.env`
 Hola 👋
 Estoy interesado en realizar el siguiente pedido:
 
-🏍️ ODIN 1.0
-Variante: 72V 50Ah
+🏍️ Golden Eagle
+Variante: Premium
 Color: Negro
 Cantidad: 1
 
-🔋 Batería adicional
+🔋 Batería Chilwee 48V 20Ah
 Cantidad: 1
 
-🪖 Casco
-Cantidad: 1
+💰 Total estimado: S/ 1,650
 
-💰 Total estimado: S/ 21,980
+📝 Notas: Recojo en tienda si es posible
 
-Notas: Recogida en tienda si es posible
-
-¿Podéis confirmarme disponibilidad y condiciones de compra?
+¿Pueden confirmarme disponibilidad y condiciones de compra?
 ```
 
 ### Reglas de formato
 
-- Precios con `formatMoney` de `src/domain/money.ts` (formato manual, `Intl` es-PE es inconsistente entre runtimes): `S/ 21,980`. Con decimales solo si el total no es entero (`S/ 1,234.50`).
+- Precios con `formatMoney` de `src/domain/money.ts` (formato manual, `Intl` es-PE es inconsistente entre runtimes): `S/ 1,650`. Con decimales solo si el total no es entero (`S/ 1,234.50`).
 - No se incluyen precios unitarios por ítem: el total es "estimado" y ventas confirma condiciones. Evita discusiones por desfase entre web y tarifa.
 - Los nombres de producto se usan tal cual del catálogo; no se añaden SKU.
 - Saltos de línea `\n` (no `\r\n`).
@@ -106,7 +103,7 @@ Notas: Recogida en tienda si es posible
 
 - Se eliminan caracteres de control y se normaliza a NFC.
 - Se colapsan saltos de línea múltiples a uno y espacios repetidos a uno.
-- Máximo 300 caracteres; se recorta con `…`.
+- Máximo 500 caracteres; se recorta.
 - Se rechazan (se sustituyen por vacío) cadenas que parezcan URLs (`https?://`) para evitar que el mensaje se use como vector de phishing hacia ventas.
 - Nunca se interpreta como Markdown ni HTML; WhatsApp aplica su propio formato (`*negrita*`), que se deja pasar.
 
@@ -116,7 +113,7 @@ Si el texto supera 1.500 caracteres: se recortan primero las notas, después se 
 
 ## 4. Integración con el carrito
 
-- Isla Preact `CartDrawer` (`client:idle`) y página `/carrito` muestran el botón **"Enviar pedido por WhatsApp"** (componente `Button` variante `primary`, color volt). Es un `<a href={url} target="_blank" rel="noopener noreferrer">`, no un `<button>` con `window.open`, para que funcione con bloqueadores de popups y sea enlazable.
+- Isla Preact `CartDrawer` (`client:idle`) y página `/carrito` muestran el botón **"Enviar pedido por WhatsApp"** (componente `Button` variante `whatsapp`). Es un `<a href={url} target="_blank" rel="noopener noreferrer">`, no un `<button>` con `window.open`, para que funcione con bloqueadores de popups y sea enlazable.
 - El `href` se recalcula con cada cambio del store del carrito (`computed` de nanostores), nunca en el `onClick`.
 - Al hacer clic se emiten en orden: `purchase_request` (con número de ítems, total, `source`) y `whatsapp_click` (con `truncated`, `length`). Ambos mediante `AnalyticsService`, sin bloquear la navegación ([18-analytics](./18-analytics.md)).
 - El carrito **no se vacía** tras el clic: el cliente puede volver y reenviar. Se muestra un `Toast` "Hemos abierto WhatsApp con tu pedido" y un enlace "Copiar mensaje" como alternativa.
@@ -161,9 +158,9 @@ Si la variable está vacía o es inválida, `site.ts` expone `whatsapp: null` y:
 Plantillas de respuesta (guardadas como respuestas rápidas en WhatsApp Business):
 
 ```
-Acuse: ¡Hola! Gracias por tu solicitud. Te confirmo disponibilidad y condiciones en menos de 4 horas. ¿Desde qué provincia nos escribes?
-Disponible: Tenemos la ODIN 1.0 72V 50Ah en negro en stock. Precio final S/ 21,980 IGV incluido, envío a domicilio en Lima S/ 120 (provincias según cotización) o recojo gratuito. Puedes pagar por transferencia, Yape o Plin. ¿Te preparo el presupuesto?
-Sin stock: Ese color llega la semana del 15. Puedo reservártela sin compromiso o proponerte el gris, disponible ya.
+Acuse: ¡Hola! Gracias por tu solicitud. Te confirmo disponibilidad y condiciones en menos de 4 horas. ¿Desde qué distrito o provincia nos escribes?
+Disponible: Tenemos la Golden Eagle Premium en negro en stock. Precio final S/ 1,500 IGV incluido, entrega en Lima y Callao en 3-7 días (provincias según cotización) o recojo en nuestra tienda de Bocanegra. Puedes pagar por transferencia, Yape o Plin. ¿Te preparo el presupuesto?
+Sin stock: Ese color llega la semana del 15. Puedo reservártela sin compromiso o proponerte otro color disponible ya.
 ```
 
 ## 8. Métricas

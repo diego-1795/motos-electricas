@@ -1,6 +1,6 @@
 # 15 — Estrategia de contenidos
 
-Raiden (nombre provisional) vende movilidad eléctrica con un showroom digital cuya conversión termina en WhatsApp. El contenido tiene tres funciones: posicionar en buscadores ([08-seo](./08-seo.md)), resolver dudas antes de que lleguen a ventas y dar la información técnica necesaria para que el cliente configure bien su pedido ([16-whatsapp-commerce](./16-whatsapp-commerce.md)). En el MVP el contenido se gestiona como ficheros JSON en el repositorio (git como CMS, ver [17-admin-panel](./17-admin-panel.md)).
+RAIDEN (distribuidor oficial: EG Motors SAC) vende bicimotos y trimotos eléctricas con un showroom digital cuya conversión termina en WhatsApp. El contenido tiene tres funciones: posicionar en buscadores ([08-seo](./08-seo.md)), resolver dudas antes de que lleguen a ventas y dar la información técnica necesaria para que el cliente configure bien su pedido ([16-whatsapp-commerce](./16-whatsapp-commerce.md)). En el MVP el contenido se gestiona como ficheros JSON en el repositorio (git como CMS, ver [17-admin-panel](./17-admin-panel.md)).
 
 ## 1. Tono y voz de marca
 
@@ -28,65 +28,68 @@ Datos fijos que todo contenido debe respetar (fuente: ficha del fabricante, 2026
 | Trimotos | `trimotos` | Trimotos eléctricas de carga (25 km/h): Titan Rhino, 800 W, 250 kg | En general no requiere; confirmar uso comercial |
 | Repuestos | `repuestos` | 26 repuestos originales: baterías Chilwee, cargadores, motores, controladores, frenos, llantas, iluminación, mandos, seguridad | — |
 
-La página `/productos` agrupa todo el catálogo (ADR-015). Las categorías anteriores (scooters, motos urbanas, vehículos de carga, cuatrimotos, accesorios) se eliminaron junto con el catálogo ficticio.
+La página `/productos` agrupa todo el catálogo (ADR-015). El catálogo anterior (9 modelos ficticios en 7 categorías) se eliminó junto con sus rutas (`/motos-electricas*`, `/accesorios*`); el vocabulario "accesorio" pasa a "repuesto".
 
 ## 3. Ficha de producto
 
 ### Campos obligatorios (`src/content/products/<slug>.json`)
 
+Esquema completo en `src/content.config.ts` (zod) y [07-api](./07-api.md) §2.2; plantilla: `golden-eagle.json`.
+
 | Campo | Tipo | Notas |
 |---|---|---|
-| `slug` | string | kebab-case, igual al nombre de fichero |
-| `name` | string | Nombre comercial, p. ej. "ODIN 1.0" |
-| `brand` | slug de `brands` | — |
-| `category` | slug de categoría | — |
-| `summary` | string ≤ 160 caracteres | Usado en ProductCard y meta description |
-| `description` | string (Markdown simple) | 2–4 párrafos |
-| `priceFrom` | número (céntimos de sol, PEN; IGV incluido indicado en `priceNote`) | Precio de la variante más barata |
-| `variants[]` | ProductVariant | Al menos una |
-| `colors[]` | ProductColor | Al menos uno |
-| `specs` | objeto | Ver estructura siguiente |
-| `images[]` | rutas en `src/assets/products/` | Primera = principal |
-| `license` | `"sin-licencia" \| "B-I" \| "B-IIa" \| "B-IIb" \| "B-IIc"` | Clases MTC |
-| `warrantyMonths` | número | Vehículo; batería en `specs.battery.warrantyMonths` |
-| `status` | `"draft" \| "published" \| "discontinued"` | Solo `published` se construye |
+| `id`, `slug` | string | `slug` en kebab-case, igual al nombre de fichero; forma la URL `/<category>/<slug>` |
+| `name`, `subtitle`, `claim` | string | Nombre comercial (p. ej. "Golden Eagle"), tipo ("Bicimoto eléctrica urbana") y claim del hero |
+| `description` | string | 2–4 párrafos |
+| `brand` | string | `Raiden` |
+| `category` | `bicimotos` \| `trimotos` | |
+| `variants[]` | ProductVariant | Al menos una; **exactamente una** con `isDefault: true`; cada una con `tier` (`estandar` \| `premium`) |
+| `colors[]` | ProductColor | Al menos uno (`id`, `name`, `hex`, `image`) |
+| `images[]`, `heroImage?` | ImageRef | Rutas `~/assets/products/...`; primera = principal; `alt`, `width`, `height` obligatorios |
+| `specs` | objeto | Ver estructura siguiente; `specs.license` con clases MTC (`sin-licencia`, `B-I`…`B-IIc`) |
+| `accessories[]`, `related[]` | slugs | Repuestos compatibles (`src/content/repuestos`) y modelos similares |
+| `useCases[]`, `highlights[]`, `technology[]`, `faqs[]` | arrays | Contenido de ficha (6 bloques de tecnología, 6 FAQs por modelo) |
+| `featured`, `publishedAt` | number, fecha | Orden en "Recomendados" y fecha de alta |
 | `seo` | `{ title?, description? }` | Opcional, sobrescribe los generados |
 
 ### Estructura de `specs`
 
-| Grupo | Claves | Ejemplo |
+| Grupo | Claves | Ejemplo (Golden Eagle) |
 |---|---|---|
-| `motor` | `powerNominalW`, `powerPeakW`, `type` | 3000, 5000, "hub" |
-| `battery` | `voltage`, `capacityAh`, `chemistry`, `removable`, `warrantyMonths` | 72, 50, "LiFePO4", true, 24 |
-| `range` | `declaredKm`, `conditions` | 120, "45 km/h, 75 kg, llano" |
-| `speed` | `maxKmh`, `limited` | 45, true |
-| `charging` | `hoursFull`, `chargerW`, `plug` | 6, 900, "Schuko" |
-| `weight` | `kg`, `maxLoadKg` | 95, 150 |
-| `license` | `required`, `homologation` | "B-IIa", "L3e" |
-| `warranty` | `vehicleMonths`, `batteryMonths` | 24, 24 |
+| Motor | `powerW`, `peakPowerW?`, `motorType`, `controller?` | 350, "Motor sin escobillas (brushless) en rueda", "6 tubos SineWave" |
+| Batería | `battery.voltage`, `capacityAh`, `capacityKwh`, `chemistry`, `removable`, `chargeHours`, `cycles?`, `lifeMonths?`, `brand?` | 48, 12, 0.58, "plomo-acido", true, [6, 8], 400, 24, "Chilwee" |
+| Autonomía y velocidad | `rangeKm`, `rangeMinKm?`, `topSpeedKmh` | 35, 30, 25 |
+| Carga y plazas | `maxLoadKg`, `seats`, `weightKg?` | 150, 2 |
+| Chasis | `tires?`, `wheelInches?`, `brakes`, `suspension`, `lighting`, `display`, `drivingModes[]` | "14 x 2.5\"", "Tambor delantero y trasero" |
+| Licencia | `license` | "sin-licencia" |
+| Garantía | `warrantyMonths`, `batteryWarrantyMonths` | 12, 12 |
+| Características | `features[]` | Lista completa del fabricante |
 
-Los valores se almacenan como números sin unidad; `SpecTile` formatea con `Intl.NumberFormat('es-PE')` y la unidad. El comparador ([03-ux](./03-ux.md)) usa las mismas claves.
+Los valores se almacenan como números sin unidad; `SpecTile` los formatea con la unidad. Las variantes pueden sobrescribir potencia, batería y autonomía con `specsOverride`. El comparador ([03-ux](./03-ux.md)) usa las mismas claves.
+
+### Repuestos (`src/content/repuestos/<slug>.json`)
+
+Campos: `id`, `slug`, `name`, `description`, `price` (céntimos de sol), `availability`, `kind`, `unit` (`UND` o `PAR`), `code` (p. ej. `RP-002`), `compatibleWith[]` (slugs de modelos; vacío = universal) e `image`. Los repuestos se compran aparte desde `/repuestos` ([ADR-015](./21-decisions.md)).
 
 ## 4. Nomenclatura de variantes y colores
 
-- Variante = combinación de batería que altera precio o autonomía. Nombre: `<voltaje>V <capacidad>Ah`, p. ej. `72V 50Ah`. Si la diferencia es de motor: `<potencia>W` (`3000W`). Slug de variante: `72v-50ah`.
-- Color: nombre en español con mayúscula inicial y código hexadecimal para `ColorSwatch`: `{ "name": "Negro mate", "hex": "#1A1A1A", "slug": "negro-mate" }`. Nombres cerrados: Negro, Negro mate, Blanco, Gris, Rojo, Azul, Verde, Amarillo, Naranja, Plata. Variantes compuestas usan "/" : "Negro / Volt".
-- Un color puede restringirse a variantes concretas mediante `availableFor: ["72v-50ah"]`.
-- SKU interno opcional: `<marca>-<modelo>-<variante>-<color>` en mayúsculas para el equipo de ventas; no se muestra.
+- Cada modelo tiene dos versiones comerciales (campo `tier`): **Estándar** (350 W · 48V 12Ah, batería extraíble) y **Premium** (500 W · 48V 20Ah). `name` = "Estándar" / "Premium"; `description` = "<potencia> W · <voltaje>V <capacidad>Ah"; `id` = `estandar` / `premium`. Titan Rhino tiene una única versión (800 W · 60V 20Ah).
+- Color: nombre en español con mayúscula inicial y hex para `ColorSwatch`: `{ "id": "negro", "name": "Negro", "hex": "#111315" }`. Colores reales hoy: Negro, Blanco, Rojo, Rosa, Naranja, Verde.
+- SKU por versión: `RD-<MODELO>-<potencia>` en mayúsculas, p. ej. `RD-GOLDENEAGLE-350`; no se muestra.
 
 ## 5. Fotografía
 
 | Requisito | Valor |
 |---|---|
-| Fondo | Blanco neutro (#FFFFFF) para principal y colores; ambiente urbano real para secundarias |
-| Ratio | 4:3 para principal y galería; 1:1 para swatches de color; 16:9 para hero de categoría |
+| Fondo | Blanco neutro (#FFFFFF) para principal y colores; laboratorio/estudio RAIDEN para hero |
+| Ratio | Fotos de color en vertical (≈ 2020 × 2486 px); hero apaisado (≈ 1577 × 672 px); 1:1 para swatches |
 | Resolución mínima | 2000 px en el lado largo (principal), 1200 px (galería) |
 | Formato de origen | JPEG calidad 90 o PNG; la conversión a AVIF/WebP la hace el build |
 | Peso máximo de origen | 3 MB |
 | Vista mínima | Lateral izquierdo, lateral derecho, 3/4 frontal, detalle de cuadro, detalle de batería |
-| Nombre de fichero | `<slug>-<color-slug>-<vista>.jpg` → `odin-1-0-negro-lateral.jpg` |
-| Ubicación | `src/assets/products/<slug>/` |
-| `alt` | Obligatorio, descriptivo: "ODIN 1.0 en negro, vista lateral izquierda" |
+| Nombre de fichero | `<slug>-<color-slug>.jpg` → `golden-eagle-negro.jpg` |
+| Ubicación | `src/assets/products/` (modelos), `src/assets/hero/`, `src/assets/repuestos/` |
+| `alt` | Obligatorio, descriptivo: "Golden Eagle en color negro" |
 
 Sin texto ni marcas de agua en las imágenes. Las fotos del proveedor se renombran antes de entrar en el repositorio.
 
@@ -125,18 +128,18 @@ Cada fichero tiene `group`, `order` e `items[] { question, answer }`. Se renderi
 
 | Página | Ruta | Contenido mínimo |
 |---|---|---|
-| Aviso legal | `/legal/aviso-legal` | Titular, NIF, domicilio, correo, datos registrales (LSSI art. 10) |
+| Aviso legal | `/legal/aviso-legal` | Titular (EG Motors SAC, RUC 20615247384), domicilio (Bocanegra, Callao), correo (raiden.peru@gmail.com), términos y condiciones |
 | Privacidad | `/legal/privacidad` | Responsable, finalidad (atención de solicitudes vía WhatsApp), base legal, conservación, derechos, transferencias (Meta/WhatsApp) |
 | Cookies | `/legal/cookies` | Declaración de que no se usan cookies de seguimiento; localStorage del carrito como almacenamiento técnico |
-| Garantía | `/garantia` | Garantía legal 3 años (RDL 7/2021), garantía de batería por modelo, proceso de reclamación |
-| Envíos y devoluciones | `/legal/envios-devoluciones` | Plazos, zonas, coste orientativo, desistimiento 14 días, condiciones de devolución |
+| Garantía | `/garantia` | Garantía de 12 meses en batería y motor, qué cubre y qué no, proceso de reclamación y servicio técnico en Bocanegra, Callao |
+| Envíos y devoluciones | dentro de `/faq` y `/garantia` | Plazos (Lima y Callao 3-7 días hábiles, provincias 7-15), zonas y condiciones de devolución; sin página propia por ahora |
 
 Los textos legales los aporta el cliente o su asesoría; el equipo de Content entrega la estructura y marcadores `[PENDIENTE]`. No se publica ninguna página legal con marcadores pendientes.
 
 ## 9. Proceso editorial (git como CMS)
 
 1. Crear rama `content/<tema>` desde `main`.
-2. Añadir o editar JSON en `src/content/{products,accessories,blog,faqs}/` y las imágenes en `src/assets/`.
+2. Añadir o editar JSON en `src/content/{products,repuestos,categories,faqs}/` y Markdown en `src/content/blog/` y las imágenes en `src/assets/`.
 3. `npm run dev` y revisar la página localmente; `npm run build` falla si el JSON no cumple el esquema de la colección ([04-frontend](./04-frontend.md)).
 4. Abrir PR con la plantilla; el preview se genera automáticamente ([14-devops](./14-devops.md)).
 5. Revisión: Content (texto, datos técnicos contra la ficha del fabricante) y SEO (títulos, descripciones, enlaces internos). Productos nuevos: también Ventas confirma precio y disponibilidad.
@@ -146,14 +149,13 @@ Tiempo objetivo de alta de producto completo: menos de 2 horas desde que se reci
 
 ## 10. Checklist de publicación
 
-- [ ] `status: "published"`, `slug` único y sin acentos.
-- [ ] `summary` ≤ 160 caracteres; `name` sin mayúsculas innecesarias.
-- [ ] Todas las claves de `specs` con valor numérico y condiciones de autonomía indicadas.
-- [ ] Al menos una variante con precio y un color con hex.
-- [ ] Imagen principal 4:3, ≥ 2000 px, fondo blanco, `alt` descriptivo, nombre de fichero normalizado.
-- [ ] Precio en PEN (céntimos de sol), IGV indicado en `priceNote`.
-- [ ] Garantía de vehículo y batería informadas.
-- [ ] Carnet requerido coherente con velocidad y homologación.
-- [ ] Enlaces internos: categoría, 2 productos relacionados, 1 artículo de blog si existe.
+- [ ] `slug` único y sin acentos; `category` válida (`bicimotos` o `trimotos`).
+- [ ] `subtitle` y `claim` informados; `seo.title` ≤ 60 y `seo.description` ≤ 155 caracteres.
+- [ ] Todas las claves obligatorias de `specs` con valor numérico y rango de autonomía indicado.
+- [ ] Variantes con `tier`, precio en PEN (céntimos de sol; IGV incluido) y una sola `isDefault`; al menos un color con hex.
+- [ ] Imágenes con `alt`, `width` y `height`, ≥ 2000 px de alto en las verticales, fondo neutro, nombre de fichero normalizado.
+- [ ] Garantía de vehículo y batería informadas (12 meses).
+- [ ] Licencia coherente con la velocidad (25 km/h: "en general sin licencia, confirmar con el MTC").
+- [ ] Enlaces internos: categoría, modelos `related`, repuestos compatibles y 1 artículo de blog si existe.
 - [ ] Preview revisado en 375 px y 1280 px; JSON-LD `Product` validado en Rich Results Test.
 - [ ] Mensaje de WhatsApp generado desde el preview y revisado en un móvil real.

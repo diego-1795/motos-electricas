@@ -1,22 +1,27 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import type { Result } from 'axe-core';
-import { hydrated } from './helpers';
+import { GE, MOTOR, TITAN, addGoldenEagle, hydrated } from './helpers';
 
-const PAGES = ['/', '/motos-electricas', '/motos-electricas/odin-1-0', '/comparar', '/carrito', '/encuentra-tu-moto'];
+const PAGES = ['/', '/productos', '/bicimotos', '/trimotos', GE, TITAN, '/repuestos', MOTOR, '/contacto', '/nosotros', '/servicio-tecnico', '/encuentra-tu-moto', '/comparar', '/carrito'];
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag22aa'];
 const BLOCKING = new Set(['serious', 'critical']);
 
 /**
- * BUGS CONOCIDOS (color-contrast, impacto serious). Se excluyen del gate para que
- * la suite detecte regresiones nuevas; el test `fixme` de abajo los mantiene visibles.
- *  - src/styles/components.css:104 `.badge--stock{color:var(--success)}` → #1f8f5f sobre fondo claro ≈ 3,9:1 (< 4,5:1).
- *  - src/styles/components.css:109 `.badge--order{color:var(--warning)}` → #b7791f sobre fondo claro ≈ 3,0:1.
- *  - src/styles/components.css:200 `.choice:has(input:checked){color:var(--bg)}` no cubre `.muted` interno (precio
- *    de la variante en ProductConfigurator) → gris --fg-muted sobre fondo oscuro.
- *  - src/islands/BikeFinder.tsx (estilo .bf__progress) `color:var(--fg-subtle)` (#9b9b96) sobre fondo claro ≈ 2,6:1.
+ * BUGS CONOCIDOS (impacto serious) excluidos del gate para que la suite detecte regresiones nuevas.
+ * Los tests `fixme` del final los mantienen visibles; al corregirlos, vaciar la lista y quitar el fixme.
+ *  - target-size: src/components/home/HeroSlider.astro:262 `.hs__dot{width:.625rem;height:.625rem}` → los puntos
+ *    del carrusel miden 10×10 px (WCAG 2.2 2.5.8 exige 24×24 o separación de 24 px; el gap es de 12 px).
+ *    Fix: área de toque de 24 px (p. ej. `.hs__dot{position:relative} .hs__dot::before{content:'';position:absolute;inset:-7px}`
+ *    o `min-width:1.5rem;min-height:1.5rem` con el punto pintado en `::after`).
+ *  - color-contrast: src/pages/repuestos/index.astro:42 los enlaces del índice de tipos usan `.badge`
+ *    (src/styles/components.css:122 `color:var(--fg-muted)` #6b6f76 sobre `--bg-sunken` #efefec = 4,38:1 < 4,5:1 a 12 px).
+ *    Fix: `.rp__jump a{color:var(--fg)}` o subir `--fg-muted` a n-600.
  */
-const KNOWN_CONTRAST: RegExp[] = [];
+const KNOWN: { id: string; target: RegExp }[] = [
+  { id: 'target-size', target: /^button\[aria-label=".+"\]$/ },
+  { id: 'color-contrast', target: /^a\[href\$="#[a-z]+"\]$/ },
+];
 
 function split(violations: Result[]) {
   const known: string[] = [];
@@ -24,7 +29,7 @@ function split(violations: Result[]) {
   const others: string[] = [];
   for (const v of violations) {
     const nodes = v.nodes.map((n) => n.target.join(' '));
-    const unknownNodes = v.id === 'color-contrast' ? nodes.filter((t) => !KNOWN_CONTRAST.some((re) => re.test(t))) : nodes;
+    const unknownNodes = nodes.filter((t) => !KNOWN.some((k) => k.id === v.id && k.target.test(t)));
     known.push(...nodes.filter((t) => !unknownNodes.includes(t)).map((t) => `${v.id}: ${t}`));
     if (!unknownNodes.length) continue;
     if (BLOCKING.has(v.impact ?? '')) blocking.push({ id: v.id, impact: v.impact ?? undefined, help: v.help, nodes: unknownNodes.slice(0, 6) });
@@ -33,7 +38,13 @@ function split(violations: Result[]) {
   return { known, blocking, others };
 }
 
+/** Espera a que terminen las animaciones CSS en curso (toast `fade`, drawer): axe mide colores con la opacidad animada. */
+async function settleAnimations(page: Page) {
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
+}
+
 async function audit(page: Page, label: string) {
+  await settleAnimations(page);
   const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   const { known, blocking, others } = split(results.violations);
   if (others.length) console.log(`[axe ${label}] no bloqueantes:\n  - ${others.join('\n  - ')}`);
@@ -50,11 +61,8 @@ for (const path of PAGES) {
   });
 }
 
-test('axe en el drawer del carrito abierto con un ítem y en /carrito con ítems', async ({ page }) => {
-  await page.goto('/motos-electricas/odin-1-0');
-  await hydrated(page.locator('[data-configurator]'));
-  await page.locator('[data-add-to-cart]').click();
-  await expect(page.locator('[data-cart-drawer]')).toBeVisible();
+test('axe en el drawer del carrito abierto y en /carrito con ítems', async ({ page }) => {
+  await addGoldenEagle(page);
   await audit(page, 'drawer');
   await page.keyboard.press('Escape');
   await page.goto('/carrito');
@@ -62,9 +70,65 @@ test('axe en el drawer del carrito abierto con un ítem y en /carrito con ítems
   await audit(page, '/carrito (con ítems)');
 });
 
-test('contraste de color: badge en stock, precio de variante seleccionada y progreso del finder', async ({ page }) => {
-  // Ver comentario en KNOWN_CONTRAST. Cuando se corrijan los estilos, vaciar la lista y quitar el fixme.
-  await page.goto('/motos-electricas/odin-1-0');
+test('axe con el desplegable Productos abierto y el buscador abierto', async ({ page, isMobile }) => {
+  await page.goto('/');
+  if (!isMobile) {
+    // Apertura por teclado (el clic con puntero fino tiene el bug descrito en header.spec.ts)
+    await page.locator('[data-dropdown-btn]').focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator('[data-dropdown-panel]')).toBeVisible();
+    await audit(page, 'dropdown');
+    await page.keyboard.press('Escape');
+  } else {
+    await page.locator('[data-menu-toggle]').click();
+    await expect(page.locator('#mobile-nav')).toBeVisible();
+    await audit(page, 'menú móvil');
+    await page.keyboard.press('Escape');
+  }
+  await page.locator('[data-search-open]').first().click();
+  await expect(page.locator('dialog[data-search]')).toHaveAttribute('open', '');
+  await audit(page, 'buscador');
+});
+
+test('axe en el finder con resultados y en el comparador con 2 modelos', async ({ page }) => {
+  await page.goto('/encuentra-tu-moto');
+  const finder = page.locator('[data-finder]');
+  await hydrated(finder);
+  await finder.getByRole('checkbox', { name: 'Ciudad' }).check();
+  await finder.getByRole('button', { name: 'Continuar' }).click();
+  await finder.getByRole('button', { name: 'Continuar' }).click();
+  await finder.locator('[data-finder-finish]').click();
+  await expect(finder.locator('[data-finder-result]').first()).toBeVisible();
+  await audit(page, 'finder resultados');
+
+  await page.goto('/productos');
+  for (const slug of ['golden-eagle', 'royal-tiger']) {
+    const t = page.locator(`[data-compare-toggle="${slug}"]`);
+    await hydrated(t);
+    await t.click();
+    await expect(t).toHaveAttribute('aria-pressed', 'true');
+  }
+  await page.goto('/comparar');
+  await expect(page.locator('[data-compare-table] table')).toBeVisible();
+  await audit(page, '/comparar (2 modelos)');
+});
+
+test('contraste de color: sin violaciones en la ficha de producto', async ({ page }) => {
+  await page.goto(GE);
+  const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+  expect(results.violations.filter((v) => v.id === 'color-contrast')).toEqual([]);
+});
+
+test('BUG HeroSlider: los puntos del carrusel cumplen el tamaño mínimo de 24 px (target-size)', async ({ page }) => {
+  test.fixme(true, 'src/components/home/HeroSlider.astro:262 — .hs__dot mide 10×10 px; ver KNOWN arriba');
+  await page.goto('/');
+  const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+  expect(results.violations.filter((v) => v.id === 'target-size')).toEqual([]);
+});
+
+test('BUG /repuestos: el índice de tipos (.rp__jump .badge) cumple contraste 4,5:1', async ({ page }) => {
+  test.fixme(true, 'src/pages/repuestos/index.astro:42 + src/styles/components.css:122 — 4,38:1; ver KNOWN arriba');
+  await page.goto('/repuestos');
   const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   expect(results.violations.filter((v) => v.id === 'color-contrast')).toEqual([]);
 });

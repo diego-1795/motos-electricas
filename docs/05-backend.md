@@ -6,7 +6,7 @@ Define la capa de servicios y datos de Raiden. En MVP no existe backend propio; 
 
 | Necesidad | Solución MVP | Coste |
 |---|---|---|
-| Catálogo (productos, categorías, accesorios, marcas) | JSON en `src/content/*` leídos en build por content collections | 0 |
+| Catálogo (productos, categorías, repuestos) | JSON en `src/content/*` leídos en build por content collections | 0 |
 | Blog y FAQs | Markdown/JSON en `src/content/` | 0 |
 | Edición de contenido | Git como CMS: PR → revisión → merge → despliegue automático en Cloudflare Pages | 0 |
 | Carrito | localStorage (`raiden:cart:v1`) | 0 |
@@ -130,7 +130,7 @@ export function parseFinderAnswers(input: unknown): Result<FinderAnswers> {
   if (!isOneOf(useCase, USE_CASES)) return fail('VALIDATION', 'Uso no válido', 'useCase');
   if (!isIntIn(input.rangeKm, 20, 300)) return fail('VALIDATION', 'Autonomía fuera de rango', 'rangeKm');
   if (!isIntIn(input.budgetCents, 50_000, 2_000_000)) return fail('VALIDATION', 'Presupuesto fuera de rango', 'budgetCents');
-  if (!isOneOf(input.licence, LICENCES)) return fail('VALIDATION', 'Carnet no válido', 'licence');
+  if (!isOneOf(input.licence, LICENCES)) return fail('VALIDATION', 'Licencia no válida', 'licence');
   if (!isIntIn(input.topSpeedKmh, 25, 150)) return fail('VALIDATION', 'Velocidad fuera de rango', 'topSpeedKmh');
   if (typeof input.needsCargo !== 'boolean') return fail('VALIDATION', 'Carga no válida', 'needsCargo');
   return ok({ useCase, rangeKm: input.rangeKm, budgetCents: input.budgetCents, licence: input.licence, topSpeedKmh: input.topSpeedKmh, needsCargo: input.needsCargo });
@@ -150,17 +150,17 @@ El mismo patrón se aplica a `parseCart` (al leer localStorage) y a `parseOrderR
 | Presupuesto (`budgetCents`) | 20 | 1 si `priceCents <= budget`; decae linealmente hasta 0 en `budget * 1,25`; si supera, 0 |
 | Velocidad (`topSpeedKmh`) | 15 | `min(variant.topSpeedKmh / answers.topSpeedKmh, 1)` |
 | Licencia (`license`) | 15 | 1 si el producto es conducible con la licencia MTC indicada (sin-licencia ⊂ B-I ⊂ B-IIa ⊂ B-IIb ⊂ B-IIc); 0 si no: criterio eliminatorio, el producto se excluye |
-| Carga (`needsCargo`) | 5 | 1 si `needsCargo` y la categoría es `vehiculos-carga` o `specs.maxLoadKg >= 150`; 1 si no necesita carga; 0,3 si la necesita y no cumple |
+| Carga (`needsCargo`) | 5 | 1 si `needsCargo` y la categoría es `trimotos` o `specs.maxLoadKg >= 150`; 1 si no necesita carga; 0,3 si la necesita y no cumple |
 
-`score = Σ(peso × parcial)`. Se devuelven los 3 primeros con `reasons: string[]` generadas a partir de los criterios con parcial ≥ 0,8 ("Autonomía de 140 km, por encima de los 100 km que necesitas"). Cobertura de tests en `src/domain/finder.test.ts` con tablas de casos.
+`score = Σ(peso × parcial)`. Se devuelven los 3 primeros con `reasons: string[]` generadas a partir de los criterios con parcial ≥ 0,8 ("Autonomía de 50 km, por encima de los 40 km que necesitas"). Cobertura de tests en `src/domain/finder.test.ts` con tablas de casos.
 
 ## 6. Pricing
 
 - Todos los precios en céntimos enteros (`priceCents`), IGV incluido (18 %). Nunca se almacena ni muestra base imponible en el frontend.
 - `priceFromCents` de un producto = mínimo `priceCents` de sus variantes publicadas; se calcula en `JsonProductRepository`, no se escribe a mano en el JSON (si existe en el JSON, se valida que coincida).
-- Los colores no alteran el precio en MVP; las variantes sí. Los accesorios tienen precio propio.
+- Los colores no alteran el precio en MVP; las variantes sí. Los repuestos tienen precio propio.
 - `computeCartTotal(items)` = Σ `unitPriceCents × quantity`. Sin gastos de envío ni descuentos en MVP (el mensaje dice "Total estimado").
-- Formato manual en `money.ts` (coma de miles, punto decimal; `Intl` con `es-PE` es inconsistente entre runtimes) → `S/ 4,999`; con decimales solo si no es entero (`S/ 4,999.50`).
+- Formato manual en `money.ts` (coma de miles, punto decimal; `Intl` con `es-PE` es inconsistente entre runtimes) → `S/ 1,200`; con decimales solo si no es entero (`S/ 1,200.50`).
 
 ## 7. Backend futuro con Supabase
 

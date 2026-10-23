@@ -146,17 +146,16 @@ test.describe('Ficha de producto → carrito → WhatsApp', () => {
     expect(parsePrice(await drawer.locator('[data-cart-total]').innerText())).toBe(1400);
   });
 
-  test('el repuesto extra del configurador se añade como segunda línea', async ({ page }) => {
+  test('el configurador no vende repuestos: la sección "Repuestos compatibles" solo enlaza a /repuestos', async ({ page }) => {
     await page.goto(GE);
     const cfg = page.locator('[data-configurator]');
     await hydrated(cfg);
-    const extras = cfg.locator('.cfg__extra input');
-    expect(await extras.count()).toBeGreaterThanOrEqual(1);
-    const extraName = (await cfg.locator('.cfg__extra').first().locator('span').first().innerText()).trim();
-    await extras.first().check();
-    await cfg.locator('[data-add-to-cart]').click();
-    const drawer = page.locator('[data-cart-drawer]');
-    await expect(drawer.locator('[data-cart-item]')).toHaveCount(2);
-    await expect(drawer).toContainText(extraName.replace(/\s*\(par\)$/, ''));
+    await expect(cfg.locator('input[type="checkbox"]')).toHaveCount(0);
+    const section = page.locator('section', { has: page.getByRole('heading', { name: 'Repuestos compatibles' }) });
+    await expect(section).toHaveCount(1);
+    for (const href of await section.locator('a[href^="/repuestos"]').evaluateAll((as) => as.map((a) => a.getAttribute('href')))) {
+      expect(href).toMatch(/^\/repuestos(\/[a-z0-9-]+)?$/);
+    }
+    expect(await section.locator('a[href^="/repuestos/"]').count()).toBeGreaterThanOrEqual(1);
   });
 });

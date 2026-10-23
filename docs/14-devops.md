@@ -27,7 +27,7 @@ Conventional Commits, en español, imperativo, sin punto final. Tipos permitidos
 ```
 feat(cart): añadir QuantityStepper al drawer
 fix(whatsapp): escapar saltos de línea en notas del cliente
-content(products): alta ODIN 1.0 con tres variantes
+content(products): alta Golden Eagle con versiones Estándar y Premium
 perf(images): limitar widths a 4 por imagen de producto
 ci: cachear node_modules en el job de build
 ```
@@ -179,7 +179,7 @@ El formato se verifica en CI con `npx prettier --check .` dentro del job `check`
 
 ## 8. Observabilidad mínima
 
-- Disponibilidad: un monitor HTTP externo gratuito (UptimeRobot o similar) contra `https://raiden.pe/` y `/motos-electricas` cada 5 min, alerta por correo.
+- Disponibilidad: un monitor HTTP externo gratuito (UptimeRobot o similar) contra `https://raiden.pe/` y `/productos` cada 5 min, alerta por correo.
 - Rendimiento real: Cloudflare Web Analytics (Core Web Vitals RUM) y Search Console para errores de rastreo.
 - Errores de cliente: no se instala Sentry en MVP. `AnalyticsService` expone `trackError` con adaptador `noop`; se conecta a un servicio cuando haya backend.
 - Builds: notificaciones de fallo de Cloudflare Pages y de Actions al correo del Tech Lead.
@@ -203,7 +203,7 @@ El formato se verifica en CI con `npx prettier --check .` dentro del job `check`
 
 ### Cambio de número de WhatsApp
 
-1. Nuevo número en formato E.164 sin `+` (p. ej. `34612345678`), verificado con un enlace `wa.me` manual desde móvil.
+1. Nuevo número en formato E.164 sin `+` (p. ej. `51989853431`), verificado con un enlace `wa.me` manual desde móvil.
 2. Actualizar `PUBLIC_WHATSAPP_NUMBER` en el entorno Production del hosting.
 3. Lanzar "Retry deployment" del último deploy de `main` (el valor se lee en build).
 4. Verificar en producción el `href` del botón del carrito y el test E2E de enlace WhatsApp ([16-whatsapp-commerce](./16-whatsapp-commerce.md)).

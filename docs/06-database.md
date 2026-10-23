@@ -2,7 +2,7 @@
 
 Esquema Postgres para Supabase (fase posterior al MVP). En MVP no hay base de datos: el catálogo son JSON en `src/content/` ([05-backend](./05-backend.md)). Este esquema es el destino de la migración de [20-migration](./20-migration.md) y la fuente de la API de [07-api](./07-api.md).
 
-Principios: PK `uuid`, `slug` único como identificador público, precios en céntimos (`integer`) con IGV incluido, `timestamptz`, borrado lógico vía `status`, RLS activada en todas las tablas. Fichero: `supabase/migrations/0001_init.sql`.
+Principios: PK `uuid`, `slug` único como identificador público, precios en céntimos (`integer`) con IGV incluido, `timestamptz`, borrado lógico vía `status`, RLS activada en todas las tablas. Fichero: `supabase/migrations/00000000000001_initial_schema.sql` (al activar Supabase hay que sincronizarlo con este documento: tabla `parts`, `tier`, `unit`, `code`; ADR-015).
 
 ## 1. Extensiones, enums y utilidades
 
@@ -12,7 +12,11 @@ create extension if not exists "pgcrypto";
 create type product_status as enum ('draft', 'published', 'archived');
 create type stock_status as enum ('in_stock', 'preorder', 'out_of_stock');
 create type license_type as enum ('sin-licencia', 'B-I', 'B-IIa', 'B-IIb', 'B-IIc');
-create type use_case as enum ('ciudad', 'interurbano', 'reparto', 'carga', 'ocio', 'trabajo');
+create type use_case as enum ('ciudad', 'trabajo', 'reparto', 'ocio', 'trayectos-largos', 'dos-personas', 'carga');
+-- Versión comercial de un modelo: Estándar (350 W · 48V 12Ah) o Premium (500 W · 48V 20Ah)
+create type variant_tier as enum ('estandar', 'premium');
+-- Unidad de venta de un repuesto
+create type part_unit as enum ('UND', 'PAR');
 create type order_request_status as enum ('new', 'contacted', 'quoted', 'won', 'lost', 'spam');
 create type whatsapp_source as enum ('cart', 'product', 'contact', 'finder');
 
@@ -48,7 +52,7 @@ create table batteries (
   slug slug_t not null unique, name text not null,
   voltage_v numeric(5,1) not null check (voltage_v > 0),
   capacity_ah numeric(6,1) not null check (capacity_ah > 0),
-  chemistry text not null default 'LiFePO4', weight_kg numeric(5,1), removable boolean not null default true,
+  chemistry text not null default 'plomo-acido', brand text, weight_kg numeric(5,1), removable boolean not null default true,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
 
@@ -59,7 +63,7 @@ create table products (
   category_id uuid not null references categories(id) on delete restrict,
   status product_status not null default 'draft',
   summary text not null check (char_length(summary) <= 200), description_md text,
-  license license_type not null default 'B-IIa', use_cases use_case[] not null default '{}',
+  license license_type not null default 'sin-licencia', use_cases use_case[] not null default '{}',
   hero_image_path text, gallery_paths text[] not null default '{}',
   specs jsonb not null default '{}'::jsonb, seo_title text, seo_description text,
   published_at timestamptz,
@@ -71,13 +75,15 @@ create table product_variants (
   id uuid primary key default gen_random_uuid(),
   product_id uuid not null references products(id) on delete cascade,
   code slug_t not null, name text not null,
+  tier variant_tier not null,                  -- estandar | premium
   battery_id uuid references batteries(id) on delete set null,
   price_cents integer not null check (price_cents > 0),
   range_km integer check (range_km > 0), top_speed_kmh integer check (top_speed_kmh > 0),
   charge_hours numeric(4,1) check (charge_hours > 0),
   stock stock_status not null default 'in_stock', sort_order int not null default 0,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
-  unique (product_id, code)
+  unique (product_id, code),
+  unique (product_id, tier)
 );
 
 create table product_colors (
@@ -89,19 +95,22 @@ create table product_colors (
   unique (product_id, code)
 );
 
-create table accessories (
+-- Repuestos (antes "accessories", ver ADR-015): 26 piezas en src/content/repuestos
+create table parts (
   id uuid primary key default gen_random_uuid(),
   slug slug_t not null unique, name text not null, status product_status not null default 'draft',
   summary text, description_md text, price_cents integer not null check (price_cents > 0),
-  image_path text, kind text not null default 'general',   -- casco, bateria, candado, baul, cargador
+  unit part_unit not null default 'UND',                   -- UND | PAR
+  code text unique,                                        -- código interno, p. ej. RP-002
+  image_path text, kind text not null default 'otro',      -- bateria, motor, controlador, cargador, iluminacion, frenos, cables, mandos, seguridad, llantas, otro
   created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
 
-create table product_accessories (
+create table product_parts (
   product_id uuid not null references products(id) on delete cascade,
-  accessory_id uuid not null references accessories(id) on delete cascade,
+  part_id uuid not null references parts(id) on delete cascade,
   recommended boolean not null default false,
-  primary key (product_id, accessory_id)
+  primary key (product_id, part_id)
 );
 ```
 
@@ -133,11 +142,11 @@ create table order_request_items (
   product_id uuid references products(id) on delete set null,
   variant_id uuid references product_variants(id) on delete set null,
   color_id uuid references product_colors(id) on delete set null,
-  accessory_id uuid references accessories(id) on delete set null,
-  label text not null,                         -- snapshot legible: "ODIN 1.0 · 72V 50Ah · Negro"
+  part_id uuid references parts(id) on delete set null,   -- el valor de carrito `accessory` se conserva internamente para repuestos
+  label text not null,                         -- snapshot legible: "Golden Eagle · Premium · Negro"
   unit_price_cents integer not null check (unit_price_cents >= 0),
   quantity integer not null check (quantity between 1 and 10),
-  constraint item_has_target check (product_id is not null or accessory_id is not null)
+  constraint item_has_target check (product_id is not null or part_id is not null)
 );
 
 create table whatsapp_requests (
@@ -186,7 +195,7 @@ create index products_status_category_idx on products (status, category_id);
 create index products_brand_idx on products (brand_id);
 create index products_use_cases_gin on products using gin (use_cases);
 create index variants_product_price_idx on product_variants (product_id, price_cents);
-create index accessories_status_idx on accessories (status);
+create index parts_status_idx on parts (status);
 create index order_requests_status_created_idx on order_requests (status, created_at desc);
 create index order_request_items_req_idx on order_request_items (order_request_id);
 create index whatsapp_requests_created_idx on whatsapp_requests (created_at desc);
@@ -196,7 +205,7 @@ create index reviews_product_status_idx on reviews (product_id, status);
 do $$ declare t text;
 begin
   foreach t in array array['brands','categories','batteries','products','product_variants',
-    'accessories','customers','order_requests','blog_posts','faqs','reviews']
+    'parts','customers','order_requests','blog_posts','faqs','reviews']
   loop
     execute format('create trigger %I_updated_at before update on %I for each row execute function set_updated_at()', t, t);
   end loop;
@@ -208,7 +217,7 @@ end $$;
 ```sql
 -- Catálogo publicado con precio "desde" calculado (sustituye a priceFromCents del JSON)
 create view v_products_public as
-select p.id, p.slug, p.name, p.summary, p.licence, p.use_cases, p.hero_image_path, p.specs, p.published_at,
+select p.id, p.slug, p.name, p.summary, p.license, p.use_cases, p.hero_image_path, p.specs, p.published_at,
        b.slug as brand_slug, b.name as brand_name, c.slug as category_slug, c.name as category_name,
        (select min(v.price_cents) from product_variants v where v.product_id = p.id) as price_from_cents
 from products p join brands b on b.id = p.brand_id join categories c on c.id = p.category_id
@@ -225,8 +234,8 @@ from order_requests o left join customers cu on cu.id = o.customer_id;
 
 | Tabla | `anon` select | `anon` insert | `admin` |
 |---|---|---|---|
-| brands, categories, batteries, product_accessories | todo | no | todo |
-| products, accessories, blog_posts, faqs, reviews | solo `published` | reviews en `draft` | todo |
+| brands, categories, batteries, product_parts | todo | no | todo |
+| products, parts, blog_posts, faqs, reviews | solo `published` | reviews en `draft` | todo |
 | product_variants, product_colors | si el producto está `published` | no | todo |
 | customers, order_requests, order_request_items | no | limitada (ver abajo) | todo |
 | whatsapp_requests | no | sí | select |
@@ -235,7 +244,7 @@ from order_requests o left join customers cu on cu.id = o.customer_id;
 do $$ declare t text;
 begin
   foreach t in array array['brands','categories','batteries','products','product_variants','product_colors',
-    'accessories','product_accessories','customers','order_requests','order_request_items',
+    'parts','product_parts','customers','order_requests','order_request_items',
     'whatsapp_requests','blog_posts','faqs','reviews']
   loop execute format('alter table %I enable row level security', t); end loop;
 end $$;
@@ -244,13 +253,13 @@ end $$;
 create policy brands_read on brands for select using (true);
 create policy categories_read on categories for select using (true);
 create policy batteries_read on batteries for select using (true);
-create policy product_accessories_read on product_accessories for select using (true);
+create policy product_parts_read on product_parts for select using (true);
 create policy products_read on products for select using (status = 'published' or is_admin());
 create policy variants_read on product_variants for select
   using (exists (select 1 from products p where p.id = product_id and (p.status = 'published' or is_admin())));
 create policy colors_read on product_colors for select
   using (exists (select 1 from products p where p.id = product_id and (p.status = 'published' or is_admin())));
-create policy accessories_read on accessories for select using (status = 'published' or is_admin());
+create policy parts_read on parts for select using (status = 'published' or is_admin());
 create policy blog_read on blog_posts for select using (status = 'published' or is_admin());
 create policy faqs_read on faqs for select using (status = 'published' or is_admin());
 create policy reviews_read on reviews for select using (status = 'published' or is_admin());
@@ -259,7 +268,7 @@ create policy reviews_read on reviews for select using (status = 'published' or 
 do $$ declare t text;
 begin
   foreach t in array array['brands','categories','batteries','products','product_variants','product_colors',
-    'accessories','product_accessories','blog_posts','faqs','reviews','customers','order_requests','order_request_items']
+    'parts','product_parts','blog_posts','faqs','reviews','customers','order_requests','order_request_items']
   loop
     execute format('create policy %I_admin_all on %I for all using (is_admin()) with check (is_admin())', t, t);
   end loop;
@@ -280,23 +289,22 @@ create policy reviews_insert_anon on reviews for insert to anon, authenticated w
 
 ## 8. Migración desde JSON
 
-1. `brands` y `categories` se crean desde `src/content/brands/*.json` y `categories/*.json`; el `slug` se conserva como clave pública.
-2. Cada `products/*.json` genera una fila en `products` (`specs` → `jsonb` tal cual), N en `product_variants` (`variants[].id` → `code`) y N en `product_colors` (`colors[].id` → `code`). `priceFromCents` no se migra: lo calcula `v_products_public`.
-3. `compatibleAccessoryIds` → filas en `product_accessories`.
-4. Imágenes: rutas relativas (`odin-1-0/hero.jpg`) se suben al bucket `products` de Supabase Storage conservando la ruta.
+1. `categories` se crea desde `src/content/categories/*.json` (`bicimotos`, `trimotos`, `repuestos`) y `brands` desde el seed (RAIDEN, `src/config/site.ts`); el `slug` se conserva como clave pública.
+2. Cada `products/*.json` genera una fila en `products` (`specs` → `jsonb` tal cual), N en `product_variants` (`variants[].id` → `code`, `variants[].tier` → `tier`) y N en `product_colors` (`colors[].id` → `code`). `priceFromCents` no se migra: lo calcula `v_products_public`.
+3. Cada `src/content/repuestos/*.json` genera una fila en `parts` (`unit`, `code`, `kind`); el campo `accessories` de cada producto y `compatibleWith` de cada repuesto → filas en `product_parts`.
+4. Imágenes: rutas `~/assets/...` (`~/assets/products/golden-eagle-negro.jpg`) se suben al bucket `products` de Supabase Storage conservando la ruta.
 5. Script `scripts/migrate-json-to-supabase.ts`, idempotente (`upsert` por `slug`), ejecutado manualmente con `SUPABASE_SERVICE_ROLE_KEY` fuera del build.
 6. Mientras convivan ambas fuentes, `PUBLIC_DATA_SOURCE` elige el repositorio; los tests de contrato comparan `JsonProductRepository` y `SupabaseProductRepository` sobre el mismo seed.
 
 ## 9. Seeds
 
 ```sql
-insert into brands (slug, name) values ('raiden', 'Raiden');
+insert into brands (slug, name) values ('raiden', 'RAIDEN');
 insert into categories (slug, name, sort_order) values
-  ('scooters-electricos', 'Scooters eléctricos', 1), ('motos-electricas-urbanas', 'Motos eléctricas urbanas', 2),
-  ('bicimotos', 'Bicimotos', 3), ('trimotos', 'Trimotos', 4),
-  ('vehiculos-carga', 'Vehículos de carga', 5), ('cuatrimotos', 'Cuatrimotos', 6);
-insert into batteries (slug, name, voltage_v, capacity_ah) values
-  ('bat-72v-32ah', 'Batería 72V 32Ah', 72, 32), ('bat-72v-50ah', 'Batería 72V 50Ah', 72, 50);
+  ('bicimotos', 'Bicimotos', 1), ('trimotos', 'Trimotos', 2), ('repuestos', 'Repuestos', 3);
+insert into batteries (slug, name, voltage_v, capacity_ah, brand, removable) values
+  ('chilwee-48v-12ah', 'Batería Chilwee 48V 12Ah', 48, 12, 'Chilwee', true),
+  ('chilwee-48v-20ah', 'Batería Chilwee 48V 20Ah', 48, 20, 'Chilwee', false);
 ```
 
 El seed de productos se genera con el script de migración a partir de los JSON del repositorio; no se mantiene a mano en SQL.

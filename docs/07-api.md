@@ -4,7 +4,7 @@ Dos contratos: el actual (datos estáticos en build, content collections) y el f
 
 ## 1. Principio de desacoplamiento
 
-- Las páginas y las islas importan `ProductRepository`, `CategoryRepository`, `AccessoryRepository`, `BlogRepository`, `FaqRepository`; nunca `astro:content` ni `@supabase/supabase-js`.
+- Las páginas y las islas importan `ProductRepository`, `PartRepository`, `CategoryRepository`, `BlogRepository`, `FaqRepository`; nunca `astro:content` ni `@supabase/supabase-js`.
 - Cambiar de fuente de datos es cambiar `PUBLIC_DATA_SOURCE` y la implementación en `src/data/`; ningún componente se modifica.
 - Los DTOs que llegan a las islas son subconjuntos serializables de las entidades de dominio (`ProductDTO`, `CartItemDTO`).
 
@@ -14,68 +14,56 @@ Dos contratos: el actual (datos estáticos en build, content collections) y el f
 
 | Colección | Ruta | Formato | Nombre de fichero |
 |---|---|---|---|
-| `products` | `src/content/products/*.json` | JSON | `<slug>.json` |
-| `categories` | `src/content/categories/*.json` | JSON | `<slug>.json` |
-| `brands` | `src/content/brands/*.json` | JSON | `<slug>.json` |
-| `accessories` | `src/content/accessories/*.json` | JSON | `<slug>.json` |
-| `blog` | `src/content/blog/*.md` | Markdown + frontmatter | `<yyyy-mm-dd>-<slug>.md` |
-| `faqs` | `src/content/faqs/*.json` | JSON | `<categoria>.json` (array de FAQs) |
+| `products` | `src/content/products/*.json` | JSON | `<slug>.json` (4 modelos) |
+| `repuestos` | `src/content/repuestos/*.json` | JSON | `<slug>.json` (26 repuestos) |
+| `categories` | `src/content/categories/*.json` | JSON | `<slug>.json` (`bicimotos`, `trimotos`, `repuestos`) |
+| `blog` | `src/content/blog/*.md` | Markdown + frontmatter | `<slug>.md` |
+| `faqs` | `src/content/faqs/*.json` | JSON | `<grupo>.json` (`group`, `order`, `items[]`) |
 
-El `slug` del fichero debe coincidir con el campo `slug`; el build falla en caso contrario (`src/content.config.ts`).
+Los esquemas zod viven en `src/content.config.ts` y reflejan `src/domain/types.ts`; un JSON inválido rompe el build indicando el campo.
 
 ### 2.2 `products`
 
 | Campo | Tipo | Oblig. | Notas |
 |---|---|---|---|
-| `id` | string | Sí | Igual a `slug` en MVP |
-| `slug` | string kebab-case | Sí | Único |
-| `name` | string | Sí | |
-| `brandId` | string | Sí | Referencia a `brands.slug` |
-| `categoryId` | string | Sí | Referencia a `categories.slug` |
-| `status` | `draft` \| `published` \| `archived` | Sí | Solo `published` genera página |
-| `summary` | string ≤ 200 | Sí | Tarjeta y meta description por defecto |
-| `description` | string Markdown | No | |
-| `license` | `sin-licencia` \| `B-I` \| `B-IIa` \| `B-IIb` \| `B-IIc` | Sí | Licencia MTC mínima |
-| `priceFromCents` | integer | No | Si existe, debe coincidir con el mínimo de variantes |
-| `currency` | `PEN` | Sí | |
-| `heroImage` | string | Sí | Relativa a `src/assets/products/` |
-| `gallery` | string[] | No | Máx. 8 |
-| `variants` | Variant[] | Sí (≥ 1) | Ver tabla |
-| `colors` | Color[] | Sí (≥ 1) | Ver tabla |
-| `specs` | objeto | Sí | Claves conocidas: `motorPowerW`, `motorPeakW`, `weightKg`, `maxLoadKg`, `brakes`, `wheels`, `removableBattery`, `warrantyMonths` |
-| `useCases` | enum[] | Sí | `ciudad`, `interurbano`, `reparto`, `carga`, `ocio`, `trabajo` |
-| `compatibleAccessoryIds` | string[] | No | Referencias a `accessories.slug` |
+| `id` | string | Sí | Identificador estable (p. ej. `rd-golden-eagle`) |
+| `slug` | string kebab-case | Sí | Único; forma la URL `/<category>/<slug>` |
+| `name`, `subtitle`, `claim`, `description` | string | Sí | Textos comerciales |
+| `category` | `bicimotos` \| `trimotos` | Sí | (`repuestos` es la categoría de la colección `repuestos`) |
+| `brand` | string | Sí | `Raiden` |
+| `images` / `heroImage` | `ImageRef` (`src` `~/assets/...`, `alt`, `width`, `height`) | `images` ≥ 1 | Galería y hero apaisado de portada |
+| `specs` | objeto | Sí | `rangeKm`, `topSpeedKmh`, `powerW`, `battery`, `maxLoadKg`, `seats`, `license` (`sin-licencia` \| `B-I` \| `B-IIa` \| `B-IIb` \| `B-IIc`), `brakes`, `suspension`, `warrantyMonths`, `features[]`…; peso y dimensiones opcionales |
+| `variants` | Variant[] | Sí (≥ 1) | Ver abajo |
+| `colors` | Color[] | Sí | `id`, `name`, `hex`, `image?`, `priceDelta?` |
+| `accessories` | string[] | Sí | Slugs de **repuestos** compatibles (nombre de campo histórico) |
+| `related` | string[] | Sí | Slugs de modelos similares |
+| `useCases` | enum[] | Sí | `ciudad`, `trabajo`, `reparto`, `ocio`, `trayectos-largos`, `dos-personas`, `carga` |
+| `highlights`, `technology`, `faqs`, `reviews?` | arrays | Sí / No | Contenido de ficha |
+| `featured`, `isHero?`, `isNew?`, `publishedAt` | number / boolean / fecha | `featured` y `publishedAt` sí | Orden en "Recomendados" y portada |
 | `seo` | `{ title?, description? }` | No | |
-| `publishedAt` | fecha ISO | Sí si `published` | |
 
-Variant: `id` (string, único en el producto), `name`, `priceCents` (integer > 0), `batteryId?`, `rangeKm?`, `topSpeedKmh?`, `chargeHours?`, `stock` (`in_stock` \| `preorder` \| `out_of_stock`).
-Color: `id`, `name`, `hex` (`#RRGGBB`), `image?`.
+Variant: `id`, `name`, `tier` (`estandar` \| `premium`), `description?`, `price` (`{ amount: céntimos, currency: "PEN" }`), `specsOverride?` (potencia, batería, autonomía de la versión), `availability` (`en-stock` \| `bajo-pedido` \| `proximamente` \| `agotado`), `sku?`, `isDefault?`.
 
-### 2.3 `categories`, `brands`, `accessories`
+### 2.3 `repuestos` y `categories`
 
 | Colección | Campos obligatorios | Opcionales |
 |---|---|---|
-| `categories` | `slug`, `name`, `sortOrder` | `description`, `seo.title`, `seo.description`, `heroImage` |
-| `brands` | `slug`, `name` | `logo`, `website` |
-| `accessories` | `slug`, `name`, `status`, `priceCents`, `kind`, `image` | `summary`, `description`, `compatibleProductIds` |
+| `repuestos` | `id`, `slug`, `name`, `description`, `price`, `availability`, `kind` (`bateria`, `motor`, `controlador`, `cargador`, `iluminacion`, `frenos`, `cables`, `mandos`, `seguridad`, `llantas`, `otro`), `compatibleWith` (slugs de modelos; vacío = universal) | `image`, `unit` (`UND` \| `PAR`, por defecto `UND`), `code` (p. ej. `RP-002`) |
+| `categories` | `slug`, `name`, `title`, `description`, `tagline`, `order` | `image` |
 
 ### 2.4 `blog` (frontmatter) y `faqs`
 
 | Colección | Campo | Tipo | Oblig. |
 |---|---|---|---|
 | `blog` | `title` | string | Sí |
-| `blog` | `slug` | string | Sí |
-| `blog` | `excerpt` | string ≤ 160 | Sí |
-| `blog` | `cover` | string | Sí |
-| `blog` | `publishedAt` | fecha ISO | Sí |
-| `blog` | `tags` | string[] | No |
-| `blog` | `author` | string | No (por defecto `Raiden`) |
-| `blog` | `draft` | boolean | No |
-| `faqs` | `question` | string | Sí |
-| `faqs` | `answer` | string Markdown | Sí |
-| `faqs` | `category` | string | Sí |
-| `faqs` | `productId` | string | No |
-| `faqs` | `sortOrder` | integer | No |
+| `blog` | `description` | string | Sí |
+| `blog` | `category` | `guias` \| `comparativas` \| `autonomia` \| `baterias` \| `mantenimiento` \| `legislacion` \| `movilidad` \| `compra` | Sí |
+| `blog` | `publishedAt` / `updatedAt` | fecha ISO | Sí / No |
+| `blog` | `author`, `readingMinutes` | string, number | Sí |
+| `blog` | `image` | `ImageRef` | No |
+| `blog` | `relatedProducts` | string[] (slugs) | No |
+| `faqs` | `group`, `order` | string, number | Sí |
+| `faqs` | `items[]` (`question`, `answer`) | array | Sí |
 
 ## 3. API REST futura
 
@@ -85,10 +73,10 @@ Base: `https://<proyecto>.supabase.co/functions/v1` para Edge Functions y PostgR
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| GET | `/api/products` | anon | Lista paginada de productos publicados. Filtros: `category`, `licence`, `useCase`, `priceMax`, `sort` |
-| GET | `/api/products/:slug` | anon | Producto con variantes, colores y accesorios compatibles |
-| GET | `/api/categories` | anon | Categorías ordenadas por `sortOrder` con `productCount` |
-| GET | `/api/accessories` | anon | Accesorios publicados; filtro `compatibleWith=<slug>` |
+| GET | `/api/products` | anon | Lista paginada de productos publicados. Filtros: `category`, `license`, `useCase`, `priceMax`, `sort` |
+| GET | `/api/products/:slug` | anon | Producto con variantes (`tier`), colores y repuestos compatibles |
+| GET | `/api/categories` | anon | Categorías ordenadas por `order` con `productCount` |
+| GET | `/api/parts` | anon | Repuestos publicados; filtro `compatibleWith=<slug>` |
 | POST | `/api/order-requests` | anon + rate limit | Crea solicitud de pedido con cliente e ítems |
 | POST | `/api/whatsapp-requests` | anon + rate limit | Registra clic en enlace WhatsApp |
 | POST | `/api/finder/recommend` | anon | Devuelve recomendaciones del finder (mismo scoring que el cliente) |
@@ -104,11 +92,11 @@ Respuesta de lista:
 ```json
 {
   "data": [
-    { "slug": "odin-1-0", "name": "ODIN 1.0", "categorySlug": "motos-electricas-urbanas",
-      "priceFromCents": 1799600, "currency": "PEN", "licence": "B-IIa",
-      "heroImage": "https://.../products/odin-1-0/hero.jpg", "useCases": ["ciudad", "interurbano"] }
+    { "slug": "golden-eagle", "name": "Golden Eagle", "categorySlug": "bicimotos",
+      "priceFromCents": 120000, "currency": "PEN", "license": "sin-licencia",
+      "heroImage": "https://.../products/golden-eagle/hero.jpg", "useCases": ["ciudad", "trabajo", "ocio"] }
   ],
-  "page": { "cursor": "eyJpZCI6Ii4uLiJ9", "nextCursor": null, "limit": 24, "total": 37 }
+  "page": { "cursor": "eyJpZCI6Ii4uLiJ9", "nextCursor": null, "limit": 24, "total": 4 }
 }
 ```
 
@@ -116,12 +104,12 @@ Respuesta de lista:
 
 ```json
 {
-  "customer": { "name": "Laura Pérez", "phone": "+51 987 654 321", "email": "laura@example.com", "city": "Arequipa", "consent": true },
+  "customer": { "name": "Laura Pérez", "phone": "+51 987 654 321", "email": "laura@example.com", "city": "Callao", "consent": true },
   "items": [
-    { "productSlug": "odin-1-0", "variantCode": "72v-50ah", "colorCode": "negro", "quantity": 1 },
-    { "accessorySlug": "casco-raiden", "quantity": 1 }
+    { "productSlug": "golden-eagle", "variantCode": "premium", "colorCode": "negro", "quantity": 1 },
+    { "partSlug": "bateria-chilwee-48v-20ah", "quantity": 1 }
   ],
-  "notes": "¿Tenéis financiación?",
+  "notes": "¿Tienen financiación?",
   "sourcePath": "/carrito"
 }
 ```
@@ -129,13 +117,13 @@ Respuesta de lista:
 Response `201`:
 
 ```json
-{ "data": { "id": "0d2c…", "publicRef": "7F3A9C1E", "status": "new", "totalCents": 579800,
-            "currency": "PEN", "whatsappUrl": "https://wa.me/51987654321?text=Hola%20%F0%9F%91%8B…" } }
+{ "data": { "id": "0d2c…", "publicRef": "7F3A9C1E", "status": "new", "totalCents": 165000,
+            "currency": "PEN", "whatsappUrl": "https://wa.me/51989853431?text=Hola%20%F0%9F%91%8B…" } }
 ```
 
 El servidor recalcula `totalCents` con precios de base de datos; ignora cualquier precio enviado por el cliente.
 
-`POST /api/whatsapp-requests` — request `{ "source": "cart", "productSlug": "odin-1-0", "orderRequestId": null }` → `202` sin cuerpo.
+`POST /api/whatsapp-requests` — request `{ "source": "cart", "productSlug": "golden-eagle", "orderRequestId": null }` → `202` sin cuerpo.
 
 `POST /api/finder/recommend` — request: el objeto `FinderAnswers` ([05-backend](./05-backend.md) §4). Response: `{ "data": [{ "productSlug", "variantCode", "score": 87, "reasons": ["…"] }] }` (máx. 3).
 
@@ -175,10 +163,10 @@ El servidor recalcula `totalCents` con precios de base de datos; ignora cualquie
 
 | Interfaz | Fuente actual | Fuente futura |
 |---|---|---|
-| `ProductRepository.listPublished` | `getCollection('products')` filtrado por `status` | `GET /api/products` |
-| `ProductRepository.getBySlug` | `getEntry('products', slug)` | `GET /api/products/:slug` |
-| `CategoryRepository.list` | `getCollection('categories')` | `GET /api/categories` |
-| `AccessoryRepository.listCompatible` | filtro en memoria por `compatibleAccessoryIds` | `GET /api/accessories?compatibleWith=` |
+| `ProductRepository.all` / `byCategory` | `getCollection('products')` | `GET /api/products` |
+| `ProductRepository.bySlug` | `getEntry('products', slug)` | `GET /api/products/:slug` |
+| `CategoryRepository.all` | `getCollection('categories')` | `GET /api/categories` |
+| `PartRepository.compatibleWith` | filtro en memoria por `compatibleWith` de cada repuesto (y `accessories` del producto) | `GET /api/parts?compatibleWith=` |
 | `RecommendationService.recommend` | función pura en cliente | función pura en cliente (opcional `POST /api/finder/recommend`) |
 | Envío de solicitud | enlace `wa.me` | `POST /api/order-requests` + enlace `wa.me` devuelto |
 

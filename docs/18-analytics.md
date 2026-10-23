@@ -32,7 +32,7 @@ export interface AnalyticsEventMap {
   product_view: { productId: string; slug: string; category: string; price: number };
   add_to_cart: { productId: string; variantId: string; colorId?: string; qty: number; price: number };
   cart_open: { items: number; total: number };
-  purchase_request: { items: number; total: number; accessories: number };
+  purchase_request: { items: number; value: number; models: string[] };
   whatsapp_click: { source: 'cart' | 'product' | 'header' | 'contact'; total?: number };
   compare_add: { productId: string; compareCount: number };
   finder_complete: { use: string; budget: string; range: string; resultCount: number };
@@ -57,10 +57,10 @@ Reglas:
 | Evento | Propiedades | Dónde se dispara | Isla / componente |
 |---|---|---|---|
 | `page_view` | `path`, `title`, `category?` | Cada carga de página, tras `DOMContentLoaded` | Script inline de `BaseLayout.astro` |
-| `product_view` | `productId`, `slug`, `category`, `price` | Al renderizar `/motos-electricas/[slug]` y `/accesorios/[slug]` | `ProductPage.astro` (script inline) |
+| `product_view` | `productId`, `slug`, `category`, `price` | Al renderizar `/bicimotos/[slug]`, `/trimotos/[slug]` y `/repuestos/[slug]` | `ProductPage.astro` (script inline) |
 | `add_to_cart` | `productId`, `variantId`, `colorId?`, `qty`, `price` | Al confirmar en el configurador | `islands/AddToCart.tsx` |
 | `cart_open` | `items`, `total` | Al abrir el drawer o entrar en `/carrito` | `islands/CartDrawer.tsx`, `carrito.astro` |
-| `purchase_request` | `items`, `total`, `accessories` | Al pulsar "Solicitar pedido" (antes de construir el mensaje) | `islands/CartDrawer.tsx` |
+| `purchase_request` | `items`, `value`, `models` (slugs de los modelos del pedido) | Al pulsar "Solicitar pedido" (antes de construir el mensaje) | `islands/CartDrawer.tsx` |
 | `whatsapp_click` | `source`, `total?` | En cada enlace `wa.me` (`click` con `navigator.sendBeacon` garantizado) | `WhatsAppLink.astro`, `CartDrawer.tsx` |
 | `compare_add` | `productId`, `compareCount` | Al añadir un producto al comparador | `islands/CompareBar.tsx` |
 | `finder_complete` | `use`, `budget`, `range`, `resultCount` | Al mostrar resultados del finder | `islands/Finder.tsx` |
@@ -148,7 +148,7 @@ Las secuencias "previo" se calculan por sesión en el panel del proveedor; el fr
 - Sin cookies ni `localStorage` de analítica. El único `localStorage` del sitio es `raiden:cart:v1`, ajeno a la medición.
 - Sin PII: nunca se envían nombre, teléfono, email, notas del pedido ni el texto del mensaje de WhatsApp.
 - Sin identificador de usuario ni fingerprinting. La sesión la infiere el proveedor (Cloudflare Web Analytics no rastrea entre sitios).
-- Con `noop`, `console` o `cloudflare` no se necesita banner de consentimiento (RGPD/LSSI: no hay tratamiento con cookies ni identificadores). Si se activa `datalayer` con GA4, el DevOps y el Tech Lead deben añadir gestión de consentimiento antes del despliegue.
+- Con `noop`, `console` o `cloudflare` no se necesita banner de consentimiento (Ley N.º 29733: no hay tratamiento con cookies ni identificadores). Si se activa `datalayer` con GA4, el DevOps y el Tech Lead deben añadir gestión de consentimiento antes del despliegue.
 - La política de privacidad en `/legal/privacidad` documenta el proveedor activo.
 
 ## 8. Dashboards

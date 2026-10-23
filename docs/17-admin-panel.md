@@ -9,10 +9,10 @@ En el MVP no existe panel: el catálogo, el blog y las FAQ se editan como ficher
 | Contenido | Ruta | Colección Astro | Repositorio (`src/data/`) |
 |---|---|---|---|
 | Productos | `src/content/products/<slug>.json` | `products` | `JsonProductRepository` |
-| Accesorios | `src/content/accessories/<slug>.json` | `accessories` | `JsonAccessoryRepository` |
+| Repuestos | `src/content/repuestos/<slug>.json` | `repuestos` | `JsonPartRepository` |
 | Categorías | `src/content/categories/<slug>.json` | `categories` | `JsonCategoryRepository` |
-| Marcas | `src/content/brands/<slug>.json` | `brands` | `JsonBrandRepository` |
-| Blog | `src/content/blog/<slug>.json` | `blog` | `JsonBlogRepository` |
+| Marcas | `src/config/site.ts` (RAIDEN; sin colección en MVP) | — | — |
+| Blog | `src/content/blog/<slug>.md` | `blog` | `JsonBlogRepository` |
 | FAQ | `src/content/faqs/<slug>.json` | `faqs` | `JsonFaqRepository` |
 | Imágenes | `src/assets/products/<slug>/` | — | Referenciadas por ruta relativa |
 
@@ -64,9 +64,9 @@ En el MVP no existe panel: el catálogo, el blog y las FAQ se editan como ficher
 | Módulo | Tabla(s) | Operaciones | Roles con escritura |
 |---|---|---|---|
 | Productos | `products` | CRUD, duplicar, cambiar estado, ordenar | admin, editor |
-| Variantes | `product_variants` | CRUD anidado en producto, precio, stock orientativo | admin, editor |
+| Variantes | `product_variants` | CRUD anidado en producto, `tier` (Estándar/Premium), precio, stock orientativo | admin, editor |
 | Colores | `product_colors` | CRUD, hex, imágenes por color, restricción por variante | admin, editor |
-| Accesorios | `accessories` | CRUD, compatibilidad con productos | admin, editor |
+| Repuestos | `parts`, `product_parts` | CRUD, unidad (`UND`/`PAR`), código, compatibilidad con modelos | admin, editor |
 | Categorías | `categories` | CRUD, orden, texto SEO de cabecera | admin |
 | Marcas | `brands` | CRUD, logotipo | admin |
 | Solicitudes de pedido | `order_requests`, `whatsapp_requests` | Listado, estado (`nueva`, `contactada`, `presupuestada`, `ganada`, `perdida`), notas internas | admin, ventas |
@@ -125,7 +125,7 @@ Los roles se guardan en `admin_users.role` y se copian al JWT mediante un hook d
 |---|---|---|---|
 | 0 | Git como CMS (este MVP) | — | Incluida en el MVP |
 | 1 | Esquema Postgres, RLS y `SupabaseProductRepository` leyendo en build; JSON sigue siendo fuente de verdad vía script de importación | [06-database](./06-database.md) aprobado | 1 semana |
-| 2 | `apps/admin` con Auth, catálogo (productos, variantes, colores, accesorios, categorías, marcas) y deploy hook | Fase 1 | 2–3 semanas |
+| 2 | `apps/admin` con Auth, catálogo (productos, variantes, colores, repuestos, categorías, marcas) y deploy hook | Fase 1 | 2–3 semanas |
 | 3 | Solicitudes de pedido y clientes; Edge Function desde el carrito | Fase 2 | 1–2 semanas |
 | 4 | Blog, FAQ, reseñas, configuración y auditoría completa | Fase 2 | 1–2 semanas |
 | 5 | Integración WhatsApp Business API y vista de conversaciones | Volumen que lo justifique | A definir |

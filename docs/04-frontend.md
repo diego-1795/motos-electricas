@@ -35,7 +35,7 @@ Regla: si una pieza puede resolverse con HTML, `<details>`, `<form method="get">
 
 ```astro
 ---
-// src/pages/motos-electricas/[slug].astro (fragmento)
+// src/pages/[categoria]/[slug].astro (fragmento; p. ej. /bicimotos/golden-eagle)
 import CartDrawer from '@/islands/CartDrawer';
 import AddToCart from '@/islands/AddToCart';
 ---
@@ -135,45 +135,43 @@ Reglas del store:
 
 Definidas en `src/content.config.ts` con `glob()` sobre `src/content/<colección>/*.json`. El esquema se escribe con `z` de `astro:content` (es dependencia interna de Astro, no añade paquete); el resto de validación en runtime usa validadores manuales (ver [05-backend](./05-backend.md)).
 
-Colecciones: `products`, `categories`, `brands`, `accessories`, `blog` (Markdown), `faqs`. Esquema de campos en [07-api](./07-api.md).
+Colecciones: `products` (4 modelos), `repuestos` (26 piezas, `src/content/repuestos/`), `categories` (bicimotos, trimotos, repuestos), `blog` (Markdown) y `faqs`. Esquema de campos en [07-api](./07-api.md). Cada `ProductVariant` lleva `tier` (`estandar` | `premium`); cada repuesto, `unit` (`UND` | `PAR`) y `code`. El campo `accessories` de un producto lista los slugs de repuestos compatibles (nombre histórico, ver [ADR-015](./21-decisions.md)).
 
 ```json
 {
-  "id": "odin-1-0",
-  "slug": "odin-1-0",
-  "name": "ODIN 1.0",
-  "brandId": "raiden",
-  "categoryId": "motos-electricas-urbanas",
-  "status": "published",
-  "summary": "Moto eléctrica urbana equivalente a 125 cc con batería extraíble.",
-  "description": "Texto largo en Markdown.",
-  "license": "B-IIa",
-  "priceFromCents": 449900,
-  "currency": "PEN",
-  "heroImage": "odin-1-0/hero.jpg",
-  "gallery": ["odin-1-0/lateral.jpg", "odin-1-0/detalle-bateria.jpg"],
-  "variants": [
-    { "id": "72v-32ah", "name": "72V 32Ah", "priceCents": 449900, "batteryId": "bat-72v-32ah", "rangeKm": 90, "topSpeedKmh": 95, "chargeHours": 5, "stock": "in_stock" },
-    { "id": "72v-50ah", "name": "72V 50Ah", "priceCents": 549900, "batteryId": "bat-72v-50ah", "rangeKm": 140, "topSpeedKmh": 95, "chargeHours": 7, "stock": "preorder" }
-  ],
-  "colors": [
-    { "id": "negro", "name": "Negro", "hex": "#111315", "image": "odin-1-0/negro.jpg" },
-    { "id": "gris", "name": "Gris volt", "hex": "#9AA0A6", "image": "odin-1-0/gris.jpg" }
-  ],
+  "id": "rd-golden-eagle",
+  "slug": "golden-eagle",
+  "name": "Golden Eagle",
+  "subtitle": "Bicimoto eléctrica urbana",
+  "claim": "Escoge la libertad que te impulsa",
+  "description": "Texto comercial del modelo.",
+  "category": "bicimotos",
+  "brand": "Raiden",
+  "images": [{ "src": "~/assets/products/golden-eagle-negro.jpg", "alt": "Golden Eagle en color negro", "width": 2020, "height": 2486 }],
+  "heroImage": { "src": "~/assets/hero/golden-eagle.jpg", "alt": "Bicimoto eléctrica RAIDEN Golden Eagle", "width": 1577, "height": 672 },
   "specs": {
-    "motorPowerW": 5000,
-    "motorPeakW": 8000,
-    "weightKg": 118,
-    "maxLoadKg": 180,
-    "brakes": "Disco CBS delantero y trasero",
-    "wheels": "17\" / 17\"",
-    "removableBattery": true,
-    "warrantyMonths": 24
+    "rangeKm": 35, "topSpeedKmh": 25, "powerW": 350,
+    "battery": { "voltage": 48, "capacityAh": 12, "capacityKwh": 0.58, "chemistry": "plomo-acido", "removable": true, "chargeHours": [6, 8], "brand": "Chilwee" },
+    "maxLoadKg": 150, "seats": 2, "license": "sin-licencia",
+    "brakes": "Tambor delantero y trasero", "suspension": "Hidráulica delantera y suspensión trasera",
+    "lighting": "...", "display": "Pantalla LCD", "drivingModes": ["Velocidad 1", "Velocidad 2", "Velocidad 3"],
+    "motorType": "Motor sin escobillas (brushless) en rueda",
+    "warrantyMonths": 12, "batteryWarrantyMonths": 12, "features": ["..."]
   },
-  "useCases": ["ciudad", "interurbano"],
-  "compatibleAccessoryIds": ["casco-raiden", "bateria-72v-50ah"],
-  "seo": { "title": "ODIN 1.0 — moto eléctrica 125 equivalente", "description": "..." },
-  "publishedAt": "2026-03-01"
+  "variants": [
+    { "id": "estandar", "name": "Estándar", "tier": "estandar", "description": "350 W · 48V 12Ah (extraíble)", "price": { "amount": 120000, "currency": "PEN" }, "availability": "en-stock", "sku": "RD-GOLDENEAGLE-350", "isDefault": true },
+    { "id": "premium", "name": "Premium", "tier": "premium", "description": "500 W · 48V 20Ah (no extraíble)", "price": { "amount": 150000, "currency": "PEN" }, "availability": "en-stock", "sku": "RD-GOLDENEAGLE-500" }
+  ],
+  "colors": [{ "id": "negro", "name": "Negro", "hex": "#111315", "image": { "src": "~/assets/products/golden-eagle-negro.jpg", "alt": "...", "width": 2020, "height": 2486 } }],
+  "accessories": ["bateria-chilwee-48v-12ah", "cargador-48v-12ah"],
+  "related": ["royal-tiger", "vortex-kobra"],
+  "useCases": ["ciudad", "trabajo", "ocio"],
+  "highlights": ["25 km/h · sin licencia (en general)"],
+  "technology": [{ "title": "Motor", "text": "..." }],
+  "faqs": [{ "question": "...", "answer": "..." }],
+  "featured": 100,
+  "publishedAt": "2026-10-01",
+  "seo": { "title": "Golden Eagle: bicimoto eléctrica RAIDEN | Desde S/ 1,200", "description": "..." }
 }
 ```
 
@@ -181,7 +179,7 @@ Acceso desde páginas: siempre a través de `JsonProductRepository` (`src/data/j
 
 ## 5. Imágenes
 
-- Origen en `src/assets/products/<slug>/`. Las rutas del JSON son relativas a ese directorio y se resuelven con `import.meta.glob` en el repositorio.
+- Origen en `src/assets/` (`products/`, `hero/`, `repuestos/`, …). Las rutas del JSON usan el alias `~/assets/...` y se resuelven con `import.meta.glob` en el repositorio.
 - Hero de producto: `<Picture formats={['avif','webp']} widths={[480,768,1024,1440]} sizes="(max-width: 768px) 100vw, 50vw" loading="eager" fetchpriority="high" />`.
 - Tarjetas de catálogo y galería: `<Image loading="lazy" decoding="async" />` con `width`/`height` explícitos (CLS 0).
 - `image.responsiveStyles: true` ya está activo en `astro.config.mjs`; no añadir CSS de `max-width` redundante.
@@ -206,7 +204,7 @@ Acceso desde páginas: siempre a través de `JsonProductRepository` (`src/data/j
 | Stores, servicios, utilidades | camelCase | `cart.ts`, `whatsappMessageBuilder.ts` |
 | Tipos e interfaces | PascalCase sin prefijo `I` | `ProductRepository` |
 | Clases CSS | kebab-case, BEM ligero | `.product-card__price--from` |
-| Rutas y slugs | kebab-case en español | `/motos-electricas-urbanas` |
+| Rutas y slugs | kebab-case en español | `/bicimotos/golden-eagle` |
 | Eventos de analítica | snake_case | `add_to_cart` |
 | Variables de entorno públicas | `PUBLIC_` + SCREAMING_SNAKE | `PUBLIC_WHATSAPP_NUMBER` |
 
@@ -216,9 +214,9 @@ Acceso desde páginas: siempre a través de `JsonProductRepository` (`src/data/j
 |---|---|
 | `Base.astro` | Sin scripts de terceros; analítica vía `AnalyticsService` cargada con `client:idle` como máximo |
 | `Header.astro` | Menú móvil con `<details>` + CSS; el contador del carrito es un `<span>` que actualiza `CartDrawer` |
-| `ProductCard.astro` | Una sola imagen lazy; precio formateado en build con `formatMoney` de `money.ts` (`S/ 4,999`) |
+| `ProductCard.astro` | Una sola imagen lazy; precio formateado en build con `formatMoney` de `money.ts` (`S/ 1,200`) |
 | `AddToCart` | < 12 KB gz incluyendo Preact compartido; sin dependencias adicionales |
-| `Comparator` | Máximo 4 productos; la tabla HTML se renderiza en servidor |
+| `Comparator` | Máximo 3 productos; la tabla HTML se renderiza en servidor |
 | `Finder` | Scoring en `src/domain/finder.ts` (función pura); sin fetch |
 | Página de producto | JS total < 60 KB gz; LCP = imagen hero con `fetchpriority="high"` |
 

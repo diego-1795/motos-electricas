@@ -24,7 +24,7 @@ DESCUBRIMIENTO → PRODUCTO → COMPARAR → CONFIGURAR → CARRITO → SOLICITU
 | 07 | [API](./07-api.md) | Contrato de datos estáticos actual y API REST futura |
 | 08 | [SEO](./08-seo.md) | URLs, metadatos, JSON-LD, sitemap, robots, enlazado |
 | 09 | [Rendimiento](./09-performance.md) | Presupuestos (LCP, INP, CLS, JS), estrategia zero-JS, Lighthouse CI |
-| 10 | [Seguridad](./10-security.md) | Modelo de amenazas, cabeceras `_headers`, CSP, validación, RGPD |
+| 10 | [Seguridad](./10-security.md) | Modelo de amenazas, cabeceras `_headers`, CSP, validación, protección de datos (Ley 29733) |
 | 11 | [Testing](./11-testing.md) | Vitest, Playwright, axe-core, Lighthouse CI, CI |
 | 12 | [Accesibilidad](./12-accessibility.md) | WCAG 2.2 AA, contraste, teclado, componentes accesibles |
 | 13 | [Cloudflare](./13-cloudflare.md) | Pages free, configuración, límites, qué evitar por portabilidad |
@@ -50,7 +50,7 @@ Roles del equipo con responsabilidades, límites y criterios de aceptación. El 
 | Designer | [agents/designer.md](../agents/designer.md) | Design System, UX, tokens |
 | SEO | [agents/seo.md](../agents/seo.md) | Metadatos, JSON-LD, URLs, contenido indexable |
 | QA | [agents/qa.md](../agents/qa.md) | Tests unitarios, E2E, accesibilidad automatizada |
-| Security | [agents/security.md](../agents/security.md) | Cabeceras, CSP, validación, RGPD |
+| Security | [agents/security.md](../agents/security.md) | Cabeceras, CSP, validación, protección de datos (Ley 29733) |
 | Performance | [agents/performance.md](../agents/performance.md) | Presupuestos, bundle, Core Web Vitals |
 | DevOps | [agents/devops.md](../agents/devops.md) | CI/CD, Cloudflare Pages, entornos |
 | Content | [agents/content.md](../agents/content.md) | Fichas, blog, FAQ, legales |

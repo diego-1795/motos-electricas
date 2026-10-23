@@ -15,7 +15,7 @@ Raiden en MVP es un sitio estático sin backend propio, sin cuentas de usuario y
 | Cloudflare Pages | Cuenta comprometida | Control del dominio | 2FA obligatorio, tokens con alcance mínimo, rotación |
 | Dominio/DNS | Secuestro, falta de HTTPS | Suplantación | DNSSEC, HSTS con preload, HTTPS forzado |
 | Clickjacking | Sitio embebido en iframe malicioso | Clics engañados hacia WhatsApp | `X-Frame-Options: DENY`, `frame-ancestors 'none'` |
-| Privacidad de visitantes | Rastreo sin consentimiento | Sanción RGPD/LSSI | Sin cookies ni trackers en MVP; analítica sin cookies opcional |
+| Privacidad de visitantes | Rastreo sin consentimiento | Sanción de la Autoridad de Protección de Datos (Ley N.º 29733) / INDECOPI | Sin cookies ni trackers en MVP; analítica sin cookies opcional |
 | Teléfono de ventas | Scraping/spam | Molestia operativa | Número solo en `PUBLIC_WHATSAPP_NUMBER`, enlace generado en cliente al hacer clic (no inline en HTML) |
 
 ## 2. Cabeceras de seguridad (`public/_headers`)
@@ -107,11 +107,11 @@ Clave `raiden:cart:v1` contiene solo `{ version, items: [{productId, variantId, 
 - **CAPTCHA**: Cloudflare Turnstile (gratuito, sin cookies de rastreo) en formularios con escritura en backend. Añadir `https://challenges.cloudflare.com` a `script-src` y `frame-src` solo entonces.
 - **Admin** `/admin`: Supabase Auth, MFA, sesiones cortas, RLS por rol ([17-admin-panel](./17-admin-panel.md)).
 
-## 9. Cumplimiento RGPD / LSSI
+## 9. Cumplimiento legal en Perú (Ley N.º 29733 e INDECOPI)
 
 - MVP: cero cookies, cero almacenamiento con fines de rastreo → no hace falta banner de cookies. `localStorage` del carrito es funcional y exento de consentimiento (se informa en la política de privacidad).
 - Cloudflare Web Analytics no usa cookies ni huella persistente; se menciona en privacidad.
-- Páginas obligatorias en `/legal/`: aviso legal (datos del titular LSSI), privacidad (base legal del contacto por WhatsApp: interés legítimo/ejecución precontractual), cookies (declaración de que no se usan), condiciones de venta.
+- Páginas obligatorias en `/legal/`: términos y condiciones (datos del titular: razón social, RUC, domicilio; Libro de Reclamaciones de INDECOPI), privacidad (base legal del contacto por WhatsApp: interés legítimo/ejecución precontractual), cookies (declaración de que no se usan), condiciones de venta.
 - El envío por WhatsApp implica tratamiento por Meta: se informa en privacidad y el usuario inicia la acción con un clic explícito.
 - Futuro con backend: registro de actividades de tratamiento, retención de `order_requests` ≤ 24 meses, derecho de supresión.
 
