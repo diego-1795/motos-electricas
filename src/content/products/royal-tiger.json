@@ -103,7 +103,7 @@
       "tier": "premium",
       "description": "500 W · 48V 20Ah (no extraíble)",
       "price": {
-        "amount": 140000,
+        "amount": 180000,
         "currency": "PEN"
       },
       "specsOverride": {
@@ -126,8 +126,7 @@
         "rangeMinKm": 40
       },
       "availability": "en-stock",
-      "sku": "RD-ROYALTIGER-500",
-      "isDefault": true
+      "sku": "RD-ROYALTIGER-500"
     },
     {
       "id": "estandar",
@@ -135,7 +134,7 @@
       "tier": "estandar",
       "description": "350 W · 48V 12Ah (no extraíble)",
       "price": {
-        "amount": 180000,
+        "amount": 140000,
         "currency": "PEN"
       },
       "specsOverride": {
@@ -158,7 +157,8 @@
         "rangeMinKm": 30
       },
       "availability": "en-stock",
-      "sku": "RD-ROYALTIGER-350"
+      "sku": "RD-ROYALTIGER-350",
+      "isDefault": true
     }
   ],
   "colors": [

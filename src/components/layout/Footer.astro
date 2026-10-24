@@ -3,6 +3,7 @@ import { site } from '../../config/site';
 import Logo from '../ui/Logo.astro';
 import Pic from '../ui/Pic.astro';
 import WhatsAppLink from '../ui/WhatsAppLink.astro';
+import PaymentLogos from '../ui/PaymentLogos.astro';
 import { repos } from '../../data';
 import { COMPARE_PATH, FINDER_PATH } from '../../lib/routes';
 
@@ -75,12 +76,15 @@ const socials = [
 
     <section class="footer__col" aria-labelledby="f-pay">
       <h2 id="f-pay" class="eyebrow">Métodos de pago y redes sociales</h2>
-      <p class="footer__pay">Visa · Mastercard · American Express <span class="muted">(en tienda, coordinado con tu asesor)</span></p>
+      <div class="footer__pay">
+        <PaymentLogos />
+        <p class="muted footer__paynote">Visa, Mastercard y American Express en tienda, coordinado con tu asesor.</p>
+      </div>
       <ul role="list" class="footer__social" aria-label="Redes sociales">
         {
           socials.map((s) => (
             <li>
-              <a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.name} title={s.name}>
+              <a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.name} title={s.name} data-brand={s.name.toLowerCase()}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d={s.path} />
                 </svg>
@@ -172,11 +176,12 @@ const socials = [
   }
   .footer__pay {
     margin-top: var(--s-4);
-    font-size: var(--fs-sm);
-    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
   }
-  .footer__pay .muted {
-    font-weight: 400;
+  .footer__paynote {
+    font-size: var(--fs-xs);
   }
   .footer__social {
     flex-direction: row !important;
@@ -184,8 +189,10 @@ const socials = [
     gap: var(--s-3) !important;
     margin-top: var(--s-5) !important;
   }
-  .footer__social a,
-  .footer__social :global(.footer__wa) {
+  /* Iconos de redes: al pasar el ratón, cada uno con el color de su marca (2026-10-24).
+     El enlace de WhatsApp lo renderiza WhatsAppLink (otro componente): todo con :global. */
+  .footer__social :global(a) {
+    --brand: var(--accent);
     display: inline-grid;
     place-items: center;
     width: 2.75rem;
@@ -196,19 +203,40 @@ const socials = [
     transition:
       color var(--t-fast) var(--ease),
       border-color var(--t-fast) var(--ease),
-      background var(--t-fast) var(--ease);
+      background var(--t-fast) var(--ease),
+      transform var(--t-fast) var(--ease);
   }
-  .footer__social a:hover,
-  .footer__social :global(.footer__wa:hover) {
-    color: var(--accent);
-    border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  .footer__social :global(a[data-brand='instagram']) {
+    --brand: #e1306c;
+  }
+  .footer__social :global(a[data-brand='facebook']) {
+    --brand: #1877f2;
+  }
+  .footer__social :global(a[data-brand='tiktok']) {
+    --brand: #000;
+  }
+  .footer__social :global(a.footer__wa) {
+    --brand: #25d366;
+  }
+  /* Más específico que `.footer__col a:hover` (que fija color: var(--fg)) */
+  .footer__col .footer__social :global(a:hover),
+  .footer__col .footer__social :global(a:focus-visible) {
+    color: var(--brand);
+    border-color: var(--brand);
+    background: color-mix(in srgb, var(--brand) 14%, transparent);
     text-decoration: none;
+    transform: translateY(-1px);
   }
-  .footer__social :global(.footer__wa:hover) {
-    color: #25d366;
-    border-color: #25d366;
-    background: rgb(37 211 102 / 0.12);
+  /* TikTok es negro: sobre el pie oscuro va como su logo, en placa blanca con el desfase cian/rojo */
+  .footer__col .footer__social :global(a[data-brand='tiktok']:hover),
+  .footer__col .footer__social :global(a[data-brand='tiktok']:focus-visible) {
+    color: #000;
+    background: #fff;
+    border-color: #fff;
+  }
+  .footer__col .footer__social :global(a[data-brand='tiktok']:hover svg),
+  .footer__col .footer__social :global(a[data-brand='tiktok']:focus-visible svg) {
+    filter: drop-shadow(-1.5px 0 0 #25f4ee) drop-shadow(1.5px 0 0 #fe2c55);
   }
   .footer__social :global(.footer__wa svg) {
     width: 22px;

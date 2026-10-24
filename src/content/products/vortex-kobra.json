@@ -97,7 +97,7 @@
       "tier": "premium",
       "description": "500 W · 48V 20Ah (no extraíble)",
       "price": {
-        "amount": 120000,
+        "amount": 150000,
         "currency": "PEN"
       },
       "specsOverride": {
@@ -120,8 +120,7 @@
         "rangeMinKm": 40
       },
       "availability": "en-stock",
-      "sku": "RD-VORTEXKOBRA-500",
-      "isDefault": true
+      "sku": "RD-VORTEXKOBRA-500"
     },
     {
       "id": "estandar",
@@ -129,7 +128,7 @@
       "tier": "estandar",
       "description": "350 W · 48V 12Ah (extraíble)",
       "price": {
-        "amount": 150000,
+        "amount": 120000,
         "currency": "PEN"
       },
       "specsOverride": {
@@ -152,7 +151,8 @@
         "rangeMinKm": 30
       },
       "availability": "en-stock",
-      "sku": "RD-VORTEXKOBRA-350"
+      "sku": "RD-VORTEXKOBRA-350",
+      "isDefault": true
     }
   ],
   "colors": [

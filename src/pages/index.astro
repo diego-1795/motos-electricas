@@ -2,6 +2,8 @@
 import Pic from '../components/ui/Pic.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroSlider from '../components/home/HeroSlider.astro';
+import ClientGallery from '../components/home/ClientGallery.astro';
+import { isCatalogVehicle } from '../domain/catalog';
 import PreloadImage from '../components/ui/PreloadImage.astro';
 import ProductCard from '../components/product/ProductCard.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
@@ -15,7 +17,7 @@ import { blogCategoryLabel } from '../lib/labels';
 import { averageRating, pickTestimonials } from '../domain/testimonials';
 import type { ImageRef } from '../domain/types';
 
-const products = (await repos.products.all()).filter((p) => p.category !== 'repuestos');
+const products = (await repos.products.all()).filter(isCatalogVehicle);
 const hero = products.find((p) => p.isHero) ?? products[0]!;
 /* Primera diapositiva del hero (misma lógica que HeroSlider: productos con heroImage) */
 const firstSlide = products.find((p) => p.heroImage);
@@ -25,9 +27,10 @@ const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name])
 const posts = (await repos.blog.all()).slice(0, 3);
 const fmtDate = new Intl.DateTimeFormat(site.locale, { day: 'numeric', month: 'short' });
 
-/* Galería de clientes (fotos del cliente, 960x1280) */
-const raiders: ImageRef[] = Array.from({ length: 9 }, (_, i) => ({
-  src: `~/assets/clientes/raider-${i + 1}.jpg`,
+/* Galería de clientes: 6 fotos del cliente (960x1280), de una en una (decisión 2026-10-24).
+   Para cambiar la selección basta editar esta lista (src/assets/clientes/raider-1..9.jpg). */
+const raiders: ImageRef[] = [1, 2, 3, 5, 6, 8].map((n) => ({
+  src: `~/assets/clientes/raider-${n}.jpg`,
   alt: 'Cliente RAIDEN con su bicimoto',
   width: 960,
   height: 1280,
@@ -44,6 +47,7 @@ const catIcons: Record<string, string> = {
   bicimotos: 'M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM5 14l4-7h4l3 7M9 7h5l2 3',
   trimotos: 'M3 17h2m14 0h2M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0zm10 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM7 17V9h8l3 5v3M3 9h4',
   repuestos: 'M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2-2z',
+  promociones: 'M20 12l-8 8-9-9V4h7l10 8zM7.5 7.5h.01M15 9l-6 6',
 };
 ---
 
@@ -97,15 +101,7 @@ const catIcons: Record<string, string> = {
   <section class="section raiders surface-dark" aria-labelledby="raiders-h">
     <div class="container">
       <SectionHeading eyebrow="Raiders satisfechos" title="Somos parte de cada momento, de cada historia" align="center" />
-      <ul role="list" class="raiders__masonry">
-        {
-          raiders.map((img) => (
-            <li>
-              <Pic image={img} width={480} height={640} widths={[320, 480, 640]} sizes="(min-width: 1024px) 30vw, (min-width: 480px) 45vw, 92vw" />
-            </li>
-          ))
-        }
-      </ul>
+      <ClientGallery images={raiders} />
     </div>
   </section>
 
@@ -251,7 +247,12 @@ const catIcons: Record<string, string> = {
   }
   @media (min-width: 768px) {
     .cats__row {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1024px) {
+    .cats__row {
+      grid-template-columns: repeat(4, 1fr);
     }
   }
 
@@ -265,42 +266,6 @@ const catIcons: Record<string, string> = {
     gap: var(--s-3);
     justify-content: center;
     flex-wrap: wrap;
-  }
-
-  /* Raiders */
-  .raiders__masonry {
-    columns: 2;
-    column-gap: var(--s-3);
-  }
-  .raiders__masonry li {
-    break-inside: avoid;
-    margin-bottom: var(--s-3);
-    border-radius: var(--r-lg);
-    overflow: hidden;
-    background: var(--bg-elev);
-  }
-  .raiders__masonry li:nth-child(3n + 2) {
-    border-radius: var(--r-xl);
-  }
-  .raiders__masonry :global(img) {
-    width: 100%;
-    height: auto;
-    display: block;
-    transition: transform var(--t-slow) var(--ease);
-  }
-  @media (hover: hover) {
-    .raiders__masonry li:hover :global(img) {
-      transform: scale(1.02);
-    }
-  }
-  @media (min-width: 768px) {
-    .raiders__masonry {
-      columns: 3;
-      column-gap: var(--s-4);
-    }
-    .raiders__masonry li {
-      margin-bottom: var(--s-4);
-    }
   }
 
   /* Comunidad */

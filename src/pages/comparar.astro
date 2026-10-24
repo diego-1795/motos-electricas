@@ -4,12 +4,13 @@ import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import CompareTable, { type CompareRow } from '../islands/CompareTable';
 import { repos } from '../data';
+import { isCatalogVehicle } from '../domain/catalog';
 import { site } from '../config/site';
 import { availabilityLabel, batteryLabel, chargeLabel, effectiveSpecs, fromPrice, licenseLabel, maxRange, powerLabel, productAvailability, rangeLabel, tierLabel } from '../domain/product';
 import { publicSrc } from '../lib/images';
 import { COMPARE_PATH, productPath } from '../lib/routes';
 
-const products = (await repos.products.all()).filter((p) => p.category !== 'repuestos');
+const products = (await repos.products.all()).filter(isCatalogVehicle);
 const categories = await repos.categories.all();
 const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
 const rows: CompareRow[] = products.map((p) => {

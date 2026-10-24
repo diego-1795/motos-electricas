@@ -16,7 +16,7 @@ Dos contratos: el actual (datos estáticos en build, content collections) y el f
 |---|---|---|---|
 | `products` | `src/content/products/*.json` | JSON | `<slug>.json` (4 modelos) |
 | `repuestos` | `src/content/repuestos/*.json` | JSON | `<slug>.json` (26 repuestos) |
-| `categories` | `src/content/categories/*.json` | JSON | `<slug>.json` (`bicimotos`, `trimotos`, `repuestos`) |
+| `categories` | `src/content/categories/*.json` | JSON | `<slug>.json` (`bicimotos`, `trimotos`, `repuestos`, `promociones`) |
 | `blog` | `src/content/blog/*.md` | Markdown + frontmatter | `<slug>.md` |
 | `faqs` | `src/content/faqs/*.json` | JSON | `<grupo>.json` (`group`, `order`, `items[]`) |
 
@@ -29,7 +29,7 @@ Los esquemas zod viven en `src/content.config.ts` y reflejan `src/domain/types.t
 | `id` | string | Sí | Identificador estable (p. ej. `rd-golden-eagle`) |
 | `slug` | string kebab-case | Sí | Único; forma la URL `/<category>/<slug>` |
 | `name`, `subtitle`, `claim`, `description` | string | Sí | Textos comerciales |
-| `category` | `bicimotos` \| `trimotos` | Sí | (`repuestos` es la categoría de la colección `repuestos`) |
+| `category` | `bicimotos` \| `trimotos` \| `promociones` | Sí | `promociones` = edición EG Motors, fuera del catálogo RAIDEN (ADR-017); `repuestos` es la categoría de la colección `repuestos` |
 | `brand` | string | Sí | `Raiden` |
 | `images` / `heroImage` | `ImageRef` (`src` `~/assets/...`, `alt`, `width`, `height`) | `images` ≥ 1 | Galería y hero apaisado de portada |
 | `specs` | objeto | Sí | `rangeKm`, `topSpeedKmh`, `powerW`, `battery`, `maxLoadKg`, `seats`, `license` (`sin-licencia` \| `B-I` \| `B-IIa` \| `B-IIb` \| `B-IIc`), `brakes`, `suspension`, `warrantyMonths`, `features[]`…; peso y dimensiones opcionales |

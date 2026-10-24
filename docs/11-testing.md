@@ -15,6 +15,8 @@ La lógica de negocio de Raiden (carrito, precios, mensaje de WhatsApp, scoring 
 
 Proporción objetivo: ~70 % unitario, ~20 % componente/contenido, ~10 % E2E.
 
+> **Caché de contenido en local.** Los tests de contenido (`tests/unit/content.test.ts`) leen las colecciones a través de `astro:content`, que en Vitest usa `.astro/data-store.json`, un fichero que escribe `astro dev` (no `astro build`, que usa `node_modules/.astro/`). Si tras añadir o cambiar JSON/MD los tests "no ven" el cambio, arranca un momento el servidor de desarrollo (`npx astro dev --background && npx astro dev stop`) para regenerarlo. En CI no existe y se sincroniza desde cero.
+
 ## 2. Unidades a cubrir (Vitest)
 
 | Módulo | Casos obligatorios |

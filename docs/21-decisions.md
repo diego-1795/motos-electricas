@@ -254,3 +254,20 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 **Consecuencias.** Al actualizar reseñas basta copiar las nuevas en el JSON (nota en el propio archivo). Los artículos nuevos no necesitan `readingMinutes`. Las fichas con una sola versión (Titan Rhino) no cambian. Tests: unitarios de dominio (`testimonials`, `reading`, `specTable`) y e2e `product-specs.spec.ts`.
 
 **Estado.** Aceptada (2026-10-24).
+
+## ADR-017 — Promociones (edición EG Motors) separadas del catálogo RAIDEN; galería de clientes 1 a 1; logos de pago
+
+**Contexto.** El Excel del cliente ("Lista de Productos - Pagina Web.xlsx", hoja MOTOS) tiene dos filas con marca **EG MOTORS** (Golden Eagle 500 W a S/ 1,100 y 350 W a S/ 1,400): la misma bicimoto con el logotipo del distribuidor en lugar del de RAIDEN, a precio promocional. ADR-015 las excluyó; Diego pidió el 2026-10-24 separarlas en un apartado propio, "Promociones". También pidió que la galería "Raiders satisfechos" muestre 6 fotos de una en una con flechas, y que el pie lleve los logotipos de Visa, Mastercard y American Express.
+
+**Decisión.**
+- Nueva categoría `promociones` (`CategorySlug`, `src/content/categories/promociones.json`, orden 4) con el producto `golden-eagle-eg-motors` (marca "EG Motors", categoría `promociones`, specs idénticas a Golden Eagle, color blanco con la foto del Excel, versiones Premium S/ 1,100 por defecto y Estándar S/ 1,400 tal cual el Excel). Rutas automáticas: `/promociones` y `/promociones/golden-eagle-eg-motors`; enlace "Promociones" en el desplegable Productos, tile en portada y pie (categorías).
+- **Separación:** el catálogo RAIDEN (`/productos`, comparador, buscador, portada: hero y recientes) solo incluye `TYPES = bicimotos | trimotos` (`isCatalogVehicle`); la promoción no compite con los modelos RAIDEN ni aparece en sus listados. Su ficha enlaza como relacionado a la Golden Eagle RAIDEN.
+- Galería de clientes: componente `ClientGallery` (pista con scroll-snap, flechas "< foto >", contador, teclado, swipe; sin JS sigue siendo un scroll horizontal). 6 fotos elegidas de las 9 del cliente (`raider-1, 2, 3, 5, 6, 8`); la lista vive en `src/pages/index.astro`.
+- Pie: `PaymentLogos` (SVG inline simplificados de Visa, Mastercard y American Express, con nombre accesible) bajo el título "Métodos de pago"; el pago sigue siendo en tienda, no en la web.
+
+**Consecuencias.** Añadir otra promoción = un JSON más con `category: "promociones"`. Tests: `content.test` (5 productos, 4 categorías), e2e `promos-gallery.spec.ts`, cabecera y a11y actualizados.
+
+### Addendum ADR-017 (2026-10-24) — la Premium siempre es la más cara; Estándar por defecto
+En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,500 / S/ 1,200) y la Golden Eagle EG Motors (S/ 1,400 / S/ 1,100) traían la Premium más barata que la Estándar; el PPT del cliente muestra en todos los modelos la Premium como la cara (p. ej. Royal Tiger S/ 1,500 / S/ 1,900). Diego pidió corregirlo: se **intercambian los importes** de esas filas (Royal Tiger Estándar S/ 1,400 · Premium S/ 1,800; Vortex Kobra S/ 1,200 · S/ 1,500; EG Motors S/ 1,100 · S/ 1,400). Golden Eagle (S/ 1,200 / S/ 1,500) y Titan Rhino (S/ 2,700) no cambian. Además, en todos los modelos la versión por defecto pasa a ser la **Estándar** (coincide con el precio "Desde" de las tarjetas y con lo que añade el "quick add"). Sustituye a la nota de ADR-015 sobre precios "tal cual el Excel". Pendiente de confirmar los importes definitivos con el cliente. Los iconos de redes del pie adoptan el color de cada marca al pasar el ratón y el glifo de WhatsApp pasa al trazado oficial (auricular dentro de la burbuja).
+
+**Estado.** Aceptada (2026-10-24).

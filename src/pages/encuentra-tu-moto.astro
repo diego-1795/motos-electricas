@@ -4,12 +4,13 @@ import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
 import BikeFinder from '../islands/BikeFinder';
 import { repos } from '../data';
+import { isCatalogVehicle } from '../domain/catalog';
 import { publicSrc } from '../lib/images';
 import { breadcrumbSchema } from '../lib/seo/jsonld';
 import { FINDER_PATH } from '../lib/routes';
 import type { Product } from '../domain/types';
 
-const all = (await repos.products.all()).filter((p) => p.category !== 'repuestos');
+const all = (await repos.products.all()).filter(isCatalogVehicle);
 // Reducimos el payload: la isla solo necesita lo que usa el motor de recomendación y la tarjeta.
 const products = all.map(
   (p): Product => ({

@@ -133,7 +133,7 @@ test.describe('Ficha de producto → carrito → WhatsApp', () => {
     await expect(drawer.locator('[data-cart-item]').first().getByRole('spinbutton', { name: 'Cantidad' })).toHaveValue('2');
   });
 
-  test('el quick add del catálogo añade la versión por defecto (Royal Tiger → Premium S/ 1,400)', async ({ page }) => {
+  test('el quick add del catálogo añade la versión por defecto (Royal Tiger → Estándar S/ 1,400)', async ({ page }) => {
     await page.goto('/productos');
     const card = page.locator('[data-product-card="royal-tiger"]');
     await hydrated(card.locator('[data-quick-add]'));
@@ -142,7 +142,7 @@ test.describe('Ficha de producto → carrito → WhatsApp', () => {
     await expect(drawer).toBeVisible();
     await expect(drawer.locator('[data-cart-item]')).toHaveCount(1);
     await expect(drawer.locator('[data-cart-item]').first()).toContainText('Royal Tiger');
-    await expect(drawer.locator('[data-cart-item]').first()).toContainText('Premium');
+    await expect(drawer.locator('[data-cart-item]').first()).toContainText('Estándar');
     expect(parsePrice(await drawer.locator('[data-cart-total]').innerText())).toBe(1400);
   });
 

@@ -85,4 +85,10 @@ export function parseFilters(params: URLSearchParams): CatalogFilters & { sort: 
 
 export const USE_CASES: UseCase[] = ['ciudad', 'trabajo', 'reparto', 'ocio', 'trayectos-largos', 'dos-personas', 'carga'];
 export const AVAILABILITIES: Availability[] = ['en-stock', 'bajo-pedido', 'proximamente', 'agotado'];
+/** Tipos del catálogo RAIDEN (/productos, comparador, buscador, portada). Las promociones (edición EG Motors) van aparte en /promociones (ADR-017). */
 export const TYPES: CategorySlug[] = ['bicimotos', 'trimotos'];
+
+/** ¿Es un vehículo del catálogo RAIDEN? Excluye repuestos y promociones. */
+export function isCatalogVehicle(p: Pick<Product, 'category'>): boolean {
+  return TYPES.includes(p.category);
+}

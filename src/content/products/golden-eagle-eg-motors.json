@@ -1,0 +1,241 @@
+{
+  "id": "eg-golden-eagle",
+  "slug": "golden-eagle-eg-motors",
+  "name": "Golden Eagle EG Motors",
+  "subtitle": "Bicimoto eléctrica urbana · edición EG Motors",
+  "claim": "La misma Golden Eagle, con el logotipo EG Motors y precio de promoción",
+  "description": "Edición promocional de la Golden Eagle con el logotipo EG Motors, la marca del distribuidor: mismas prestaciones (25 km/h, batería Chilwee 48 V, versiones Estándar de 350 W y Premium de 500 W) a precio especial. Disponible en blanco.",
+  "category": "promociones",
+  "brand": "EG Motors",
+  "images": [
+    {
+      "src": "~/assets/products/golden-eagle-eg-motors-blanco.jpg",
+      "alt": "Golden Eagle edición EG Motors en color blanco",
+      "width": 704,
+      "height": 867
+    }
+  ],
+  "specs": {
+    "rangeKm": 35,
+    "rangeMinKm": 30,
+    "topSpeedKmh": 25,
+    "powerW": 350,
+    "battery": {
+      "voltage": 48,
+      "capacityAh": 12,
+      "capacityKwh": 0.58,
+      "chemistry": "plomo-acido",
+      "removable": true,
+      "chargeHours": [
+        6,
+        8
+      ],
+      "cycles": 400,
+      "lifeMonths": 24,
+      "brand": "Chilwee"
+    },
+    "maxLoadKg": 150,
+    "seats": 2,
+    "license": "sin-licencia",
+    "tires": "14 x 2.5\"",
+    "wheelInches": 14,
+    "brakes": "Tambor delantero y trasero",
+    "suspension": "Hidráulica delantera y suspensión trasera",
+    "lighting": "Faro delantero multicolor, intermitentes delanteras y traseras",
+    "display": "Pantalla LCD",
+    "drivingModes": [
+      "Velocidad 1",
+      "Velocidad 2",
+      "Velocidad 3"
+    ],
+    "motorType": "Motor sin escobillas (brushless) en rueda",
+    "controller": "6 tubos SineWave",
+    "warrantyMonths": 12,
+    "batteryWarrantyMonths": 12,
+    "features": [
+      "Motor sin escobillas con potencia de 350 W (Estándar) o 500 W (Premium)",
+      "Batería Chilwee de plomo-ácido de 48V 12Ah (Estándar) o 20Ah (Premium)",
+      "Autonomía: 30-35 km (Estándar) · 40-50 km (Premium)",
+      "Llantas de 14 x 2.5\"",
+      "Controlador de 6 tubos - SineWave Technology",
+      "Velocidad máxima: 25 km/h",
+      "Tiempo de carga: 6-8 horas",
+      "Vida útil de batería: 2 años o 350-400 ciclos (cada carga completa es un ciclo)",
+      "Cargador 220 V",
+      "Carga máxima: 150 kg",
+      "Pantalla LCD",
+      "Alarma antirrobo",
+      "Interruptor de 3 velocidades",
+      "Faro delantero multicolor",
+      "Luces intermitentes delanteras y traseras",
+      "Con reposapiés y cesta delantera",
+      "Parante trasero de apoyo",
+      "Espejos retrovisores",
+      "Bocina (claxon)",
+      "Capacidad de torque: 30°",
+      "Freno de tambor delantero y trasero",
+      "Suspensión hidráulica delantera y suspensión trasera",
+      "Garantía 12 meses (batería y motor)"
+    ]
+  },
+  "variants": [
+    {
+      "id": "premium",
+      "name": "Premium",
+      "tier": "premium",
+      "description": "500 W · 48V 20Ah (no extraíble)",
+      "price": {
+        "amount": 140000,
+        "currency": "PEN"
+      },
+      "specsOverride": {
+        "powerW": 500,
+        "battery": {
+          "voltage": 48,
+          "capacityAh": 20,
+          "capacityKwh": 0.96,
+          "chemistry": "plomo-acido",
+          "removable": false,
+          "chargeHours": [
+            6,
+            8
+          ],
+          "cycles": 400,
+          "lifeMonths": 24,
+          "brand": "Chilwee"
+        },
+        "rangeKm": 50,
+        "rangeMinKm": 40
+      },
+      "availability": "en-stock",
+      "sku": "EG-GOLDENEAGLE-500"
+    },
+    {
+      "id": "estandar",
+      "name": "Estándar",
+      "tier": "estandar",
+      "description": "350 W · 48V 12Ah (extraíble)",
+      "price": {
+        "amount": 110000,
+        "currency": "PEN"
+      },
+      "specsOverride": {
+        "powerW": 350,
+        "battery": {
+          "voltage": 48,
+          "capacityAh": 12,
+          "capacityKwh": 0.58,
+          "chemistry": "plomo-acido",
+          "removable": true,
+          "chargeHours": [
+            6,
+            8
+          ],
+          "cycles": 400,
+          "lifeMonths": 24,
+          "brand": "Chilwee"
+        },
+        "rangeKm": 35,
+        "rangeMinKm": 30
+      },
+      "availability": "en-stock",
+      "sku": "EG-GOLDENEAGLE-350",
+      "isDefault": true
+    }
+  ],
+  "colors": [
+    {
+      "id": "blanco",
+      "name": "Blanco",
+      "hex": "#F2F2F0",
+      "image": {
+        "src": "~/assets/products/golden-eagle-eg-motors-blanco.jpg",
+        "alt": "Golden Eagle edición EG Motors en color blanco",
+        "width": 704,
+        "height": 867
+      }
+    }
+  ],
+  "accessories": [
+    "bateria-chilwee-48v-12ah",
+    "bateria-chilwee-48v-20ah",
+    "cargador-48v-12ah",
+    "cargador-48v-20ah",
+    "llanta-14x2-5",
+    "faro-delantero",
+    "alarma-350w",
+    "alarma-500w"
+  ],
+  "related": [
+    "golden-eagle"
+  ],
+  "useCases": [
+    "ciudad",
+    "trabajo",
+    "ocio"
+  ],
+  "highlights": [
+    "25 km/h · sin licencia (en general)",
+    "Batería Chilwee 48 V: 30-35 km (Estándar) o 40-50 km (Premium)",
+    "Logotipo EG Motors · precio de promoción",
+    "Garantía 12 meses en batería y motor"
+  ],
+  "technology": [
+    {
+      "title": "Motor",
+      "text": "Motor sin escobillas (brushless) integrado en la rueda, disponible en 350 W (Estándar) y 500 W (Premium), con controlador de 6 tubos SineWave. Arranque suave, funcionamiento silencioso y sin aceite, bujías ni cadena que mantener."
+    },
+    {
+      "title": "Batería",
+      "text": "Batería Chilwee de plomo-ácido de 48 V: 12 Ah en la Estándar (30-35 km) y 20 Ah en la Premium (40-50 km). Vida útil estimada de 2 años o 350-400 ciclos; carga completa en 6-8 horas con el cargador de 220 V incluido. Repuesto original disponible."
+    },
+    {
+      "title": "Frenos",
+      "text": "Frenos de tambor delantero y trasero con manijas ergonómicas: sencillos, duraderos y fáciles de ajustar. Cables y manijas de freno disponibles como repuesto original."
+    },
+    {
+      "title": "Suspensión y llantas",
+      "text": "Horquilla hidráulica delantera y suspensión trasera que absorben las irregularidades de la pista, sobre llantas de 14 x 2.5\" sin cámara."
+    },
+    {
+      "title": "Iluminación y seguridad",
+      "text": "Faro delantero multicolor, luces intermitentes delanteras y traseras, espejos retrovisores, bocina y alarma antirrobo de serie."
+    },
+    {
+      "title": "Pantalla y modos de conducción",
+      "text": "Pantalla LCD con nivel de batería y velocidad e interruptor de 3 velocidades para adaptar la respuesta a cada tramo. Reposapiés, cesta delantera y parante trasero incluidos: la Golden Eagle sale de la caja lista para la ciudad."
+    }
+  ],
+  "faqs": [
+    {
+      "question": "¿Necesito licencia para manejar la Golden Eagle?",
+      "answer": "La Golden Eagle es una bicimoto eléctrica de baja velocidad (25 km/h). En general no requiere licencia de conducir ni placa; te recomendamos usar casco y respetar las normas de tránsito. Verifica la normativa vigente del MTC o de tu municipalidad y confírmalo con nuestro asesor."
+    },
+    {
+      "question": "¿Cuál es la autonomía real?",
+      "answer": "La versión Estándar (350 W, batería 48V 12Ah) recorre entre 30 y 35 km por carga y la Premium (500 W, batería 48V 20Ah) entre 40 y 50 km. La autonomía varía con el peso que lleves, las subidas y la velocidad seleccionada en el interruptor de 3 velocidades de la Golden Eagle."
+    },
+    {
+      "question": "¿Estándar o Premium: cuál me conviene?",
+      "answer": "Si recorres menos de 15 km al día por zonas planas, la Golden Eagle Estándar (350 W, 30-35 km) es suficiente. Si llevas pasajero a menudo, tienes subidas o quieres recorrer más de 20 km sin pensar en la carga, elige la Premium (500 W, 40-50 km). Ambas alcanzan 25 km/h y comparten el mismo equipamiento."
+    },
+    {
+      "question": "¿Cuánto tarda en cargar y qué cuidados necesita la batería?",
+      "answer": "La carga completa toma entre 6 y 8 horas con el cargador de 220 V incluido, en cualquier tomacorriente doméstico. La batería Chilwee de plomo-ácido se cuida con hábitos sencillos: cárgala después de cada uso, no la dejes descargarse a fondo, usa solo el cargador original y, si no la usas, dale una carga cada 15-30 días. Su vida útil estimada es de 2 años o 350-400 ciclos."
+    },
+    {
+      "question": "¿Qué garantía tiene y dónde se repara?",
+      "answer": "12 meses de garantía en batería y motor, con Servicio técnico RAIDEN propio en nuestra tienda de Bocanegra, Callao (lunes a domingo, de 10 a. m. a 8 p. m.) y repuestos originales en stock: baterías, cargadores, controladores, cables de freno, llantas, faros y más."
+    },
+    {
+      "question": "¿Cómo se compra y cuánto tarda la entrega?",
+      "answer": "Envías tu solicitud por WhatsApp y un asesor confirma modelo, versión, color, precio final y medios de pago (no hay pago online). En Lima y Callao coordinamos la entrega en 3-7 días hábiles; a provincias enviamos por agencia en 7-15 días hábiles (referencial). También puedes probarla en tienda antes de decidir."
+    }
+  ],
+  "featured": 10,
+  "publishedAt": "2026-10-01",
+  "seo": {
+    "title": "Golden Eagle EG Motors: bicimoto eléctrica en promoción | Desde S/ 1,100",
+    "description": "Golden Eagle edición EG Motors a precio de promoción: 25 km/h sin licencia, batería Chilwee 48 V, versiones Estándar (350 W) y Premium (500 W), 12 meses de garantía. En Callao, Perú."
+  }
+}

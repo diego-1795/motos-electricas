@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import type { Result } from 'axe-core';
 import { GE, MOTOR, TITAN, addGoldenEagle, hydrated } from './helpers';
 
-const PAGES = ['/', '/productos', '/bicimotos', '/trimotos', GE, TITAN, '/repuestos', MOTOR, '/contacto', '/nosotros', '/servicio-tecnico', '/encuentra-tu-moto', '/comparar', '/carrito'];
+const PAGES = ['/', '/productos', '/bicimotos', '/trimotos', '/promociones', GE, TITAN, '/promociones/golden-eagle-eg-motors', '/repuestos', MOTOR, '/contacto', '/nosotros', '/servicio-tecnico', '/encuentra-tu-moto', '/comparar', '/carrito'];
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag22aa'];
 const BLOCKING = new Set(['serious', 'critical']);
 

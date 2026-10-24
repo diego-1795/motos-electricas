@@ -31,7 +31,7 @@ test.describe('Cabecera: desplegable Productos (escritorio)', () => {
     await expect(panel).toBeHidden();
   });
 
-  test('enlaza a /bicimotos, /trimotos, /repuestos, /productos y a las herramientas', async ({ page }) => {
+  test('enlaza a /bicimotos, /trimotos, /repuestos, /promociones, /productos y a las herramientas', async ({ page }) => {
     await page.goto('/');
     const btn = page.locator('[data-dropdown-btn]');
     await btn.focus();
@@ -39,7 +39,7 @@ test.describe('Cabecera: desplegable Productos (escritorio)', () => {
     const panel = page.locator('[data-dropdown-panel]');
     await expect(panel).toBeVisible();
     const hrefs = await panel.locator('a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-    expect(hrefs).toEqual(['/bicimotos', '/trimotos', '/repuestos', '/productos', '/comparar', '/encuentra-tu-moto']);
+    expect(hrefs).toEqual(['/bicimotos', '/trimotos', '/repuestos', '/promociones', '/productos', '/comparar', '/encuentra-tu-moto']);
     await panel.locator('a[href="/trimotos"]').click();
     await expect(page).toHaveURL(/\/trimotos$/);
     // En la página de categoría el botón queda marcado como activo
@@ -69,7 +69,7 @@ test.describe('Cabecera: desplegable Productos (escritorio)', () => {
     const panel = page.locator('[data-dropdown-panel]');
     await page.locator('[data-dropdown-btn]').hover();
     await expect(panel).toBeVisible();
-    await page.locator('footer').hover(); // lejos del panel (que cubre parte del contenido)
+    await page.locator('footer .footer__copy').hover(); // lejos del panel: en páginas cortas el centro del pie queda bajo el desplegable
     await expect(panel).toBeHidden();
     // Tab fuera del desplegable (focusout) también lo cierra
     await page.locator('[data-dropdown-btn]').focus();

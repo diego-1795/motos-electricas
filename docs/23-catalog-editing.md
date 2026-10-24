@@ -8,7 +8,8 @@ Cómo añadir o modificar bicimotos, trimotos, repuestos, precios y contenido **
 |---|---|---|
 | Productos (bicimotos y trimotos) | `src/content/products/` | 1 JSON por modelo, nombre de fichero = slug (hoy: `golden-eagle`, `royal-tiger`, `vortex-kobra`, `titan-rhino`) |
 | Repuestos | `src/content/repuestos/` | 1 JSON por repuesto (26 hoy), nombre de fichero = slug |
-| Categorías | `src/content/categories/` | 1 JSON por categoría: `bicimotos`, `trimotos`, `repuestos` (no añadir nuevas sin tocar dominio) |
+| Categorías | `src/content/categories/` | 1 JSON por categoría: `bicimotos`, `trimotos`, `repuestos`, `promociones` (no añadir nuevas sin tocar dominio) |
+| Promociones (edición EG Motors) | `src/content/products/` con `category: "promociones"` | Misma ficha que un modelo; no entra en `/productos`, comparador ni portada (ADR-017) |
 | Artículos del blog | `src/content/blog/` | Markdown con frontmatter (el tiempo de lectura se calcula solo) |
 | Reseñas de clientes (portada) | `src/content/testimonials/` | 1 JSON por origen (`google-maps.json`): reseñas públicas reales, copiadas tal cual |
 | FAQ generales | `src/content/faqs/` | 1 JSON por grupo |
@@ -25,7 +26,7 @@ Cómo añadir o modificar bicimotos, trimotos, repuestos, precios y contenido **
 ## 3. Añadir un producto nuevo
 
 1. Copiar el JSON de un modelo parecido (p. ej. `src/content/products/golden-eagle.json` para una bicimoto) y renombrarlo al nuevo slug (`kebab-case`, p. ej. `storm-x2.json`; el campo `slug` debe coincidir). La URL resultante será `/bicimotos/storm-x2`.
-2. Rellenar: `id` único, nombre, subtítulo, claim, descripción, `category` (`bicimotos` o `trimotos`), specs completas, 1–2 variantes (Estándar/Premium con `tier`; exactamente **una** con `isDefault: true`), colores, `accessories` (slugs de repuestos compatibles) y `related` (slugs de modelos existentes), `useCases`, highlights, `technology` (6 bloques), 6 FAQs, `featured` (orden en "Recomendados"), `publishedAt`.
+2. Rellenar: `id` único, nombre, subtítulo, claim, descripción, `category` (`bicimotos`, `trimotos` o `promociones` para ediciones EG Motors), specs completas, 1–2 variantes (Estándar/Premium con `tier`; exactamente **una** con `isDefault: true`), colores, `accessories` (slugs de repuestos compatibles) y `related` (slugs de modelos existentes), `useCases`, highlights, `technology` (6 bloques), 6 FAQs, `featured` (orden en "Recomendados"), `publishedAt`.
 3. Añadir una foto por color en `src/assets/products/` como `<slug>-<color>.jpg` (p. ej. `storm-x2-negro.jpg`), una imagen hero en `src/assets/hero/` si el modelo va a la portada, y referenciarlas como `~/assets/products/<slug>-<color>.jpg` con `width`/`height` reales.
 4. Ejecutar:
 

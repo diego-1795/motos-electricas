@@ -17,7 +17,7 @@ const image = z.object({
 });
 
 const availability = z.enum(['en-stock', 'bajo-pedido', 'proximamente', 'agotado']);
-const categorySlug = z.enum(['bicimotos', 'trimotos', 'repuestos']);
+const categorySlug = z.enum(['bicimotos', 'trimotos', 'repuestos', 'promociones']);
 const useCase = z.enum(['ciudad', 'trabajo', 'reparto', 'ocio', 'trayectos-largos', 'dos-personas', 'carga']);
 
 const battery = z.object({

@@ -1,0 +1,55 @@
+---
+/**
+ * Logotipos de los medios de pago aceptados en tienda (Visa, Mastercard, American Express),
+ * dibujados como SVG inline simplificados (sin descargas ni fuentes externas).
+ * Cada marca lleva su nombre accesible; el orden es el del brief del cliente.
+ */
+interface Props {
+  class?: string;
+}
+const { class: cls } = Astro.props;
+---
+
+<ul role="list" class:list={['paylogos', cls]} aria-label="Medios de pago aceptados">
+  <li class="paylogos__item" title="Visa">
+    <svg viewBox="0 0 64 40" width="64" height="40" role="img" aria-label="Visa">
+      <rect width="64" height="40" rx="6" fill="#fff" />
+      <text x="32" y="26" text-anchor="middle" font-family="Montserrat, Arial, Helvetica, sans-serif" font-weight="800" font-style="italic" font-size="17" fill="#1A1F71" letter-spacing="-0.5">VISA</text>
+      <rect x="10" y="30" width="44" height="2.5" rx="1.25" fill="#F7B600" />
+    </svg>
+  </li>
+  <li class="paylogos__item" title="Mastercard">
+    <svg viewBox="0 0 64 40" width="64" height="40" role="img" aria-label="Mastercard">
+      <rect width="64" height="40" rx="6" fill="#fff" />
+      <circle cx="26" cy="20" r="11" fill="#EB001B" />
+      <circle cx="38" cy="20" r="11" fill="#F79E1B" />
+      <path d="M32 11.2a11 11 0 0 1 0 17.6 11 11 0 0 1 0-17.6z" fill="#FF5F00" />
+    </svg>
+  </li>
+  <li class="paylogos__item" title="American Express">
+    <svg viewBox="0 0 64 40" width="64" height="40" role="img" aria-label="American Express">
+      <rect width="64" height="40" rx="6" fill="#016FD0" />
+      <text x="32" y="18" text-anchor="middle" font-family="Montserrat, Arial, Helvetica, sans-serif" font-weight="800" font-size="8.5" fill="#fff" letter-spacing="0.3">AMERICAN</text>
+      <text x="32" y="29" text-anchor="middle" font-family="Montserrat, Arial, Helvetica, sans-serif" font-weight="800" font-size="8.5" fill="#fff" letter-spacing="0.3">EXPRESS</text>
+    </svg>
+  </li>
+</ul>
+
+<style>
+  .paylogos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+  .paylogos__item {
+    display: block;
+    line-height: 0;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+  }
+  .paylogos__item svg {
+    width: 3.25rem;
+    height: auto;
+    display: block;
+  }
+</style>

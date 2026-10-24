@@ -1,0 +1,14 @@
+{
+  "slug": "promociones",
+  "name": "Promociones",
+  "title": "Promociones: bicimotos eléctricas edición EG Motors",
+  "description": "Bicimotos eléctricas con logotipo EG Motors a precio de promoción: las mismas prestaciones (25 km/h, batería Chilwee 48 V, 12 meses de garantía) con la marca del distribuidor. Precios en soles desde S/ 1,100.",
+  "tagline": "Edición EG Motors a precio especial",
+  "image": {
+    "src": "~/assets/products/golden-eagle-eg-motors-blanco.jpg",
+    "alt": "Bicimoto eléctrica Golden Eagle edición EG Motors en color blanco",
+    "width": 704,
+    "height": 867
+  },
+  "order": 4
+}

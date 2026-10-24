@@ -7,7 +7,8 @@
  * (25 km/h, sin licencia) + repuestos. Ver docs/21-decisions.md ADR-015.
  */
 
-export type CategorySlug = 'bicimotos' | 'trimotos' | 'repuestos';
+/** 'promociones' = ediciones con logotipo EG Motors a precio promocional, separadas del catálogo RAIDEN (ADR-017) */
+export type CategorySlug = 'bicimotos' | 'trimotos' | 'repuestos' | 'promociones';
 
 export type UseCase =
   | 'ciudad'
