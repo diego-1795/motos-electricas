@@ -12,7 +12,9 @@ import {
   powerLabel,
   productAvailability,
   rangeLabel,
+  sortedVariants,
   tierLabel,
+  TIER_ORDER,
   variantPrice,
 } from '../../src/domain/product';
 import { pen } from '../../src/domain/money';
@@ -167,5 +169,18 @@ describe('catálogo con versiones (tier)', () => {
     expect(s.dimensionsMm).toBeUndefined();
     expect(Array.isArray(s.features)).toBe(true);
     expect(s.features.length).toBeGreaterThan(0);
+  });
+});
+
+describe('sortedVariants: Estándar a la izquierda, Premium a la derecha', () => {
+  it('ordena por tier sea cual sea el orden del JSON y no muta el producto', () => {
+    expect(TIER_ORDER).toEqual(['estandar', 'premium']);
+    const prem = premiumVariant();
+    const est = variant({ id: 'estandar' });
+    const p = makeProduct({ variants: [prem, est] });
+    expect(sortedVariants(p).map((v) => v.tier)).toEqual(['estandar', 'premium']);
+    expect(p.variants.map((v) => v.tier)).toEqual(['premium', 'estandar']);
+    expect(sortedVariants(makeProduct({ variants: [est, prem] })).map((v) => v.id)).toEqual(['estandar', 'premium']);
+    expect(sortedVariants(makeProduct({ variants: [est] }))).toEqual([est]);
   });
 });

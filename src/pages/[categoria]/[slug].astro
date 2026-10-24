@@ -12,7 +12,7 @@ import ProductConfigurator, { type OptimizedImage } from '../../islands/ProductC
 import CompareToggle from '../../islands/CompareToggle';
 import { repos } from '../../data';
 import type { Product } from '../../domain/types';
-import { availabilityLabel, effectiveSpecs, fromPrice, productAvailability } from '../../domain/product';
+import { availabilityLabel, effectiveSpecs, fromPrice, productAvailability, sortedVariants } from '../../domain/product';
 import { specTable, specTiles, variantSpecs } from '../../domain/specTable';
 import { formatMoney } from '../../domain/money';
 import { publicSrc, resolveImage } from '../../lib/images';
@@ -128,7 +128,7 @@ const variants = variantSpecs(p);
           client:load
           slug={p.slug}
           name={p.name}
-          variants={p.variants}
+          variants={sortedVariants(p)}
           colors={p.colors}
           image={{ ...p.images[0]!, src: publicSrc(p.images[0]!) }}
           colorImages={colorImages}

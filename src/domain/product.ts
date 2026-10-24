@@ -6,6 +6,14 @@ export function defaultVariant(p: Product): ProductVariant {
   return p.variants.find((v) => v.isDefault) ?? p.variants[0]!;
 }
 
+/** Orden de presentación de las versiones: Estándar a la izquierda, Premium a la derecha (Diego, 2026-10-24). */
+export const TIER_ORDER: VariantTier[] = ['estandar', 'premium'];
+
+/** Variantes en orden de presentación fijo por tier (estable para el resto), sea cual sea el orden del JSON. */
+export function sortedVariants(p: Pick<Product, 'variants'>): ProductVariant[] {
+  return [...p.variants].sort((a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier));
+}
+
 /** Precio "desde": variante más barata */
 export function fromPrice(p: Product): Money {
   return p.variants.reduce((min, v) => (v.price.amount < min.amount ? v.price : min), p.variants[0]!.price);

@@ -98,37 +98,6 @@
   },
   "variants": [
     {
-      "id": "premium",
-      "name": "Premium",
-      "tier": "premium",
-      "description": "500 W · 48V 20Ah (no extraíble)",
-      "price": {
-        "amount": 180000,
-        "currency": "PEN"
-      },
-      "specsOverride": {
-        "powerW": 500,
-        "battery": {
-          "voltage": 48,
-          "capacityAh": 20,
-          "capacityKwh": 0.96,
-          "chemistry": "plomo-acido",
-          "removable": false,
-          "chargeHours": [
-            6,
-            8
-          ],
-          "cycles": 400,
-          "lifeMonths": 24,
-          "brand": "Chilwee"
-        },
-        "rangeKm": 50,
-        "rangeMinKm": 40
-      },
-      "availability": "en-stock",
-      "sku": "RD-ROYALTIGER-500"
-    },
-    {
       "id": "estandar",
       "name": "Estándar",
       "tier": "estandar",
@@ -159,6 +128,37 @@
       "availability": "en-stock",
       "sku": "RD-ROYALTIGER-350",
       "isDefault": true
+    },
+    {
+      "id": "premium",
+      "name": "Premium",
+      "tier": "premium",
+      "description": "500 W · 48V 20Ah (no extraíble)",
+      "price": {
+        "amount": 180000,
+        "currency": "PEN"
+      },
+      "specsOverride": {
+        "powerW": 500,
+        "battery": {
+          "voltage": 48,
+          "capacityAh": 20,
+          "capacityKwh": 0.96,
+          "chemistry": "plomo-acido",
+          "removable": false,
+          "chargeHours": [
+            6,
+            8
+          ],
+          "cycles": 400,
+          "lifeMonths": 24,
+          "brand": "Chilwee"
+        },
+        "rangeKm": 50,
+        "rangeMinKm": 40
+      },
+      "availability": "en-stock",
+      "sku": "RD-ROYALTIGER-500"
     }
   ],
   "colors": [

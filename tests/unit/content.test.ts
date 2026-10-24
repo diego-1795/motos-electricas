@@ -32,8 +32,8 @@ describe('catálogo real: productos', () => {
     expect(eg.brand).toBe('EG Motors');
     expect(defaultVariant(eg).tier).toBe('estandar');
     expect(eg.variants.map((v) => [v.tier, v.price.amount])).toEqual([
-      ['premium', 140000],
       ['estandar', 110000],
+      ['premium', 140000],
     ]);
     expect(eg.colors.map((c) => c.id)).toEqual(['blanco']);
     expect(eg.specs).toEqual(ge.specs);

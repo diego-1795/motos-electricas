@@ -1,5 +1,5 @@
 import type { Product, ProductVariant, Specs } from './types';
-import { batteryLabel, chargeLabel, effectiveSpecs, licenseLabel, powerLabel, rangeLabel, tierLabel } from './product';
+import { batteryLabel, chargeLabel, defaultVariant, effectiveSpecs, licenseLabel, powerLabel, rangeLabel, sortedVariants, tierLabel } from './product';
 
 /**
  * Ficha técnica por versión (Estándar / Premium).
@@ -33,8 +33,8 @@ export interface VariantSpecs {
 
 /** Specs efectivas de cada versión del producto, con la versión por defecto marcada. */
 export function variantSpecs(p: Product): VariantSpecs[] {
-  const def = p.variants.find((v) => v.isDefault) ?? p.variants[0]!;
-  return p.variants.map((v: ProductVariant) => ({ id: v.id, label: tierLabel[v.tier], specs: effectiveSpecs(p, v), isDefault: v === def }));
+  const def = defaultVariant(p);
+  return sortedVariants(p).map((v: ProductVariant) => ({ id: v.id, label: tierLabel[v.tier], specs: effectiveSpecs(p, v), isDefault: v === def }));
 }
 
 /** Convierte definiciones en filas, agrupando por versión solo cuando los valores difieren. */

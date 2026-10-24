@@ -6,7 +6,7 @@ import CompareTable, { type CompareRow } from '../islands/CompareTable';
 import { repos } from '../data';
 import { isCatalogVehicle } from '../domain/catalog';
 import { site } from '../config/site';
-import { availabilityLabel, batteryLabel, chargeLabel, effectiveSpecs, fromPrice, licenseLabel, maxRange, powerLabel, productAvailability, rangeLabel, tierLabel } from '../domain/product';
+import { availabilityLabel, batteryLabel, chargeLabel, effectiveSpecs, fromPrice, licenseLabel, maxRange, powerLabel, productAvailability, rangeLabel, sortedVariants, tierLabel } from '../domain/product';
 import { publicSrc } from '../lib/images';
 import { COMPARE_PATH, productPath } from '../lib/routes';
 
@@ -15,7 +15,7 @@ const categories = await repos.categories.all();
 const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
 const rows: CompareRow[] = products.map((p) => {
   const s = effectiveSpecs(p);
-  const powers = [...new Set(p.variants.map((v) => effectiveSpecs(p, v).powerW))].sort((a, b) => a - b);
+  const powers = [...new Set(sortedVariants(p).map((v) => effectiveSpecs(p, v).powerW))].sort((a, b) => a - b);
   return {
     slug: p.slug,
     href: productPath(p),
@@ -24,13 +24,13 @@ const rows: CompareRow[] = products.map((p) => {
     category: categoryNames[p.category] ?? p.category,
     image: publicSrc(p.images[0]!),
     priceFrom: fromPrice(p).amount,
-    tiers: p.variants.map((v) => tierLabel[v.tier]).join(' · '),
+    tiers: sortedVariants(p).map((v) => tierLabel[v.tier]).join(' · '),
     rangeKm: maxRange(p),
-    rangeLabel: p.variants.length > 1 ? p.variants.map((v) => `${rangeLabel(effectiveSpecs(p, v))} (${tierLabel[v.tier]})`).join(' · ') : rangeLabel(s),
+    rangeLabel: p.variants.length > 1 ? sortedVariants(p).map((v) => `${rangeLabel(effectiveSpecs(p, v))} (${tierLabel[v.tier]})`).join(' · ') : rangeLabel(s),
     topSpeedKmh: s.topSpeedKmh,
     powerW: powers[powers.length - 1]!,
     powerLabel: powers.length > 1 ? `${powers[0]}-${powers[powers.length - 1]} W` : powerLabel(s.powerW),
-    battery: p.variants.length > 1 ? p.variants.map((v) => `${batteryLabel(effectiveSpecs(p, v))} (${tierLabel[v.tier]})`).join(' · ') : batteryLabel(s),
+    battery: p.variants.length > 1 ? sortedVariants(p).map((v) => `${batteryLabel(effectiveSpecs(p, v))} (${tierLabel[v.tier]})`).join(' · ') : batteryLabel(s),
     chargeHours: chargeLabel(s),
     maxLoadKg: s.maxLoadKg,
     weightKg: s.weightKg,
