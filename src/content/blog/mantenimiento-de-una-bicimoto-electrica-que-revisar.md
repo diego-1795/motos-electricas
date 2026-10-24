@@ -4,7 +4,6 @@ description: "Guía de mantenimiento de una bicimoto eléctrica de 25 km/h: fren
 category: "mantenimiento"
 publishedAt: "2026-11-10T08:00:00.000Z"
 author: "Equipo Raiden"
-readingMinutes: 5
 relatedProducts: ["golden-eagle", "royal-tiger", "vortex-kobra", "titan-rhino"]
 ---
 

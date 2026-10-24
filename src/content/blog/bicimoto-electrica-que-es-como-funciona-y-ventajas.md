@@ -4,7 +4,6 @@ description: "Descubre qué es una bicimoto eléctrica, cómo funciona, cuáles 
 category: "guias"
 publishedAt: "2026-10-30T08:00:00.000Z"
 author: "Equipo Raiden"
-readingMinutes: 4
 image:
   src: "~/assets/blog/que-es-una-bicimoto.jpg"
   alt: "Bicimoto eléctrica RAIDEN estacionada en una calle de la ciudad"

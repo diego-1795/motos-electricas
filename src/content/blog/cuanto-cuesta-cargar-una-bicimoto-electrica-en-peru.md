@@ -4,7 +4,6 @@ description: "Cálculo del costo por carga y por kilómetro de una bicimoto elé
 category: "autonomia"
 publishedAt: "2026-11-03T08:00:00.000Z"
 author: "Equipo Raiden"
-readingMinutes: 5
 relatedProducts: ["golden-eagle", "vortex-kobra", "titan-rhino"]
 ---
 

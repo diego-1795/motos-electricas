@@ -70,6 +70,18 @@ export default function ProductConfigurator({ slug, name, variants, colors, imag
     });
   }, [colorId, colorImages]);
 
+  // Ficha técnica por versión: muestra solo los valores de la versión elegida
+  // ([data-spec-variant], HTML estático de ProductTabs/SpecTiles) y el nombre en [data-variant-name]
+  useEffect(() => {
+    document.querySelectorAll<HTMLElement>('[data-variant-specs]').forEach((root) => root.classList.add('is-js'));
+    document.querySelectorAll<HTMLElement>('[data-spec-variant]').forEach((el) => {
+      el.classList.toggle('spec-variant--off', el.dataset.specVariant !== variantId);
+    });
+    document.querySelectorAll<HTMLElement>('[data-variant-name]').forEach((el) => {
+      el.textContent = tierLabel[variant.tier];
+    });
+  }, [variantId, variant.tier]);
+
   // Las miniaturas (HTML estático) seleccionan el color
   useEffect(() => {
     const onClick = (e: Event) => {

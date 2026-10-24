@@ -148,7 +148,7 @@ const blog = defineCollection({
     publishedAt: z.string(),
     updatedAt: z.string().optional(),
     author: z.string(),
-    readingMinutes: z.number(),
+    // readingMinutes NO va en el frontmatter: lo calcula src/domain/reading.ts del cuerpo
     image: image.optional(),
     relatedProducts: z.array(z.string()).default([]),
   }),
@@ -163,4 +163,15 @@ const faqs = defineCollection({
   }),
 });
 
-export const collections = { products, repuestos, categories, blog, faqs };
+/** Testimonios reales (reseñas públicas, p. ej. Google Maps). Un archivo por origen. */
+const testimonials = defineCollection({
+  loader: glob({ pattern: '**/*.json', base: './src/content/testimonials' }),
+  schema: z.object({
+    source: z.string(),
+    label: z.string(),
+    note: z.string().optional(),
+    items: z.array(z.object({ author: z.string(), rating: z.number().int().min(1).max(5), text: z.string(), date: z.string() })),
+  }),
+});
+
+export const collections = { products, repuestos, categories, blog, faqs, testimonials };

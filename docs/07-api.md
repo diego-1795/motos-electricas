@@ -38,7 +38,7 @@ Los esquemas zod viven en `src/content.config.ts` y reflejan `src/domain/types.t
 | `accessories` | string[] | Sí | Slugs de **repuestos** compatibles (nombre de campo histórico) |
 | `related` | string[] | Sí | Slugs de modelos similares |
 | `useCases` | enum[] | Sí | `ciudad`, `trabajo`, `reparto`, `ocio`, `trayectos-largos`, `dos-personas`, `carga` |
-| `highlights`, `technology`, `faqs`, `reviews?` | arrays | Sí / No | Contenido de ficha |
+| `highlights`, `technology`, `faqs`, `reviews?` | arrays | Sí / No | Contenido de ficha. `reviews` solo con reseñas reales del modelo (hoy vacío; los testimonios de portada salen de la colección `testimonials`) |
 | `featured`, `isHero?`, `isNew?`, `publishedAt` | number / boolean / fecha | `featured` y `publishedAt` sí | Orden en "Recomendados" y portada |
 | `seo` | `{ title?, description? }` | No | |
 
@@ -59,11 +59,17 @@ Variant: `id`, `name`, `tier` (`estandar` \| `premium`), `description?`, `price`
 | `blog` | `description` | string | Sí |
 | `blog` | `category` | `guias` \| `comparativas` \| `autonomia` \| `baterias` \| `mantenimiento` \| `legislacion` \| `movilidad` \| `compra` | Sí |
 | `blog` | `publishedAt` / `updatedAt` | fecha ISO | Sí / No |
-| `blog` | `author`, `readingMinutes` | string, number | Sí |
+| `blog` | `author` | string | Sí |
 | `blog` | `image` | `ImageRef` | No |
 | `blog` | `relatedProducts` | string[] (slugs) | No |
 | `faqs` | `group`, `order` | string, number | Sí |
 | `faqs` | `items[]` (`question`, `answer`) | array | Sí |
+
+`readingMinutes` **no** va en el frontmatter: el repositorio lo calcula del cuerpo con `src/domain/reading.ts` (palabras legibles / 200 ppm, mínimo 1), así nunca queda desactualizado (ADR-016).
+
+### 2.5 `testimonials`
+
+Reseñas públicas reales del negocio para "Comunidad RAIDEN" (portada). Un archivo JSON por origen en `src/content/testimonials/` (hoy `google-maps.json`): `source` (p. ej. `google`), `label`, `note?` e `items[]` con `author`, `rating` (1–5), `text`, `date`. Se copian tal cual de la fuente, sin inventar ninguna; la portada destaca las 3 mejor valoradas con más texto (`pickTestimonials`, ADR-016).
 
 ## 3. API REST futura
 

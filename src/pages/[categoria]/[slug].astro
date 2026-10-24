@@ -12,7 +12,8 @@ import ProductConfigurator, { type OptimizedImage } from '../../islands/ProductC
 import CompareToggle from '../../islands/CompareToggle';
 import { repos } from '../../data';
 import type { Product } from '../../domain/types';
-import { availabilityLabel, batteryLabel, chargeLabel, effectiveSpecs, fromPrice, licenseLabel, powerLabel, productAvailability, rangeLabel, tierLabel } from '../../domain/product';
+import { availabilityLabel, effectiveSpecs, fromPrice, productAvailability } from '../../domain/product';
+import { specTable, specTiles, variantSpecs } from '../../domain/specTable';
 import { formatMoney } from '../../domain/money';
 import { publicSrc, resolveImage } from '../../lib/images';
 import { breadcrumbSchema, faqSchema, productSchema } from '../../lib/seo/jsonld';
@@ -59,36 +60,11 @@ for (const c of galleryColors) {
 }
 const mainOptimizedSrc = galleryColors[0] ? colorImages[galleryColors[0].id]!.src : publicSrc(mainImage);
 
-/* Ficha técnica completa (oculta peso/dimensiones si el fabricante no los da) */
-const row = (k: string, v: string | undefined | false): [string, string][] => (v ? [[k, v]] : []);
-const powerRange = [...new Set(p.variants.map((v) => effectiveSpecs(p, v).powerW))].sort((a, b) => a - b);
-const specRows: [string, string][] = [
-  ['Autonomía (declarada)', p.variants.length > 1 ? p.variants.map((v) => `${rangeLabel(effectiveSpecs(p, v))} (${tierLabel[v.tier]})`).join(' · ') : rangeLabel(specs)],
-  ['Velocidad máxima', `${specs.topSpeedKmh} km/h`],
-  ['Potencia nominal', powerRange.length > 1 ? p.variants.map((v) => `${powerLabel(effectiveSpecs(p, v).powerW)} (${tierLabel[v.tier]})`).join(' · ') : powerLabel(specs.powerW)],
-  ...row('Potencia pico', specs.peakPowerW ? `${specs.peakPowerW} W` : undefined),
-  ['Batería', p.variants.length > 1 ? p.variants.map((v) => `${batteryLabel(effectiveSpecs(p, v))} (${tierLabel[v.tier]})`).join(' · ') : batteryLabel(specs)],
-  ['Química de la batería', specs.battery.chemistry === 'plomo-acido' ? 'Plomo-ácido' : specs.battery.chemistry],
-  ...row('Marca de la batería', specs.battery.brand),
-  ['Batería extraíble', specs.battery.removable ? 'Sí' : 'No'],
-  ['Tiempo de carga', chargeLabel(specs)],
-  ...row('Vida útil de la batería', specs.battery.cycles ? `${specs.battery.cycles} ciclos${specs.battery.lifeMonths ? ` · ${specs.battery.lifeMonths / 12} años` : ''}` : undefined),
-  ['Motor', specs.motorType],
-  ...row('Controlador', specs.controller),
-  ['Frenos', specs.brakes],
-  ['Suspensión', specs.suspension],
-  ...row('Llantas', specs.tires),
-  ['Iluminación', specs.lighting],
-  ['Pantalla', specs.display],
-  ['Modos de conducción', specs.drivingModes.join(', ')],
-  ['Plazas', String(specs.seats)],
-  ['Carga máxima', `${specs.maxLoadKg} kg`],
-  ...row('Peso', specs.weightKg !== undefined ? `${specs.weightKg} kg` : undefined),
-  ...row('Dimensiones (L×An×Al)', specs.dimensionsMm ? `${specs.dimensionsMm.join(' × ')} mm` : undefined),
-  ...row('Protección', specs.ipRating),
-  ['Licencia', licenseLabel[specs.license]],
-  ['Garantía', `${specs.warrantyMonths} meses (batería: ${specs.batteryWarrantyMonths} meses)`],
-];
+/* Ficha técnica por versión (Estándar/Premium): filas únicas o un valor por versión.
+   La isla ProductConfigurator muestra solo la versión elegida (src/domain/specTable.ts). */
+const tiles = specTiles(p);
+const specRows = specTable(p);
+const variants = variantSpecs(p);
 ---
 
 <BaseLayout
@@ -168,7 +144,7 @@ const specRows: [string, string][] = [
     <!-- PESTAÑAS: ficha · especificaciones · manual · video -->
     <section class="container section pdp__section" aria-labelledby="info-h">
       <h2 id="info-h" class="visually-hidden">Información técnica de {p.name}</h2>
-      <ProductTabs name={p.name} slug={p.slug} specs={specs} specRows={specRows} features={specs.features} manualUrl={p.manualUrl} videoUrl={p.videoUrl} poster={p.images[0]!} />
+      <ProductTabs name={p.name} slug={p.slug} tiles={tiles} specRows={specRows} variants={variants} features={specs.features} manualUrl={p.manualUrl} videoUrl={p.videoUrl} poster={p.images[0]!} />
     </section>
 
     <!-- TECNOLOGÍA -->

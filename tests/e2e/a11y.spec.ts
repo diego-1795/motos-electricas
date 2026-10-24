@@ -35,9 +35,19 @@ function split(violations: Result[]) {
   return { known, blocking, others };
 }
 
-/** Espera a que terminen las animaciones CSS en curso (toast `fade`, drawer): axe mide colores con la opacidad animada. */
+/**
+ * Espera a que terminen las animaciones CSS en curso (toast `fade`, drawer): axe mide colores con la opacidad animada.
+ * Las animaciones infinitas (halo del WhatsApp flotante) son decorativas y nunca terminan: se ignoran.
+ */
 async function settleAnimations(page: Page) {
-  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
 }
 
 async function audit(page: Page, label: string) {

@@ -1,4 +1,5 @@
 import type { BlogPost, Category, CategorySlug, FAQ, Part, Product } from '../domain/types';
+import type { Testimonial } from '../domain/testimonials';
 
 /**
  * Contratos de acceso a datos. La UI y los servicios dependen de estas
@@ -38,10 +39,16 @@ export interface FaqRepository {
   groups(): Promise<{ group: string; items: FAQ[] }[]>;
 }
 
+/** Reseñas públicas reales del negocio (Google Maps…), para "Comunidad RAIDEN" */
+export interface TestimonialRepository {
+  all(): Promise<Testimonial[]>;
+}
+
 export interface Repositories {
   products: ProductRepository;
   parts: PartRepository;
   categories: CategoryRepository;
   blog: BlogRepository;
   faqs: FaqRepository;
+  testimonials: TestimonialRepository;
 }

@@ -9,7 +9,8 @@ Cómo añadir o modificar bicimotos, trimotos, repuestos, precios y contenido **
 | Productos (bicimotos y trimotos) | `src/content/products/` | 1 JSON por modelo, nombre de fichero = slug (hoy: `golden-eagle`, `royal-tiger`, `vortex-kobra`, `titan-rhino`) |
 | Repuestos | `src/content/repuestos/` | 1 JSON por repuesto (26 hoy), nombre de fichero = slug |
 | Categorías | `src/content/categories/` | 1 JSON por categoría: `bicimotos`, `trimotos`, `repuestos` (no añadir nuevas sin tocar dominio) |
-| Artículos del blog | `src/content/blog/` | Markdown con frontmatter |
+| Artículos del blog | `src/content/blog/` | Markdown con frontmatter (el tiempo de lectura se calcula solo) |
+| Reseñas de clientes (portada) | `src/content/testimonials/` | 1 JSON por origen (`google-maps.json`): reseñas públicas reales, copiadas tal cual |
 | FAQ generales | `src/content/faqs/` | 1 JSON por grupo |
 | Imágenes | `src/assets/products/`, `hero/`, `repuestos/`, `blog/` | JPG/PNG/AVIF/WebP |
 | Marca, WhatsApp, textos globales | `src/config/site.ts` | TypeScript |
@@ -55,6 +56,10 @@ Exportar JPG ≥ 1600 px (fondo limpio) a `src/assets/products/` o `src/assets/r
 
 - Temporalmente sin stock → `variants[].availability: "agotado"` (la web lo muestra, deshabilita compra).
 - Retirada definitiva → borrar el JSON **y** limpiar su slug de `related` y `accessories` de los productos, de `compatibleWith` de los repuestos y de `relatedProducts` del blog (el validador lista los rotos).
+
+## 6b. Actualizar las reseñas de "Comunidad RAIDEN"
+
+Abrir `src/content/testimonials/google-maps.json` y añadir a `items` cada reseña nueva de la ficha de Google Maps **tal cual la escribió el cliente** (`author`, `rating` 1–5, `text`, `date` `AAAA-MM`). Una reseña solo con estrellas va con `text: ""` (cuenta para la media y el total, no se destaca). La portada elige sola las 3 mejor valoradas con más texto y muestra la media y el número total. No se redactan ni retocan reseñas (ADR-016).
 
 ## 7. Qué valida la CI
 

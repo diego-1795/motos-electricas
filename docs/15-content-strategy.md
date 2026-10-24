@@ -112,7 +112,7 @@ Calendario editorial vigente (`src/content/blog/<slug>.md`):
 
 Próximos temas propuestos (pendientes de aprobación del cliente): "Golden Eagle, Royal Tiger o Vortex Kobra: en qué se diferencian" (comparativas), "Estándar o Premium: cuál elegir" (compra), "Cómo cambiar la batería Chilwee de tu bicimoto" (mantenimiento), "Guía de repuestos RAIDEN: qué se desgasta y cuánto cuesta" (mantenimiento).
 
-Formato: 600–900 palabras (los artículos del cliente conservan su extensión original), H2 cada 150–250 palabras, una tabla o lista de datos, CTA final con enlace interno (`/bicimotos`, `/trimotos/titan-rhino`, `/repuestos`, `/servicio-tecnico`, `/encuentra-tu-moto`, `/comparar`). Frontmatter: `title`, `description`, `category`, `publishedAt`, `updatedAt?`, `author` ("Equipo Raiden"), `readingMinutes`, `image?` (`~/assets/blog/<slug>.jpg`, 1264×848), `relatedProducts[]` (slugs reales; lo valida `npm run validate:content`, que además prohíbe "€", "EUR", "carnet" e "IVA").
+Formato: 600–900 palabras (los artículos del cliente conservan su extensión original), H2 cada 150–250 palabras, una tabla o lista de datos, CTA final con enlace interno (`/bicimotos`, `/trimotos/titan-rhino`, `/repuestos`, `/servicio-tecnico`, `/encuentra-tu-moto`, `/comparar`). Frontmatter: `title`, `description`, `category`, `publishedAt`, `updatedAt?`, `author` ("Equipo Raiden"), `image?` (`~/assets/blog/<slug>.jpg`, 1264×848), `relatedProducts[]` (slugs reales; lo valida `npm run validate:content`, que además prohíbe "€", "EUR", "carnet" e "IVA"). El tiempo de lectura no se escribe: se calcula del cuerpo (200 palabras/min, ADR-016).
 
 ## 7. FAQ inicial
 

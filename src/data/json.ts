@@ -1,5 +1,7 @@
 import { getCollection, getEntry } from 'astro:content';
-import type { BlogPost, Category, CategorySlug, Part, Product } from '../domain/types';
+import type { BlogPost, Category, CategorySlug, Part, Product, Review } from '../domain/types';
+import type { Testimonial } from '../domain/testimonials';
+import { readingMinutes } from '../domain/reading';
 import type { Repositories } from './repositories';
 
 /**
@@ -57,17 +59,20 @@ const categories = {
   },
 };
 
+/** Artículo con slug, cuerpo y tiempo de lectura real calculado del cuerpo. */
+const toPost = (e: { id: string; data: unknown; body?: string }): BlogPost & { body: string } => {
+  const body = e.body ?? '';
+  return { ...(e.data as Omit<BlogPost, 'slug' | 'readingMinutes'>), slug: e.id, body, readingMinutes: readingMinutes(body) };
+};
+
 const blog = {
   async all() {
     const entries = await getCollection('blog');
-    return entries
-      .map((e) => ({ ...(e.data as Omit<BlogPost, 'slug'>), slug: e.id, body: e.body ?? '' }))
-      .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+    return entries.map(toPost).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
   },
   async bySlug(slug: string) {
     const e = await getEntry('blog', slug);
-    if (!e) return undefined;
-    return { ...(e.data as Omit<BlogPost, 'slug'>), slug: e.id, body: e.body ?? '' };
+    return e ? toPost(e) : undefined;
   },
 };
 
@@ -80,4 +85,10 @@ const faqs = {
   },
 };
 
-export const jsonRepositories: Repositories = { products, parts, categories, blog, faqs };
+const testimonials = {
+  async all(): Promise<Testimonial[]> {
+    return (await getCollection('testimonials')).flatMap((e) => e.data.items.map((r) => ({ ...(r as Review), source: e.data.source })));
+  },
+};
+
+export const jsonRepositories: Repositories = { products, parts, categories, blog, faqs, testimonials };

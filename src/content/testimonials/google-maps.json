@@ -1,0 +1,55 @@
+{
+  "source": "google",
+  "label": "Reseñas en Google",
+  "note": "Reseñas públicas de la ficha de Google Maps de RAIDEN (EG Motors SAC, Callao), copiadas el 2026-10-24: 8 reseñas, todas de 5 estrellas (una solo con estrellas, text vacío; cuenta para la media y el total pero no se destaca). Para actualizar: copiar las nuevas reseñas tal cual, sin inventar ninguna.",
+  "items": [
+    {
+      "author": "Mayra Huayllani",
+      "rating": 5,
+      "text": "Gracias Raiden, mi moto resultó mejor de lo que esperaba, es práctica, cómoda y mi tiempo en el tráfico se ha reducido considerablemente :D",
+      "date": "2026-10"
+    },
+    {
+      "author": "Jordan Arteaga",
+      "rating": 5,
+      "text": "Buena atención, variedad de colores. Las motos están demasiado buenas :D",
+      "date": "2026-10"
+    },
+    {
+      "author": "Esther Vasquez",
+      "rating": 5,
+      "text": "Me encantó la atención, las motos muy buenas 🤩🤩",
+      "date": "2026-10"
+    },
+    {
+      "author": "Antonella Aliaga",
+      "rating": 5,
+      "text": "Buena atención 🙌🏼 Recomiendo a Raiden",
+      "date": "2026-10"
+    },
+    {
+      "author": "Antonella Emma Bonilla",
+      "rating": 5,
+      "text": "Bonitas las motos! Buena atención",
+      "date": "2026-10"
+    },
+    {
+      "author": "Luis Valdivia",
+      "rating": 5,
+      "text": "Excelente calidad de motos eléctricas.",
+      "date": "2026-10"
+    },
+    {
+      "author": "Erick Roger Ramos Meza",
+      "rating": 5,
+      "text": "Muy buena atención.",
+      "date": "2026-10"
+    },
+    {
+      "author": "Christian Fabrizzio",
+      "rating": 5,
+      "text": "",
+      "date": "2026-10"
+    }
+  ]
+}

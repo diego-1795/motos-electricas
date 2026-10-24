@@ -7,6 +7,7 @@ import ProductCard from '../../components/product/ProductCard.astro';
 import WhatsAppLink from '../../components/ui/WhatsAppLink.astro';
 import { repos } from '../../data';
 import type { BlogPost } from '../../domain/types';
+import { readingMinutes } from '../../domain/reading';
 import { site } from '../../config/site';
 import { publicSrc } from '../../lib/images';
 import { articleSchema, breadcrumbSchema } from '../../lib/seo/jsonld';
@@ -21,7 +22,8 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props as { entry: CollectionEntry<'blog'> };
 const { Content } = await render(entry);
-const post: BlogPost = { slug: entry.id, ...entry.data };
+// Tiempo de lectura real, calculado del cuerpo (mismo criterio que repos.blog)
+const post: BlogPost = { slug: entry.id, ...entry.data, readingMinutes: readingMinutes(entry.body ?? '') };
 const related = await repos.products.bySlugs(post.relatedProducts);
 const categoryNames = Object.fromEntries((await repos.categories.all()).map((c) => [c.slug, c.name]));
 const fmtDate = new Intl.DateTimeFormat(site.locale, { day: 'numeric', month: 'long', year: 'numeric' });

@@ -13,6 +13,8 @@
  * Renombrar a supabase.ts y completar los TODO cuando se necesite.
  */
 import type { BlogPost, Category, CategorySlug, Part, Product } from '../domain/types';
+import type { Testimonial } from '../domain/testimonials';
+import { readingMinutes } from '../domain/reading';
 import type { Repositories } from './repositories';
 
 type Client = {
@@ -49,7 +51,8 @@ export function createSupabaseRepositories(client: Client): Repositories {
   };
 
   const blog: Repositories['blog'] = {
-    all: () => rows<BlogPost & { body: string }>('blog_posts', 'published_at', false),
+    // El tiempo de lectura se calcula del cuerpo, igual que en el repositorio JSON
+    all: async () => (await rows<BlogPost & { body: string }>('blog_posts', 'published_at', false)).map((p) => ({ ...p, readingMinutes: readingMinutes(p.body) })),
     bySlug: async (slug) => (await blog.all()).find((p) => p.slug === slug),
   };
 
@@ -57,5 +60,10 @@ export function createSupabaseRepositories(client: Client): Repositories {
     groups: () => rows<{ group: string; items: { question: string; answer: string }[] }>('faq_groups_view', 'order'),
   };
 
-  return { products, parts, categories, blog, faqs };
+  // Reseñas públicas del negocio (status = 'published'); hoy se copian a mano desde Google Maps
+  const testimonials: Repositories['testimonials'] = {
+    all: () => rows<Testimonial>('testimonials', 'date', false),
+  };
+
+  return { products, parts, categories, blog, faqs, testimonials };
 }

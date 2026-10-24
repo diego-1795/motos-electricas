@@ -4,7 +4,6 @@ description: "Comparamos las dos opciones RAIDEN para trabajar: la bicimoto Roya
 category: "comparativas"
 publishedAt: "2026-11-17T08:00:00.000Z"
 author: "Equipo Raiden"
-readingMinutes: 5
 relatedProducts: ["royal-tiger", "titan-rhino", "golden-eagle"]
 ---
 

@@ -4,7 +4,6 @@ description: "Guía práctica para alargar la vida de la batería Chilwee de plo
 category: "baterias"
 publishedAt: "2026-10-27T08:00:00.000Z"
 author: "Equipo Raiden"
-readingMinutes: 5
 relatedProducts: ["golden-eagle", "royal-tiger", "vortex-kobra"]
 ---
 

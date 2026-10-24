@@ -335,6 +335,28 @@
   line-height: var(--lh-tight);
 }
 
+/* Valores por versión (Estándar/Premium). Sin JS se ven todos con su etiqueta;
+   la isla ProductConfigurator añade .is-js a la raíz y .spec-variant--off a los
+   valores de las versiones no elegidas. */
+.spec-variant {
+  display: block;
+}
+.spec-variant--off {
+  display: none;
+}
+.spec-variant__tier {
+  margin-left: var(--s-1);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  vertical-align: middle;
+}
+.is-js .spec-variant__tier {
+  display: none;
+}
+
 /* Mini specs inline (product card) */
 .specs-inline {
   display: flex;

@@ -1,21 +1,21 @@
 ---
 import type { Specs } from '../../domain/types';
-import { batteryLabel, chargeLabel, powerLabel, rangeLabel } from '../../domain/product';
+import { specTilesFor, type SpecRow } from '../../domain/specTable';
 
+/**
+ * Tiles de la ficha técnica. Con `rows` (de specTiles(p)) cada tile puede
+ * traer un valor por versión (Estándar/Premium): se renderizan todos y la isla
+ * ProductConfigurator deja visible solo el de la versión elegida. Sin JS se ven
+ * todos, cada uno con su etiqueta de versión.
+ * Con `specs` (sin versiones, p. ej. el styleguide) se calculan valores únicos.
+ */
 interface Props {
-  specs: Specs;
+  rows?: SpecRow[];
+  specs?: Specs;
   compact?: boolean;
 }
-const { specs, compact = false } = Astro.props;
-const tiles = [
-  { label: 'Autonomía', value: rangeLabel(specs) },
-  { label: 'Velocidad', value: `${specs.topSpeedKmh} km/h` },
-  { label: 'Potencia', value: powerLabel(specs.powerW) },
-  { label: 'Batería', value: batteryLabel(specs) },
-  { label: 'Carga', value: chargeLabel(specs) },
-  ...(compact ? [] : [{ label: 'Carga máx.', value: `${specs.maxLoadKg} kg` }]),
-  ...(compact || specs.weightKg === undefined ? [] : [{ label: 'Peso', value: `${specs.weightKg} kg` }]),
-];
+const { rows, specs, compact = false } = Astro.props;
+const tiles = rows ?? (specs ? specTilesFor(specs, compact) : []);
 ---
 
 <dl class="spec-grid">
@@ -23,7 +23,15 @@ const tiles = [
     tiles.map((t) => (
       <div class="spec-tile">
         <dt class="spec-tile__label">{t.label}</dt>
-        <dd class="spec-tile__value">{t.value}</dd>
+        {t.value !== undefined ? (
+          <dd class="spec-tile__value">{t.value}</dd>
+        ) : (
+          t.byVariant!.map((v) => (
+            <dd class="spec-tile__value spec-variant" data-spec-variant={v.id}>
+              {v.value} <span class="spec-variant__tier">{v.label}</span>
+            </dd>
+          ))
+        )}
       </div>
     ))
   }

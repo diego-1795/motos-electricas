@@ -1,5 +1,6 @@
 ---
-import type { ImageRef, Specs } from '../../domain/types';
+import type { ImageRef } from '../../domain/types';
+import type { SpecRow, VariantSpecs } from '../../domain/specTable';
 import SpecTiles from './SpecTiles.astro';
 import Pic from '../ui/Pic.astro';
 import WhatsAppLink from '../ui/WhatsAppLink.astro';
@@ -8,19 +9,27 @@ import WhatsAppLink from '../ui/WhatsAppLink.astro';
  * Pestañas de la ficha: Ficha técnica · Especificaciones · Manual de uso · Video.
  * Progresivas: todos los paneles se renderizan; el script activa el patrón tablist
  * (WAI-ARIA, flechas, Home/End). Sin JS los paneles se muestran apilados con sus títulos.
+ *
+ * Ficha técnica por versión: las filas/tiles con `byVariant` llevan un valor por
+ * versión (data-spec-variant). La isla ProductConfigurator marca la raíz con
+ * `is-js`, oculta los valores de las versiones no elegidas y actualiza
+ * [data-variant-name]. Sin JS se ven todos los valores con su etiqueta.
  */
 interface Props {
   name: string;
   slug: string;
-  specs: Specs;
-  specRows: [string, string][];
+  tiles: SpecRow[];
+  specRows: SpecRow[];
+  variants: VariantSpecs[];
   features: string[];
   manualUrl?: string;
   videoUrl?: string;
   /** Póster del facade de vídeo (se usa la primera foto del producto) */
   poster: ImageRef;
 }
-const { name, slug, specs, specRows, features, manualUrl, videoUrl, poster } = Astro.props;
+const { name, slug, tiles, specRows, variants, features, manualUrl, videoUrl, poster } = Astro.props;
+const defaultVariant = variants.find((v) => v.isDefault) ?? variants[0];
+const multiVariant = variants.length > 1;
 
 function youtubeId(url?: string): string | undefined {
   if (!url) return undefined;
@@ -37,7 +46,7 @@ const tabs = [
 ];
 ---
 
-<div class="ptabs" data-tabs>
+<div class="ptabs" data-tabs data-variant-specs>
   <div class="tabs ptabs__list" role="tablist" aria-label={`Información de ${name}`}>
     {
       tabs.map((t, i) => (
@@ -59,15 +68,30 @@ const tabs = [
 
   <section class="ptabs__panel" role="tabpanel" id="panel-ficha" aria-labelledby="tab-ficha" tabindex="0" data-panel>
     <h3 class="ptabs__title">Ficha técnica</h3>
-    <SpecTiles specs={specs} />
+    {
+      multiVariant && (
+        <p class="ptabs__variant" aria-live="polite">
+          Datos de la versión <strong data-variant-name>{defaultVariant?.label}</strong>. Cambia la versión en el configurador para ver los de la otra.
+        </p>
+      )
+    }
+    <SpecTiles rows={tiles} />
     <div class="table-wrap ptabs__table">
       <table class="table">
         <tbody>
           {
-            specRows.map(([k, v]) => (
+            specRows.map((r) => (
               <tr>
-                <th scope="row">{k}</th>
-                <td>{v}</td>
+                <th scope="row">{r.label}</th>
+                <td>
+                  {r.value !== undefined
+                    ? r.value
+                    : r.byVariant!.map((v) => (
+                        <span class="spec-variant" data-spec-variant={v.id}>
+                          {v.value} <span class="spec-variant__tier">{v.label}</span>
+                        </span>
+                      ))}
+                </td>
               </tr>
             ))
           }
@@ -210,6 +234,19 @@ const tabs = [
   .ptabs__title {
     font-size: var(--fs-xl);
     margin-bottom: var(--s-4);
+  }
+  /* Aviso de versión: solo tiene sentido con JS (sin JS se ven todas las versiones) */
+  .ptabs__variant {
+    display: none;
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+    margin-bottom: calc(var(--s-4) * -1);
+  }
+  .ptabs.is-js .ptabs__variant {
+    display: block;
+  }
+  .ptabs__variant strong {
+    color: var(--accent-text, var(--accent));
   }
   .ptabs__panel {
     display: flex;

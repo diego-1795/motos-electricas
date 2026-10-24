@@ -2,36 +2,136 @@
 import WhatsAppLink from '../ui/WhatsAppLink.astro';
 
 /**
- * Botón flotante de WhatsApp, solo icono, visible en móvil y escritorio
- * (decisión del cliente, 2026-10-23). Nombre accesible vía texto oculto.
- * Se coloca a la derecha para no tapar el toast (centrado).
+ * Botón flotante de WhatsApp, solo icono en reposo, visible en móvil y escritorio
+ * (decisión del cliente, 2026-10-23). Rediseño 2026-10-24: degradado verde oficial,
+ * halo pulsante (se desactiva con prefers-reduced-motion), icono grande y una
+ * etiqueta "¿Hablamos por WhatsApp?" que asoma al pasar el ratón o enfocar
+ * (también es el nombre accesible del enlace). Se coloca a la derecha para no
+ * tapar el toast (centrado).
  */
 ---
 
 <div class="fab" data-pagefind-ignore>
-  <WhatsAppLink source="floating" class="btn btn--whatsapp fab__btn">
-    <span class="visually-hidden">Hablar por WhatsApp</span>
+  <WhatsAppLink source="floating" class="fab__btn">
+    <span class="fab__label">¿Hablamos por WhatsApp?</span>
   </WhatsAppLink>
 </div>
 
 <style>
+  /* El <a> lo renderiza WhatsAppLink (otro componente): los selectores del botón
+     van con :global dentro de .fab para que el scope de Astro no los descarte. */
   .fab {
+    --wa: #25d366;
+    --wa-deep: #128c7e;
     position: fixed;
     right: var(--s-4);
     bottom: calc(var(--s-4) + env(safe-area-inset-bottom));
     z-index: var(--z-header);
   }
-  .fab__btn {
-    width: 3.5rem;
-    height: 3.5rem;
-    min-height: 0;
-    padding: 0;
+  .fab :global(.fab__btn) {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    width: 3.75rem;
+    height: 3.75rem;
     border-radius: var(--r-full);
-    box-shadow: var(--sh-3);
+    color: #fff;
+    background: linear-gradient(145deg, #4ee787 0%, var(--wa) 45%, var(--wa-deep) 100%);
+    box-shadow:
+      0 10px 28px rgb(18 140 126 / 0.35),
+      0 2px 6px rgb(0 0 0 / 0.18),
+      inset 0 1px 0 rgb(255 255 255 / 0.35);
+    transition:
+      transform var(--t-fast) var(--ease),
+      box-shadow var(--t-fast) var(--ease);
   }
-  .fab__btn :global(svg) {
-    width: 1.75rem;
-    height: 1.75rem;
+  .fab :global(.fab__btn:hover),
+  .fab :global(.fab__btn:focus-visible) {
+    text-decoration: none;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow:
+      0 16px 36px rgb(18 140 126 / 0.45),
+      0 3px 8px rgb(0 0 0 / 0.2),
+      inset 0 1px 0 rgb(255 255 255 / 0.4);
+  }
+  .fab :global(.fab__btn:active) {
+    transform: scale(0.96);
+  }
+  .fab :global(.fab__btn:focus-visible) {
+    outline: 3px solid var(--wa);
+    outline-offset: 4px;
+  }
+  .fab :global(.fab__btn svg) {
+    width: 2rem;
+    height: 2rem;
+    filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.2));
+  }
+  /* Halo pulsante: llama la atención sin ser agresivo */
+  .fab :global(.fab__btn::before) {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--wa);
+    opacity: 0;
+    animation: fab-pulse 2.8s var(--ease) infinite;
+  }
+  @keyframes fab-pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.55;
+    }
+    70%,
+    100% {
+      transform: scale(1.7);
+      opacity: 0;
+    }
+  }
+  /* Etiqueta: nombre accesible siempre; visible solo al hover/foco */
+  .fab :global(.fab__label) {
+    position: absolute;
+    right: calc(100% + var(--s-3));
+    top: 50%;
+    transform: translate(8px, -50%);
+    white-space: nowrap;
+    padding: 0.5rem 0.8rem;
+    border-radius: var(--r-md, 10px);
+    background: var(--raiden-black, #111);
+    color: #fff;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    box-shadow: var(--sh-2, 0 6px 18px rgb(0 0 0 / 0.18));
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--t-fast) var(--ease),
+      transform var(--t-fast) var(--ease);
+  }
+  .fab :global(.fab__label::after) {
+    content: '';
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-left-color: var(--raiden-black, #111);
+  }
+  .fab :global(.fab__btn:hover .fab__label),
+  .fab :global(.fab__btn:focus-visible .fab__label) {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fab :global(.fab__btn::before) {
+      animation: none;
+    }
+    .fab :global(.fab__btn:hover),
+    .fab :global(.fab__btn:focus-visible) {
+      transform: none;
+    }
   }
   @media (min-width: 1024px) {
     .fab {

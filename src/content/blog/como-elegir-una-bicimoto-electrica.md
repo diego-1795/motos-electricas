@@ -4,7 +4,6 @@ description: "¿Buscas una bicimoto eléctrica? Conoce los factores que debes co
 category: "compra"
 publishedAt: "2026-11-06T08:00:00.000Z"
 author: "Equipo Raiden"
-readingMinutes: 4
 image:
   src: "~/assets/blog/como-elegir-una-bicimoto-electrica.jpg"
   alt: "Persona comparando bicimotos eléctricas RAIDEN antes de comprar"

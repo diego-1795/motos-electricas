@@ -4,7 +4,6 @@ description: "Respuesta honesta sobre licencia, placa, SOAT y casco para bicimot
 category: "legislacion"
 publishedAt: "2026-10-23T08:00:00.000Z"
 author: "Equipo Raiden"
-readingMinutes: 4
 relatedProducts: ["golden-eagle", "vortex-kobra", "titan-rhino"]
 ---
 

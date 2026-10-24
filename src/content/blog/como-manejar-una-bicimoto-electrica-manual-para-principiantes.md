@@ -4,7 +4,6 @@ description: "Aprende cómo manejar una bicimoto eléctrica desde cero. Descubre
 category: "guias"
 publishedAt: "2026-11-13T08:00:00.000Z"
 author: "Equipo Raiden"
-readingMinutes: 5
 image:
   src: "~/assets/blog/como-manejar-una-bicimoto-electrica.jpg"
   alt: "Conductor principiante practicando con una bicimoto eléctrica RAIDEN"

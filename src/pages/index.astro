@@ -12,7 +12,8 @@ import { publicSrc } from '../lib/images';
 import { ALL_PRODUCTS_PATH, PARTS_PATH } from '../lib/routes';
 import { SUPPORT_MESSAGE } from '../services/whatsapp/WhatsAppMessageBuilder';
 import { blogCategoryLabel } from '../lib/labels';
-import type { ImageRef, Review } from '../domain/types';
+import { averageRating, pickTestimonials } from '../domain/testimonials';
+import type { ImageRef } from '../domain/types';
 
 const products = (await repos.products.all()).filter((p) => p.category !== 'repuestos');
 const hero = products.find((p) => p.isHero) ?? products[0]!;
@@ -32,18 +33,11 @@ const raiders: ImageRef[] = Array.from({ length: 9 }, (_, i) => ({
   height: 1280,
 }));
 
-/* Testimonios: reseñas reales de los productos si existen; si no, 3 TEXTOS DE MUESTRA
-   (placeholder) que el cliente debe sustituir por testimonios reales antes del lanzamiento. */
-const realReviews: (Review & { model: string })[] = products.flatMap((p) => (p.reviews ?? []).map((r) => ({ ...r, model: p.name })));
-const testimonials =
-  realReviews.length >= 3
-    ? realReviews.slice(0, 3)
-    : [
-        { author: 'Raider', rating: 5 as const, text: 'Uso mi bicimoto todos los días para ir al trabajo y ya no gasto en pasajes. Silenciosa, cómoda y la batería me dura varios días.', date: '', model: hero.name },
-        { author: 'Raider', rating: 5 as const, text: 'La atención por WhatsApp fue rápida y clara. Me ayudaron a elegir la versión Premium y la entrega fue puntual.', date: '', model: 'Versión Premium' },
-        { author: 'Raider', rating: 5 as const, text: 'Con la trimoto llevo mi mercadería sin problema. Tiene fuerza, estabilidad y el servicio técnico siempre responde.', date: '', model: 'Trimoto de carga' },
-      ];
-const isPlaceholder = realReviews.length < 3;
+/* Testimonios: reseñas públicas reales (src/content/testimonials, hoy Google Maps).
+   Se destacan las 3 mejor valoradas que más cuentan; nunca textos inventados. */
+const allReviews = await repos.testimonials.all();
+const testimonials = pickTestimonials(allReviews, 3);
+const reviewsAvg = averageRating(allReviews);
 
 const serviceImg: ImageRef = { src: '~/assets/hero/servicio-tecnico.jpg', alt: 'Técnico RAIDEN revisando una bicimoto eléctrica', width: 1614, height: 640 };
 const catIcons: Record<string, string> = {
@@ -119,24 +113,38 @@ const catIcons: Record<string, string> = {
   <section class="section community" aria-labelledby="community-h">
     <div class="container">
       <SectionHeading eyebrow="Comunidad RAIDEN" title="Nuestros Raiders nos recomiendan" align="center" />
-      <ul role="list" class="community__list">
-        {
-          testimonials.map((t) => (
-            <li class="community__card">
-              <p class="community__stars" aria-label={`${t.rating} de 5 estrellas`}>
-                {'★★★★★'.slice(0, t.rating)}
-              </p>
-              <blockquote>
-                <p>“{t.text}”</p>
-              </blockquote>
-              <footer class="muted">
-                <strong>{t.author}</strong> · {t.model}
-              </footer>
-            </li>
-          ))
-        }
-      </ul>
-      {isPlaceholder && <p class="visually-hidden">Testimonios de muestra.</p>}
+      {
+        testimonials.length > 0 && (
+          <ul role="list" class="community__list">
+            {testimonials.map((t) => (
+              <li class="community__card">
+                <p class="community__stars" aria-label={`${t.rating} de 5 estrellas`}>
+                  {'★★★★★'.slice(0, t.rating)}
+                </p>
+                <blockquote>
+                  <p>“{t.text}”</p>
+                </blockquote>
+                <footer class="muted">
+                  <strong>{t.author}</strong> · Reseña en Google
+                </footer>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      <p class="community__more">
+        {reviewsAvg !== undefined && (
+          <span class="community__avg">
+            <span class="community__stars" aria-hidden="true">
+              ★
+            </span>
+            <strong>{reviewsAvg.toLocaleString(site.locale, { minimumFractionDigits: 1 })}</strong> de 5 en Google ({allReviews.length} reseñas)
+          </span>
+        )}
+        <a href={site.mapsUrl} class="btn btn--ghost" rel="noopener" target="_blank">
+          Ver todas las reseñas en Google →
+        </a>
+      </p>
     </div>
   </section>
 
@@ -323,6 +331,24 @@ const catIcons: Record<string, string> = {
     margin-top: auto;
   }
   .community__card footer strong {
+    color: var(--fg);
+  }
+  .community__more {
+    margin-top: var(--s-6);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--s-3) var(--s-6);
+    font-size: var(--fs-sm);
+    color: var(--fg-muted);
+  }
+  .community__avg {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .community__avg strong {
     color: var(--fg);
   }
   @media (min-width: 768px) {
