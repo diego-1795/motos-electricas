@@ -5,7 +5,7 @@ import Logo from '../ui/Logo.astro';
 import { ALL_PRODUCTS_PATH, COMPARE_PATH, FINDER_PATH, PARTS_PATH } from '../../lib/routes';
 
 /**
- * Cabecera. Navegación del cliente: PRODUCTOS ▼ · BLOG · SERVICIO TÉCNICO · CONTACTO · NOSOTROS
+ * Cabecera. Navegación del cliente: PRODUCTOS ▼ · PROMOCIONES · BLOG · SERVICIO TÉCNICO · CONTACTO · NOSOTROS
  * + búsqueda (abre SearchModal) + carrito. El desplegable es un botón aria-expanded + lista;
  * en móvil se convierte en acordeón <details> (funciona sin JS).
  */
@@ -19,14 +19,15 @@ const productLinks = [
   { href: '/bicimotos', label: 'Bicimotos', desc: '25 km/h · sin licencia' },
   { href: '/trimotos', label: 'Trimotos', desc: 'Carga y trabajo' },
   { href: PARTS_PATH, label: 'Repuestos', desc: 'Baterías, motores y más' },
-  { href: '/promociones', label: 'Promociones', desc: 'Edición EG Motors' },
   { href: ALL_PRODUCTS_PATH, label: 'Todos los productos', desc: 'Catálogo completo' },
 ];
 const productTools = [
   { href: COMPARE_PATH, label: 'Comparar modelos' },
   { href: FINDER_PATH, label: 'Encuentra tu bicimoto' },
 ];
+// "Promociones" (edición EG Motors) va al nivel superior, no dentro de Productos: es un gancho comercial (decisión de Diego, 2026-10-24)
 const nav = [
+  { href: '/promociones', label: 'Promociones' },
   { href: '/blog', label: 'Blog' },
   { href: '/servicio-tecnico', label: 'Servicio técnico' },
   { href: '/contacto', label: 'Contacto' },

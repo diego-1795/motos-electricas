@@ -37,6 +37,9 @@ test.describe('Promociones (edición EG Motors)', () => {
     await page.goto('/');
     await expect(page.locator('.recent [data-product-card="golden-eagle-eg-motors"]')).toHaveCount(0);
     await expect(page.locator('.cats__tile[href="/promociones"]')).toHaveCount(1);
+    // Entrada propia de nivel superior en la cabecera (no dentro del desplegable Productos)
+    await expect(page.locator('.header__link[href="/promociones"]')).toHaveCount(1);
+    await expect(page.locator('[data-dropdown-panel] a[href="/promociones"]')).toHaveCount(0);
   });
 });
 
