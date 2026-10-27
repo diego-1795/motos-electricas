@@ -10,6 +10,8 @@ import { getViteConfig } from 'astro/config';
 export default getViteConfig({
   test: {
     include: ['tests/unit/**/*.test.ts'],
+    // Sincroniza las colecciones en .astro/ antes de los tests (ver tests/setup/astro-content.ts).
+    globalSetup: ['tests/setup/astro-content.ts'],
     environment: 'node',
     env: {
       PUBLIC_SITE_URL: 'https://raiden.test',
