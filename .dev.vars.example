@@ -1,0 +1,25 @@
+# Variables del panel de administración para `npm run admin:dev` (wrangler pages dev).
+# Copiar a .dev.vars (ignorado por git). En producción se definen en Cloudflare Pages →
+# Settings → Environment variables (ver docs/19-deployment.md §12).
+
+# Identidad simulada SOLO en local: sustituye al JWT de Cloudflare Access. Nunca definir en Pages.
+ADMIN_LOCAL_USER=diegoo.1795@gmail.com
+
+# Mapa email → rol (listas separadas por coma). Se evalúa en el servidor.
+ADMIN_EMAILS=diegoo.1795@gmail.com
+EDITOR_EMAILS=wiliam@example.com
+
+# Cloudflare Access (no hacen falta en modo local)
+CF_ACCESS_TEAM_DOMAIN=
+CF_ACCESS_AUD=
+
+# GitHub: token fine-grained con permiso Contents (read/write) SOLO sobre el repo.
+GITHUB_TOKEN=
+GITHUB_REPO=diego-1795/motos-electricas
+# En local, escribir en una rama de pruebas para no disparar builds de producción.
+GITHUB_BRANCH=admin-sandbox
+
+# Opcional: estado del último despliegue (API de Pages). Sin estas tres, el panel muestra "publicando… ~3 min".
+CF_API_TOKEN=
+CF_ACCOUNT_ID=
+CF_PAGES_PROJECT=raiden

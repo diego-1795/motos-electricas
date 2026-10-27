@@ -126,6 +126,13 @@ describe('catálogo real: repuestos y compatibilidad', () => {
     expect((await repos.parts.compatibleWith('titan-rhino')).map((a) => a.slug)).not.toContain('motor-350w');
   });
 
+  it('los repositorios nunca devuelven elementos ocultos desde el panel (hidden, ADR-018)', async () => {
+    for (const p of await repos.products.all()) expect(p.hidden, p.slug).not.toBe(true);
+    for (const a of await repos.parts.all()) expect(a.hidden, a.slug).not.toBe(true);
+    for (const p of await repos.products.featured(10)) expect(p.hidden, p.slug).not.toBe(true);
+    expect((await repos.products.hero())?.hidden).not.toBe(true);
+  });
+
   it('categorías: bicimotos, trimotos, repuestos y promociones (orden 1-4)', async () => {
     const cats = await repos.categories.all();
     expect(cats.map((c) => c.slug)).toEqual(['bicimotos', 'trimotos', 'repuestos', 'promociones']);

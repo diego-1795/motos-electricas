@@ -1,8 +1,96 @@
 # 17 — Panel de administración
 
-En el MVP no existe panel: el catálogo, el blog y las FAQ se editan como ficheros JSON en el repositorio y se publican con una PR (git como CMS). Este documento fija ese procedimiento y el diseño del panel futuro sobre Supabase, de modo que la capa de datos ([05-backend](./05-backend.md), [06-database](./06-database.md)) no necesite rehacerse al llegar ese momento.
+El catálogo (productos y repuestos) vive como ficheros JSON en el repositorio y se publica con cada commit (git como CMS). Desde ADR-018 existe un **panel `/admin` ligero sobre git** para que la tienda edite precios, oculte fichas y, en el caso del administrador, cree, edite o borre productos sin tocar git: el panel escribe los mismos JSON mediante la API de GitHub y Cloudflare Pages reconstruye el sitio. No hay base de datos. El diseño sobre Supabase (§3) queda como evolución futura si el volumen lo justifica.
 
-## 1. MVP: git como CMS
+Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018, [19-deployment](./19-deployment.md) §12 (alta en Cloudflare), [23-catalog-editing](./23-catalog-editing.md) (guía de uso para Diego y Wiliam), [10-security](./10-security.md).
+
+## 1. Panel `/admin` (fase actual, ADR-018)
+
+### Alcance
+
+| | admin (Diego) | editor (Wiliam) |
+|---|---|---|
+| Ver catálogo completo (incluidos ocultos) | ✓ | ✓ |
+| Cambiar precios (`variants[].price.amount`, `price.amount`) | ✓ | ✓ |
+| Ocultar / mostrar (`hidden`) | ✓ | ✓ |
+| Editar cualquier otro campo (categoría, variantes, colores, specs…) | ✓ | ✗ (403) |
+| Crear (duplicando una ficha) | ✓ | ✗ (403) |
+| Borrar | ✓ | ✗ (403) |
+| Gestionar quién es admin/editor | En Cloudflare (Access + variables); el panel lo muestra | Solo lectura |
+
+Fuera del panel (siguen por git): blog, FAQ, testimonios, categorías, imágenes y textos de `src/config/site.ts`.
+
+### Arquitectura
+
+```
+Navegador ──(Cloudflare Access: login por email)──▶ /admin  (HTML estático + isla Preact, noindex)
+   │                                                   │ fetch mismo origen
+   └──────────────────────────────────────────────────▶ /api/admin/*  (Pages Functions, functions/api/admin)
+                                                          │ 1. verifica JWT de Access (JWKS del equipo)
+                                                          │ 2. rol = ADMIN_EMAILS / EDITOR_EMAILS (servidor)
+                                                          │ 3. valida con src/content/schemas.ts + catalogRules
+                                                          │ 4. aplica adminPolicy (editor: solo precio/hidden)
+                                                          ▼
+                                                   GitHub Contents API (rama main, token del bot)
+                                                          │ commit "chore(catalog): … por <email>"
+                                                          ▼
+                                                   Cloudflare Pages build (2–3 min) → sitio actualizado
+```
+
+| Pieza | Dónde | Notas |
+|---|---|---|
+| Página y layout | `src/pages/admin/index.astro`, `src/layouts/AdminLayout.astro` | Sin cabecera, carrito ni analítica; `noindex`; fuera de sitemap, robots y Pagefind |
+| Islas | `src/islands/admin/*` | Lista, precio inline, interruptor ocultar, editor de ficha (admin), confirmación de borrado, estado de publicación |
+| Cliente HTTP | `src/services/admin/AdminApiClient.ts` | Único punto de `fetch`; sin lógica de negocio |
+| Contrato del API | `src/domain/admin.ts` | Tipos compartidos por islas y Functions |
+| Política de roles | `src/domain/adminPolicy.ts` | Pura; `applyProductPatch`/`applyPartPatch` solo tocan precio y `hidden` |
+| Reglas de catálogo | `src/domain/catalogRules.ts` | Una variante por defecto, Premium ≥ Estándar, PEN, batería, referencias |
+| Esquemas | `src/content/schemas.ts` | Los mismos zod del build (`content.config.ts`) |
+| Functions | `functions/api/admin/*` | `_middleware.ts` (Access + rol), `me`, `catalog`, `products/[slug]`, `repuestos/[slug]`, `deploy`; `_lib/` (JWT, GitHub, handlers) |
+| Visibilidad | `src/domain/catalog.ts` → `visibleOnly` | Aplicada en `all()` de `src/data/json.ts` (y del ejemplo Supabase) |
+| Cabeceras | `public/_headers` (`/admin`, `/api/admin/*`) | CSP propia (`connect-src 'self'`), `no-store`, `X-Robots-Tag: noindex` |
+
+### API
+
+| Método y ruta | Quién | Cuerpo | Respuesta |
+|---|---|---|---|
+| `GET /api/admin/me` | ambos | — | `AdminUser` (email, rol, listas, rama, modo local) |
+| `GET /api/admin/catalog` | ambos | — | productos y repuestos con `sha` y ruta (incluye ocultos) |
+| `PATCH /api/admin/products/:slug` | ambos | `{ sha, prices?: {variantId: céntimos}, hidden?, reason? }` | ficha actualizada + commit |
+| `PATCH /api/admin/repuestos/:slug` | ambos | `{ sha, price?, hidden?, reason? }` | ídem |
+| `PUT /api/admin/products/:slug` · `/repuestos/:slug` | admin | `{ sha?, data, reason? }` (sin `sha` = crear) | ficha + commit |
+| `DELETE …/:slug` | admin | `{ sha, reason? }` | commit; 409 si otra ficha lo referencia |
+| `GET /api/admin/deploy` | ambos | — | estado del último build de Pages o `available: false` |
+
+Errores en JSON `{ code, error, details? }`: 401 sin identidad, 403 fuera de rol, 404, 409 conflicto de `sha` o referencias, 422 validación (lista de errores legibles), 502 fallo de GitHub.
+
+### Flujo de un cambio de precio
+
+1. Wiliam entra en `https://<dominio>/admin`; Access le pide el email y un código de un solo uso.
+2. El panel carga `me` y `catalog`. Cambia el precio Estándar a 1,250 y pulsa Guardar.
+3. `PATCH /api/admin/products/royal-tiger` con `{ sha, prices: { estandar: 125000 } }`.
+4. La Function comprueba el JWT, resuelve `editor`, lee el JSON actual de GitHub, compara el `sha`, aplica el patch (rechaza cualquier otra clave), valida (Premium ≥ Estándar) y hace el commit `chore(catalog): actualizar royal-tiger por wiliam@…`.
+5. Pages detecta el push y reconstruye. El panel muestra "Publicando… ~3 min" (o el estado real si la API de Pages está configurada).
+
+### Seguridad
+
+- Access es la puerta: sin JWT válido no hay respuesta útil (401). El rol se decide en el servidor con `ADMIN_EMAILS`/`EDITOR_EMAILS`; la interfaz solo oculta lo que el rol no puede hacer.
+- El token de GitHub es *fine-grained*, limitado al repositorio y al permiso *Contents*; vive en las variables de Pages (secreto), nunca en `src/` ni en `PUBLIC_*`.
+- Todo lo que se escribe pasa por los esquemas del build: un JSON inválido no llega al repo (y si llegara, CI y el build lo detendrían).
+- Auditoría = historial de git: cada commit lleva autor (email), acción, slug, cambios y motivo.
+- El modo local (`ADMIN_LOCAL_USER`) solo actúa en `localhost`; no se define en Pages.
+
+### Límites
+
+- Cada guardado es un commit y un build (2–3 min). Adecuado para < 20 cambios por semana.
+- No sube imágenes: las fotos siguen por git ([23-catalog-editing](./23-catalog-editing.md) §5).
+- Si dos personas editan la misma ficha, la segunda recibe 409 y debe recargar.
+- Requiere el despliegue en Cloudflare Pages (fase 16) con Access configurado; hasta entonces solo funciona en modo local.
+- **Tamaño del catálogo:** `GET /api/admin/catalog` (y `DELETE`, que comprueba referencias) lee cada JSON con una subpetición a GitHub: 2 + N llamadas. El plan gratuito de Workers/Pages permite 50 subpeticiones por petición, así que el panel soporta hasta **~45 fichas** (hoy 31). Al acercarse, cambiar la lectura a la Git Trees/Data API (un árbol + blobs) o cachear el catálogo; está anotado en el roadmap.
+- Un JSON corrupto en el repo hace fallar la carga completa del catálogo (502 con el fichero señalado): se corrige por git.
+- Cuerpos limitados a 256 KB, slugs a 80 caracteres, motivo del commit a 300 caracteres.
+
+## 2. Git como CMS (vía alternativa, siempre disponible)
 
 ### Dónde vive cada cosa
 
@@ -11,123 +99,66 @@ En el MVP no existe panel: el catálogo, el blog y las FAQ se editan como ficher
 | Productos | `src/content/products/<slug>.json` | `products` | `JsonProductRepository` |
 | Repuestos | `src/content/repuestos/<slug>.json` | `repuestos` | `JsonPartRepository` |
 | Categorías | `src/content/categories/<slug>.json` | `categories` | `JsonCategoryRepository` |
-| Marcas | `src/config/site.ts` (RAIDEN; sin colección en MVP) | — | — |
+| Marcas | `src/config/site.ts` (RAIDEN; sin colección) | — | — |
 | Blog | `src/content/blog/<slug>.md` | `blog` | `JsonBlogRepository` |
 | FAQ | `src/content/faqs/<slug>.json` | `faqs` | `JsonFaqRepository` |
-| Imágenes | `src/assets/products/<slug>/` | — | Referenciadas por ruta relativa |
+| Imágenes | `src/assets/products/`, `repuestos/`… | — | Referenciadas por ruta relativa |
 
 ### Cómo editar
 
 1. Rama `content/<tema>` desde `main` ([14-devops](./14-devops.md)).
 2. Copiar un JSON existente como plantilla; respetar los campos obligatorios de [15-content-strategy](./15-content-strategy.md).
-3. `npm run dev` para ver el resultado; `npm run build` valida.
+3. `npm run dev` para ver el resultado; `npm run validate:content && npm run build` valida.
 4. PR con la plantilla; revisión de Content y SEO; squash merge.
 
 ### Validación en build
 
-- Cada colección se define en `src/content.config.ts` con un esquema escrito a mano (validadores de `src/domain/validation.ts`, sin zod): tipos, rangos (`priceFrom > 0`, `capacityAh` entre 5 y 200), enumeraciones (`licence`, `status`) y referencias cruzadas (`brand` y `category` deben existir; `availableFor` de un color debe apuntar a variantes declaradas).
+- Cada colección se define en `src/content.config.ts` (productos y repuestos en `src/content/schemas.ts`): tipos, rangos, enumeraciones y referencias cruzadas.
 - Un JSON inválido detiene `astro build` con ruta y campo afectado. No se despliega nada roto.
-- Test de Vitest `content.spec.ts` recorre todas las colecciones y comprueba unicidad de `slug`, existencia de imágenes y longitud de `summary`.
-- Los productos con `status: "draft"` se excluyen de `getStaticPaths`, del sitemap y de los listados, pero se construyen en preview bajo `/borrador/<slug>` para revisión.
+- `tests/unit/content.test.ts` recorre las colecciones y comprueba unicidad de `slug`, precios, compatibilidades y que ningún oculto llega a los repositorios.
+- `hidden: true` excluye el elemento de `getStaticPaths`, sitemap, listados, JSON-LD y buscador sin borrarlo.
 
-### Límites conocidos
+## 3. Diseño futuro: Supabase
 
-- Requiere saber usar git o el editor web de GitHub. Ventas no edita: envía datos a Content.
-- No hay historial de solicitudes de pedido ni clientes: los mensajes viven en WhatsApp.
-- Cada cambio supone un build (2–3 min). Aceptable para < 20 altas por semana.
-
-## 2. Diseño futuro
+Se activa solo si se cumple el criterio de §4 (más de 40 productos o más de 20 cambios por semana, o una persona de ventas que necesite historial de solicitudes). Hasta entonces, el panel de §1 cubre la operación con coste cero y sin migrar datos.
 
 ### Base: Supabase Auth + RLS
 
-- Autenticación con Supabase Auth (correo + enlace mágico; sin contraseñas en MVP del panel). Solo cuentas invitadas desde la tabla `admin_users`.
+- Autenticación con Supabase Auth (correo + enlace mágico). Solo cuentas invitadas desde la tabla `admin_users`.
 - Autorización en base de datos con Row Level Security: cada tabla tiene políticas por rol leídas del JWT (`auth.jwt() ->> 'role'`), de modo que el panel no puede hacer más de lo que la base de datos permite, sea cual sea el cliente que lo consuma.
 - El frontend público sigue siendo estático y lee mediante `SupabaseProductRepository` con la clave `anon` y políticas de solo lectura sobre filas `status = 'published'`.
 - Los ficheros se almacenan en Supabase Storage (bucket `products`, público en lectura); el build descarga y optimiza con sharp igual que hoy con `src/assets/`.
 
-### Dónde corre el panel
+### Dónde correría el panel
 
 | Criterio | A. `/admin` en el mismo proyecto con adapter SSR | B. Aplicación separada (`admin.raiden.pe`) |
 |---|---|---|
-| Cambios en `astro.config` | `output: 'static'` + `prerender = false` solo en `/admin/*`, adapter `@astrojs/cloudflare`, `@astrojs/node` o `@astrojs/vercel` | Ninguno en el sitio público |
+| Cambios en `astro.config` | `prerender = false` solo en `/admin/*` + adapter | Ninguno en el sitio público |
 | Riesgo para el sitio público | Medio: comparte dependencias, CSP y presupuesto de bundle | Nulo |
-| Coste | S/ 0 en Pages Functions / Workers Free | S/ 0 en Pages (SPA estática con Preact) o Vercel Hobby |
 | Reutilización de `src/domain` y `src/services` | Directa | Mediante workspace npm (`packages/domain`) |
-| Seguridad | CSP más permisiva en `/admin`; misma superficie de dominio | Dominio y CSP propios; cookies de sesión aisladas |
-| Portabilidad | Depende del adapter elegido | SPA + Supabase: sin dependencia de hosting |
 | Esfuerzo inicial | Menor | Mayor (monorepo, segundo deploy) |
 
-**Decisión**: opción B, aplicación separada como SPA Preact + Supabase JS, en un workspace del mismo repositorio (`apps/admin`), con `packages/domain` compartido. Mantiene el sitio público 100 % estático y agnóstico, y evita introducir un adapter por una única ruta. La opción A queda documentada como alternativa si el equipo prefiere un solo despliegue.
+Decisión original: opción B (`apps/admin`, SPA Preact + Supabase). ADR-018 la sustituye para la fase actual por el panel ligero de §1, que ya reutiliza `src/domain` sin adapter ni segundo despliegue; si se migra a Supabase, el panel de §1 puede conservar su interfaz cambiando el almacén (GitHub → tablas) detrás de las Functions.
 
-### Módulos
+### Módulos previstos
 
 | Módulo | Tabla(s) | Operaciones | Roles con escritura |
 |---|---|---|---|
-| Productos | `products` | CRUD, duplicar, cambiar estado, ordenar | admin, editor |
-| Variantes | `product_variants` | CRUD anidado en producto, `tier` (Estándar/Premium), precio, stock orientativo | admin, editor |
-| Colores | `product_colors` | CRUD, hex, imágenes por color, restricción por variante | admin, editor |
-| Repuestos | `parts`, `product_parts` | CRUD, unidad (`UND`/`PAR`), código, compatibilidad con modelos | admin, editor |
-| Categorías | `categories` | CRUD, orden, texto SEO de cabecera | admin |
-| Marcas | `brands` | CRUD, logotipo | admin |
-| Solicitudes de pedido | `order_requests`, `whatsapp_requests` | Listado, estado (`nueva`, `contactada`, `presupuestada`, `ganada`, `perdida`), notas internas | admin, ventas |
-| Clientes | `customers` | Ficha mínima (nombre, teléfono, provincia), historial de solicitudes | admin, ventas |
-| Blog | `blog_posts` | CRUD con editor Markdown, programación de publicación | admin, editor |
-| FAQ | `faqs` | CRUD, orden, categoría | admin, editor |
-| Reseñas | `reviews` | Moderación (aprobar/rechazar), respuesta | admin, ventas |
-| Configuración | `site_settings` | Número de WhatsApp, horario, textos de aviso | admin |
+| Productos, variantes, colores | `products`, `product_variants`, `product_colors` | CRUD, duplicar, estado, orden | admin, editor |
+| Repuestos | `parts`, `product_parts` | CRUD, unidad, código, compatibilidad | admin, editor |
+| Categorías y marcas | `categories`, `brands` | CRUD | admin |
+| Solicitudes de pedido y clientes | `order_requests`, `whatsapp_requests`, `customers` | Listado, estado, notas internas | admin, ventas |
+| Blog, FAQ, reseñas | `blog_posts`, `faqs`, `reviews` | CRUD / moderación | admin, editor / ventas |
+| Configuración | `site_settings` | WhatsApp, horario, avisos | admin |
 
-Al publicar desde el panel, un webhook de Supabase (Database Webhooks) dispara el deploy hook del hosting para regenerar el sitio estático. El sitio público no consulta Supabase en tiempo de ejecución.
+Roles `admin`, `editor` y `ventas` en `admin_users.role`, copiados al JWT con `custom_access_token_hook`; las políticas RLS son la única autoridad. Auditoría en `audit_log` por triggers (retención 2 años). Seguridad: `service_role` solo en Edge Functions, MFA obligatorio para `admin`, sesiones de 8 h, CSP con `connect-src` limitado al proyecto, subida de imágenes validada (JPEG/PNG/WebP, 5 MB), rate limiting en Edge Functions y copia semanal a `content/backup/` para no perder la vía git ([20-migration](./20-migration.md)).
 
-### Roles
+## 4. Fases
 
-| Rol | Alcance |
-|---|---|
-| `admin` | Todo; gestiona usuarios y configuración |
-| `editor` | Catálogo, blog, FAQ; no ve clientes ni solicitudes |
-| `ventas` | Solicitudes, clientes, reseñas; solo lectura del catálogo |
-
-Los roles se guardan en `admin_users.role` y se copian al JWT mediante un hook de Supabase Auth (`custom_access_token_hook`). Las políticas RLS son la única autoridad; la interfaz solo oculta lo que el usuario no puede hacer.
-
-### Flujos clave
-
-**Publicar un producto**
-1. Editor crea el producto en estado `draft`, rellena specs, variantes, colores y sube imágenes al bucket.
-2. El formulario ejecuta los mismos validadores de `packages/domain` que usa el build.
-3. Editor pulsa "Solicitar publicación"; admin (o el propio editor si tiene permiso) cambia a `published`.
-4. Trigger de base de datos registra en `audit_log` y lanza el webhook de deploy.
-5. A los 2–3 min el producto está en producción; el panel muestra el estado del último build.
-
-**Gestionar una solicitud de pedido**
-1. La solicitud entra por Edge Function (formulario del carrito) o se crea manualmente por ventas a partir de un mensaje de WhatsApp.
-2. Ventas la abre, ve ítems y total estimado, asocia o crea el cliente y cambia el estado a `contactada`.
-3. Cada cambio de estado guarda fecha y usuario; las notas internas no se muestran nunca al cliente.
-4. Al cerrar como `ganada` se registra el importe final para medir conversión ([16-whatsapp-commerce](./16-whatsapp-commerce.md)).
-
-### Auditoría
-
-- Tabla `audit_log` (`id`, `table_name`, `row_id`, `action`, `old_data`, `new_data`, `user_id`, `created_at`) alimentada por triggers en todas las tablas de escritura.
-- Solo lectura desde el panel para `admin`; retención de 2 años.
-- Los cambios de `site_settings` (número de WhatsApp) notifican por correo al Tech Lead mediante Edge Function.
-
-### Seguridad
-
-- Claves: el panel usa únicamente la clave `anon` con sesión de usuario; `service_role` solo en Edge Functions ([10-security](./10-security.md)).
-- MFA (TOTP) obligatorio para `admin`; recomendado para el resto.
-- Sesiones de 8 horas con renovación; cierre automático por inactividad de 30 min en el cliente.
-- CSP propia del panel con `connect-src` limitado al proyecto de Supabase.
-- Subida de imágenes: tipos permitidos `image/jpeg`, `image/png`, `image/webp`; tamaño máximo 5 MB; validación de dimensiones en cliente y política de Storage por rol.
-- Rate limiting en Edge Functions (solicitudes de pedido) por IP y por cliente.
-- Copia de seguridad: exportación semanal de la base de datos a JSON en el repositorio (`content/backup/`), que además mantiene viva la vía git como CMS en caso de abandono de Supabase ([20-migration](./20-migration.md)).
-
-## 3. Fases de implementación
-
-| Fase | Alcance | Requisito previo | Estimación |
-|---|---|---|---|
-| 0 | Git como CMS (este MVP) | — | Incluida en el MVP |
-| 1 | Esquema Postgres, RLS y `SupabaseProductRepository` leyendo en build; JSON sigue siendo fuente de verdad vía script de importación | [06-database](./06-database.md) aprobado | 1 semana |
-| 2 | `apps/admin` con Auth, catálogo (productos, variantes, colores, repuestos, categorías, marcas) y deploy hook | Fase 1 | 2–3 semanas |
-| 3 | Solicitudes de pedido y clientes; Edge Function desde el carrito | Fase 2 | 1–2 semanas |
-| 4 | Blog, FAQ, reseñas, configuración y auditoría completa | Fase 2 | 1–2 semanas |
-| 5 | Integración WhatsApp Business API y vista de conversaciones | Volumen que lo justifique | A definir |
-
-Criterio de arranque de la fase 1: más de 40 productos publicados o más de 20 altas/modificaciones por semana, o incorporación de una persona de ventas que necesite historial de solicitudes. Hasta entonces, git como CMS cumple con coste cero.
+| Fase | Alcance | Estado |
+|---|---|---|
+| 0 | Git como CMS | Hecho (MVP) |
+| 1 | Panel ligero sobre git (`/admin`, Access, Functions, GitHub, `hidden`) — ADR-018 | Hecho en código; operativo al desplegar en Pages (fase 16 del roadmap) |
+| 2 | Estado real del build desde la API de Pages; subida de imágenes por el panel | Opcional |
+| 3 | Supabase (esquema, RLS, `SupabaseProductRepository`, módulos de §3) | Solo si > 40 productos o > 20 cambios/semana, o entra ventas |
+| 4 | Solicitudes de pedido, clientes, WhatsApp Business API | Tras la fase 3 |

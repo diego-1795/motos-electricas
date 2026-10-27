@@ -31,3 +31,6 @@ pnpm-debug.log*
 test-results/
 playwright-report/
 .lighthouseci/
+
+# Variables locales de wrangler pages dev (panel de administración); nunca commitear
+.dev.vars

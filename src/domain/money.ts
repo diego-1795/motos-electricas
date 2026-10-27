@@ -22,3 +22,20 @@ export function formatMoney(m: Money): string {
   const grouped = int!.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return `S/ ${grouped}${dec ? `.${dec}` : ''}`;
 }
+
+/**
+ * Importe escrito a mano en soles → céntimos enteros (panel de administración, ADR-018).
+ * Admite "1200", "1,200", "1200.50", "1,200.50" y un prefijo "S/" o "S/." opcional; coma solo como
+ * separador de miles (grupos de 3) y punto como decimal, con 2 decimales como máximo.
+ * Devuelve null si no es un importe válido (vacío, negativo, letras, 3 decimales, "1,20"…) o si
+ * los céntimos no caben en un entero seguro (Number.MAX_SAFE_INTEGER).
+ */
+export function parseSoles(input: string): number | null {
+  const s = input.trim().replace(/^S\/\.?\s*/i, '');
+  const m = /^(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?$/.exec(s);
+  if (!m) return null;
+  const int = Number(m[1]!.replace(/,/g, ''));
+  const dec = m[2] ? Number(m[2].padEnd(2, '0')) : 0;
+  const cents = int * 100 + dec;
+  return Number.isSafeInteger(cents) ? cents : null;
+}

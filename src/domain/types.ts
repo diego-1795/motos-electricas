@@ -188,6 +188,11 @@ export interface Product {
   datasheetUrl?: string;
   manualUrl?: string;
   videoUrl?: string;
+  /**
+   * Oculto por el panel de administración (ADR-018): no se construye su ruta ni aparece
+   * en listados, sitemap, JSON-LD ni buscador. El JSON sigue en el repo. Por defecto false.
+   */
+  hidden?: boolean;
 }
 
 export type PartKind =
@@ -218,6 +223,8 @@ export interface Part {
   code?: string;
   /** Slugs de productos compatibles; vacío = universal */
   compatibleWith: string[];
+  /** Oculto por el panel de administración (ADR-018); mismo efecto que en Product */
+  hidden?: boolean;
 }
 
 /** @deprecated usar Part */

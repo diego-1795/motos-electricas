@@ -18,6 +18,10 @@ Decisiones tomadas por el Tech Lead para el MVP de Raiden. Cada ADR sigue el for
 | [010](#adr-010--fuentes-de-sistema) | Fuentes de sistema | Aceptada | 2026-08 |
 | [011](#adr-011--sin-cdn-de-imágenes) | Sin CDN de imágenes | Aceptada | 2026-08 |
 | [012](#adr-012--nombre-provisional-raiden) | Nombre provisional "Raiden" | Provisional | 2026-08 |
+| [015](#adr-015--catálogo-real-raiden-bicimotos-trimotos-y-repuestos) | Catálogo real RAIDEN | Aceptada | 2026-10 |
+| [016](#adr-016--solo-contenido-real-reseñas-de-google-maps-tiempo-de-lectura-calculado-ficha-por-versión) | Solo contenido real | Aceptada | 2026-10 |
+| [017](#adr-017--promociones-edición-eg-motors-separadas-del-catálogo-raiden-galería-de-clientes-1-a-1-logos-de-pago) | Promociones EG Motors | Aceptada | 2026-10 |
+| [018](#adr-018--panel-de-administración-ligero-sobre-git-cloudflare-access--pages-functions--api-de-github) | Panel de administración ligero sobre git | Aceptada | 2026-10 |
 
 Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Revertida.
 
@@ -269,5 +273,27 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 
 ### Addendum ADR-017 (2026-10-24) — la Premium siempre es la más cara; Estándar por defecto
 En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,500 / S/ 1,200) y la Golden Eagle EG Motors (S/ 1,400 / S/ 1,100) traían la Premium más barata que la Estándar; el PPT del cliente muestra en todos los modelos la Premium como la cara (p. ej. Royal Tiger S/ 1,500 / S/ 1,900). Diego pidió corregirlo: se **intercambian los importes** de esas filas (Royal Tiger Estándar S/ 1,400 · Premium S/ 1,800; Vortex Kobra S/ 1,200 · S/ 1,500; EG Motors S/ 1,100 · S/ 1,400). Golden Eagle (S/ 1,200 / S/ 1,500) y Titan Rhino (S/ 2,700) no cambian. Además, en todos los modelos la versión por defecto pasa a ser la **Estándar** (coincide con el precio "Desde" de las tarjetas y con lo que añade el "quick add"). Sustituye a la nota de ADR-015 sobre precios "tal cual el Excel". Pendiente de confirmar los importes definitivos con el cliente. Los iconos de redes del pie adoptan el color de cada marca al pasar el ratón y el glifo de WhatsApp pasa al trazado oficial (auricular dentro de la burbuja).
+
+**Estado.** Aceptada (2026-10-24).
+
+## ADR-018 — Panel de administración "ligero sobre git": Cloudflare Access + Pages Functions + API de GitHub
+
+**Contexto.** Diego pidió el 2026-10-24 un apartado de administración centrado exclusivamente en la tienda, con dos personas: él (admin, todo) y Wiliam (editor: solo cambiar precios y ocultar/mostrar productos y repuestos, nunca borrar ni crear). El catálogo son 5 productos y 26 repuestos en JSON (`src/content`), el sitio es 100 % estático y el despliegue será Cloudflare Pages (fase 16, pendiente de que Diego lo pida). [17-admin-panel](./17-admin-panel.md) describía un panel futuro sobre Supabase (base de datos, RLS, `apps/admin`), sobredimensionado para este volumen.
+
+**Decisión.**
+- **El repositorio sigue siendo la fuente de verdad.** No hay base de datos: el panel lee y escribe los JSON de `src/content/products` y `src/content/repuestos` en la rama `main` mediante la Contents API de GitHub (token de bot `GITHUB_TOKEN` con permiso *Contents* solo sobre el repo). Cada cambio es un commit `chore(catalog): <actualizar|crear|borrar> <slug> por <email>` (cuerpo: cambios y motivo) que dispara el build de Pages, igual que un push manual. Concurrencia por `sha` del fichero: 409 si alguien lo cambió entre medias.
+- **Autenticación con Cloudflare Access** (Zero Trust, plan gratuito, login por código al email) delante de `/admin` y `/api/admin/*`. Las Pages Functions verifican el JWT (`Cf-Access-Jwt-Assertion`) contra el JWKS del equipo (`CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD`) y resuelven el **rol en el servidor** a partir del email y de dos variables de entorno: `ADMIN_EMAILS` y `EDITOR_EMAILS`. Nunca en el cliente. Gestionar quién es editor = editar la política de Access y esas variables; el panel las muestra en solo lectura.
+- **Política de roles pura** en `src/domain/adminPolicy.ts`, aplicada por las Functions: `editor` → `GET` y `PATCH` (solo `variants[].price.amount` / `price.amount` y `hidden`; cualquier otra clave se rechaza con 422); `admin` → además `PUT` (ficha completa, crear) y `DELETE`. Los payloads se validan con **los mismos esquemas zod del build** (`src/content/schemas.ts`, compartido con `content.config.ts`) más las reglas de negocio de `src/domain/catalogRules.ts` (una variante por defecto, Premium ≥ Estándar —ADR-017—, PEN en céntimos, batería coherente, referencias cruzadas).
+- **Campo `hidden`** (opcional, por defecto `false`) en productos y repuestos. "Ocultar" no borra: el JSON sigue en el repo, pero `visibleOnly()` (dominio) lo filtra en `all()` de los repositorios, con lo que desaparece a la vez de rutas (`getStaticPaths`), listados, sitemap, JSON-LD y buscador. Nada de lógica en componentes.
+- **Sitio público intacto:** `output: 'static'`; las Functions viven en `functions/` (fuera de Astro, sin adapter SSR) con su propio `tsconfig` y tipos de Workers (`npm run check:functions` en CI). `/admin` tiene layout mínimo, `noindex`, queda fuera del sitemap, de robots y del índice de Pagefind, y `public/_headers` le da una CSP propia (`connect-src 'self'`, sin terceros) y `Cache-Control: no-store`.
+- **Desarrollo local:** `npm run admin:dev` (= `wrangler pages dev dist`) con `.dev.vars` (ignorado por git). El modo local sustituye al JWT **solo** si `ADMIN_LOCAL_USER` está definido, el host es `localhost` y `NODE_ENV !== 'production'`; escribe en la rama `GITHUB_BRANCH` (en local, una rama de pruebas).
+- **Estado de publicación:** `GET /api/admin/deploy` consulta la API de Pages si hay `CF_API_TOKEN`/`CF_ACCOUNT_ID`/`CF_PAGES_PROJECT`; si no, el panel muestra "publicando… ~3 min".
+
+**Alternativas consideradas.**
+- *Supabase (diseño de 17-admin-panel §2):* base de datos, RLS, segundo despliegue y migración de datos para 31 fichas; rompe "el repo es la verdad" y añade un proveedor. Queda como diseño futuro si el catálogo crece (criterio de 17-admin-panel §3).
+- *Decap CMS (git-based):* cubre el CRUD, pero sus roles por usuario requieren el backend de pago o un proxy propio; la restricción "solo precios y ocultar" habría que imponerla igualmente en un servidor, y la UI genérica no entiende céntimos ni Premium ≥ Estándar.
+- *Adapter SSR de Astro para `/admin`:* arrastra `@astrojs/cloudflare` a todo el proyecto por una ruta. Las Functions aisladas en `functions/` mantienen el build portable (en otro hosting se sustituyen por un Worker/Edge Function equivalente con el mismo código de `src/domain` y `src/content/schemas.ts`).
+
+**Consecuencias.** Cada guardado = un commit + un build (2–3 min); adecuado para el volumen previsto (< 20 cambios/semana). El panel solo funciona desplegado en Pages con Access configurado (fase 16, [19-deployment](./19-deployment.md) §12); en local funciona con el modo local. Diego hace el push de los cambios de código; los commits del bot (contenido) nacen ya en GitHub y hay que hacer `git pull` antes de seguir desarrollando. Nuevas variables: `ADMIN_EMAILS`, `EDITOR_EMAILS`, `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD`, `GITHUB_TOKEN` (secreto), `GITHUB_REPO`, `GITHUB_BRANCH`, opcionales `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`. Sustituye, para esta fase, la decisión "opción B, `apps/admin` + Supabase" de 17-admin-panel.
 
 **Estado.** Aceptada (2026-10-24).

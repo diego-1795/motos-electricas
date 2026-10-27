@@ -185,6 +185,12 @@ export const productRepository: ProductRepository = new JsonProductRepository();
 
 Se validan al arrancar en `src/config/site.ts`; un número de WhatsApp ausente hace fallar el build en producción y muestra aviso en desarrollo.
 
+**Variables del panel de administración** (solo las leen las Pages Functions de `functions/api/admin`, nunca el build ni el cliente; ADR-018, alta en [19-deployment](./19-deployment.md) §12): `ADMIN_EMAILS`, `EDITOR_EMAILS`, `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD`, `GITHUB_TOKEN` (secreto), `GITHUB_REPO`, `GITHUB_BRANCH`, y opcionales `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`. En local van en `.dev.vars` (plantilla `.dev.vars.example`) junto con `ADMIN_LOCAL_USER`, que solo tiene efecto en `localhost`.
+
+## 8b. Panel de administración (`functions/`, ADR-018)
+
+Única excepción al principio 5 ("ninguna API de Cloudflare en código de aplicación"): el panel `/admin` necesita un servidor para autenticar y escribir en GitHub. Ese servidor son Pages Functions en `functions/api/admin/*`, **fuera de `src/`** y fuera del build de Astro (sin adapter SSR; `output: 'static'` se mantiene). Las Functions importan solo `src/domain/*` y `src/content/schemas.ts` (código puro y validadores), de modo que trasladarlas a otro proveedor (Worker, Edge Function, Node) es reescribir el envoltorio HTTP, no la lógica. Capas: `src/islands/admin` → `src/services/admin/AdminApiClient` → `functions/api/admin` → `src/domain/adminPolicy` + `src/content/schemas` → GitHub. Detalle en [17-admin-panel](./17-admin-panel.md).
+
 ## 9. Portabilidad entre proveedores
 
 | Aspecto | Cloudflare Pages (MVP) | Vercel | Netlify | Node / VPS |

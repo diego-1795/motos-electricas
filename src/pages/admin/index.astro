@@ -1,0 +1,21 @@
+---
+/**
+ * /admin — panel de administración del catálogo (ADR-018). HTML estático + isla Preact;
+ * la autenticación la pone Cloudflare Access delante y las Pages Functions de /api/admin/*.
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Logo from '../../components/ui/Logo.astro';
+import AdminApp from '../../islands/admin/AdminApp';
+---
+
+<AdminLayout title="Administración de la tienda · RAIDEN">
+  <div class="adm">
+    <header class="adm__header">
+      <a href="/" class="adm__logo" aria-label="Ir a la web de la tienda">
+        <Logo variant="wordmark" height={28} />
+      </a>
+      <h1 class="adm__title">Administración de la tienda</h1>
+    </header>
+    <AdminApp client:load />
+  </div>
+</AdminLayout>

@@ -1,0 +1,39 @@
+---
+/**
+ * Layout del panel de administración (ADR-018). Mínimo a propósito: sin Header, Footer,
+ * carrito, WhatsApp, buscador ni analítica. noindex y fuera de Pagefind (sin data-pagefind-body,
+ * body con data-pagefind-ignore); sitemap y robots lo excluyen en astro.config.mjs / robots.txt.ts.
+ */
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+import '../styles/admin.css';
+import { site } from '../config/site';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="referrer" content="same-origin" />
+    <title>{title}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body data-pagefind-ignore>
+    <a href="#main" class="skip-link">Saltar al contenido</a>
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+  </body>
+</html>

@@ -15,6 +15,7 @@
 import type { BlogPost, Category, CategorySlug, Part, Product } from '../domain/types';
 import type { Testimonial } from '../domain/testimonials';
 import { readingMinutes } from '../domain/reading';
+import { visibleOnly } from '../domain/catalog';
 import type { Repositories } from './repositories';
 
 type Client = {
@@ -30,7 +31,7 @@ export function createSupabaseRepositories(client: Client): Repositories {
   };
 
   const products: Repositories['products'] = {
-    all: () => rows<Product>('products_view', 'featured', false), // vista que agrega variants/colors como JSON
+    all: async () => visibleOnly(await rows<Product>('products_view', 'featured', false)), // vista que agrega variants/colors como JSON; sin ocultos (ADR-018)
     bySlug: async (slug) => (await products.all()).find((p) => p.slug === slug),
     byCategory: async (c: CategorySlug) => (await products.all()).filter((p) => p.category === c),
     bySlugs: async (slugs) => (await products.all()).filter((p) => slugs.includes(p.slug)),
@@ -39,7 +40,7 @@ export function createSupabaseRepositories(client: Client): Repositories {
   };
 
   const parts: Repositories['parts'] = {
-    all: () => rows<Part>('parts', 'name'),
+    all: async () => visibleOnly(await rows<Part>('parts', 'name')),
     bySlug: async (slug) => (await parts.all()).find((a) => a.slug === slug),
     bySlugs: async (slugs) => (await parts.all()).filter((a) => slugs.includes(a.slug)),
     compatibleWith: async (slug) => (await parts.all()).filter((a) => !a.compatibleWith.length || a.compatibleWith.includes(slug)),

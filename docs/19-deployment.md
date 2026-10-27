@@ -44,6 +44,7 @@ Flujo resultante: `push` a rama → Cloudflare construye preview y comenta la UR
 | `PUBLIC_ANALYTICS_PROVIDER` | `cloudflare` (o `noop`) | `console` | [18-analytics](./18-analytics.md) |
 | `PUBLIC_CF_BEACON_TOKEN` | Token del panel Web Analytics | vacío | Beacon |
 | `PUBLIC_ROBOTS` | `index` | `noindex` | `robots.txt` y meta robots se generan según este valor |
+| Panel de administración (`ADMIN_EMAILS`, `EDITOR_EMAILS`, `CF_ACCESS_*`, `GITHUB_*`, `CF_API_TOKEN`…) | Ver §12 | Normalmente vacías (sin panel en previews) | Pages Functions `functions/api/admin` (ADR-018) |
 
 En preview, `public/_headers` añade `X-Robots-Tag: noindex` cuando `PUBLIC_ROBOTS=noindex` (se genera en build copiando la plantilla correspondiente desde `scripts/headers.mjs`).
 
@@ -126,3 +127,62 @@ Porque el artefacto es `dist/`, cambiar de hosting es configuración, no código
 | Necesidad de purgar caché | Pages invalida por despliegue; para assets con hash no es necesario. Para `robots.txt` o `_headers`: Caching → Purge by URL |
 
 Responsable operativo: DevOps. Aprobación de cambios en este documento: DevOps + Tech Lead (portabilidad).
+
+## 12. Panel de administración `/admin` (ADR-018): alta en Cloudflare y GitHub
+
+El panel solo funciona desplegado en Pages (requiere Pages Functions y Cloudflare Access). Se da de alta **después** del primer despliegue (§2) y antes de entregar el acceso a Wiliam. Nada de esto toca el sitio público: si una variable falta, `/api/admin/*` responde 500 con un mensaje de configuración y el resto de la web sigue igual. Qué hace el panel: [17-admin-panel](./17-admin-panel.md); cómo se usa: [23-catalog-editing](./23-catalog-editing.md).
+
+### 12.1 Token de GitHub (bot de contenido)
+
+1. GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token.
+2. Nombre `raiden-admin-panel`; *Resource owner* el propietario del repo; *Repository access*: **Only select repositories → `diego-1795/motos-electricas`**; *Permissions → Repository → Contents: Read and write* (nada más; *Metadata* se marca sola). Caducidad: 1 año (anotar en el calendario; al renovar, basta cambiar la variable y relanzar el build).
+3. Si `main` está protegida con "require pull request", el token del usuario que la administra debe poder saltarse la protección o hay que permitir pushes directos al bot; si no, los commits del panel fallarán con 409/422 de GitHub. Recomendación: crear el token con la cuenta de Diego (los commits aparecerán como suyos, con el email del editor en el mensaje).
+
+### 12.2 Cloudflare Access
+
+Ver [13-cloudflare](./13-cloudflare.md) §11: aplicación *self-hosted* sobre `/admin` y `/api/admin` del dominio de producción (y de `*.pages.dev` si se quiere usar desde ahí), política *Allow* con los emails de Diego y Wiliam, método *One-time PIN*. Anotar el **team domain** y el **AUD tag** de la aplicación.
+
+### 12.3 Variables en Pages (Settings → Environment variables → Production)
+
+| Variable | Valor | Secreto |
+|---|---|---|
+| `ADMIN_EMAILS` | `diegoo.1795@gmail.com` (varios separados por coma) | No |
+| `EDITOR_EMAILS` | email de Wiliam | No |
+| `CF_ACCESS_TEAM_DOMAIN` | `<equipo>.cloudflareaccess.com` (vale también solo `<equipo>`) | No |
+| `CF_ACCESS_AUD` | AUD tag de la aplicación de Access (64 hex) | No |
+| `GITHUB_TOKEN` | token fine-grained de §12.1 | **Sí** (Encrypt) |
+| `GITHUB_REPO` | `diego-1795/motos-electricas` | No |
+| `GITHUB_BRANCH` | `main` | No |
+| `CF_API_TOKEN` (opcional) | token de API con *Account → Cloudflare Pages: Read* | **Sí** |
+| `CF_ACCOUNT_ID` (opcional) | ID de la cuenta | No |
+| `CF_PAGES_PROJECT` (opcional) | `raiden` (nombre del proyecto de Pages) | No |
+
+Las tres opcionales permiten que el panel muestre el estado real del último build; sin ellas muestra "Publicando… ~3 min". Tras guardar las variables, **Retry deployment** para que las Functions las reciban. **No definir nunca `ADMIN_LOCAL_USER` en Pages**: el runtime de Pages no define `NODE_ENV`, así que la garantía real en producción es que esa variable no exista (la comprobación de host `localhost` es la segunda barrera). En *Preview* dejar todo vacío salvo que se quiera probar el panel contra una rama (`GITHUB_BRANCH` = esa rama).
+
+### 12.4 Comprobación
+
+| # | Comprobación | Resultado esperado |
+|---|---|---|
+| 1 | `curl -I https://raiden.pe/admin` sin sesión | 302 a `<equipo>.cloudflareaccess.com` (Access) |
+| 2 | `curl -i https://raiden.pe/api/admin/me` sin sesión | 302/401, nunca JSON con datos |
+| 3 | Entrar en `/admin` con el email de Diego | Panel con rol **admin**, botones Nuevo/Editar ficha/Borrar visibles |
+| 4 | Entrar con el email de Wiliam (otra ventana privada) | Rol **editor**: solo precios y ocultar/mostrar |
+| 5 | Cambiar un precio de prueba y revertirlo | Dos commits `chore(catalog): actualizar … por …` en GitHub y dos builds en Pages |
+| 6 | `curl -I https://raiden.pe/admin` con sesión | `Cache-Control: no-store`, `X-Robots-Tag: noindex`, CSP con `connect-src 'self'` |
+| 7 | `https://raiden.pe/sitemap-0.xml` y `/robots.txt` | Sin `/admin`; `Disallow: /admin` |
+
+### 12.5 Desarrollo local (sin Cloudflare)
+
+```bash
+cp .dev.vars.example .dev.vars   # rellenar GITHUB_TOKEN y GITHUB_BRANCH=admin-sandbox
+npm run build && npm run admin:dev   # http://localhost:8788/admin
+```
+
+`wrangler pages dev dist` sirve el build estático y las Functions de `functions/`. Con `ADMIN_LOCAL_USER` definido y host `localhost`, la identidad se simula sin Access (cabecera `x-admin-local-user` para probar el rol editor desde el propio panel). Las escrituras van a la rama `GITHUB_BRANCH` indicada: crear antes `admin-sandbox` desde `main` para no lanzar builds de producción desde el portátil. Sin `GITHUB_TOKEN` el panel carga pero el catálogo devuelve 500 de configuración.
+
+### 12.6 Operación
+
+- **Los commits del panel nacen en GitHub.** Antes de seguir desarrollando: `git pull`. Si se desarrolla sobre un `main` desactualizado, el push fallará (no es destructivo).
+- **Rotar el token** (caducidad o filtración): revocar en GitHub, crear otro, actualizar `GITHUB_TOKEN`, *Retry deployment*.
+- **Quitar o añadir un editor:** editar la política de Access (emails) **y** `EDITOR_EMAILS`/`ADMIN_EMAILS`; relanzar el build. Las dos listas deben coincidir: Access decide quién entra, las variables deciden qué puede hacer.
+- **Build fallido tras un cambio del panel:** el JSON pasó los validadores, así que la causa suele ser una imagen inexistente referenciada en el "JSON avanzado". Abrir el log de Pages, corregir desde el panel (o por git) y volverá a construir. Mientras tanto el sitio sirve el último deploy correcto (Pages no publica builds fallidos).

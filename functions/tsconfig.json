@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "@cloudflare/workers-types"
+    ],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "./**/*.ts",
+    "../src/domain/**/*.ts",
+    "../src/content/schemas.ts",
+    "../tests/unit/admin-access.test.ts",
+    "../tests/unit/admin-github.test.ts",
+    "../tests/unit/admin-handlers.test.ts",
+    "../tests/unit/admin-http.test.ts",
+    "../tests/unit/fixtures.ts"
+  ]
+}

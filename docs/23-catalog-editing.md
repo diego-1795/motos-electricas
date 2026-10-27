@@ -1,6 +1,60 @@
-# 23 — Guía de edición del catálogo (git como CMS)
+# 23 — Guía de edición del catálogo
 
-Cómo añadir o modificar bicimotos, trimotos, repuestos, precios y contenido **sin panel de administración**. Esta es la operativa oficial del MVP; el panel llegará después (ver [17-admin-panel](./17-admin-panel.md)). Toda edición pasa por git: queda versionada, revisada y validada en CI.
+Dos vías, ambas acaban en un commit en `main` y en un build de Cloudflare Pages (2–3 minutos hasta verse en la web):
+
+- **Panel `/admin`** (§0): para la tienda. Precios y ocultar/mostrar (Diego y Wiliam); crear, editar y borrar fichas (solo Diego). No requiere saber git.
+- **Git** (§1 en adelante): para todo lo demás (imágenes, blog, FAQ, testimonios, categorías, textos globales) y como alternativa siempre disponible.
+
+Referencias: [17-admin-panel](./17-admin-panel.md) (qué hace el panel y por qué), [19-deployment](./19-deployment.md) §12 (alta y variables), ADR-018.
+
+## 0. Usar el panel de administración
+
+### 0.1 Entrar
+
+1. Abrir `https://<dominio>/admin` (el enlace no aparece en la web; guardarlo en favoritos).
+2. Cloudflare Access pide el **email** y envía un **código de un solo uso**; introducirlo. Solo entran los emails autorizados (Diego como administrador, Wiliam como editor). La sesión dura 24 horas.
+3. El panel muestra arriba "Conectado como <email> · Administrador" (o "Editor") y dos pestañas: **Productos** (bicimotos, trimotos y promociones) y **Repuestos**, con el número de fichas. El cuadro "Buscar por nombre o slug" filtra la pestaña activa. Las fichas ocultas llevan la insignia "Oculto".
+
+Si aparece "Sin acceso": el email entró por Access pero no está en `ADMIN_EMAILS` ni `EDITOR_EMAILS`; pedir a Diego que lo añada ([19-deployment](./19-deployment.md) §12.6).
+
+### 0.2 Cambiar un precio (Diego y Wiliam)
+
+1. Localizar la ficha. En productos hay un campo de precio por versión (**Estándar** y **Premium**; Titan Rhino solo una); en repuestos, uno.
+2. Escribir el nuevo importe **en soles** en el campo (`1250`, `1,250` o `1250.50`). Al cambiarlo aparecen "Motivo (opcional)", **Guardar** y **Cancelar**. El motivo ("nueva lista del proveedor") queda en el historial.
+3. Reglas que el panel y el servidor imponen: importe mayor que 0 ("El importe debe ser mayor que 0"); la **Premium nunca más barata que la Estándar** ("La versión Premium no puede ser más barata que la Estándar (cambia primero la otra versión)"). Si otra persona modificó la misma ficha, aparece "Alguien modificó esta ficha; se ha recargado": repetir el cambio. Si el importe es el mismo que ya había, el panel dice "Sin cambios" y no publica nada.
+4. Aparece el aviso **"Publicando… los cambios tardan unos 3 minutos en verse en la web"** con un contador (o, si está conectada la API de Pages, "En cola" → "Construyendo el sitio" → "Publicado"). Pasado ese tiempo el precio nuevo está en la ficha, en el precio "Desde", en el configurador, en el comparador y en el mensaje de WhatsApp. No hay que hacer nada más.
+
+### 0.3 Ocultar o mostrar una ficha (Diego y Wiliam)
+
+Interruptor **Oculto** en cada fila. Ocultar retira la ficha de toda la web (catálogo, página de la categoría, comparador, buscador, portada, sitemap) sin borrarla; sus datos y fotos se conservan y se puede volver a mostrar cuando se quiera. Úsalo para productos sin stock prolongado o descatalogados temporalmente. Para "sin stock" de corta duración es mejor la disponibilidad **Agotado** (se sigue viendo pero no se puede pedir), que cambia Diego desde "Editar ficha" o por git.
+
+Si se oculta el modelo de la portada (hero), la portada usa el siguiente modelo visible; conviene que Diego reasigne el hero.
+
+### 0.4 Crear un producto o repuesto (solo Diego)
+
+1. **Nuevo producto** (o **Nuevo repuesto**) → en el diálogo, elegir la "Plantilla (ficha parecida)", escribir el "Slug nuevo" (minúsculas, números y guiones; será la URL: `/bicimotos/<slug>`; después no se puede cambiar desde el panel) y el "Nombre" → **Continuar al editor**.
+2. Se abre "Nuevo producto: <nombre>" con todos los datos copiados (sin la marca de hero): revisar subtítulo, descripción, categoría, versiones y precios, colores, disponibilidad y el bloque **JSON avanzado** (specs, imágenes, repuestos compatibles, relacionados, FAQ…). Las imágenes deben existir ya en `src/assets/products/` (se suben por git, §3 y §5); si se referencia una que no existe, el build fallará y el sitio seguirá con la versión anterior.
+3. **Guardar**. El servidor valida igual que el build (campos obligatorios, una sola versión por defecto, Premium ≥ Estándar, referencias existentes, URLs seguras) y, si algo falla, lo lista bajo "No se ha guardado:".
+
+### 0.5 Editar la ficha completa (solo Diego)
+
+**Editar ficha** → "Editar ficha: <nombre>", formulario con los campos principales y el JSON avanzado para el resto. Mismas validaciones (errores bajo "No se ha guardado:"). Cambiar la categoría mueve la URL (`/bicimotos/x` → `/promociones/x`); la antigua dejará de existir.
+
+### 0.6 Borrar (solo Diego)
+
+**Borrar** → "Escribe `<slug>` para confirmar" → "Motivo (opcional)" → **Borrar**. El servidor se niega (409) si otra ficha la referencia (`related` de un producto, `compatibleWith` de un repuesto, `accessories`): en ese caso, ocultarla o quitar antes las referencias desde las otras fichas. Borrar elimina el JSON del repositorio (las fotos quedan en `src/assets` hasta limpiarlas por git); el historial de git permite recuperarlo.
+
+### 0.7 Qué deja rastro
+
+Cada guardado es un commit en GitHub con el mensaje `chore(catalog): actualizar <slug> por <email>` (o `crear`/`borrar`), el detalle del cambio y el motivo. Para ver el historial: GitHub → repositorio → *Commits*, o `git log -- src/content`.
+
+### 0.8 Accesos
+
+La sección **Accesos** del panel muestra "Administradores", "Editores" y la "Rama de escritura" (normalmente `main`); en desarrollo aparece además la insignia "Modo local" y el selector "Simular como…" para probar la vista de cada rol. Para cambiar los accesos, Diego edita en Cloudflare la política de Access (emails que pueden entrar) y las variables `ADMIN_EMAILS` / `EDITOR_EMAILS` del proyecto de Pages, y relanza el build ([19-deployment](./19-deployment.md) §12.6).
+
+---
+
+Las secciones siguientes describen la vía por git: necesaria para imágenes, blog, FAQ, testimonios, categorías y `src/config/site.ts`, y válida también para precios y fichas si el panel no está disponible. Toda edición queda versionada, revisada y validada en CI.
 
 ## 1. Dónde vive cada cosa
 
@@ -56,6 +110,7 @@ Exportar JPG ≥ 1600 px (fondo limpio) a `src/assets/products/` o `src/assets/r
 ## 6. Retirar un producto o repuesto
 
 - Temporalmente sin stock → `variants[].availability: "agotado"` (la web lo muestra, deshabilita compra).
+- Fuera de la web pero conservando la ficha → `"hidden": true` en el JSON (lo mismo que el interruptor "Oculto" del panel): desaparece de rutas, listados, sitemap y buscador; se vuelve a mostrar quitando el campo o poniéndolo a `false`. Si el oculto es el `isHero`, el validador avisa para reasignar el hero.
 - Retirada definitiva → borrar el JSON **y** limpiar su slug de `related` y `accessories` de los productos, de `compatibleWith` de los repuestos y de `relatedProducts` del blog (el validador lista los rotos).
 
 ## 6b. Actualizar las reseñas de "Comunidad RAIDEN"
@@ -64,7 +119,7 @@ Abrir `src/content/testimonials/google-maps.json` y añadir a `items` cada rese�
 
 ## 7. Qué valida la CI
 
-`npm run validate:content` (rápido, sin build): JSON parseable, slugs = nombre de fichero, referencias cruzadas existentes, imágenes presentes, moneda PEN y precios enteros, una sola variante default, un solo hero, coherencia de batería, licencia vs. velocidad, y ausencia de referencias a España/EUR en el blog. Después `astro build` valida los esquemas zod completos ([content.config.ts](../src/content.config.ts)).
+`npm run validate:content` (rápido, sin build): JSON parseable, slugs = nombre de fichero, referencias cruzadas existentes, imágenes presentes, moneda PEN y precios enteros, una sola variante default, Premium ≥ Estándar, `hidden` booleano, un solo hero (y no oculto), coherencia de batería, licencia vs. velocidad, y ausencia de referencias a España/EUR en el blog. Después `astro build` valida los esquemas zod completos ([content.config.ts](../src/content.config.ts) → [schemas.ts](../src/content/schemas.ts), los mismos que usa el panel).
 
 ## 8. Futuro: Supabase
 

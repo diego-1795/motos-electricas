@@ -92,3 +92,16 @@ export const TYPES: CategorySlug[] = ['bicimotos', 'trimotos'];
 export function isCatalogVehicle(p: Pick<Product, 'category'>): boolean {
   return TYPES.includes(p.category);
 }
+
+/**
+ * Visibilidad pública (ADR-018). Un producto o repuesto con `hidden: true` sigue en el
+ * repositorio pero no existe para el sitio: los repositorios (src/data) aplican este filtro
+ * en `all()`, de modo que rutas, listados, sitemap, JSON-LD y buscador lo excluyen a la vez.
+ */
+export function isVisible(item: { hidden?: boolean }): boolean {
+  return item.hidden !== true;
+}
+
+export function visibleOnly<T extends { hidden?: boolean }>(items: T[]): T[] {
+  return items.filter(isVisible);
+}

@@ -2,18 +2,21 @@ import { getCollection, getEntry } from 'astro:content';
 import type { BlogPost, Category, CategorySlug, Part, Product, Review } from '../domain/types';
 import type { Testimonial } from '../domain/testimonials';
 import { readingMinutes } from '../domain/reading';
+import { visibleOnly } from '../domain/catalog';
 import type { Repositories } from './repositories';
 
 /**
  * Implementación MVP sobre Astro content collections (JSON/MD en el repo).
  * Solo se ejecuta en build (SSG). Para cambiar a Supabase, crear
  * src/data/supabase.ts con la misma interfaz y cambiar el export de index.ts.
+ * Los elementos con `hidden: true` (panel de administración, ADR-018) se filtran en `all()`,
+ * de modo que ninguna ruta, listado, sitemap ni JSON-LD los ve.
  */
 
 const products = {
   async all(): Promise<Product[]> {
     const entries = await getCollection('products');
-    return entries.map((e) => e.data as Product).sort((a, b) => b.featured - a.featured);
+    return visibleOnly(entries.map((e) => e.data as Product)).sort((a, b) => b.featured - a.featured);
   },
   async bySlug(slug: string) {
     return (await this.all()).find((p) => p.slug === slug);
@@ -36,7 +39,7 @@ const products = {
 
 const parts = {
   async all(): Promise<Part[]> {
-    return (await getCollection('repuestos')).map((e) => e.data as Part);
+    return visibleOnly((await getCollection('repuestos')).map((e) => e.data as Part));
   },
   async bySlug(slug: string) {
     return (await this.all()).find((a) => a.slug === slug);

@@ -105,7 +105,17 @@ Clave `raiden:cart:v1` contiene solo `{ version, items: [{productId, variantId, 
 - **Supabase**: RLS activado en todas las tablas; `anon` solo `select` sobre catálogo publicado; `order_requests` e `inserts` vía Edge Function con validación servidor; `service_role` nunca en cliente. Detalle en [05-backend](./05-backend.md) y [06-database](./06-database.md).
 - **Rate limiting**: en Cloudflare Workers o Supabase Edge Functions (por IP y por huella), para formularios de contacto y registro de solicitudes.
 - **CAPTCHA**: Cloudflare Turnstile (gratuito, sin cookies de rastreo) en formularios con escritura en backend. Añadir `https://challenges.cloudflare.com` a `script-src` y `frame-src` solo entonces.
-- **Admin** `/admin`: Supabase Auth, MFA, sesiones cortas, RLS por rol ([17-admin-panel](./17-admin-panel.md)).
+- **Admin sobre Supabase**: Auth, MFA, sesiones cortas, RLS por rol ([17-admin-panel](./17-admin-panel.md) §3), solo si el catálogo crece.
+
+## 8b. Panel de administración `/admin` (ADR-018)
+
+- **Perímetro:** Cloudflare Access (Zero Trust) delante de `/admin` y `/api/admin/*`; política "Allow" con la lista de emails permitidos y login por código de un solo uso. Sin sesión de Access, Cloudflare ni siquiera entrega el HTML.
+- **Verificación en servidor:** las Pages Functions validan el JWT `Cf-Access-Jwt-Assertion` (firma RS256 contra el JWKS del equipo, `aud`, `iss`, `exp`) y resuelven el rol con `ADMIN_EMAILS`/`EDITOR_EMAILS`. La interfaz no decide nada: un editor que llame a `PUT`/`DELETE` o envíe un `PATCH` con campos fuera de precio/`hidden` recibe 403/422.
+- **Secretos:** `GITHUB_TOKEN` (token *fine-grained*, permiso *Contents* solo sobre el repositorio) y, opcional, `CF_API_TOKEN` (solo lectura de deployments) viven en las variables de Pages marcadas como secreto. Nunca en `src/`, `PUBLIC_*`, `.env.example` ni en logs (las Functions no registran cabeceras ni tokens). La CI sigue comprobando que `dist/` no contiene secretos.
+- **Validación:** todo lo que se escribe pasa por `src/content/schemas.ts` (`strict`, sin claves desconocidas) y `src/domain/catalogRules.ts`; el `sha` del fichero evita sobrescrituras ciegas (409).
+- **Cabeceras:** `public/_headers` da a `/admin` una CSP propia (`default-src 'self'`, `connect-src 'self'`, sin terceros, `frame-src 'none'`), `X-Robots-Tag: noindex` y `Cache-Control: no-store`; `/api/admin/*` también `no-store`.
+- **Modo local:** la identidad simulada (`ADMIN_LOCAL_USER`) solo se acepta si el host de la petición es `localhost` y `NODE_ENV` no es `production`; nunca se define en Pages.
+- **Auditoría:** el historial de git (`chore(catalog): <acción> <slug> por <email>` + motivo) es el registro; GitHub conserva autor, fecha y diff.
 
 ## 9. Cumplimiento legal en Perú (Ley N.º 29733 e INDECOPI)
 

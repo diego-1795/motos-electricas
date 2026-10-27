@@ -38,6 +38,8 @@ jobs:
       # Bloqueante para vulnerabilidades high/critical (docs/10-security.md §7).
       - run: npm audit --audit-level=high
       - run: npx astro check
+      # Pages Functions del panel de administración (functions/, ADR-018): proyecto TS propio con tipos de Workers.
+      - run: npm run check:functions
       # Guardarraíl: el número de WhatsApp solo puede vivir en src/config/site.ts (valor por defecto).
       - name: No hay teléfonos ni secretos hardcodeados
         run: |

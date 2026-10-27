@@ -28,7 +28,8 @@ Proporción objetivo: ~70 % unitario, ~20 % componente/contenido, ~10 % E2E.
 | Builders SEO | `buildMeta`: canonical absoluta, title truncado a 60, description a 155, `noindex`; JSON-LD `Product` con `offers.priceCurrency = 'PEN'` y `availability` correcta según stock; `BreadcrumbList` con posiciones consecutivas; `FAQPage` vacío → no se emite; `Article` con fechas ISO |
 | Validadores (`validation.ts`) | `sanitizeNotes` elimina control chars, recorta a 300, rechaza URLs; `quantity` fuera de rango; ids inexistentes; enums del finder; `PUBLIC_WHATSAPP_NUMBER` con formato inválido lanza error |
 | Comparación (`compare.ts`) | Máximo 3 productos; diferencias resaltadas; unidades homogéneas (km, kW, kg) |
-| Esquema del catálogo | Todos los JSON tienen `slug` único, `category` válida, al menos una variante con precio > 0, imágenes existentes en `src/assets/` |
+| Esquema del catálogo | Todos los JSON tienen `slug` único, `category` válida, al menos una variante con precio > 0, imágenes existentes en `src/assets/`; los repositorios nunca devuelven `hidden: true` |
+| Panel de administración (ADR-018; `tests/unit/admin-*.test.ts`) | `adminPolicy`: roles desde listas de emails, editor solo `patch`, `applyProductPatch` rechaza claves ajenas y Premium < Estándar; `catalogRules` + `parseProduct`/`parsePart` (esquema `strict` + reglas); verificación del JWT de Access (firma RS256, `aud`, `iss`, `exp`, modo local solo en `localhost`); handlers de las Functions con almacén en memoria (401/403/409/422, mensajes de commit); cliente de GitHub con `fetch` simulado. E2E: `admin.spec.ts` (panel con API simulada por `page.route`, vistas admin/editor, PATCH emitido, axe) y `hidden.spec.ts` (ocultos → 404 y fuera del sitemap; `/admin` fuera de sitemap y robots) |
 
 ## 3. Ejemplos de tests
 

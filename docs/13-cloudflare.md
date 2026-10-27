@@ -125,7 +125,8 @@ Analítica sin cookies y sin datos personales, gratuita. Se integra como adaptad
 | Capacidad | Cuándo | Alternativa agnóstica |
 |---|---|---|
 | Turnstile (anti-bot) | Si se añade formulario de contacto con backend | hCaptcha, o validación en Supabase Edge Function |
-| Pages Functions / Workers | Endpoint de `order_requests`, rate limiting, proxy a Supabase | Supabase Edge Functions (Deno), ejecutables en cualquier proveedor |
+| Pages Functions | **En uso desde ADR-018**: `functions/api/admin/*` (panel de administración). Futuro: `order_requests`, rate limiting | Worker/Edge Function/Node con el mismo `src/domain` y `src/content/schemas.ts` |
+| Cloudflare Access | **En uso desde ADR-018**: protege `/admin` y `/api/admin/*` (plan Zero Trust Free, hasta 50 usuarios) | Cualquier proxy de identidad que emita un JWT verificable (p. ej. Vercel/Netlify Identity, oauth2-proxy) |
 | KV / D1 / R2 | No previstos | Supabase (Postgres + Storage) |
 | Adapter `@astrojs/cloudflare` | Solo si se optase por `/admin` SSR en Pages ([17-admin-panel](./17-admin-panel.md)) | `@astrojs/node` en cualquier VPS o `@astrojs/vercel` |
 
@@ -142,10 +143,22 @@ Cualquier uso de estas capacidades requiere revisión DevOps + Tech Lead (regla 
 | Durable Objects | Sin caso de uso | — |
 | Email Routing para formularios | Dependencia del proveedor | `EmailService` con adaptador (Resend u otro) |
 | Zaraz (gestor de tags) | Inyecta terceros fuera de CSP versionada | Adaptador `dataLayer` de `AnalyticsService` |
-| Cloudflare Access en previews | Coste por usuario | `noindex` + URLs no públicas |
-| `wrangler.toml` con bindings | Ata el build a Workers | Ninguno en MVP; `astro.config.mjs` es la única configuración |
+| Cloudflare Access en previews | Coste por usuario | `noindex` + URLs no públicas (Access sí se usa para `/admin`, ADR-018: dos usuarios, dentro del plan Free) |
+| `wrangler.toml` con bindings | Ata el build a Workers | Ninguno: las Pages Functions de `functions/` no usan bindings (KV, D1, R2); solo variables de entorno. `wrangler` se usa únicamente en local (`npm run admin:dev`) |
 
-Regla: si una funcionalidad no se puede reproducir con un fichero del repositorio o con una variable de entorno estándar, no entra en el MVP.
+Regla: si una funcionalidad no se puede reproducir con un fichero del repositorio o con una variable de entorno estándar, no entra en el MVP. El panel de administración cumple la regla: `functions/` es código del repositorio y todo lo demás son variables de entorno.
+
+## 11. Cloudflare Access para el panel `/admin` (ADR-018)
+
+Configuración en Zero Trust (gratuito hasta 50 usuarios). Pasos detallados en [19-deployment](./19-deployment.md) §12.
+
+1. **Zero Trust → Settings → Custom Pages**: anotar el *team domain* (`<equipo>.cloudflareaccess.com`) → variable `CF_ACCESS_TEAM_DOMAIN`.
+2. **Access → Applications → Add → Self-hosted**: dominio `raiden.pe` (y `www`), rutas `/admin` y `/api/admin` (una aplicación con dos rutas, o dos aplicaciones con la misma política). Duración de sesión: 24 h. Método: *One-time PIN* (código al email); no hace falta proveedor de identidad.
+3. **Política "Catálogo RAIDEN"** (Allow): *Emails* = los de Diego y Wiliam. Cualquier otro email ve la pantalla de Access y no entra.
+4. En la aplicación, *Overview → Application Audience (AUD) Tag* → variable `CF_ACCESS_AUD`.
+5. El dominio `*.pages.dev` no pasa por Access salvo que se añada como dominio de la aplicación: para no dejar `/admin` abierto ahí, añadir también `raiden.pages.dev` a la aplicación (misma política). Mientras no exista `CF_ACCESS_*`, las Functions responden 500 y no exponen nada.
+
+Las Functions no confían en que Access "esté delante": verifican el JWT en cada petición (firma, `aud`, `iss`, `exp`), de modo que una ruta mal configurada en Access no abre el API.
 
 ## 9. Costes
 

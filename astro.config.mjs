@@ -12,7 +12,8 @@ export default defineConfig({
   integrations: [
     preact({ compat: false }),
     sitemap({
-      filter: (page) => !page.includes('/carrito') && !page.includes('/comparar') && !page.includes('/dev'),
+      // /admin: panel de administración (ADR-018), noindex y fuera del sitemap y de robots.txt.
+      filter: (page) => !page.includes('/carrito') && !page.includes('/comparar') && !page.includes('/dev') && !page.includes('/admin'),
       changefreq: 'weekly',
     }),
   ],

@@ -72,6 +72,11 @@ for (const { file, name, data: p } of products) {
   }
   if (p.specs?.license === 'sin-licencia' && p.specs.topSpeedKmh > 32)
     err(file, `"sin-licencia" con ${p.specs.topSpeedKmh} km/h: revisar con el asesor legal (MTC)`);
+  checkHidden(file, p);
+  // Premium nunca más barata que Estándar (ADR-017); el panel lo impone también en servidor (ADR-018)
+  const est = (p.variants ?? []).find((v) => v.tier === 'estandar');
+  const prem = (p.variants ?? []).find((v) => v.tier === 'premium');
+  if (est && prem && prem.price?.amount < est.price?.amount) err(file, `Premium (${prem.price.amount}) más barata que Estándar (${est.price.amount})`);
 }
 
 for (const { file, name, data: a } of accessories) {
@@ -79,10 +84,19 @@ for (const { file, name, data: a } of accessories) {
   checkMoney(file, a.price, 'price');
   checkImage(file, a.image);
   for (const c of a.compatibleWith ?? []) if (!productSlugs.has(c)) err(file, `compatibleWith desconocido: ${c}`);
+  checkHidden(file, a);
+}
+
+// `hidden` (ADR-018): opcional y booleano. Un oculto desaparece de rutas y listados pero sigue en el repo.
+function checkHidden(file, item) {
+  if (item.hidden !== undefined && typeof item.hidden !== 'boolean') err(file, `hidden debe ser true/false (es ${JSON.stringify(item.hidden)})`);
 }
 
 const heroCount = products.filter((p) => p.data.isHero).length;
 if (heroCount !== 1) errors.push(`products: debe haber exactamente 1 producto isHero (hay ${heroCount})`);
+const hiddenHero = products.find((p) => p.data.isHero && p.data.hidden === true);
+if (hiddenHero) err(hiddenHero.file, 'el producto isHero está oculto: la portada usará el primer visible; asigna isHero a otro modelo');
+const hiddenCount = products.filter((p) => p.data.hidden === true).length + accessories.filter((a) => a.data.hidden === true).length;
 
 for (const f of blogFiles) {
   const file = join(ROOT, 'blog', f);
@@ -101,4 +115,4 @@ if (errors.length) {
   console.error(`✘ ${errors.length} error(es) de contenido:\n` + errors.map((e) => `  - ${e}`).join('\n'));
   process.exit(1);
 }
-console.log(`✓ Contenido válido: ${products.length} productos, ${accessories.length} accesorios, ${categories.length} categorías, ${blogFiles.length} artículos`);
+console.log(`✓ Contenido válido: ${products.length} productos, ${accessories.length} accesorios, ${categories.length} categorías, ${blogFiles.length} artículos${hiddenCount ? ` (${hiddenCount} oculto(s) desde el panel)` : ''}`);

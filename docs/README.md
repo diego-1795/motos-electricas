@@ -31,11 +31,11 @@ DESCUBRIMIENTO → PRODUCTO → COMPARAR → CONFIGURAR → CARRITO → SOLICITU
 | 14 | [DevOps](./14-devops.md) | Flujo git, GitHub Actions, entornos, runbooks |
 | 15 | [Estrategia de contenido](./15-content-strategy.md) | Tono, taxonomía, fichas, fotografía, blog, FAQ, legales |
 | 16 | [Comercio por WhatsApp](./16-whatsapp-commerce.md) | Enlace wa.me, `WhatsAppMessageBuilder`, proceso de ventas |
-| 17 | [Panel de administración](./17-admin-panel.md) | Git como CMS en MVP; panel futuro con Supabase Auth + RLS |
+| 17 | [Panel de administración](./17-admin-panel.md) | Panel `/admin` ligero sobre git (Access + Pages Functions + GitHub, ADR-018); Supabase como futuro |
 | 18 | [Analítica](./18-analytics.md) | `AnalyticsService`, catálogo de eventos, adaptadores, embudo |
 | 19 | [Despliegue](./19-deployment.md) | Pipeline en Cloudflare Pages, verificación, rollback, alternativas |
 | 20 | [Migración](./20-migration.md) | Cambio de hosting, SSG → SSR, JSON → Supabase, Business API |
-| 21 | [Decisiones (ADR)](./21-decisions.md) | ADR-001 a ADR-015 |
+| 21 | [Decisiones (ADR)](./21-decisions.md) | ADR-001 a ADR-018 |
 | 22 | [Roadmap](./22-roadmap.md) | Fases del MVP y post-MVP |
 
 ## Agentes
