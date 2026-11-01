@@ -55,22 +55,27 @@ test.describe('Ficha técnica por versión', () => {
     await page.getByRole('tab', { name: 'Especificaciones' }).click();
     const panel = page.locator('#panel-especificaciones');
     await expect(panel).toBeVisible();
-    const est = panel.locator('[data-spec-variant="estandar"]');
-    const prem = panel.locator('[data-spec-variant="premium"]');
-    await expect(est).toBeVisible();
-    await expect(prem).toBeHidden();
-    await expect(est).toContainText('350 W');
-    await expect(est).toContainText('48V 12Ah');
+    // Una sola lista: primero las líneas de la versión elegida (motor, batería, autonomía), después las comunes
+    const est = panel.locator('li[data-spec-variant="estandar"]');
+    const prem = panel.locator('li[data-spec-variant="premium"]');
+    await expect(est).toHaveCount(3);
+    await expect(prem).toHaveCount(3);
+    await expect(est.first()).toBeVisible();
+    await expect(prem.first()).toBeHidden();
+    await expect(est.first()).toContainText('350 W');
+    await expect(est.nth(1)).toContainText('48V 12Ah');
     await expect(panel.locator('[data-variant-name]')).toHaveText('Estándar');
     // Las comunes se muestran una sola vez, sin duplicar el motor
-    await expect(panel.locator('.ptabs__features:not(.ptabs__features--variant) li', { hasText: 'Motor sin escobillas' })).toHaveCount(0);
-    await expect(panel.locator('.ptabs__features:not(.ptabs__features--variant) li', { hasText: 'Pantalla LCD' })).toHaveCount(1);
+    await expect(panel.locator('li:not([data-spec-variant])', { hasText: 'Motor sin escobillas' })).toHaveCount(0);
+    await expect(panel.locator('li:not([data-spec-variant])', { hasText: 'Pantalla LCD' })).toHaveCount(1);
+    // Sin recuadro: las líneas de versión están en la misma lista que las comunes
+    await expect(panel.locator('ul.ptabs__features')).toHaveCount(1);
 
     await cfg.locator('input[name="variant"][value="premium"]').check();
-    await expect(prem).toBeVisible();
-    await expect(est).toBeHidden();
-    await expect(prem).toContainText('500 W');
-    await expect(prem).toContainText('48V 20Ah');
+    await expect(prem.first()).toBeVisible();
+    await expect(est.first()).toBeHidden();
+    await expect(prem.first()).toContainText('500 W');
+    await expect(prem.nth(1)).toContainText('48V 20Ah');
     await expect(panel.locator('[data-variant-name]')).toHaveText('Premium');
   });
 

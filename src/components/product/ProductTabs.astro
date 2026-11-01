@@ -112,18 +112,19 @@ const tabs = [
     }
     {
       features.common.length + features.byVariant.length > 0 ? (
-        <>
-          {features.byVariant.map((v) => (
-            <ul class="ptabs__features ptabs__features--variant spec-variant" data-spec-variant={v.id} aria-label={`Exclusivas de la versión ${v.label}`}>
-              {v.features.map((f) => (
-                <li>
-                  {f} <span class="spec-variant__tier">{v.label}</span>
-                </li>
-              ))}
-            </ul>
+        <ul class="ptabs__features">
+          {/* Primero las líneas propias de cada versión (solo se ve la elegida), después las comunes */}
+          {features.byVariant.flatMap((v) =>
+            v.features.map((f) => (
+              <li class="spec-variant" data-spec-variant={v.id}>
+                {f} <span class="spec-variant__tier">{v.label}</span>
+              </li>
+            )),
+          )}
+          {features.common.map((f) => (
+            <li>{f}</li>
           ))}
-          <ul class="ptabs__features">{features.common.map((f) => <li>{f}</li>)}</ul>
-        </>
+        </ul>
       ) : (
         <p class="muted">Consulta la ficha técnica o pregúntanos por WhatsApp.</p>
       )
@@ -287,15 +288,9 @@ const tabs = [
     font-size: var(--fs-sm);
     padding-left: 1.1em;
   }
-  /* Líneas propias de la versión elegida, destacadas sobre las comunes */
-  .ptabs__features--variant {
-    padding: var(--s-3) var(--s-4) var(--s-3) calc(var(--s-4) + 1.1em);
-    border-left: 3px solid var(--accent);
-    background: var(--bg-elev);
-    border-radius: 0 var(--r-md) var(--r-md) 0;
-  }
-  .ptabs__features--variant + .ptabs__features--variant {
-    margin-top: var(--s-3);
+  /* Las líneas de cada versión son <li> normales de la misma lista; el <li> es un ítem de la cuadrícula */
+  .ptabs__features li.spec-variant {
+    display: list-item;
   }
   .ptabs__manual {
     display: flex;
