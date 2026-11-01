@@ -21,7 +21,7 @@ test.describe('Ficha técnica por versión', () => {
     await expect(prem().first()).toBeHidden();
     await expect(est().first()).toHaveText(/30-35 km/);
     await expect(tiles.locator('.spec-variant__tier').first()).toBeHidden();
-    await expect(page.locator('[data-variant-name]')).toHaveText('Estándar');
+    await expect(page.locator('#panel-ficha [data-variant-name]')).toHaveText('Estándar');
     await expect(est(table).first()).toBeVisible();
     await expect(prem(table).first()).toBeHidden();
 
@@ -31,7 +31,7 @@ test.describe('Ficha técnica por versión', () => {
     await expect(est().first()).toBeHidden();
     await expect(prem().first()).toHaveText(/40-50 km/);
     await expect(tiles.locator('.spec-tile', { hasText: 'Potencia' }).locator('[data-spec-variant="premium"]')).toHaveText(/500 W/);
-    await expect(page.locator('[data-variant-name]')).toHaveText('Premium');
+    await expect(page.locator('#panel-ficha [data-variant-name]')).toHaveText('Premium');
     await expect(prem(table).first()).toBeVisible();
     await expect(est(table).first()).toBeHidden();
     // La fila "Batería extraíble" difiere entre versiones en Golden Eagle (Sí/No)
@@ -46,6 +46,32 @@ test.describe('Ficha técnica por versión', () => {
     await cfg.locator('input[name="variant"][value="estandar"]').check();
     await expect(est().first()).toBeVisible();
     await expect(prem().first()).toBeHidden();
+  });
+
+  test('Golden Eagle: la pestaña Especificaciones también sigue a la versión (motor, batería, autonomía)', async ({ page }) => {
+    await page.goto(GE);
+    const cfg = page.locator('[data-configurator]');
+    await hydrated(cfg);
+    await page.getByRole('tab', { name: 'Especificaciones' }).click();
+    const panel = page.locator('#panel-especificaciones');
+    await expect(panel).toBeVisible();
+    const est = panel.locator('[data-spec-variant="estandar"]');
+    const prem = panel.locator('[data-spec-variant="premium"]');
+    await expect(est).toBeVisible();
+    await expect(prem).toBeHidden();
+    await expect(est).toContainText('350 W');
+    await expect(est).toContainText('48V 12Ah');
+    await expect(panel.locator('[data-variant-name]')).toHaveText('Estándar');
+    // Las comunes se muestran una sola vez, sin duplicar el motor
+    await expect(panel.locator('.ptabs__features:not(.ptabs__features--variant) li', { hasText: 'Motor sin escobillas' })).toHaveCount(0);
+    await expect(panel.locator('.ptabs__features:not(.ptabs__features--variant) li', { hasText: 'Pantalla LCD' })).toHaveCount(1);
+
+    await cfg.locator('input[name="variant"][value="premium"]').check();
+    await expect(prem).toBeVisible();
+    await expect(est).toBeHidden();
+    await expect(prem).toContainText('500 W');
+    await expect(prem).toContainText('48V 20Ah');
+    await expect(panel.locator('[data-variant-name]')).toHaveText('Premium');
   });
 
   test('Titan Rhino: una sola versión, sin valores por versión ni aviso', async ({ page }) => {

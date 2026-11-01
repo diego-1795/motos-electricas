@@ -113,6 +113,10 @@ Exportar JPG ≥ 1600 px (fondo limpio) a `src/assets/products/` o `src/assets/r
 - Fuera de la web pero conservando la ficha → `"hidden": true` en el JSON (lo mismo que el interruptor "Oculto" del panel): desaparece de rutas, listados, sitemap y buscador; se vuelve a mostrar quitando el campo o poniéndolo a `false`. Si el oculto es el `isHero`, el validador avisa para reasignar el hero.
 - Retirada definitiva → borrar el JSON **y** limpiar su slug de `related` y `accessories` de los productos, de `compatibleWith` de los repuestos y de `relatedProducts` del blog (el validador lista los rotos).
 
+## 6a. Características por versión (pestaña Especificaciones)
+
+`specs.features` es la lista completa de la versión por defecto (Estándar). Si la Premium difiere (motor, batería, autonomía…), su variante lleva en `specsOverride.features` **su lista completa**; la web calcula sola las líneas comunes y las exclusivas de cada versión y muestra las de la versión elegida en el configurador (igual que la ficha técnica). Sin diferencias, basta con `specs.features`.
+
 ## 6b. Actualizar las reseñas de "Comunidad RAIDEN"
 
 Abrir `src/content/testimonials/google-maps.json` y añadir a `items` cada reseña nueva de la ficha de Google Maps **tal cual la escribió el cliente** (`author`, `rating` 1–5, `text`, `date` `AAAA-MM`). Una reseña solo con estrellas va con `text: ""` (cuenta para la media y el total, no se destaca). La portada elige sola las 3 mejor valoradas con más texto y muestra la media y el número total. No se redactan ni retocan reseñas (ADR-016).

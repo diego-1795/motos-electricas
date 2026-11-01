@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rowsFor, specTable, specTiles, specTilesFor, variantSpecs } from '../../src/domain/specTable';
+import { featureGroups, rowsFor, specTable, specTiles, specTilesFor, variantSpecs } from '../../src/domain/specTable';
 import { baseSpecs, makeProduct, premiumVariant, variant } from './fixtures';
 
 const estandar = variant({ id: 'estandar', tier: 'estandar', isDefault: true });
@@ -67,6 +67,24 @@ describe('specTiles / specTable', () => {
     expect(by['Licencia']!.value).toBe('Sin licencia');
     expect(by['Garantía']!.value).toMatch(/meses/);
     expect(by['Autonomía (declarada)']!.byVariant).toHaveLength(2);
+  });
+
+  it('featureGroups: comunes en el orden de la versión por defecto y exclusivas por versión', () => {
+    const est = variant({ id: 'estandar', tier: 'estandar', isDefault: true });
+    const prem = premiumVariant({ specsOverride: { powerW: 500, features: ['Motor 500 W', 'Pantalla LCD', 'Alarma antirrobo', 'Batería 20Ah'] } });
+    const q = makeProduct({ specs: baseSpecs({ features: ['Motor 350 W', 'Pantalla LCD', 'Batería 12Ah', 'Alarma antirrobo'] }), variants: [est, prem] });
+    const g = featureGroups(q);
+    expect(g.common).toEqual(['Pantalla LCD', 'Alarma antirrobo']);
+    expect(g.byVariant.map((v) => [v.id, v.features])).toEqual([
+      ['estandar', ['Motor 350 W', 'Batería 12Ah']],
+      ['premium', ['Motor 500 W', 'Batería 20Ah']],
+    ]);
+  });
+
+  it('featureGroups: sin diferencias (o una sola versión) todo es común y byVariant vacío', () => {
+    expect(featureGroups(p).byVariant).toEqual([]);
+    expect(featureGroups(p).common).toEqual(baseSpecs().features);
+    expect(featureGroups(makeProduct()).byVariant).toEqual([]);
   });
 
   it('specTilesFor: specs sueltas → solo valores únicos', () => {

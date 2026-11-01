@@ -105,6 +105,23 @@ export function specTable(p: Product): SpecRow[] {
   return rowsFor(tableDefs(), variantSpecs(p));
 }
 
+/** Características (pestaña Especificaciones) separadas en comunes y propias de cada versión. */
+export interface FeatureGroups {
+  /** Líneas presentes en todas las versiones, en el orden de la versión por defecto */
+  common: string[];
+  /** Líneas exclusivas de cada versión (vacío si solo hay una versión o no difieren) */
+  byVariant: { id: string; label: string; isDefault: boolean; features: string[] }[];
+}
+
+export function featureGroups(p: Product): FeatureGroups {
+  const vs = variantSpecs(p);
+  const def = vs.find((v) => v.isDefault) ?? vs[0]!;
+  const lists = vs.map((v) => v.specs.features);
+  const common = def.specs.features.filter((f) => lists.every((l) => l.includes(f)));
+  const byVariant = vs.map((v) => ({ id: v.id, label: v.label, isDefault: v.isDefault, features: v.specs.features.filter((f) => !common.includes(f)) }));
+  return { common, byVariant: byVariant.some((v) => v.features.length) ? byVariant : [] };
+}
+
 /** Tiles para unas specs sueltas (sin versiones), p. ej. el styleguide. */
 export function specTilesFor(specs: Specs, compact = false): SpecRow[] {
   return rowsFor(tileDefs(compact), [{ id: 'base', label: '', specs, isDefault: true }]);

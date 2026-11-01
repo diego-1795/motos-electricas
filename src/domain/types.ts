@@ -133,7 +133,8 @@ export interface ProductVariant {
   description?: string;
   price: Money;
   /** Sobrescribe specs del producto base si la variante los cambia */
-  specsOverride?: Partial<Pick<Specs, 'rangeKm' | 'rangeMinKm' | 'topSpeedKmh' | 'powerW' | 'battery' | 'weightKg' | 'controller'>>;
+  /** `features` sustituye la lista completa para esa versión (pestaña Especificaciones por versión) */
+  specsOverride?: Partial<Pick<Specs, 'rangeKm' | 'rangeMinKm' | 'topSpeedKmh' | 'powerW' | 'battery' | 'weightKg' | 'controller' | 'features'>>;
   availability: Availability;
   sku?: string;
   isDefault?: boolean;

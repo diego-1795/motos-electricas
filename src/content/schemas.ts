@@ -76,7 +76,13 @@ export const variant = z.object({
   tier: z.enum(['estandar', 'premium']),
   description: z.string().optional(),
   price: money,
-  specsOverride: specs.pick({ rangeKm: true, rangeMinKm: true, topSpeedKmh: true, powerW: true, battery: true, weightKg: true, controller: true }).partial().optional(),
+  // `features`: lista completa de características de ESA versión (la pestaña Especificaciones la muestra por versión).
+  // Va fuera del pick: el `.default([])` de specs.features convertiría una ausencia en lista vacía y borraría las de la base.
+  specsOverride: specs
+    .pick({ rangeKm: true, rangeMinKm: true, topSpeedKmh: true, powerW: true, battery: true, weightKg: true, controller: true })
+    .partial()
+    .extend({ features: z.array(z.string()).min(1).optional() })
+    .optional(),
   availability,
   sku: z.string().optional(),
   isDefault: z.boolean().optional(),

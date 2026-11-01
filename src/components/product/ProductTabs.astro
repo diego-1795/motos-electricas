@@ -1,6 +1,6 @@
 ---
 import type { ImageRef } from '../../domain/types';
-import type { SpecRow, VariantSpecs } from '../../domain/specTable';
+import type { FeatureGroups, SpecRow, VariantSpecs } from '../../domain/specTable';
 import SpecTiles from './SpecTiles.astro';
 import Pic from '../ui/Pic.astro';
 import WhatsAppLink from '../ui/WhatsAppLink.astro';
@@ -21,7 +21,8 @@ interface Props {
   tiles: SpecRow[];
   specRows: SpecRow[];
   variants: VariantSpecs[];
-  features: string[];
+  /** Características comunes + exclusivas por versión (featureGroups) */
+  features: FeatureGroups;
   manualUrl?: string;
   videoUrl?: string;
   /** Póster del facade de vídeo (se usa la primera foto del producto) */
@@ -103,10 +104,26 @@ const tabs = [
   <section class="ptabs__panel" role="tabpanel" id="panel-especificaciones" aria-labelledby="tab-especificaciones" tabindex="0" hidden data-panel>
     <h3 class="ptabs__title">Especificaciones</h3>
     {
-      features.length > 0 ? (
-        <ul class="ptabs__features">
-          {features.map((f) => <li>{f}</li>)}
-        </ul>
+      multiVariant && features.byVariant.length > 0 && (
+        <p class="ptabs__variant" aria-live="polite">
+          Características de la versión <strong data-variant-name>{defaultVariant?.label}</strong>. Cambia la versión en el configurador para ver las de la otra.
+        </p>
+      )
+    }
+    {
+      features.common.length + features.byVariant.length > 0 ? (
+        <>
+          {features.byVariant.map((v) => (
+            <ul class="ptabs__features ptabs__features--variant spec-variant" data-spec-variant={v.id} aria-label={`Exclusivas de la versión ${v.label}`}>
+              {v.features.map((f) => (
+                <li>
+                  {f} <span class="spec-variant__tier">{v.label}</span>
+                </li>
+              ))}
+            </ul>
+          ))}
+          <ul class="ptabs__features">{features.common.map((f) => <li>{f}</li>)}</ul>
+        </>
       ) : (
         <p class="muted">Consulta la ficha técnica o pregúntanos por WhatsApp.</p>
       )
@@ -269,6 +286,16 @@ const tabs = [
     gap: var(--s-2);
     font-size: var(--fs-sm);
     padding-left: 1.1em;
+  }
+  /* Líneas propias de la versión elegida, destacadas sobre las comunes */
+  .ptabs__features--variant {
+    padding: var(--s-3) var(--s-4) var(--s-3) calc(var(--s-4) + 1.1em);
+    border-left: 3px solid var(--accent);
+    background: var(--bg-elev);
+    border-radius: 0 var(--r-md) var(--r-md) 0;
+  }
+  .ptabs__features--variant + .ptabs__features--variant {
+    margin-top: var(--s-3);
   }
   .ptabs__manual {
     display: flex;

@@ -13,7 +13,7 @@ import CompareToggle from '../../islands/CompareToggle';
 import { repos } from '../../data';
 import type { Product } from '../../domain/types';
 import { availabilityLabel, effectiveSpecs, fromPrice, productAvailability, sortedVariants } from '../../domain/product';
-import { specTable, specTiles, variantSpecs } from '../../domain/specTable';
+import { featureGroups, specTable, specTiles, variantSpecs } from '../../domain/specTable';
 import { formatMoney } from '../../domain/money';
 import { publicSrc, resolveImage } from '../../lib/images';
 import { breadcrumbSchema, faqSchema, productSchema } from '../../lib/seo/jsonld';
@@ -65,6 +65,7 @@ const mainOptimizedSrc = galleryColors[0] ? colorImages[galleryColors[0].id]!.sr
 const tiles = specTiles(p);
 const specRows = specTable(p);
 const variants = variantSpecs(p);
+const features = featureGroups(p);
 ---
 
 <BaseLayout
@@ -144,7 +145,7 @@ const variants = variantSpecs(p);
     <!-- PESTAÑAS: ficha · especificaciones · manual · video -->
     <section class="container section pdp__section" aria-labelledby="info-h">
       <h2 id="info-h" class="visually-hidden">Información técnica de {p.name}</h2>
-      <ProductTabs name={p.name} slug={p.slug} tiles={tiles} specRows={specRows} variants={variants} features={specs.features} manualUrl={p.manualUrl} videoUrl={p.videoUrl} poster={p.images[0]!} />
+      <ProductTabs name={p.name} slug={p.slug} tiles={tiles} specRows={specRows} variants={variants} features={features} manualUrl={p.manualUrl} videoUrl={p.videoUrl} poster={p.images[0]!} />
     </section>
 
     <!-- TECNOLOGÍA -->

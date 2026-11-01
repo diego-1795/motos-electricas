@@ -342,7 +342,7 @@
   display: block;
 }
 .spec-variant--off {
-  display: none;
+  display: none !important; /* gana a los display scoped de dd/ul (p. ej. .ptabs__features { display: grid }) */
 }
 .spec-variant__tier {
   margin-left: var(--s-1);
