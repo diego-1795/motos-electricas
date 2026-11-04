@@ -9,20 +9,20 @@
   "brand": "Raiden",
   "images": [
     {
-      "src": "~/assets/products/vortex-kobra-negro.jpg",
+      "src": "~/assets/products/vortex-kobra-negro.webp",
       "alt": "Vortex Kobra en color negro",
       "width": 2020,
       "height": 2486
     },
     {
-      "src": "~/assets/products/vortex-kobra-rosa.jpg",
+      "src": "~/assets/products/vortex-kobra-rosa.webp",
       "alt": "Vortex Kobra en color rosa",
       "width": 2020,
       "height": 2486
     }
   ],
   "heroImage": {
-    "src": "~/assets/hero/vortex-kobra.jpg",
+    "src": "~/assets/hero/vortex-kobra.webp",
     "alt": "Bicimoto eléctrica RAIDEN Vortex Kobra",
     "width": 1577,
     "height": 672
@@ -186,7 +186,7 @@
       "name": "Negro",
       "hex": "#111315",
       "image": {
-        "src": "~/assets/products/vortex-kobra-negro.jpg",
+        "src": "~/assets/products/vortex-kobra-negro.webp",
         "alt": "Vortex Kobra en color negro",
         "width": 2020,
         "height": 2486
@@ -197,7 +197,7 @@
       "name": "Rosa",
       "hex": "#E8A0BF",
       "image": {
-        "src": "~/assets/products/vortex-kobra-rosa.jpg",
+        "src": "~/assets/products/vortex-kobra-rosa.webp",
         "alt": "Vortex Kobra en color rosa",
         "width": 2020,
         "height": 2486

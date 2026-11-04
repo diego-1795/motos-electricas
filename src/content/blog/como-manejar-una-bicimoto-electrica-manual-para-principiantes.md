@@ -5,7 +5,7 @@ category: "guias"
 publishedAt: "2026-11-13T08:00:00.000Z"
 author: "Equipo Raiden"
 image:
-  src: "~/assets/blog/como-manejar-una-bicimoto-electrica.jpg"
+  src: "~/assets/blog/como-manejar-una-bicimoto-electrica.webp"
   alt: "Conductor principiante practicando con una bicimoto eléctrica RAIDEN"
   width: 1264
   height: 848

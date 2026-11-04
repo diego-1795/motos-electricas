@@ -81,7 +81,15 @@ Las secciones siguientes describen la vía por git: necesaria para imágenes, bl
 
 1. Copiar el JSON de un modelo parecido (p. ej. `src/content/products/golden-eagle.json` para una bicimoto) y renombrarlo al nuevo slug (`kebab-case`, p. ej. `storm-x2.json`; el campo `slug` debe coincidir). La URL resultante será `/bicimotos/storm-x2`.
 2. Rellenar: `id` único, nombre, subtítulo, claim, descripción, `category` (`bicimotos`, `trimotos` o `promociones` para ediciones EG Motors), specs completas, 1–2 variantes (Estándar/Premium con `tier`; exactamente **una** con `isDefault: true`), colores, `accessories` (slugs de repuestos compatibles) y `related` (slugs de modelos existentes), `useCases`, highlights, `technology` (6 bloques), 6 FAQs, `featured` (orden en "Recomendados"), `publishedAt`.
-3. Añadir una foto por color en `src/assets/products/` como `<slug>-<color>.jpg` (p. ej. `storm-x2-negro.jpg`), una imagen hero en `src/assets/hero/` si el modelo va a la portada, y referenciarlas como `~/assets/products/<slug>-<color>.jpg` con `width`/`height` reales.
+3. Añadir una foto por color en `src/assets/products/` como `<slug>-<color>.webp` (p. ej. `storm-x2-negro.webp`), una imagen hero en `src/assets/hero/` si el modelo va a la portada, y referenciarlas como `~/assets/products/<slug>-<color>.webp` con `width`/`height` reales.
+   Todas las imágenes del repo van en **webp** (ADR-020). Si la foto llega en PNG, JPG o RAW, convertirla antes de añadirla y borrar el original:
+
+   ```bash
+   for f in *.png; do cwebp "$f" -q 90 -o "${f%.png}.webp" && rm "$f"; done
+   for f in *.ARW; do cwebp "$f" -q 90 -o "${f%.ARW}.webp" && rm "$f"; done
+   for f in *.jpg; do cwebp "$f" -q 50 -o "${f%.jpg}.webp" && rm "$f"; done
+   ```
+
 4. Ejecutar:
 
 ```bash

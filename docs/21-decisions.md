@@ -310,3 +310,13 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 **Consecuencias.** `npm audit --audit-level=high` vuelve a ser un guardarraíl útil; mantenerlo verde pasa a ser parte de la rutina (`npm outdated` + `npm audit` al cerrar cada fase). `npm test` es reproducible en cualquier checkout sin arrancar `astro dev`. Al subir Astro habrá que recomputar los hashes de la CSP (la CI los imprime).
 
 **Estado.** Aceptada (2026-10-27).
+
+## ADR-020 — Todas las imágenes del repositorio en webp
+
+**Fecha:** 2026-11-04 · **Estado:** aceptada
+
+**Contexto.** Los assets llegaban del cliente en JPG/PNG (unos 5 MB en `src/assets`). Astro ya sirve avif/webp al construir, pero el repo guardaba los originales pesados y sin criterio único.
+
+**Decisión.** Toda imagen bajo `src/assets` se guarda en webp (PNG → `cwebp -q 90`, JPG → `cwebp -q 50`, RAW → `-q 90`), se borra el original y se referencia como `~/assets/<carpeta>/<nombre>.webp`. Quedan fuera `public/favicon-32.png`, `apple-touch-icon.png` y `og-default.png`, que navegadores y redes sociales esperan en PNG. La receta está en docs/23 §3.
+
+**Consecuencias.** `src/assets` pasa de ~5 MB a 3,7 MB; una sola extensión en JSON, MD y componentes. Quien añada fotos (panel o git) debe convertirlas antes.

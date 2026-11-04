@@ -9,32 +9,32 @@
   "brand": "Raiden",
   "images": [
     {
-      "src": "~/assets/products/golden-eagle-negro.jpg",
+      "src": "~/assets/products/golden-eagle-negro.webp",
       "alt": "Golden Eagle en color negro",
       "width": 2020,
       "height": 2486
     },
     {
-      "src": "~/assets/products/golden-eagle-blanco.jpg",
+      "src": "~/assets/products/golden-eagle-blanco.webp",
       "alt": "Golden Eagle en color blanco",
       "width": 2020,
       "height": 2486
     },
     {
-      "src": "~/assets/products/golden-eagle-rojo.jpg",
+      "src": "~/assets/products/golden-eagle-rojo.webp",
       "alt": "Golden Eagle en color rojo",
       "width": 2020,
       "height": 2486
     },
     {
-      "src": "~/assets/products/golden-eagle-rosa.jpg",
+      "src": "~/assets/products/golden-eagle-rosa.webp",
       "alt": "Golden Eagle en color rosa",
       "width": 2020,
       "height": 2486
     }
   ],
   "heroImage": {
-    "src": "~/assets/hero/golden-eagle.jpg",
+    "src": "~/assets/hero/golden-eagle.webp",
     "alt": "Bicimoto eléctrica RAIDEN Golden Eagle",
     "width": 1577,
     "height": 672
@@ -198,7 +198,7 @@
       "name": "Negro",
       "hex": "#111315",
       "image": {
-        "src": "~/assets/products/golden-eagle-negro.jpg",
+        "src": "~/assets/products/golden-eagle-negro.webp",
         "alt": "Golden Eagle en color negro",
         "width": 2020,
         "height": 2486
@@ -209,7 +209,7 @@
       "name": "Blanco",
       "hex": "#F2F2F0",
       "image": {
-        "src": "~/assets/products/golden-eagle-blanco.jpg",
+        "src": "~/assets/products/golden-eagle-blanco.webp",
         "alt": "Golden Eagle en color blanco",
         "width": 2020,
         "height": 2486
@@ -220,7 +220,7 @@
       "name": "Rojo",
       "hex": "#C8102E",
       "image": {
-        "src": "~/assets/products/golden-eagle-rojo.jpg",
+        "src": "~/assets/products/golden-eagle-rojo.webp",
         "alt": "Golden Eagle en color rojo",
         "width": 2020,
         "height": 2486
@@ -231,7 +231,7 @@
       "name": "Rosa",
       "hex": "#E8A0BF",
       "image": {
-        "src": "~/assets/products/golden-eagle-rosa.jpg",
+        "src": "~/assets/products/golden-eagle-rosa.webp",
         "alt": "Golden Eagle en color rosa",
         "width": 2020,
         "height": 2486

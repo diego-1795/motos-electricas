@@ -9,7 +9,7 @@
   "brand": "EG Motors",
   "images": [
     {
-      "src": "~/assets/products/golden-eagle-eg-motors-blanco.jpg",
+      "src": "~/assets/products/golden-eagle-eg-motors-blanco.webp",
       "alt": "Golden Eagle edición EG Motors en color blanco",
       "width": 704,
       "height": 867
@@ -174,7 +174,7 @@
       "name": "Blanco",
       "hex": "#F2F2F0",
       "image": {
-        "src": "~/assets/products/golden-eagle-eg-motors-blanco.jpg",
+        "src": "~/assets/products/golden-eagle-eg-motors-blanco.webp",
         "alt": "Golden Eagle edición EG Motors en color blanco",
         "width": 704,
         "height": 867

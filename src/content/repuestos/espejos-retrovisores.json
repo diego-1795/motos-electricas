@@ -8,7 +8,7 @@
     "currency": "PEN"
   },
   "image": {
-    "src": "~/assets/repuestos/espejos-frontal.jpg",
+    "src": "~/assets/repuestos/espejos-frontal.webp",
     "alt": "Espejos retrovisores",
     "width": 2018,
     "height": 2537

@@ -5,7 +5,7 @@
   "description": "Bicimotos eléctricas RAIDEN: Golden Eagle, Royal Tiger y Vortex Kobra. 25 km/h, sin licencia, batería Chilwee y 12 meses de garantía. Precios en soles desde S/ 1,200.",
   "tagline": "Descubre tu instinto RAIDEN",
   "image": {
-    "src": "~/assets/hero/golden-eagle.jpg",
+    "src": "~/assets/hero/golden-eagle.webp",
     "alt": "Bicimoto eléctrica RAIDEN Golden Eagle en el laboratorio",
     "width": 1577,
     "height": 672

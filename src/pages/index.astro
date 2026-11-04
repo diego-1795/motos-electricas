@@ -28,7 +28,7 @@ const posts = (await repos.blog.all()).slice(0, 3);
 const fmtDate = new Intl.DateTimeFormat(site.locale, { day: 'numeric', month: 'short' });
 
 /* Galería de clientes: 6 fotos del cliente (960x1280), de una en una (decisión 2026-10-24).
-   Para cambiar la selección basta editar esta lista (src/assets/clientes/raider-1..9.jpg). */
+   Para cambiar la selección basta editar esta lista (src/assets/clientes/raider-1..9.webp). */
 const raiders: ImageRef[] = [1, 2, 3, 5, 6, 8].map((n) => ({
   src: `~/assets/clientes/raider-${n}.jpg`,
   alt: 'Cliente RAIDEN con su bicimoto',
@@ -42,7 +42,7 @@ const allReviews = await repos.testimonials.all();
 const testimonials = pickTestimonials(allReviews, 3);
 const reviewsAvg = averageRating(allReviews);
 
-const serviceImg: ImageRef = { src: '~/assets/hero/servicio-tecnico.jpg', alt: 'Técnico RAIDEN revisando una bicimoto eléctrica', width: 1614, height: 640 };
+const serviceImg: ImageRef = { src: '~/assets/hero/servicio-tecnico.webp', alt: 'Técnico RAIDEN revisando una bicimoto eléctrica', width: 1614, height: 640 };
 const catIcons: Record<string, string> = {
   bicimotos: 'M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM5 14l4-7h4l3 7M9 7h5l2 3',
   trimotos: 'M3 17h2m14 0h2M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0zm10 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM7 17V9h8l3 5v3M3 9h4',

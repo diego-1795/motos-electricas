@@ -5,7 +5,7 @@ category: "guias"
 publishedAt: "2026-10-30T08:00:00.000Z"
 author: "Equipo Raiden"
 image:
-  src: "~/assets/blog/que-es-una-bicimoto.jpg"
+  src: "~/assets/blog/que-es-una-bicimoto.webp"
   alt: "Bicimoto eléctrica RAIDEN estacionada en una calle de la ciudad"
   width: 1264
   height: 848

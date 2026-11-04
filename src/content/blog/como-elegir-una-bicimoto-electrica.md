@@ -5,7 +5,7 @@ category: "compra"
 publishedAt: "2026-11-06T08:00:00.000Z"
 author: "Equipo Raiden"
 image:
-  src: "~/assets/blog/como-elegir-una-bicimoto-electrica.jpg"
+  src: "~/assets/blog/como-elegir-una-bicimoto-electrica.webp"
   alt: "Persona comparando bicimotos eléctricas RAIDEN antes de comprar"
   width: 1264
   height: 848

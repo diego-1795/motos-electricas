@@ -9,20 +9,20 @@
   "brand": "Raiden",
   "images": [
     {
-      "src": "~/assets/products/titan-rhino-verde.jpg",
+      "src": "~/assets/products/titan-rhino-verde.webp",
       "alt": "Titan Rhino en color verde",
       "width": 2020,
       "height": 2486
     },
     {
-      "src": "~/assets/products/titan-rhino-rojo.jpg",
+      "src": "~/assets/products/titan-rhino-rojo.webp",
       "alt": "Titan Rhino en color rojo",
       "width": 2020,
       "height": 2486
     }
   ],
   "heroImage": {
-    "src": "~/assets/hero/titan-rhino.jpg",
+    "src": "~/assets/hero/titan-rhino.webp",
     "alt": "Trimoto eléctrica RAIDEN Titan Rhino",
     "width": 1577,
     "height": 672
@@ -111,7 +111,7 @@
       "name": "Verde",
       "hex": "#2E7D5B",
       "image": {
-        "src": "~/assets/products/titan-rhino-verde.jpg",
+        "src": "~/assets/products/titan-rhino-verde.webp",
         "alt": "Titan Rhino en color verde",
         "width": 2020,
         "height": 2486
@@ -122,7 +122,7 @@
       "name": "Rojo",
       "hex": "#C8102E",
       "image": {
-        "src": "~/assets/products/titan-rhino-rojo.jpg",
+        "src": "~/assets/products/titan-rhino-rojo.webp",
         "alt": "Titan Rhino en color rojo",
         "width": 2020,
         "height": 2486

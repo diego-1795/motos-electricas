@@ -5,7 +5,7 @@
   "description": "Trimoto eléctrica RAIDEN Titan Rhino: motor de 800 W, 250 kg de carga, modo reversa y batería de 60V 20Ah. Fuerza y estabilidad para el trabajo diario. Desde S/ 2,700.",
   "tagline": "Fuerza, resistencia y capacidad",
   "image": {
-    "src": "~/assets/hero/titan-rhino.jpg",
+    "src": "~/assets/hero/titan-rhino.webp",
     "alt": "Trimoto eléctrica RAIDEN Titan Rhino en el laboratorio",
     "width": 1577,
     "height": 672

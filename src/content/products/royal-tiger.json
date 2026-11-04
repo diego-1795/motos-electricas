@@ -9,26 +9,26 @@
   "brand": "Raiden",
   "images": [
     {
-      "src": "~/assets/products/royal-tiger-negro.jpg",
+      "src": "~/assets/products/royal-tiger-negro.webp",
       "alt": "Royal Tiger en color negro",
       "width": 2020,
       "height": 2486
     },
     {
-      "src": "~/assets/products/royal-tiger-naranja.jpg",
+      "src": "~/assets/products/royal-tiger-naranja.webp",
       "alt": "Royal Tiger en color naranja",
       "width": 2020,
       "height": 2486
     },
     {
-      "src": "~/assets/products/royal-tiger-rosa.jpg",
+      "src": "~/assets/products/royal-tiger-rosa.webp",
       "alt": "Royal Tiger en color rosa",
       "width": 2020,
       "height": 2486
     }
   ],
   "heroImage": {
-    "src": "~/assets/hero/royal-tiger.jpg",
+    "src": "~/assets/hero/royal-tiger.webp",
     "alt": "Bicimoto eléctrica RAIDEN Royal Tiger",
     "width": 1577,
     "height": 672
@@ -192,7 +192,7 @@
       "name": "Negro",
       "hex": "#111315",
       "image": {
-        "src": "~/assets/products/royal-tiger-negro.jpg",
+        "src": "~/assets/products/royal-tiger-negro.webp",
         "alt": "Royal Tiger en color negro",
         "width": 2020,
         "height": 2486
@@ -203,7 +203,7 @@
       "name": "Naranja",
       "hex": "#F26B1D",
       "image": {
-        "src": "~/assets/products/royal-tiger-naranja.jpg",
+        "src": "~/assets/products/royal-tiger-naranja.webp",
         "alt": "Royal Tiger en color naranja",
         "width": 2020,
         "height": 2486
@@ -214,7 +214,7 @@
       "name": "Rosa",
       "hex": "#E8A0BF",
       "image": {
-        "src": "~/assets/products/royal-tiger-rosa.jpg",
+        "src": "~/assets/products/royal-tiger-rosa.webp",
         "alt": "Royal Tiger en color rosa",
         "width": 2020,
         "height": 2486
