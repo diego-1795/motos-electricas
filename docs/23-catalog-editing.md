@@ -87,7 +87,7 @@ Las secciones siguientes describen la vía por git: necesaria para imágenes, bl
    ```bash
    for f in *.png; do cwebp "$f" -q 90 -o "${f%.png}.webp" && rm "$f"; done
    for f in *.ARW; do cwebp "$f" -q 90 -o "${f%.ARW}.webp" && rm "$f"; done
-   for f in *.jpg; do cwebp "$f" -q 50 -o "${f%.jpg}.webp" && rm "$f"; done
+   for f in *.jpg; do cwebp "$f" -q 90 -o "${f%.jpg}.webp" && rm "$f"; done
    ```
 
 4. Ejecutar:
@@ -101,7 +101,9 @@ npm run validate:content && npm run build
 Notas:
 - `isHero: true` solo puede tenerlo **un** producto (el del hero de la portada).
 - `specs.battery.capacityKwh` debe ser V·Ah/1000 (el validador lo comprueba).
-- Licencias: `sin-licencia`, `B-I`, `B-IIa`, `B-IIb`, `B-IIc` (MTC). Las bicimotos de 25 km/h llevan `sin-licencia` con el texto "en general sin licencia (confirmar con MTC)"; ante la duda, confirmar con el asesor legal antes de publicar.
+- Licencias: `sin-licencia`, `B-I`, `B-IIa`, `B-IIb`, `B-IIc` (MTC). Las bicimotos de 25 km/h llevan `sin-licencia` con el texto "en general sin licencia (confirmar con MTC)"; ante la duda, confirmar con el asesor legal antes de publicar. El campo solo se valida: la ficha técnica y el comparador **no** muestran fila de licencia (petición del cliente, 2026-11-04).
+- Garantía: `warrantyMonths` y `batteryWarrantyMonths` en **6** (motor y batería; cliente, 2026-11-04). La ficha muestra "6 meses (motor y batería)" cuando coinciden y "N meses (batería: M meses)" si difieren. Las páginas `/garantia`, `/servicio-tecnico` y `/legal/aviso-legal` leen `site.warrantyMonths` (`src/config/site.ts`); si cambia el plazo hay que actualizar la constante, los cinco JSON y los textos de highlights, `technology`, `features` y FAQ que citan la cifra.
+- `specs.seats` se rotula **"Asientos"** en la ficha y en el comparador.
 - Tras añadir el JSON no hace falta registrar rutas: `/bicimotos/<slug>` (o `/trimotos/<slug>`) se genera sola desde `category`.
 
 ## 4. Añadir un repuesto
