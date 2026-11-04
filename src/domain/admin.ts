@@ -15,8 +15,19 @@ import type { Part, Product } from './types';
  *   DELETE /api/admin/products/:slug         DeleteBody    → DeleteResult           (solo admin)
  *   DELETE /api/admin/repuestos/:slug        DeleteBody    → DeleteResult           (solo admin)
  *   GET    /api/admin/deploy                 → DeployStatus
+ * Blog (ADR-023, solo admin):
+ *   GET    /api/admin/blog                   → BlogList
+ *   GET    /api/admin/blog/:slug             → BlogEntry
+ *   PUT    /api/admin/blog/:slug             BlogPutBody   → BlogWriteResult (crea si no hay sha)
+ *   DELETE /api/admin/blog/:slug             DeleteBody    → DeleteResult
+ * Subidas (ADR-023, solo admin, solo PDF a public/docs):
+ *   POST   /api/admin/uploads                UploadBody    → UploadResult
  * Errores: AdminError con el código HTTP correspondiente (401, 403, 404, 409, 422, 502).
  */
+
+import type { BlogFrontmatter } from './blogRules';
+
+export type { BlogFrontmatter };
 
 export type AdminRole = 'admin' | 'editor';
 
@@ -120,6 +131,68 @@ export interface DeployStatus {
   url?: string;
   commitSha?: string;
   commitMessage?: string;
+}
+
+/* ---------- Blog (ADR-023) ---------- */
+
+/** Fila de la lista de artículos (sin cuerpo) */
+export interface BlogSummary {
+  slug: string;
+  title: string;
+  category: BlogFrontmatter['category'];
+  publishedAt: string;
+  updatedAt?: string;
+  author: string;
+  hasImage: boolean;
+  sha: string;
+  /** src/content/blog/<slug>.md */
+  path: string;
+}
+
+export interface BlogList {
+  posts: BlogSummary[];
+  branch: string;
+}
+
+/** Artículo completo: frontmatter ya validado + cuerpo Markdown + sha del fichero */
+export interface BlogEntry {
+  slug: string;
+  frontmatter: BlogFrontmatter;
+  body: string;
+  sha: string;
+  path: string;
+}
+
+/** Guardar un artículo (solo admin). Sin sha = crear; con sha = sustituir. */
+export interface BlogPutBody {
+  sha?: string;
+  reason?: string;
+  frontmatter: BlogFrontmatter;
+  body: string;
+}
+
+export interface BlogWriteResult extends BlogEntry {
+  commit: CommitInfo;
+}
+
+/* ---------- Subidas (ADR-023): solo PDF; las imágenes van por git ---------- */
+
+/** PDF a escribir en el repo: ruta blanca (public/docs/<kebab>.pdf) + bytes en base64 */
+export interface UploadBody {
+  path: string;
+  contentBase64: string;
+  reason?: string;
+}
+
+export interface UploadResult {
+  path: string;
+  /** Referencia para el contenido: `/docs/x.pdf` */
+  ref: string;
+  bytes: number;
+  sha: string;
+  /** true si sustituyó un fichero que ya existía */
+  replaced: boolean;
+  commit: CommitInfo;
 }
 
 /** Cabecera del modo local (solo wrangler pages dev; ver docs/19-deployment.md) */

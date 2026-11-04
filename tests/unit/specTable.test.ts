@@ -61,12 +61,21 @@ describe('specTiles / specTable', () => {
     expect(specTiles(p, true).map((t) => t.label)).toEqual(['Autonomía', 'Velocidad', 'Potencia', 'Batería', 'Carga']);
   });
 
-  it('la tabla incluye garantía y licencia como valores únicos', () => {
+  it('la tabla rotula "Asientos", no muestra licencia y da la garantía como valor único', () => {
     const rows = specTable(p);
+    const labels = rows.map((t) => t.label);
     const by = Object.fromEntries(rows.map((t) => [t.label, t]));
-    expect(by['Licencia']!.value).toBe('Sin licencia');
-    expect(by['Garantía']!.value).toMatch(/meses/);
+    expect(labels).not.toContain('Licencia');
+    expect(labels).not.toContain('Plazas');
+    expect(by['Asientos']!.value).toBe('2');
+    expect(by['Garantía']!.value).toBe('6 meses (motor y batería)');
     expect(by['Autonomía (declarada)']!.byVariant).toHaveLength(2);
+  });
+
+  it('garantía: formato "N meses (batería: M meses)" solo cuando motor y batería difieren', () => {
+    const q = makeProduct({ specs: baseSpecs({ warrantyMonths: 12, batteryWarrantyMonths: 6 }) });
+    const by = Object.fromEntries(specTable(q).map((t) => [t.label, t]));
+    expect(by['Garantía']!.value).toBe('12 meses (batería: 6 meses)');
   });
 
   it('featureGroups: comunes en el orden de la versión por defecto y exclusivas por versión', () => {

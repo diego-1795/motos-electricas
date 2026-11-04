@@ -88,6 +88,51 @@ test.describe('Portada: hero slider', () => {
     expect(Math.abs((await scrollLeft(page)) - target)).toBeLessThanOrEqual(1);
   });
 
+  /** Queja del cliente (2026-11-04): "la imagen principal sale muy oscura". La moto no debe llevar velo encima. */
+  test('la moto del hero se ve: en móvil la foto va encima del texto; en escritorio el texto queda en la mitad izquierda', async ({ page, isMobile }) => {
+    await page.goto('/');
+    const slide = page.locator('[data-slide]').first();
+    const media = (await slide.locator('.hs__media').boundingBox())!;
+    const title = (await slide.locator('h1').boundingBox())!;
+    const vw = page.viewportSize()!.width;
+    if (isMobile) {
+      // Apilado: la foto termina antes de que empiece el título y ocupa todo el ancho
+      expect(media.y + media.height).toBeLessThanOrEqual(title.y + 1);
+      expect(Math.round(media.width)).toBe(vw);
+      // El velo es solo un fundido inferior (no un degradado sobre toda la foto)
+      const bg = await slide.locator('.hs__media').evaluate((el) => getComputedStyle(el, '::after').backgroundImage);
+      expect(bg).toMatch(/to top|0deg/);
+      expect(bg).not.toMatch(/radial-gradient/);
+    } else {
+      // El bloque de texto no invade el centro, donde está el vehículo
+      expect(title.x + title.width).toBeLessThanOrEqual(vw * 0.55);
+      expect(media.height).toBeGreaterThan(400);
+      const bg = await slide.locator('.hs__media').evaluate((el) => getComputedStyle(el, '::after').backgroundImage);
+      // Franja izquierda que termina en transparente (rgba(17, 17, 17, 0)) y sin el radial azul antiguo
+      expect(bg).toMatch(/rgba\(17, 17, 17, 0\)/);
+      expect(bg).not.toMatch(/radial-gradient/);
+    }
+  });
+
+  test('el texto de "Productos recientes" es el del cliente y los antetítulos (eyebrows) son legibles (≥ 15 px, por debajo del H2)', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.recent .sh__text')).toHaveText(
+      'Bicimotos de 25 km/h y trimotos convertibles pasajeros/carga. Disponibles en versiones estándar y premium, garantía de 6 meses en batería y motor.',
+    );
+    for (const text of ['Descubre tu instinto', 'Productos recientes', 'Raiders satisfechos', 'Comunidad RAIDEN']) {
+      const eyebrow = page.locator('.eyebrow', { hasText: text }).first();
+      const fs = await eyebrow.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+      expect(fs, text).toBeGreaterThanOrEqual(15);
+      expect(fs, text).toBeLessThanOrEqual(17);
+      await expect(eyebrow).toHaveCSS('text-transform', 'uppercase');
+    }
+    const h2 = await page.locator('.recent h2').evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    expect(h2).toBeGreaterThanOrEqual(26);
+    // Las etiquetas dentro de tarjetas (categoría del blog) siguen compactas
+    const small = page.locator('.blog__card .eyebrow--sm').first();
+    if (await small.count()) expect(await small.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeLessThanOrEqual(12.5);
+  });
+
   test('las secciones de portada enlazan a categorías, productos y repuestos', async ({ page }) => {
     await page.goto('/');
     for (const href of ['/bicimotos', '/trimotos', '/repuestos']) {

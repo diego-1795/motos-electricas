@@ -1,12 +1,12 @@
 import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
-import { categorySlug, image, partSchema, productSchema } from './content/schemas';
+import { blogSchema, categorySlug, image, partSchema, productSchema } from './content/schemas';
 
 /**
  * Content collections = "base de datos" del MVP (git como CMS).
- * Los esquemas de productos y repuestos viven en src/content/schemas.ts (compartidos con
- * el panel de administración, ADR-018); el resto se define aquí. Reflejan src/domain/types.ts.
+ * Los esquemas de productos, repuestos y blog viven en src/content/schemas.ts (compartidos con
+ * el panel de administración, ADR-018 y ADR-023); el resto se define aquí. Reflejan src/domain/types.ts.
  * El repositorio (src/data) es la única capa que los consume.
  */
 
@@ -33,19 +33,10 @@ const categories = defineCollection({
   }),
 });
 
+// readingMinutes NO va en el frontmatter: lo calcula src/domain/reading.ts del cuerpo (ADR-016)
 const blog = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    category: z.enum(['guias', 'comparativas', 'autonomia', 'baterias', 'mantenimiento', 'legislacion', 'movilidad', 'compra']),
-    publishedAt: z.string(),
-    updatedAt: z.string().optional(),
-    author: z.string(),
-    // readingMinutes NO va en el frontmatter: lo calcula src/domain/reading.ts del cuerpo
-    image: image.optional(),
-    relatedProducts: z.array(z.string()).default([]),
-  }),
+  schema: blogSchema,
 });
 
 const faqs = defineCollection({

@@ -16,6 +16,7 @@ import {
   tierLabel,
   TIER_ORDER,
   variantPrice,
+  warrantyLabel,
 } from '../../src/domain/product';
 import { pen } from '../../src/domain/money';
 import { baseSpecs, makeProduct, norm, premiumVariant, variant } from './fixtures';
@@ -109,6 +110,10 @@ describe('labels', () => {
     expect(availabilityLabel.agotado).toBe('Agotado');
     expect(licenseLabel['sin-licencia']).toBe('Sin licencia');
     expect(licenseLabel['B-IIb']).toBe('Licencia B-IIb');
+  });
+  it('warrantyLabel: "6 meses (motor y batería)" si coinciden; "12 meses (batería: 6 meses)" si difieren', () => {
+    expect(warrantyLabel(baseSpecs({ warrantyMonths: 6, batteryWarrantyMonths: 6 }))).toBe('6 meses (motor y batería)');
+    expect(warrantyLabel(baseSpecs({ warrantyMonths: 12, batteryWarrantyMonths: 6 }))).toBe('12 meses (batería: 6 meses)');
   });
   it('kw formatea con punto decimal es-PE y máx 1 decimal', () => {
     expect(norm(kw(5000))).toBe('5 kW');

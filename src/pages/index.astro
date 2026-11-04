@@ -2,7 +2,7 @@
 import Pic from '../components/ui/Pic.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroSlider from '../components/home/HeroSlider.astro';
-import ClientGallery from '../components/home/ClientGallery.astro';
+import ClientGrid from '../components/home/ClientGrid.astro';
 import { isCatalogVehicle } from '../domain/catalog';
 import PreloadImage from '../components/ui/PreloadImage.astro';
 import ProductCard from '../components/product/ProductCard.astro';
@@ -27,10 +27,10 @@ const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name])
 const posts = (await repos.blog.all()).slice(0, 3);
 const fmtDate = new Intl.DateTimeFormat(site.locale, { day: 'numeric', month: 'short' });
 
-/* Galería de clientes: 6 fotos del cliente (960x1280), de una en una (decisión 2026-10-24).
+/* Galería de clientes: 6 fotos del cliente (960x1280) en cuadrícula, todas visibles (decisión 2026-11-04).
    Para cambiar la selección basta editar esta lista (src/assets/clientes/raider-1..9.webp). */
 const raiders: ImageRef[] = [1, 2, 3, 5, 6, 8].map((n) => ({
-  src: `~/assets/clientes/raider-${n}.jpg`,
+  src: `~/assets/clientes/raider-${n}.webp`,
   alt: 'Cliente RAIDEN con su bicimoto',
   width: 960,
   height: 1280,
@@ -86,7 +86,7 @@ const catIcons: Record<string, string> = {
   <!-- 2. PRODUCTOS RECIENTES -->
   <section class="section recent" aria-labelledby="recent-h">
     <div class="container">
-      <SectionHeading eyebrow="Productos recientes" title="Descubre tu instinto RAIDEN" text="Bicimotos de 25 km/h sin licencia y una trimoto de carga. Versiones Estándar y Premium, garantía de 12 meses en batería y motor." />
+      <SectionHeading eyebrow="Productos recientes" title="Descubre tu instinto RAIDEN" text="Bicimotos de 25 km/h y trimotos convertibles pasajeros/carga. Disponibles en versiones estándar y premium, garantía de 6 meses en batería y motor." />
       <div class="grid-products recent__grid">
         {recent.map((p) => <ProductCard product={p} categoryLabel={categoryNames[p.category]} />)}
       </div>
@@ -101,7 +101,7 @@ const catIcons: Record<string, string> = {
   <section class="section raiders surface-dark" aria-labelledby="raiders-h">
     <div class="container">
       <SectionHeading eyebrow="Raiders satisfechos" title="Somos parte de cada momento, de cada historia" align="center" />
-      <ClientGallery images={raiders} />
+      <ClientGrid images={raiders} />
     </div>
   </section>
 
@@ -179,7 +179,7 @@ const catIcons: Record<string, string> = {
                 <a href={`/blog/${post.slug}`}>
                   {post.image && <Pic image={post.image} alt="" width={640} height={400} widths={[400, 640]} sizes="(min-width: 768px) 30vw, 92vw" class="blog__img" />}
                   <span class="blog__body">
-                    <span class="eyebrow">{blogCategoryLabel[post.category]}</span>
+                    <span class="eyebrow eyebrow--sm">{blogCategoryLabel[post.category]}</span>
                     <h3>{post.title}</h3>
                     <span class="muted blog__desc">{post.description}</span>
                     <small class="muted">

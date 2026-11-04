@@ -1,11 +1,12 @@
 import { z } from 'astro/zod';
 import type { Part, Product } from '../domain/types';
 import { partRules, productRules, type CatalogContext } from '../domain/catalogRules';
+import { blogRules, type BlogContext, type BlogFrontmatter } from '../domain/blogRules';
 
 /**
- * Esquemas zod del catálogo (productos y repuestos). Única definición, usada por:
+ * Esquemas zod del catálogo (productos y repuestos) y del blog. Única definición, usada por:
  *  - src/content.config.ts (validación en build de las content collections)
- *  - functions/api/admin/* (validación de lo que escribe el panel, ADR-018)
+ *  - functions/api/admin/* (validación de lo que escribe el panel, ADR-018 y ADR-023)
  * Reflejan src/domain/types.ts. `astro/zod` es el mismo zod que `astro:content`,
  * pero importable fuera de Astro (Pages Functions, Vitest).
  */
@@ -140,6 +141,20 @@ export const partSchema = z.object({
   hidden: z.boolean().optional(),
 });
 
+export const blogCategory = z.enum(['guias', 'comparativas', 'autonomia', 'baterias', 'mantenimiento', 'legislacion', 'movilidad', 'compra']);
+
+/** Frontmatter de src/content/blog/<slug>.md. `readingMinutes` NO va aquí: lo calcula src/domain/reading.ts del cuerpo (ADR-016). */
+export const blogSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  category: blogCategory,
+  publishedAt: z.string(),
+  updatedAt: z.string().optional(),
+  author: z.string(),
+  image: image.optional(),
+  relatedProducts: z.array(z.string()).default([]),
+});
+
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; errors: string[] };
 
 const issues = (e: z.ZodError): string[] => e.issues.map((i) => `${i.path.join('.') || '(raíz)'}: ${i.message}`);
@@ -159,4 +174,20 @@ export function parsePart(input: unknown, ctx: CatalogContext = {}): ParseResult
   const value = r.data as Part;
   const errors = partRules(value, ctx);
   return errors.length ? { ok: false, errors } : { ok: true, value };
+}
+
+export interface ParsedPost {
+  slug: string;
+  frontmatter: BlogFrontmatter;
+  body: string;
+}
+
+/** Artículo del blog: frontmatter (esquema) + reglas (src/domain/blogRules.ts). Lo ejecuta el servidor del panel antes de escribir (ADR-023). */
+export function parsePost(slug: string, frontmatter: unknown, body: unknown, ctx: BlogContext = {}): ParseResult<ParsedPost> {
+  if (typeof body !== 'string') return { ok: false, errors: ['body: el cuerpo del artículo debe ser texto Markdown'] };
+  const r = blogSchema.strict().safeParse(frontmatter);
+  if (!r.success) return { ok: false, errors: issues(r.error) };
+  const fm = r.data as BlogFrontmatter;
+  const errors = blogRules(slug, fm, body, ctx);
+  return errors.length ? { ok: false, errors } : { ok: true, value: { slug, frontmatter: fm, body } };
 }

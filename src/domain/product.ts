@@ -57,6 +57,16 @@ export const licenseLabel = {
 
 export const tierLabel: Record<VariantTier, string> = { estandar: 'Estándar', premium: 'Premium' };
 
+/**
+ * Garantía para la ficha y el comparador: "6 meses (motor y batería)" cuando
+ * motor y batería comparten plazo; si difieren, "12 meses (batería: 6 meses)".
+ */
+export function warrantyLabel(s: Specs): string {
+  return s.warrantyMonths === s.batteryWarrantyMonths
+    ? `${s.warrantyMonths} meses (motor y batería)`
+    : `${s.warrantyMonths} meses (batería: ${s.batteryWarrantyMonths} meses)`;
+}
+
 /** "30-35 km" si hay rango, "120 km" si no */
 export function rangeLabel(s: Specs): string {
   return s.rangeMinKm && s.rangeMinKm !== s.rangeKm ? `${s.rangeMinKm}-${s.rangeKm} km` : `${s.rangeKm} km`;

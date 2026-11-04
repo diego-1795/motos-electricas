@@ -523,6 +523,140 @@
   border-top: 1px solid var(--border);
 }
 
+/* Blog (ADR-023) */
+.adm-blog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.adm-blog__bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.adm-blog__bar .hint {
+  max-width: none;
+}
+.adm-td-actions .btn + a.btn,
+.adm-td-actions a.btn + .btn {
+  margin-left: var(--s-2);
+}
+.adm-textarea--short {
+  min-height: 5rem;
+}
+.adm-body {
+  min-height: 28rem;
+  line-height: 1.6;
+  font-size: var(--fs-sm);
+  tab-size: 2;
+}
+
+/* Imágenes por ruta (galería, foto por color, foto del artículo) */
+.adm-image {
+  display: grid;
+  gap: var(--s-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+  align-items: end;
+}
+.adm-image__src {
+  grid-column: 1 / -1;
+}
+.adm-image__src input {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.adm-image-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  align-items: flex-start;
+  padding: var(--s-3);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-md);
+}
+.adm-image-row .adm-image {
+  width: 100%;
+}
+.adm-color__image {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  align-items: flex-start;
+}
+.adm-color__image .adm-image {
+  width: 100%;
+}
+
+/* Subida de PDF (manual / ficha técnica) */
+.adm-url-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.adm-url-row .field {
+  flex: 1 1 16rem;
+}
+.adm-pdf {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+  min-height: 2.75rem;
+}
+.adm-pdf__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Ayuda (/admin/ayuda): guía en Markdown */
+.adm-help {
+  max-width: var(--container-narrow);
+}
+.adm-help .prose h1 {
+  font-size: var(--fs-2xl);
+}
+.adm-help .prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.adm-help .prose th,
+.adm-help .prose td {
+  text-align: left;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.adm-help .prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--bg-sunken);
+  padding: 0 0.3em;
+  border-radius: var(--r-sm);
+}
+.adm-help__nav {
+  display: flex;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+}
+.adm__header-link {
+  margin-left: auto;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 /* Móvil: cada fila de la tabla se apila como tarjeta con la etiqueta de cada columna */
 @media (max-width: 767px) {
   .adm-table-wrap {

@@ -320,3 +320,42 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 **Decisión.** Toda imagen bajo `src/assets` se guarda en webp (`cwebp -q 90` para PNG, JPG y RAW), se borra el original y se referencia como `~/assets/<carpeta>/<nombre>.webp`. Quedan fuera `public/favicon-32.png`, `apple-touch-icon.png` y `og-default.png`, que navegadores y redes sociales esperan en PNG. La receta está en docs/23 §3.
 
 **Consecuencias.** `src/assets` queda en ~10 MB (calidad 90 en todo, sin pérdida visible); una sola extensión en JSON, MD y componentes. Quien añada fotos (panel o git) debe convertirlas antes.
+
+## ADR-021 — Ficha sin licencia, "Asientos" en vez de "Plazas" y garantía de 6 meses en motor y batería
+
+**Fecha:** 2026-11-04 · **Estado:** aceptada
+
+**Contexto.** EG Motors revisó la ficha técnica y pidió tres cambios: "Asientos" (término habitual en Perú) en lugar de "Plazas"; retirar el apartado "Licencia", que genera consultas y compromisos que el distribuidor no quiere asumir en la ficha (la normativa se trata con matices en FAQ y blog); y fijar la garantía comercial en 6 meses para motor y batería (antes 12/12). La cifra estaba repetida como prosa en productos, categorías, FAQ, blog y las páginas `/garantia`, `/servicio-tecnico` y `/legal/aviso-legal` (que decía 24 meses).
+
+**Decisión.** (1) `specTable.ts` y `CompareTable.tsx` rotulan `specs.seats` como "Asientos". (2) Se elimina la fila de licencia de la ficha y del comparador; `specs.license` sigue en el esquema, los JSON, `catalogRules` y `validate-content` (regla "sin-licencia" vs velocidad). (3) `warrantyMonths` y `batteryWarrantyMonths` pasan a 6 en los cinco productos; `warrantyLabel()` en `domain/product.ts` muestra "6 meses (motor y batería)" cuando coinciden y "N meses (batería: M meses)" si difieren, compartida por ficha y comparador. (4) Nueva constante `site.warrantyMonths = 6` para las páginas estáticas; un test de contenido exige que los JSON coincidan con ella y que ningún texto de producto cite "12 meses". Las menciones a licencia y plazas en prosa (FAQ, blog, highlights "sin licencia (en general)") no cambian.
+
+**Consecuencias.** Dos fuentes de la cifra (constante + JSON) mantenidas coherentes por test; cambiar la garantía implica tocar la constante, los cinco JSON y los textos que la citan (docs/23 §3). El comparador pierde la fila de licencia. El esquema del panel no cambia.
+
+## ADR-022 — Portada según revisión del cliente: hero sin velo sobre el vehículo, clientes en cuadrícula, antetítulos legibles y logo blanco en el pie
+
+**Fecha:** 2026-11-04 · **Estado:** aceptada
+
+**Contexto.** Revisión de EG Motors: (1) "la imagen principal sale muy oscura, como si fuera fondo": el overlay del hero (lineal 0,92→0,15 + radial azul) cubría toda la foto, moto incluida; (2) los clientes debían verse "varios en fila", con fotos "más chicas" y "en 1 sola vista"; (3) los antetítulos DESCUBRE TU INSTINTO, PRODUCTOS RECIENTES, RAIDERS SATISFECHOS, COMUNIDAD RAIDEN (12 px) costaban de leer; (4) el cliente acepta el logo en blanco únicamente en el pie oscuro; (5) nuevo texto de "Productos recientes" (trimotos convertibles pasajeros/carga, garantía de 6 meses).
+
+**Decisión.**
+- **Hero.** En escritorio la foto va a sangre y el oscurecido es solo una franja izquierda bajo el texto (0,86 → 0 al 58 % del ancho) más una tira inferior para los controles; sin radial azul; el bloque de texto se limita al 46 % del contenedor con sombra suave. Por debajo de 1024 px la foto se apila encima del texto (4:3, zoom 1,15, solo un fundido inferior del 16 %) y el texto va sobre el negro de marca. Sustituye al overlay de ADR-015.
+- **Galería "Raiders satisfechos".** `ClientGrid` reemplaza al carrusel 1 a 1 de ADR-017: cuadrícula estática de 6 fotos 3:4, 6 en fila en escritorio y 3+3 en tablet/móvil, ~180 px de ancho máximo, sin JS. La selección de fotos sigue en `src/pages/index.astro`.
+- **Tipografía.** Token `--fs-eyebrow` (15→17 px) para `.eyebrow` en todo el sitio; `--fs-2xl` sube a 26→38 px para que el H2 siga por encima. Modificador `.eyebrow--sm` (12 px) para etiquetas dentro de tarjetas (categoría del blog).
+- **Logo.** En el pie, `<Logo invert>` (`brightness(0) invert(1)` sobre `logo-trim.webp`, que conserva el alfa) directamente sobre el fondo oscuro, sin placa blanca. Sustituye a la regla de ADR-015 "en el pie oscuro, sobre una placa blanca". Cabecera y resto del sitio siguen con el logo azul.
+
+**Consecuencias.** La portada móvil es algo más alta (foto + texto apilados) a cambio de un vehículo nítido; el LCP sigue siendo la misma imagen con prioridad. Toda sección con `.eyebrow` crece; donde deba seguir compacta se usa `.eyebrow--sm`. Tests: `home.spec.ts` y `promos-gallery.spec.ts`. Pendiente: Lighthouse móvil tras el cambio de layout del hero.
+
+## ADR-023 — Blog editable desde el panel (solo admin), subida solo de PDF, imágenes siempre por git en webp, campos manual/ficha/video en el editor
+
+**Fecha:** 2026-11-04 · **Estado:** aceptada
+
+**Contexto.** EG Motors pidió poder editar los textos y fotos del blog y saber cómo enlazar el manual en PDF y el video de YouTube de cada producto. El panel de ADR-018 cubría solo precios, visibilidad y fichas; blog e imágenes seguían por git. ADR-020 fija que toda imagen del repo es webp. Diego decidió que las imágenes no se suban desde el panel en ningún caso: el cliente se las envía, él las convierte (`cwebp -q 90`) y las coloca por git.
+
+**Decisión.**
+- El blog entra en el panel con el mismo patrón git-como-CMS: `src/content/blog/<slug>.md` se lee y escribe por la Contents API (`GET/PUT/DELETE /api/admin/blog[/:slug]`), solo para el rol `admin` (operación `blog` en `adminPolicy`; el editor recibe 403 y no ve la pestaña). `blogSchema` se traslada de `content.config.ts` a `src/content/schemas.ts` y lo comparten build y Functions; `parsePost` añade `blogRules` (slug, obligatorios, fechas ISO, `relatedProducts` existentes, foto `~/assets/blog/<kebab>.webp` con alt, sin €/EUR/carnet/IVA). El frontmatter se escribe con un serializador propio y determinista (`src/domain/frontmatter.ts`, sin dependencias); el tiempo de lectura sigue calculándose (ADR-016).
+- Única subida de ficheros del panel: `POST /api/admin/uploads`, solo PDF (cabecera `%PDF-`, 10 MB, cuerpo 14 MB) a `public/docs/<kebab>.pdf`, para manual y ficha técnica. Commit `chore(assets): subir …`.
+- Las imágenes (productos, repuestos, blog) van siempre por git en webp; en el panel se referencian solo por ruta (`~/assets/…`) con alt, ancho y alto, en campos visibles validados con `safeUrl` (galería y foto por color del producto; foto del artículo). Un producto cuyas fotos aún no están se guarda `hidden`.
+- El editor de producto expone `manualUrl`, `datasheetUrl` (`/docs/…` o https, con "Subir PDF") y `videoUrl` (normalizado a `https://www.youtube.com/watch?v=<id>`; `ProductTabs` ya lo embebe desde youtube-nocookie al pulsar).
+- Guía para el cliente en `docs/24-guia-administrador.md`, servida en `/admin/ayuda` (enlace "Ayuda" en el panel, ambos roles).
+
+**Consecuencias.** Un artículo o un PDF = un commit y un build, igual que una ficha. `GET /api/admin/blog` lee cada artículo (1+N subpeticiones; hasta ~45 artículos en el plan gratuito). Un `.md` escrito a mano fuera del subconjunto YAML admitido se señala con 502 y se corrige por git. Las fotos siguen dependiendo de Diego: la guía fija el flujo (enviar → convertir → colocar → escribir la ruta) y el uso de `hidden` mientras tanto. Sin dependencias nuevas; `public/_headers` y `ProductTabs.astro` no cambian.

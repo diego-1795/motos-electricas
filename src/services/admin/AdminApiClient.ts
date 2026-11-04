@@ -1,4 +1,23 @@
-import type { AdminCatalog, AdminError, AdminErrorCode, AdminKind, AdminUser, DeleteBody, DeleteResult, DeployStatus, PartPatch, ProductPatch, PutBody, WriteResult } from '../../domain/admin';
+import type {
+  AdminCatalog,
+  AdminError,
+  AdminErrorCode,
+  AdminKind,
+  AdminUser,
+  BlogEntry,
+  BlogList,
+  BlogPutBody,
+  BlogWriteResult,
+  DeleteBody,
+  DeleteResult,
+  DeployStatus,
+  PartPatch,
+  ProductPatch,
+  PutBody,
+  UploadBody,
+  UploadResult,
+  WriteResult,
+} from '../../domain/admin';
 import { LOCAL_USER_HEADER } from '../../domain/admin';
 import type { Part, Product } from '../../domain/types';
 
@@ -83,6 +102,29 @@ export class AdminApiClient {
 
   remove(kind: AdminKind, slug: string, body: DeleteBody): Promise<DeleteResult> {
     return this.request<DeleteResult>('DELETE', `/${kind}/${encodeURIComponent(slug)}`, body);
+  }
+
+  /* Blog (ADR-023, solo admin) */
+
+  blogList(): Promise<BlogList> {
+    return this.request<BlogList>('GET', '/blog');
+  }
+
+  blogGet(slug: string): Promise<BlogEntry> {
+    return this.request<BlogEntry>('GET', `/blog/${encodeURIComponent(slug)}`);
+  }
+
+  blogPut(slug: string, body: BlogPutBody): Promise<BlogWriteResult> {
+    return this.request<BlogWriteResult>('PUT', `/blog/${encodeURIComponent(slug)}`, body);
+  }
+
+  blogDelete(slug: string, body: DeleteBody): Promise<DeleteResult> {
+    return this.request<DeleteResult>('DELETE', `/blog/${encodeURIComponent(slug)}`, body);
+  }
+
+  /** Subida de webp (blog) o PDF (manual / ficha técnica) al repositorio (ADR-023, solo admin) */
+  upload(body: UploadBody): Promise<UploadResult> {
+    return this.request<UploadResult>('POST', '/uploads', body);
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {

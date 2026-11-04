@@ -179,12 +179,19 @@ table {
 .surface-dark .logo img {
   filter: brightness(0) invert(1);
 }
+/* Eyebrow (antetítulo de sección): 15→17 px (2026-11-04, petición del cliente: 12 px "dolía el ojo").
+   Mantiene mayúsculas y tracking; la jerarquía la marca el H2 (--fs-2xl, 26→38). Donde debe seguir
+   pequeño (etiquetas dentro de tarjetas: categoría del blog…) se añade el modificador .eyebrow--sm. */
 .eyebrow {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-eyebrow);
   font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   color: var(--fg-muted);
+}
+.eyebrow--sm {
+  font-size: var(--fs-xs);
 }
 .muted {
   color: var(--fg-muted);

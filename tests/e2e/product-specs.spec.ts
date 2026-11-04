@@ -86,4 +86,24 @@ test.describe('Ficha técnica por versión', () => {
     await expect(page.locator('[data-variant-name]')).toHaveCount(0);
     await expect(page.locator('.spec-grid')).toContainText('800 W');
   });
+
+  // Petición del cliente (2026-11-04): "Asientos" en vez de "Plazas", sin fila de licencia y garantía de 6 meses en motor y batería
+  for (const path of [GE, TITAN, '/promociones/golden-eagle-eg-motors']) {
+    test(`${path}: la tabla rotula "Asientos", no muestra "Licencia" y da 6 meses de garantía en motor y batería`, async ({ page }) => {
+      await page.goto(path);
+      const table = page.locator('.ptabs__table');
+      await expect(table).toBeAttached();
+      await expect(table.locator('th', { hasText: /^Asientos$/ })).toHaveCount(1);
+      await expect(table.locator('th', { hasText: /^Plazas$/ })).toHaveCount(0);
+      await expect(table.locator('th', { hasText: /Licencia/ })).toHaveCount(0);
+      await expect(table).not.toContainText('Licencia');
+      await expect(table).not.toContainText('12 meses');
+      const warranty = table.locator('tr', { hasText: 'Garantía' });
+      await expect(warranty).toHaveCount(1);
+      await expect(warranty).toContainText('6 meses (motor y batería)');
+      // El bloque "Garantía y servicio técnico" lee specs.warrantyMonths
+      await expect(page.locator('.pdp__warranty')).toContainText(/6 meses/);
+      await expect(page.locator('.pdp__warranty')).not.toContainText('12 meses');
+    });
+  }
 });

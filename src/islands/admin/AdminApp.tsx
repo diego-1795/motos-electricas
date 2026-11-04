@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { AdminCatalog, AdminKind, AdminUser, CatalogEntry, CommitInfo, DeleteResult, WriteResult } from '../../domain/admin';
 import type { Part, Product } from '../../domain/types';
 import { adminApi, AdminApiError } from '../../services/admin/AdminApiClient';
-import { AdminContext, CONFLICT_MESSAGE, findEntry, kindLabel, normalize, roleLabel, type AdminCtx, type Tone } from './context';
+import { AdminContext, CONFLICT_MESSAGE, findEntry, kindLabel, normalize, roleLabel, type AdminCtx, type AdminTab, type Tone } from './context';
 import CatalogTable from './CatalogTable';
 import DeployBanner from './DeployBanner';
 import AccessPanel from './AccessPanel';
@@ -10,10 +10,12 @@ import ProductEditor from './ProductEditor';
 import PartEditor from './PartEditor';
 import DuplicateDialog from './DuplicateDialog';
 import ConfirmDelete from './ConfirmDelete';
+import BlogPanel from './BlogPanel';
 
 /**
  * Raíz del panel /admin (ADR-018). Carga identidad y catálogo, mantiene el estado global
  * (catálogo con sha, mensajes aria-live, último commit para el banner) y abre los diálogos.
+ * La pestaña Blog (ADR-023) solo existe para el administrador y carga su lista aparte.
  * Toda petición pasa por AdminApiClient; las reglas de negocio viven en src/domain.
  */
 
@@ -30,12 +32,13 @@ type Dialog =
   | { type: 'delete'; kind: AdminKind; slug: string }
   | null;
 
-const TABS: AdminKind[] = ['products', 'repuestos'];
+const CATALOG_TABS: AdminKind[] = ['products', 'repuestos'];
+const tabTitle: Record<AdminTab, string> = { products: kindLabel.products.plural, repuestos: kindLabel.repuestos.plural, blog: 'Blog' };
 
 export default function AdminApp() {
   const api = adminApi;
   const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
-  const [tab, setTab] = useState<AdminKind>('products');
+  const [tab, setTab] = useState<AdminTab>('products');
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<{ text: string; tone: Tone; seq: number }>({ text: '', tone: 'info', seq: 0 });
   const [commit, setCommit] = useState<{ info: CommitInfo; seq: number } | null>(null);
@@ -141,18 +144,27 @@ export default function AdminApp() {
     [notify],
   );
 
+  const announce = useCallback(
+    (info: CommitInfo, text: string) => {
+      setCommit((c) => ({ info, seq: (c?.seq ?? 0) + 1 }));
+      notify(text);
+    },
+    [notify],
+  );
+
   const simulate = useCallback(
     (email: string | null) => {
       api.setLocalUser(email);
       setDialog(null);
+      setTab('products');
       void load();
     },
     [api, load],
   );
 
   const ctx = useMemo<AdminCtx | null>(
-    () => (phase.kind === 'ready' ? { user: phase.user, catalog: phase.catalog, api, notify, applyWrite, applyDelete, handleError, reload, reloadSeq, latestSha } : null),
-    [phase, api, notify, applyWrite, applyDelete, handleError, reload, reloadSeq, latestSha],
+    () => (phase.kind === 'ready' ? { user: phase.user, catalog: phase.catalog, api, notify, applyWrite, applyDelete, announce, handleError, reload, reloadSeq, latestSha } : null),
+    [phase, api, notify, applyWrite, applyDelete, announce, handleError, reload, reloadSeq, latestSha],
   );
 
   const liveRegions = (
@@ -214,20 +226,23 @@ export default function AdminApp() {
 
   const { user, catalog } = ctx;
   const isAdmin = user.role === 'admin';
+  // La pestaña Blog solo existe para el administrador (el servidor responde 403 al editor de todos modos)
+  const tabs: AdminTab[] = isAdmin ? [...CATALOG_TABS, 'blog'] : CATALOG_TABS;
+  const catalogTab: AdminKind = tab === 'blog' ? 'products' : tab;
   const q = normalize(search.trim());
-  const entries: CatalogEntry<Product | Part>[] = tab === 'products' ? catalog.products : catalog.repuestos;
+  const entries: CatalogEntry<Product | Part>[] = catalogTab === 'products' ? catalog.products : catalog.repuestos;
   const filtered = q ? entries.filter((e) => normalize(e.data.name).includes(q) || normalize(e.data.slug).includes(q)) : entries;
 
   const onTabKey = (e: KeyboardEvent) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
-    const i = TABS.indexOf(tab);
-    const next = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length]!;
+    const i = tabs.indexOf(tab);
+    const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length]!;
     selectTab(next);
     (document.getElementById(`adm-tab-${next}`) as HTMLButtonElement | null)?.focus();
   };
   // Al cambiar de colección se limpia el buscador (un filtro heredado dejaría la lista vacía sin explicación)
-  const selectTab = (k: AdminKind) => {
+  const selectTab = (k: AdminTab) => {
     setTab(k);
     setSearch('');
   };
@@ -254,8 +269,8 @@ export default function AdminApp() {
 
         <div class="adm-toolbar">
           <div class="tabs adm-tabs" role="tablist" aria-label="Colecciones" onKeyDown={onTabKey}>
-            {TABS.map((k) => {
-              const n = k === 'products' ? catalog.products.length : catalog.repuestos.length;
+            {tabs.map((k) => {
+              const n = k === 'products' ? catalog.products.length : k === 'repuestos' ? catalog.repuestos.length : null;
               return (
                 <button
                   key={k}
@@ -268,37 +283,44 @@ export default function AdminApp() {
                   tabIndex={tab === k ? 0 : -1}
                   onClick={() => selectTab(k)}
                 >
-                  {kindLabel[k].plural} <span class="adm-tab__count">{n}</span>
+                  {tabTitle[k]}
+                  {n !== null && <span class="adm-tab__count">{n}</span>}
                 </button>
               );
             })}
           </div>
-          <div class="adm-toolbar__right">
-            <input
-              type="search"
-              class="input adm-search"
-              placeholder="Buscar por nombre o slug"
-              aria-label="Buscar por nombre o slug"
-              value={search}
-              onInput={(e) => setSearch((e.target as HTMLInputElement).value)}
-            />
-            {isAdmin && (
-              <button type="button" class="btn btn--primary" onClick={() => setDialog({ type: 'duplicate', kind: tab })} data-admin-new>
-                {tab === 'products' ? 'Nuevo producto' : 'Nuevo repuesto'}
-              </button>
-            )}
-          </div>
+          {tab !== 'blog' && (
+            <div class="adm-toolbar__right">
+              <input
+                type="search"
+                class="input adm-search"
+                placeholder="Buscar por nombre o slug"
+                aria-label="Buscar por nombre o slug"
+                value={search}
+                onInput={(e) => setSearch((e.target as HTMLInputElement).value)}
+              />
+              {isAdmin && (
+                <button type="button" class="btn btn--primary" onClick={() => setDialog({ type: 'duplicate', kind: catalogTab })} data-admin-new>
+                  {catalogTab === 'products' ? 'Nuevo producto' : 'Nuevo repuesto'}
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         <section id={`adm-panel-${tab}`} role="tabpanel" aria-labelledby={`adm-tab-${tab}`} tabIndex={0} class="adm-tabpanel">
-          <CatalogTable
-            kind={tab}
-            entries={filtered}
-            total={entries.length}
-            admin={isAdmin}
-            onEdit={(slug) => setDialog({ type: 'edit', kind: tab, slug })}
-            onDelete={(slug) => setDialog({ type: 'delete', kind: tab, slug })}
-          />
+          {tab === 'blog' && isAdmin ? (
+            <BlogPanel />
+          ) : (
+            <CatalogTable
+              kind={catalogTab}
+              entries={filtered}
+              total={entries.length}
+              admin={isAdmin}
+              onEdit={(slug) => setDialog({ type: 'edit', kind: catalogTab, slug })}
+              onDelete={(slug) => setDialog({ type: 'delete', kind: catalogTab, slug })}
+            />
+          )}
         </section>
 
         <AccessPanel onSimulate={simulate} />
@@ -320,7 +342,7 @@ export default function AdminApp() {
         ))}
         {dialog?.type === 'delete' && isAdmin && (() => {
           const entry = findEntry(catalog, dialog.kind, dialog.slug);
-          return entry ? <ConfirmDelete kind={dialog.kind} entry={entry} onClose={() => setDialog(null)} /> : null;
+          return entry ? <ConfirmDelete kind={dialog.kind} entry={{ slug: entry.data.slug, name: entry.data.name, sha: entry.sha, path: entry.path }} onClose={() => setDialog(null)} /> : null;
         })()}
       </div>
     </AdminContext.Provider>

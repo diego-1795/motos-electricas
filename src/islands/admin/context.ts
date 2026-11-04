@@ -1,6 +1,6 @@
 import { createContext } from 'preact';
 import { useContext } from 'preact/hooks';
-import type { AdminCatalog, AdminKind, AdminUser, CatalogEntry, DeleteResult, WriteResult } from '../../domain/admin';
+import type { AdminCatalog, AdminKind, AdminUser, CatalogEntry, CommitInfo, DeleteResult, WriteResult } from '../../domain/admin';
 import type { Part, Product } from '../../domain/types';
 import type { AdminApiClient } from '../../services/admin/AdminApiClient';
 
@@ -18,6 +18,8 @@ export interface AdminCtx {
   applyWrite(kind: AdminKind, result: WriteResult<Product | Part>): void;
   /** Tras un borrado correcto */
   applyDelete(kind: AdminKind, slug: string, result: DeleteResult): void;
+  /** Tras una escritura fuera del catálogo (blog, subidas): anuncia el mensaje y dispara el banner de publicación */
+  announce(commit: CommitInfo, text: string): void;
   /** Convierte cualquier error en texto legible; un 409 avisa del conflicto y recarga el catálogo. */
   handleError(err: unknown): string;
   /** Vuelve a pedir el catálogo (conserva usuario y pestaña) */
@@ -49,6 +51,24 @@ export const kindLabel: Record<AdminKind, { singular: string; plural: string }> 
   products: { singular: 'producto', plural: 'Productos' },
   repuestos: { singular: 'repuesto', plural: 'Repuestos' },
 };
+
+/** Pestañas del panel: colecciones del catálogo + blog (solo admin, ADR-023) */
+export type AdminTab = AdminKind | 'blog';
+
+/** Fichero (PDF) → base64 (sin el prefijo data:) para UploadBody.contentBase64 */
+export async function fileToBase64(blob: Blob): Promise<string> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let bin = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  return btoa(bin);
+}
+
+export function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MB`;
+}
 
 export function findEntry(catalog: AdminCatalog, kind: AdminKind, slug: string): CatalogEntry<Product | Part> | undefined {
   const list: CatalogEntry<Product | Part>[] = kind === 'products' ? catalog.products : catalog.repuestos;

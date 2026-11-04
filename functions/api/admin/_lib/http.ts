@@ -78,22 +78,28 @@ export async function respond(fn: () => Promise<unknown> | unknown, status = 200
   }
 }
 
-/** Tamaño máximo del cuerpo (una ficha completa ronda los 10 KB). Más → 413. */
+/** Tamaño máximo del cuerpo (una ficha completa ronda los 10 KB; un artículo del blog, 20 KB). Más → 413. */
 export const MAX_BODY_BYTES = 256 * 1024;
 
-const payloadTooLarge = () => new HttpError('bad_request', `El cuerpo de la petición supera el máximo de ${MAX_BODY_BYTES / 1024} KB`, undefined, 413);
+/**
+ * Cuerpo máximo de POST /api/admin/uploads: el PDF más grande admitido (10 MB, src/domain/uploads.ts)
+ * en base64 (×4/3) más la envoltura JSON. Por encima no se lee el cuerpo: 413.
+ */
+export const MAX_UPLOAD_BODY_BYTES = 14 * 1024 * 1024;
+
+const payloadTooLarge = (max: number) => new HttpError('bad_request', `El cuerpo de la petición supera el máximo de ${Math.round(max / 1024)} KB`, undefined, 413);
 
 /** Cuerpo JSON como objeto plano; JSON inválido o no-objeto → 400; demasiado grande → 413. */
-export async function readJsonBody(request: Request): Promise<Record<string, unknown>> {
+export async function readJsonBody(request: Request, maxBytes = MAX_BODY_BYTES): Promise<Record<string, unknown>> {
   const declared = Number(request.headers.get('Content-Length') ?? '');
-  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) throw payloadTooLarge();
+  if (Number.isFinite(declared) && declared > maxBytes) throw payloadTooLarge(maxBytes);
   let text: string;
   try {
     text = await request.text();
   } catch {
     throw badRequest('No se pudo leer el cuerpo de la petición');
   }
-  if (text.length > MAX_BODY_BYTES) throw payloadTooLarge();
+  if (text.length > maxBytes) throw payloadTooLarge(maxBytes);
   if (!text.trim()) throw badRequest('El cuerpo de la petición está vacío');
   let parsed: unknown;
   try {

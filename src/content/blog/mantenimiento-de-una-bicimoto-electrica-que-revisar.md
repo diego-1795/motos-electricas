@@ -39,7 +39,7 @@ La batería Chilwee de plomo-ácido se cuida con rutinas, no con herramientas:
 - Si no la usas, dale una carga cada 15-30 días.
 - Mantén limpios los bornes y conectores.
 
-Tiene **12 meses de garantía** y una vida útil estimada de 2 años o 350-400 ciclos. Todo lo que debes saber está en [cómo cuidar la batería de tu bicimoto](/blog/como-cuidar-la-bateria-de-tu-bicimoto-electrica).
+Tiene **6 meses de garantía** y una vida útil estimada de 2 años o 350-400 ciclos. Todo lo que debes saber está en [cómo cuidar la batería de tu bicimoto](/blog/como-cuidar-la-bateria-de-tu-bicimoto-electrica).
 
 ## Electrónica: controlador, ramal y sensores
 

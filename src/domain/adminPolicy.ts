@@ -7,10 +7,11 @@ import type { Part, Product } from './types';
  * ocultar/mostrar; el admin (Diego) puede todo.
  */
 
-export type Operation = 'read' | 'patch' | 'put' | 'delete';
+/** `blog` (leer y escribir artículos) y `upload` (subir webp/PDF) son de administrador (ADR-023). */
+export type Operation = 'read' | 'patch' | 'put' | 'delete' | 'blog' | 'upload';
 
 const PERMISSIONS: Record<AdminRole, readonly Operation[]> = {
-  admin: ['read', 'patch', 'put', 'delete'],
+  admin: ['read', 'patch', 'put', 'delete', 'blog', 'upload'],
   editor: ['read', 'patch'],
 };
 
@@ -109,12 +110,21 @@ export function applyPartPatch(original: Part, patch: PartPatch): PatchResult<Pa
 
 export const MAX_REASON_LENGTH = 300;
 
-/** Mensaje de commit: `chore(catalog): <acción> <slug> por <email>` + motivo y detalle en el cuerpo. */
-export function commitMessage(action: 'actualizar' | 'crear' | 'borrar', slug: string, email: string, detail: { changes?: string[]; reason?: string } = {}): string {
+/** Ámbito del commit: catálogo (productos/repuestos), blog o assets (subidas). */
+export type CommitScope = 'catalog' | 'blog' | 'assets';
+
+/** Mensaje de commit: `chore(<ámbito>): <acción> <slug> por <email>` + motivo y detalle en el cuerpo. */
+export function commitMessage(
+  action: 'actualizar' | 'crear' | 'borrar' | 'subir',
+  slug: string,
+  email: string,
+  detail: { changes?: string[]; reason?: string } = {},
+  scope: CommitScope = 'catalog',
+): string {
   const body: string[] = [];
   if (detail.changes?.length) body.push(detail.changes.join('\n'));
   // Motivo acotado (texto libre del panel): una línea, sin control chars, máximo MAX_REASON_LENGTH.
   const reason = (detail.reason ?? '').replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, MAX_REASON_LENGTH);
   if (reason) body.push(`Motivo: ${reason}`);
-  return `chore(catalog): ${action} ${slug} por ${email}${body.length ? `\n\n${body.join('\n\n')}` : ''}`;
+  return `chore(${scope}): ${action} ${slug} por ${email}${body.length ? `\n\n${body.join('\n\n')}` : ''}`;
 }

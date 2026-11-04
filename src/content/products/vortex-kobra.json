@@ -62,8 +62,8 @@
     ],
     "motorType": "Motor sin escobillas (brushless) en rueda",
     "controller": "6 tubos SineWave",
-    "warrantyMonths": 12,
-    "batteryWarrantyMonths": 12,
+    "warrantyMonths": 6,
+    "batteryWarrantyMonths": 6,
     "features": [
       "Motor sin escobillas con potencia de 350 W",
       "Batería Chilwee de plomo-ácido de 48V 12Ah (extraíble)",
@@ -87,7 +87,7 @@
       "Capacidad de torque: 30°",
       "Freno de tambor delantero y trasero",
       "Suspensión hidráulica delantera y suspensión trasera",
-      "Garantía 12 meses (batería y motor)"
+      "Garantía 6 meses (batería y motor)"
     ]
   },
   "variants": [
@@ -173,7 +173,7 @@
           "Capacidad de torque: 30°",
           "Freno de tambor delantero y trasero",
           "Suspensión hidráulica delantera y suspensión trasera",
-          "Garantía 12 meses (batería y motor)"
+          "Garantía 6 meses (batería y motor)"
         ]
       },
       "availability": "en-stock",
@@ -227,7 +227,7 @@
     "25 km/h · sin licencia (en general)",
     "Batería Chilwee 48 V: 30-35 km (Estándar) o 40-50 km (Premium)",
     "Diseño ágil y compacto para la ciudad",
-    "Garantía 12 meses en batería y motor"
+    "Garantía 6 meses en batería y motor"
   ],
   "technology": [
     {
@@ -274,7 +274,7 @@
     },
     {
       "question": "¿Qué garantía tiene y dónde se repara?",
-      "answer": "12 meses de garantía en batería y motor, con Servicio técnico RAIDEN propio en nuestra tienda de Bocanegra, Callao (lunes a domingo, de 10 a. m. a 8 p. m.) y repuestos originales en stock: baterías, cargadores, controladores, cables de freno, llantas, faros y más."
+      "answer": "6 meses de garantía en batería y motor, con Servicio técnico RAIDEN propio en nuestra tienda de Bocanegra, Callao (lunes a domingo, de 10 a. m. a 8 p. m.) y repuestos originales en stock: baterías, cargadores, controladores, cables de freno, llantas, faros y más."
     },
     {
       "question": "¿Cómo se compra y cuánto tarda la entrega?",
@@ -286,6 +286,6 @@
   "publishedAt": "2026-10-01",
   "seo": {
     "title": "Vortex Kobra: bicimoto eléctrica RAIDEN | Desde S/ 1,200",
-    "description": "Bicimoto eléctrica RAIDEN Vortex Kobra: 25 km/h, en general sin licencia, diseño ágil, batería Chilwee 48 V, versiones Estándar y Premium. Desde S/ 1,200 con garantía de 12 meses."
+    "description": "Bicimoto eléctrica RAIDEN Vortex Kobra: 25 km/h, en general sin licencia, diseño ágil, batería Chilwee 48 V, versiones Estándar y Premium. Desde S/ 1,200 con garantía de 6 meses."
   }
 }

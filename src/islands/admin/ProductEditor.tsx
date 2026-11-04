@@ -1,12 +1,15 @@
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import type { CatalogEntry } from '../../domain/admin';
-import type { Availability, CategorySlug, Product, ProductColor, ProductVariant, VariantTier } from '../../domain/types';
+import type { Availability, CategorySlug, ImageRef, Product, ProductColor, ProductVariant, VariantTier } from '../../domain/types';
 import { parseSoles } from '../../domain/money';
 import { availabilityLabel, tierLabel } from '../../domain/product';
 import { productRules } from '../../domain/catalogRules';
+import { normalizeYouTubeUrl } from '../../domain/video';
 import { AdminApiError } from '../../services/admin/AdminApiClient';
 import { centsToInput, STALE_EDITOR_MESSAGE, useAdmin } from './context';
+import ImageFields from './ImageFields';
 import Modal from './Modal';
+import PdfUpload from './PdfUpload';
 
 interface Props {
   /** Edición: entrada existente (PUT con sha) */
@@ -31,6 +34,8 @@ interface ColorForm {
   id: string;
   name: string;
   hex: string;
+  /** Foto de ese color (ruta webp en src/assets/products); opcional */
+  image: ImageRef | undefined;
   extra: Record<string, unknown>;
 }
 interface Form {
@@ -47,13 +52,40 @@ interface Form {
   isHero: boolean;
   hidden: boolean;
   publishedAt: string;
+  /** Manual de uso (PDF): `/docs/<slug>-manual.pdf` o https:// */
+  manualUrl: string;
+  /** Ficha técnica (PDF) */
+  datasheetUrl: string;
+  /** Video de YouTube (se normaliza a watch?v=) */
+  videoUrl: string;
+  /** Galería de la ficha (al menos una); rutas ~/assets/products/<slug>-<color>.webp subidas antes por git */
+  images: ImageRef[];
   variants: VariantForm[];
   defaultIndex: number;
   colors: ColorForm[];
   advanced: string;
 }
 
-const MAIN_KEYS = new Set(['id', 'slug', 'name', 'subtitle', 'claim', 'description', 'category', 'brand', 'featured', 'isNew', 'isHero', 'hidden', 'publishedAt', 'variants', 'colors']);
+const MAIN_KEYS = new Set(['id', 'slug', 'name', 'subtitle', 'claim', 'description', 'category', 'brand', 'featured', 'isNew', 'isHero', 'hidden', 'publishedAt', 'manualUrl', 'datasheetUrl', 'videoUrl', 'images', 'variants', 'colors']);
+
+/** Misma regla que `safeUrl` del esquema para rutas del sitio y https (sin ~/assets, que no aplica a documentos). */
+const DOC_URL_RE = /^(\/(?!\/)|https:\/\/)/;
+/** `safeUrl` del esquema: assets del repo, rutas del sitio o https */
+const IMAGE_URL_RE = /^(~\/assets\/|\/(?!\/)|https:\/\/)/;
+
+const emptyImage = (src = ''): ImageRef => ({ src, alt: '', width: 0, height: 0 });
+
+/** Errores de una imagen del formulario (misma regla que `image` del esquema, con mensajes para el panel) */
+function imageErrors(img: ImageRef, label: string): string[] {
+  const errs: string[] = [];
+  if (!img.src.trim()) errs.push(`${label}: falta la ruta de la foto`);
+  else if (!IMAGE_URL_RE.test(img.src.trim())) errs.push(`${label}: la ruta debe empezar por ~/assets/ (p. ej. ~/assets/products/<slug>-<color>.webp), / o https://`);
+  if (!img.alt.trim()) errs.push(`${label}: falta el texto alternativo`);
+  if (!Number.isInteger(img.width) || img.width <= 0 || !Number.isInteger(img.height) || img.height <= 0) errs.push(`${label}: ancho y alto deben ser enteros mayores que 0 (píxeles reales de la foto)`);
+  return errs;
+}
+
+const cleanImage = (img: ImageRef): ImageRef => ({ src: img.src.trim(), alt: img.alt.trim(), width: img.width, height: img.height });
 const CATEGORIES: CategorySlug[] = ['bicimotos', 'trimotos', 'promociones'];
 const TIERS: VariantTier[] = ['estandar', 'premium'];
 const AVAILABILITIES: Availability[] = ['en-stock', 'bajo-pedido', 'proximamente', 'agotado'];
@@ -76,6 +108,10 @@ function toForm(p: Product): Form {
     isHero: p.isHero === true,
     hidden: p.hidden === true,
     publishedAt: p.publishedAt,
+    manualUrl: p.manualUrl ?? '',
+    datasheetUrl: p.datasheetUrl ?? '',
+    videoUrl: p.videoUrl ?? '',
+    images: p.images.map((i) => ({ ...i })),
     variants: p.variants.map(({ id, name, tier, price, availability, sku, description, isDefault: _d, ...extra }) => ({
       id,
       name,
@@ -87,7 +123,7 @@ function toForm(p: Product): Form {
       extra,
     })),
     defaultIndex,
-    colors: p.colors.map(({ id, name, hex, ...extra }) => ({ id, name, hex, extra })),
+    colors: p.colors.map(({ id, name, hex, image, ...extra }) => ({ id, name, hex, image: image ? { ...image } : undefined, extra })),
     advanced: JSON.stringify(rest, null, 2),
   };
 }
@@ -104,7 +140,9 @@ function fromForm(f: Form): { product: Product } | { errors: string[] } {
     return { errors: [`JSON avanzado no válido: ${(e as Error).message}`] };
   }
   for (const k of Object.keys(adv)) if (MAIN_KEYS.has(k)) errors.push(`JSON avanzado: el campo "${k}" se edita en el formulario, quítalo del JSON`);
-  if (!Array.isArray(adv.images)) errors.push('JSON avanzado: falta "images" (lista de imágenes)');
+  if (!f.images.length) errors.push('debe haber al menos una foto en "Fotos del producto"');
+  f.images.forEach((img, i) => errors.push(...imageErrors(img, `foto ${i + 1}`)));
+  for (const c of f.colors) if (c.image && (c.image.src.trim() || c.image.alt.trim())) errors.push(...imageErrors(c.image, `foto del color ${c.name || c.id}`));
   const specs = adv.specs as { battery?: unknown } | undefined;
   if (!specs || typeof specs !== 'object' || !specs.battery || typeof specs.battery !== 'object') errors.push('JSON avanzado: falta "specs" con "battery"');
 
@@ -125,7 +163,13 @@ function fromForm(f: Form): { product: Product } | { errors: string[] } {
     };
     return out;
   });
-  const colors: ProductColor[] = f.colors.map((c) => ({ id: c.id.trim(), name: c.name.trim(), hex: c.hex.trim(), ...(c.extra as Partial<ProductColor>) }));
+  const colors: ProductColor[] = f.colors.map((c) => ({
+    id: c.id.trim(),
+    name: c.name.trim(),
+    hex: c.hex.trim(),
+    ...(c.image && c.image.src.trim() ? { image: cleanImage(c.image) } : {}),
+    ...(c.extra as Partial<ProductColor>),
+  }));
   const featured = Number(f.featured);
   if (!Number.isFinite(featured)) errors.push('featured debe ser un número');
   for (const [k, v] of [
@@ -137,6 +181,12 @@ function fromForm(f: Form): { product: Product } | { errors: string[] } {
     ['publishedAt', f.publishedAt],
   ] as const)
     if (!v.trim()) errors.push(`${k} es obligatorio`);
+  const manualUrl = f.manualUrl.trim();
+  const datasheetUrl = f.datasheetUrl.trim();
+  if (manualUrl && !DOC_URL_RE.test(manualUrl)) errors.push('Manual de uso (PDF): la URL debe empezar por / (p. ej. /docs/golden-eagle-manual.pdf) o https://');
+  if (datasheetUrl && !DOC_URL_RE.test(datasheetUrl)) errors.push('Ficha técnica (PDF): la URL debe empezar por / (p. ej. /docs/golden-eagle-ficha.pdf) o https://');
+  const videoUrl = f.videoUrl.trim() ? normalizeYouTubeUrl(f.videoUrl) : '';
+  if (videoUrl === null) errors.push('Video de YouTube: pega un enlace de youtube.com/watch?v=…, youtu.be/… o youtube.com/shorts/…');
   if (errors.length) return { errors };
 
   const out: Record<string, unknown> = {
@@ -151,7 +201,8 @@ function fromForm(f: Form): { product: Product } | { errors: string[] } {
   };
   // Solo claves propias (Object.hasOwn), nunca `in`: con `in`, "__proto__"/"constructor"/"toString" del JSON
   // avanzado se resolverían por la cadena de prototipos (se perderían o se asignarían al prototipo).
-  for (const k of ['images', 'heroImage', 'specs']) if (Object.hasOwn(adv, k)) out[k] = adv[k];
+  out.images = f.images.map(cleanImage);
+  for (const k of ['heroImage', 'specs']) if (Object.hasOwn(adv, k)) out[k] = adv[k];
   out.variants = variants;
   out.colors = colors;
   for (const k of ['accessories', 'related', 'useCases', 'highlights', 'technology', 'faqs', 'reviews']) if (Object.hasOwn(adv, k)) out[k] = adv[k];
@@ -160,6 +211,10 @@ function fromForm(f: Form): { product: Product } | { errors: string[] } {
   if (f.isHero) out.isHero = true;
   out.publishedAt = f.publishedAt.trim();
   for (const [k, v] of Object.entries(adv)) if (k !== '__proto__' && !Object.hasOwn(out, k)) out[k] = v;
+  // Documentos y video: campos propios del formulario; vacío = sin clave en el JSON
+  if (datasheetUrl) out.datasheetUrl = datasheetUrl;
+  if (manualUrl) out.manualUrl = manualUrl;
+  if (videoUrl) out.videoUrl = videoUrl;
   if (f.hidden) out.hidden = true;
   return { product: out as unknown as Product };
 }
@@ -396,16 +451,85 @@ export default function ProductEditor({ entry, draft, onClose }: Props) {
               <button type="button" class="btn btn--ghost btn--sm adm-btn-danger" onClick={() => setForm((f) => ({ ...f, colors: f.colors.filter((_, j) => j !== i) }))} aria-label={`Quitar color ${c.name}`}>
                 Quitar
               </button>
+              <div class="adm-color__image">
+                {c.image ? (
+                  <>
+                    <ImageFields value={c.image} onChange={(image) => setColor(i, { image })} label={`Foto del color ${c.name || i + 1}`} placeholder={`~/assets/products/${form.slug}-${c.id || '<color>'}.webp`} />
+                    <button type="button" class="btn btn--ghost btn--sm" onClick={() => setColor(i, { image: undefined })}>
+                      Sin foto propia para {c.name || 'este color'}
+                    </button>
+                  </>
+                ) : (
+                  <button type="button" class="btn btn--ghost btn--sm" onClick={() => setColor(i, { image: emptyImage(`~/assets/products/${form.slug}-${c.id}.webp`) })}>
+                    Añadir foto del color {c.name || i + 1} (por ruta)
+                  </button>
+                )}
+              </div>
             </div>
           ))}
-          <button type="button" class="btn btn--secondary btn--sm" onClick={() => setForm((f) => ({ ...f, colors: [...f.colors, { id: '', name: '', hex: '#111111', extra: {} }] }))}>
+          <button type="button" class="btn btn--secondary btn--sm" onClick={() => setForm((f) => ({ ...f, colors: [...f.colors, { id: '', name: '', hex: '#111111', image: undefined, extra: {} }] }))}>
             Añadir color
           </button>
         </fieldset>
 
+        <fieldset class="adm-fieldset" data-admin-images>
+          <legend class="label">Fotos del producto</legend>
+          <p class="hint">
+            Las fotos no se suben desde el panel: se envían a Diego, que las convierte a webp y las coloca en <code>src/assets/products/</code> como{' '}
+            <code>{form.slug}-&lt;color&gt;.webp</code>. Aquí solo se escribe la ruta de cada una con su texto alternativo y sus píxeles reales. Si todavía no existen, guarda la ficha como{' '}
+            <strong>Oculto</strong> y muéstrala cuando estén (una ruta inexistente hace fallar la publicación).
+          </p>
+          {form.images.map((img, i) => (
+            <div class="adm-image-row" key={i}>
+              <ImageFields value={img} onChange={(next) => setForm((f) => ({ ...f, images: f.images.map((x, j) => (j === i ? next : x)) }))} label={`Foto ${i + 1}`} placeholder={`~/assets/products/${form.slug}-<color>.webp`} />
+              <button
+                type="button"
+                class="btn btn--ghost btn--sm adm-btn-danger"
+                disabled={form.images.length <= 1}
+                onClick={() => setForm((f) => ({ ...f, images: f.images.filter((_, j) => j !== i) }))}
+                aria-label={`Quitar foto ${i + 1}`}
+              >
+                Quitar foto
+              </button>
+            </div>
+          ))}
+          <button type="button" class="btn btn--secondary btn--sm" onClick={() => setForm((f) => ({ ...f, images: [...f.images, emptyImage(`~/assets/products/${f.slug}-`)] }))} data-admin-add-image>
+            Añadir foto (por ruta)
+          </button>
+        </fieldset>
+
+        <fieldset class="adm-fieldset" data-admin-docs>
+          <legend class="label">Manual, ficha técnica y video</legend>
+          <p class="hint">
+            Los PDF se guardan en <code>public/docs/</code> y se enlazan como <code>/docs/&lt;slug&gt;-manual.pdf</code> o <code>-ficha.pdf</code>; "Subir PDF" lo hace solo (un commit por
+            fichero). Sin URL, la pestaña de la ficha muestra "Disponible próximamente".
+          </p>
+          <div class="adm-form__grid">
+            <div class="adm-url-row adm-form__full">
+              <label class="field">
+                <span class="label">Manual de uso (PDF)</span>
+                <input class="input" value={form.manualUrl} onInput={(e) => set('manualUrl', (e.target as HTMLInputElement).value)} placeholder={`/docs/${form.slug}-manual.pdf`} inputMode="url" spellcheck={false} data-admin-field="manualUrl" />
+              </label>
+              <PdfUpload slug={form.slug} suffix="manual" onUploaded={(ref) => set('manualUrl', ref)} />
+            </div>
+            <div class="adm-url-row adm-form__full">
+              <label class="field">
+                <span class="label">Ficha técnica (PDF)</span>
+                <input class="input" value={form.datasheetUrl} onInput={(e) => set('datasheetUrl', (e.target as HTMLInputElement).value)} placeholder={`/docs/${form.slug}-ficha.pdf`} inputMode="url" spellcheck={false} data-admin-field="datasheetUrl" />
+              </label>
+              <PdfUpload slug={form.slug} suffix="ficha" onUploaded={(ref) => set('datasheetUrl', ref)} />
+            </div>
+            <label class="field adm-form__full">
+              <span class="label">Video de YouTube</span>
+              <input class="input" value={form.videoUrl} onInput={(e) => set('videoUrl', (e.target as HTMLInputElement).value)} placeholder="https://www.youtube.com/watch?v=… o https://youtu.be/…" inputMode="url" spellcheck={false} data-admin-field="videoUrl" />
+              <span class="hint">Vale el enlace de youtube.com/watch, youtu.be o shorts; se guarda en forma normalizada. Sin video, la pestaña anuncia el lanzamiento en el canal.</span>
+            </label>
+          </div>
+        </fieldset>
+
         <label class="field">
           <span class="label">JSON avanzado</span>
-          <span class="hint">specs, images, heroImage, accessories, related, useCases, highlights, technology, faqs, seo, urls… Se fusiona con el formulario al guardar.</span>
+          <span class="hint">specs, heroImage, accessories, related, useCases, highlights, technology, faqs, seo… Se fusiona con el formulario al guardar.</span>
           <textarea class="textarea adm-json" spellcheck={false} value={form.advanced} onInput={(e) => set('advanced', (e.target as HTMLTextAreaElement).value)} />
         </label>
 

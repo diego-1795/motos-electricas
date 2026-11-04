@@ -3,6 +3,7 @@ import { repos } from '../../src/data';
 import { isCatalogVehicle, TYPES } from '../../src/domain/catalog';
 import { defaultVariant, fromPrice } from '../../src/domain/product';
 import { productPath } from '../../src/lib/routes';
+import { site } from '../../src/config/site';
 
 /**
  * Integridad del catálogo real (ADR-015) a través de los repositorios JSON (astro:content).
@@ -76,6 +77,16 @@ describe('catálogo real: productos', () => {
       expect(p.specs.topSpeedKmh, p.slug).toBe(25);
       expect(p.specs.license, p.slug).toBe('sin-licencia');
       expect(p.colors.length, p.slug).toBeGreaterThan(0);
+    }
+  });
+
+  it('garantía de 6 meses en motor y batería en todos los modelos, igual que site.warrantyMonths (cliente, 2026-11-04)', async () => {
+    expect(site.warrantyMonths).toBe(6);
+    for (const p of await repos.products.all()) {
+      expect(p.specs.warrantyMonths, p.slug).toBe(site.warrantyMonths);
+      expect(p.specs.batteryWarrantyMonths, p.slug).toBe(site.warrantyMonths);
+      // Los textos de la ficha (highlights, technology, features, FAQ, SEO) no deben seguir citando 12 meses
+      expect(JSON.stringify(p), p.slug).not.toMatch(/12 meses/);
     }
   });
 });

@@ -1,0 +1,62 @@
+---
+import Pic from '../ui/Pic.astro';
+import type { ImageRef } from '../../domain/types';
+
+/**
+ * Galería de clientes "Raiders satisfechos": cuadrícula estática de fotos verticales (3:4), pequeñas,
+ * todas visibles a la vez (petición del cliente, 2026-11-04; sustituye al carrusel 1 a 1 de ADR-017).
+ * - Escritorio (≥ 1024): las 6 en una fila. Tablet y móvil: 3 por fila (3+3).
+ * - Sin JS: lista con los alt reales de cada ImageRef.
+ */
+interface Props {
+  images: ImageRef[];
+  label?: string;
+}
+const { images, label = 'Fotos de clientes RAIDEN' } = Astro.props;
+---
+
+<ul role="list" class="cgrid" data-gallery aria-label={label}>
+  {
+    images.map((img) => (
+      <li class="cgrid__item" data-gallery-item>
+        <Pic image={img} width={360} height={480} widths={[240, 360, 480]} sizes="(min-width: 1280px) 11.5rem, (min-width: 1024px) 15vw, 30vw" />
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .cgrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-3);
+    max-width: 72rem;
+    margin-inline: auto;
+  }
+  .cgrid__item {
+    aspect-ratio: 3 / 4;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    background: var(--bg-elev);
+  }
+  .cgrid__item :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--t-slow) var(--ease);
+  }
+  .cgrid__item:hover :global(img) {
+    transform: scale(1.04);
+  }
+  @media (min-width: 768px) {
+    .cgrid {
+      gap: var(--s-4);
+    }
+  }
+  @media (min-width: 1024px) {
+    .cgrid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+</style>

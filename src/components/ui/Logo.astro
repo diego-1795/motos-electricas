@@ -6,7 +6,9 @@
  * - variant 'full'     → marca + wordmark + tagline (por defecto; ratio 5.25:1)
  * - variant 'wordmark' → marca + RAIDEN sin tagline (misma altura, más legible en cabeceras pequeñas)
  * - variant 'mark'     → solo el rayo (ratio 1.14:1), p. ej. móvil o avatares
- * - invert             → blanco sobre fondos oscuros (footer, hero oscuro)
+ * - invert             → blanco sobre fondos oscuros: filter brightness(0) invert(1) sobre el webp con alfa.
+ *                        Solo el pie de página lo usa (excepción al logo azul aceptada por el cliente, 2026-11-04);
+ *                        cabecera y resto del sitio van en azul sobre claro.
  * - height             → altura en px (28–32 en header; 40–48 en footer)
  */
 import { Image } from 'astro:assets';

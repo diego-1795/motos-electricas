@@ -78,7 +78,8 @@
   --fs-md: 1rem;                                     /* 16 */
   --fs-lg: 1.125rem;                                 /* 18 */
   --fs-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);   /* 20→24 */
-  --fs-2xl: clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem);  /* 24→36 */
+  --fs-2xl: clamp(1.625rem, 1.25rem + 1.6vw, 2.375rem); /* 26→38 (H2; subido 2 px el 2026-11-04 para seguir por encima del eyebrow) */
+  --fs-eyebrow: clamp(0.9375rem, 0.875rem + 0.3vw, 1.0625rem); /* 15→17: .eyebrow (DESCUBRE TU INSTINTO, PRODUCTOS RECIENTES…); el cliente no leía los 12 px */
   --fs-3xl: clamp(1.75rem, 1.3rem + 2.2vw, 3rem);    /* 28→48 (H1 interior, Integral CF) */
   --fs-4xl: clamp(2.25rem, 1.5rem + 3.4vw, 4rem);    /* 36→64 (H1 hero, Integral CF) */
   --lh-tight: 1.1;

@@ -6,7 +6,7 @@ import CompareTable, { type CompareRow } from '../islands/CompareTable';
 import { repos } from '../data';
 import { isCatalogVehicle } from '../domain/catalog';
 import { site } from '../config/site';
-import { availabilityLabel, batteryLabel, chargeLabel, effectiveSpecs, fromPrice, licenseLabel, maxRange, powerLabel, productAvailability, rangeLabel, sortedVariants, tierLabel } from '../domain/product';
+import { availabilityLabel, batteryLabel, chargeLabel, effectiveSpecs, fromPrice, maxRange, powerLabel, productAvailability, rangeLabel, sortedVariants, tierLabel, warrantyLabel } from '../domain/product';
 import { publicSrc } from '../lib/images';
 import { COMPARE_PATH, productPath } from '../lib/routes';
 
@@ -36,8 +36,7 @@ const rows: CompareRow[] = products.map((p) => {
     weightKg: s.weightKg,
     dimensions: s.dimensionsMm ? `${s.dimensionsMm.join(' × ')} mm` : undefined,
     seats: s.seats,
-    license: licenseLabel[s.license],
-    warranty: `${s.warrantyMonths} meses (batería y motor)`,
+    warranty: warrantyLabel(s),
     availability: availabilityLabel[productAvailability(p)],
   };
 });

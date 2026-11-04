@@ -9,6 +9,9 @@ import { productPath } from '../../lib/routes';
  * - CSS scroll-snap horizontal; puntos + flechas; sin librerías.
  * - Autoplay cada 6 s (vanilla), pausado con hover/foco y desactivado con prefers-reduced-motion.
  * - La primera diapositiva lleva el h1 y la imagen LCP con prioridad.
+ * - La moto debe verse nítida (queja del cliente, 2026-11-04): en escritorio la foto va a sangre y el
+ *   oscurecido es solo una franja izquierda bajo el texto (transparente sobre el vehículo, que está en el
+ *   centro); en móvil/tablet la foto va encima del texto, sin velo, y el texto sobre el negro de marca.
  */
 interface Props {
   products: Product[];
@@ -173,41 +176,46 @@ const slides = products.filter((p) => p.heroImage);
   .hs__track::-webkit-scrollbar {
     display: none;
   }
+  /* < 1024: foto apilada encima del texto. Nada tapa la moto; el texto va sobre el negro de marca. */
   .hs__slide {
     position: relative;
     flex: 0 0 100%;
     scroll-snap-align: start;
     scroll-snap-stop: always;
-    min-height: min(80dvh, 44rem);
     display: grid;
+    grid-template-rows: auto 1fr;
     align-items: end;
     isolation: isolate;
   }
   .hs__media {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
+    position: relative;
+    aspect-ratio: 4 / 3;
+    max-height: 60dvh;
+    overflow: hidden;
     background: var(--dark-bg-elev);
   }
   .hs__media :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
+    object-position: center 55%;
+    /* La foto original (1577×672) deja la moto en el tercio central: un zoom ligero la acerca en pantallas estrechas */
+    transform: scale(1.15);
+    transform-origin: 50% 55%;
   }
+  /* Solo un fundido en el borde inferior para empalmar con el panel de texto (no toca el vehículo) */
   .hs__media::after {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(to top, rgb(17 17 17 / 0.92) 0%, rgb(17 17 17 / 0.55) 45%, rgb(17 17 17 / 0.15) 100%),
-      radial-gradient(60% 50% at 70% 40%, rgb(1 66 166 / 0.25), transparent 70%);
+    pointer-events: none;
+    background: linear-gradient(to top, var(--dark-bg) 0%, rgb(17 17 17 / 0) 16%);
   }
   .hs__copy {
     display: flex;
     flex-direction: column;
     gap: var(--s-4);
-    padding-block: var(--s-12) var(--s-20);
+    padding-block: var(--s-6) var(--s-20);
     max-width: var(--container);
   }
   .hs__eyebrow {
@@ -297,18 +305,43 @@ const slides = products.filter((p) => p.heroImage);
     width: 2rem;
     background: var(--dark-fg);
   }
+  /* ≥ 1024: foto a sangre, texto a la izquierda. El oscurecido es una franja izquierda que se extingue
+     antes del centro (la moto ocupa el 38–67 % del ancho de la foto) más una tira inferior para los controles. */
   @media (min-width: 1024px) {
     .hs__slide {
+      grid-template-rows: none;
       min-height: min(78dvh, 46rem);
       align-items: center;
     }
-    .hs__copy {
-      padding-block: var(--s-24);
+    .hs__media {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      aspect-ratio: auto;
+      max-height: none;
+    }
+    .hs__media :global(img) {
+      object-position: center;
+      transform: none;
     }
     .hs__media::after {
       background:
-        linear-gradient(to right, rgb(17 17 17 / 0.9) 0%, rgb(17 17 17 / 0.55) 45%, rgb(17 17 17 / 0.1) 100%),
-        radial-gradient(60% 50% at 70% 40%, rgb(1 66 166 / 0.25), transparent 70%);
+        linear-gradient(to right, rgb(17 17 17 / 0.86) 0%, rgb(17 17 17 / 0.72) 22%, rgb(17 17 17 / 0.38) 36%, rgb(17 17 17 / 0.08) 48%, rgb(17 17 17 / 0) 58%),
+        linear-gradient(to top, rgb(17 17 17 / 0.45) 0%, rgb(17 17 17 / 0) 16%);
+    }
+    .hs__copy {
+      padding-block: var(--s-24);
+      /* Sombra suave bajo el texto: legible aunque pise la parte clara de la franja */
+      text-shadow:
+        0 1px 2px rgb(17 17 17 / 0.7),
+        0 8px 24px rgb(17 17 17 / 0.4);
+    }
+    /* El bloque de texto se queda en la mitad izquierda, fuera del vehículo (el título largo pasa a dos líneas) */
+    .hs__copy > * {
+      max-width: min(36rem, 46%);
+    }
+    .hs__cta {
+      text-shadow: none;
     }
   }
 </style>

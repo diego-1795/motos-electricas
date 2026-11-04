@@ -1,5 +1,5 @@
 import type { Product, ProductVariant, Specs } from './types';
-import { batteryLabel, chargeLabel, defaultVariant, effectiveSpecs, licenseLabel, powerLabel, rangeLabel, sortedVariants, tierLabel } from './product';
+import { batteryLabel, chargeLabel, defaultVariant, effectiveSpecs, powerLabel, rangeLabel, sortedVariants, tierLabel, warrantyLabel } from './product';
 
 /**
  * Ficha técnica por versión (Estándar / Premium).
@@ -87,13 +87,13 @@ export function tableDefs(): SpecDef[] {
     { label: 'Iluminación', get: (s) => s.lighting },
     { label: 'Pantalla', get: (s) => s.display },
     { label: 'Modos de conducción', get: (s) => s.drivingModes.join(', ') },
-    { label: 'Plazas', get: (s) => String(s.seats) },
+    { label: 'Asientos', get: (s) => String(s.seats) },
     { label: 'Carga máxima', get: (s) => `${s.maxLoadKg} kg` },
     { label: 'Peso', get: (s) => (s.weightKg === undefined ? undefined : `${s.weightKg} kg`) },
     { label: 'Dimensiones (L×An×Al)', get: (s) => (s.dimensionsMm ? `${s.dimensionsMm.join(' × ')} mm` : undefined) },
     { label: 'Protección', get: (s) => s.ipRating },
-    { label: 'Licencia', get: (s) => licenseLabel[s.license] },
-    { label: 'Garantía', get: (s) => `${s.warrantyMonths} meses (batería: ${s.batteryWarrantyMonths} meses)` },
+    // Sin fila de licencia: el cliente no quiere mostrarla en la ficha (ADR 2026-11-04); `specs.license` sigue en el esquema para validación.
+    { label: 'Garantía', get: warrantyLabel },
   ];
 }
 

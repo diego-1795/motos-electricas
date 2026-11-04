@@ -18,7 +18,7 @@ Keywords de referencia (Perú, ADR-015): "bicimoto eléctrica Lima", "bicimoto e
 
 Claim de marca: "The Future of Power" (`site.tagline`). Claims por modelo en `claim` de cada ficha ("Escoge la libertad que te impulsa", "Define la forma de moverte").
 
-Datos fijos que todo contenido debe respetar (fuente: ficha del fabricante, 2026-10-22): velocidad máxima 25 km/h; motor 350 W (Estándar) o 500 W (Premium), 800 W en Titan Rhino; batería Chilwee plomo-ácido 48V 12Ah / 48V 20Ah (60V 20Ah en Titan Rhino); autonomía 30-35 km / 40-50 km (35-40 km Titan Rhino); carga 6-8 h a 220 V; vida útil 2 años o 350-400 ciclos; carga máxima 150 kg (250 kg Titan Rhino); garantía 12 meses en batería y motor; precios desde S/ 1,200 (Golden Eagle, Vortex Kobra), S/ 1,400 (Royal Tiger) y S/ 2,700 (Titan Rhino), IGV incluido.
+Datos fijos que todo contenido debe respetar (fuente: ficha del fabricante, 2026-10-22): velocidad máxima 25 km/h; motor 350 W (Estándar) o 500 W (Premium), 800 W en Titan Rhino; batería Chilwee plomo-ácido 48V 12Ah / 48V 20Ah (60V 20Ah en Titan Rhino); autonomía 30-35 km / 40-50 km (35-40 km Titan Rhino); carga 6-8 h a 220 V; vida útil 2 años o 350-400 ciclos; carga máxima 150 kg (250 kg Titan Rhino); garantía 6 meses en motor y batería (cliente, 2026-11-04; antes 12); precios desde S/ 1,200 (Golden Eagle, Vortex Kobra), S/ 1,400 (Royal Tiger) y S/ 2,700 (Titan Rhino), IGV incluido.
 
 ## 2. Taxonomía del catálogo
 
@@ -59,10 +59,10 @@ Esquema completo en `src/content.config.ts` (zod) y [07-api](./07-api.md) §2.2;
 | Motor | `powerW`, `peakPowerW?`, `motorType`, `controller?` | 350, "Motor sin escobillas (brushless) en rueda", "6 tubos SineWave" |
 | Batería | `battery.voltage`, `capacityAh`, `capacityKwh`, `chemistry`, `removable`, `chargeHours`, `cycles?`, `lifeMonths?`, `brand?` | 48, 12, 0.58, "plomo-acido", true, [6, 8], 400, 24, "Chilwee" |
 | Autonomía y velocidad | `rangeKm`, `rangeMinKm?`, `topSpeedKmh` | 35, 30, 25 |
-| Carga y plazas | `maxLoadKg`, `seats`, `weightKg?` | 150, 2 |
+| Carga y asientos | `maxLoadKg`, `seats` (la ficha lo rotula "Asientos"), `weightKg?` | 150, 2 |
 | Chasis | `tires?`, `wheelInches?`, `brakes`, `suspension`, `lighting`, `display`, `drivingModes[]` | "14 x 2.5\"", "Tambor delantero y trasero" |
-| Licencia | `license` | "sin-licencia" |
-| Garantía | `warrantyMonths`, `batteryWarrantyMonths` | 12, 12 |
+| Licencia | `license` (solo validación; no se muestra en la ficha ni en el comparador) | "sin-licencia" |
+| Garantía | `warrantyMonths`, `batteryWarrantyMonths` (la ficha muestra "6 meses (motor y batería)" cuando coinciden) | 6, 6 |
 | Características | `features[]` | Lista completa del fabricante |
 
 Los valores se almacenan como números sin unidad; `SpecTile` los formatea con la unidad. Las variantes pueden sobrescribir potencia, batería y autonomía con `specsOverride`. El comparador ([03-ux](./03-ux.md)) usa las mismas claves.
@@ -119,7 +119,7 @@ Formato: 600–900 palabras (los artículos del cliente conservan su extensión 
 Tres grupos en `src/content/faqs/{compra,garantia,tecnica}.json` (24 preguntas en total):
 
 - **Compra y pedido (8):** cómo se compra por WhatsApp; sin pago online y medios de pago (Visa/Mastercard/Amex en tienda; Yape, Plin y transferencia a consultar con el asesor); boleta o factura (EG Motors SAC, IGV incluido); plazos de entrega (Lima y Callao 3-7 días hábiles, provincias 7-15); envíos a provincias; prueba de manejo en tienda de Bocanegra, Callao (L-D 10 a. m.–8 p. m.); la bicimoto llega lista; qué pasa tras la solicitud.
-- **Garantía y servicio técnico (6):** 12 meses en batería y motor; qué no cubre; dónde se hace el servicio técnico; repuestos disponibles; vida útil y precio de la batería de repuesto; mantenimiento necesario.
+- **Garantía y servicio técnico (6):** 6 meses en motor y batería; qué no cubre; dónde se hace el servicio técnico; repuestos disponibles; vida útil y precio de la batería de repuesto; mantenimiento necesario.
 - **Técnica, autonomía y normativa (10):** velocidad 25 km/h; licencia y placa (con hedge MTC / municipalidad); autonomía por versión; Estándar vs Premium; tiempo y lugar de carga; cuidados de la batería de plomo-ácido; carga máxima 150 / 250 kg; sierra y subidas; lluvia y garúa; costo de carga.
 
 Cada fichero tiene `group`, `order` e `items[] { question, answer }`. Se renderizan en `/faq` con JSON-LD `FAQPage` ([08-seo](./08-seo.md)); cada ficha de producto lleva además sus propias `faqs` (6 por modelo: licencia, autonomía, Estándar vs Premium o carga, batería, garantía y compra/entrega).
@@ -131,7 +131,7 @@ Cada fichero tiene `group`, `order` e `items[] { question, answer }`. Se renderi
 | Aviso legal | `/legal/aviso-legal` | Titular (EG Motors SAC, RUC 20615247384), domicilio (Bocanegra, Callao), correo (raiden.peru@gmail.com), términos y condiciones |
 | Privacidad | `/legal/privacidad` | Responsable, finalidad (atención de solicitudes vía WhatsApp), base legal, conservación, derechos, transferencias (Meta/WhatsApp) |
 | Cookies | `/legal/cookies` | Declaración de que no se usan cookies de seguimiento; localStorage del carrito como almacenamiento técnico |
-| Garantía | `/garantia` | Garantía de 12 meses en batería y motor, qué cubre y qué no, proceso de reclamación y servicio técnico en Bocanegra, Callao |
+| Garantía | `/garantia` | Garantía de 6 meses en motor y batería (`site.warrantyMonths`), qué cubre y qué no, proceso de reclamación y servicio técnico en Bocanegra, Callao |
 | Envíos y devoluciones | dentro de `/faq` y `/garantia` | Plazos (Lima y Callao 3-7 días hábiles, provincias 7-15), zonas y condiciones de devolución; sin página propia por ahora |
 
 Los textos legales los aporta el cliente o su asesoría; el equipo de Content entrega la estructura y marcadores `[PENDIENTE]`. No se publica ninguna página legal con marcadores pendientes.
@@ -154,7 +154,7 @@ Tiempo objetivo de alta de producto completo: menos de 2 horas desde que se reci
 - [ ] Todas las claves obligatorias de `specs` con valor numérico y rango de autonomía indicado.
 - [ ] Variantes con `tier`, precio en PEN (céntimos de sol; IGV incluido) y una sola `isDefault`; al menos un color con hex.
 - [ ] Imágenes con `alt`, `width` y `height`, ≥ 2000 px de alto en las verticales, fondo neutro, nombre de fichero normalizado.
-- [ ] Garantía de vehículo y batería informadas (12 meses).
+- [ ] Garantía de vehículo y batería informadas (6 meses, igual que `site.warrantyMonths`).
 - [ ] Licencia coherente con la velocidad (25 km/h: "en general sin licencia, confirmar con el MTC").
 - [ ] Enlaces internos: categoría, modelos `related`, repuestos compatibles y 1 artículo de blog si existe.
 - [ ] Preview revisado en 375 px y 1280 px; JSON-LD `Product` validado en Rich Results Test.

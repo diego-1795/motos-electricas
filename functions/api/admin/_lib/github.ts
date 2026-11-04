@@ -20,11 +20,14 @@ export interface ListedFile {
   name: string;
 }
 
+/** `utf8`: `content` es texto (JSON, Markdown); `base64`: `content` ya son los bytes en base64 (webp, PDF; ADR-023). */
+export type ContentEncoding = 'utf8' | 'base64';
+
 export interface ContentStore {
   list(dir: string): Promise<ListedFile[]>;
   read(path: string): Promise<StoredFile | null>;
   /** Sin sha = crear; con sha = actualizar. sha desfasado (o fichero ya existente al crear) → ConflictError. */
-  write(path: string, content: string, message: string, sha?: string): Promise<{ sha: string; commit: CommitInfo }>;
+  write(path: string, content: string, message: string, sha?: string, encoding?: ContentEncoding): Promise<{ sha: string; commit: CommitInfo }>;
   remove(path: string, message: string, sha: string): Promise<{ commit: CommitInfo }>;
 }
 
@@ -159,8 +162,8 @@ export function githubStore(env: Env, fetchImpl: typeof fetch = fetch): ContentS
       return { path: body.path, sha: body.sha, content: decodeBase64Utf8(body.content) };
     },
 
-    async write(path, content, message, sha) {
-      const payload: Record<string, string> = { message, content: encodeUtf8Base64(content), branch };
+    async write(path, content, message, sha, encoding = 'utf8') {
+      const payload: Record<string, string> = { message, content: encoding === 'base64' ? content.replace(/\s+/g, '') : encodeUtf8Base64(content), branch };
       if (sha) payload.sha = sha;
       const res = await call('PUT', path, payload);
       if (!res.ok) return fail(res, path);

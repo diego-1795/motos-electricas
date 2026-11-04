@@ -18,8 +18,8 @@ export const baseSpecs = (over: Partial<Specs> = {}): Specs => ({
   display: 'LCD',
   drivingModes: ['Velocidad 1'],
   motorType: 'Brushless en rueda',
-  warrantyMonths: 12,
-  batteryWarrantyMonths: 12,
+  warrantyMonths: 6,
+  batteryWarrantyMonths: 6,
   features: ['Pantalla LCD', 'Alarma antirrobo'],
   ...over,
 });

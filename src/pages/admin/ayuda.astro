@@ -1,0 +1,25 @@
+---
+/**
+ * /admin/ayuda — guía del administrador (docs/24-guia-administrador.md) renderizada dentro del panel.
+ * Misma puerta que /admin (Cloudflare Access), noindex, sin cabecera pública. La fuente única de la
+ * guía es el Markdown de docs/: aquí solo se muestra (ADR-023).
+ */
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import Logo from '../../components/ui/Logo.astro';
+import { Content as Guide } from '../../../docs/24-guia-administrador.md';
+---
+
+<AdminLayout title="Ayuda · Administración de la tienda · RAIDEN">
+  <div class="adm">
+    <header class="adm__header">
+      <a href="/" class="adm__logo" aria-label="Ir a la web de la tienda">
+        <Logo variant="wordmark" height={28} />
+      </a>
+      <h1 class="adm__title">Ayuda del panel</h1>
+      <a href="/admin" class="adm__header-link">Volver al panel</a>
+    </header>
+    <article class="adm-help prose" data-admin-help-page>
+      <Guide />
+    </article>
+  </div>
+</AdminLayout>

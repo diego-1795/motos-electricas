@@ -25,6 +25,9 @@
     "../tests/unit/admin-github.test.ts",
     "../tests/unit/admin-handlers.test.ts",
     "../tests/unit/admin-http.test.ts",
+    "../tests/unit/admin-blog.test.ts",
+    "../tests/unit/admin-uploads.test.ts",
+    "../tests/unit/memoryStore.ts",
     "../tests/unit/fixtures.ts"
   ]
 }

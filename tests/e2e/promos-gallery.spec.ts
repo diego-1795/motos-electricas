@@ -3,7 +3,7 @@ import { hydrated, parsePrice } from './helpers';
 
 const EG = '/promociones/golden-eagle-eg-motors';
 
-/** ADR-017: promociones (edición EG Motors) separadas del catálogo RAIDEN; galería de clientes 1 a 1; logos de pago. */
+/** ADR-017: promociones (edición EG Motors) separadas del catálogo RAIDEN; logos de pago. Galería de clientes en cuadrícula (2026-11-04). */
 test.describe('Promociones (edición EG Motors)', () => {
   test('/promociones lista solo la Golden Eagle EG Motors y enlaza a su ficha', async ({ page }) => {
     await page.goto('/promociones');
@@ -43,20 +43,32 @@ test.describe('Promociones (edición EG Motors)', () => {
   });
 });
 
-test.describe('Portada: galería de clientes y logos de pago', () => {
-  test('galería de 6 fotos, una a la vez, con flechas y contador', async ({ page }) => {
+test.describe('Portada: galería de clientes y pie', () => {
+  test('galería de 6 fotos pequeñas en cuadrícula, todas visibles a la vez: 1 fila en escritorio, 3+3 en móvil', async ({ page, isMobile }) => {
     await page.goto('/');
     const gallery = page.locator('[data-gallery]');
     await gallery.scrollIntoViewIfNeeded();
-    await expect(gallery.locator('[data-gallery-slide]')).toHaveCount(6);
-    await expect(gallery.locator('[data-current]')).toHaveText('1');
-    await gallery.locator('[data-gallery-next]').click();
-    await expect(gallery.locator('[data-current]')).toHaveText('2');
-    await expect(gallery.locator('[data-gallery-slide]').nth(1)).toHaveAttribute('aria-current', 'true');
-    await gallery.locator('[data-gallery-prev]').click();
-    await gallery.locator('[data-gallery-prev]').click();
-    // Da la vuelta: de la 1 a la 6
-    await expect(gallery.locator('[data-current]')).toHaveText('6');
+    const items = gallery.locator('[data-gallery-item]');
+    await expect(items).toHaveCount(6);
+    // Cuadrícula estática: sin flechas ni contador, sin pista con scroll
+    await expect(gallery.locator('button')).toHaveCount(0);
+    await expect(gallery.locator('[data-current]')).toHaveCount(0);
+    // Las 6 imágenes tienen nombre accesible real (no decorativas)
+    for (const img of await items.locator('img').all()) {
+      await expect(img).toBeVisible();
+      expect((await img.getAttribute('alt')) ?? '').toMatch(/cliente/i);
+    }
+    const boxes = await items.evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ top: Math.round(r.top), width: Math.round(r.width), height: Math.round(r.height) })));
+    const rows = new Set(boxes.map((b) => b.top)).size;
+    expect(rows).toBe(isMobile ? 2 : 1);
+    for (const b of boxes) {
+      // Fotos verticales (3:4) y pequeñas (≤ 320 px de ancho)
+      expect(b.height).toBeGreaterThan(b.width);
+      expect(b.width).toBeLessThanOrEqual(320);
+    }
+    // Toda la cuadrícula cabe en una vista
+    const g = (await gallery.boundingBox())!;
+    expect(g.height).toBeLessThanOrEqual(page.viewportSize()!.height);
   });
 
   test('el pie muestra los logos de Visa, Mastercard y American Express', async ({ page }) => {
@@ -64,5 +76,28 @@ test.describe('Portada: galería de clientes y logos de pago', () => {
     const logos = page.locator('footer .paylogos [role="img"]');
     await expect(logos).toHaveCount(3);
     expect(await logos.evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')))).toEqual(['Visa', 'Mastercard', 'American Express']);
+  });
+
+  test('el logo del pie va en blanco sobre el fondo oscuro, sin placa; el de la cabecera sigue azul', async ({ page }) => {
+    await page.goto('/');
+    const footerLogo = page.locator('footer .logo img');
+    await expect(footerLogo).toHaveCount(1);
+    await expect(page.locator('footer .footer__logo-tile')).toHaveCount(0);
+    await expect(footerLogo).toHaveAttribute('alt', 'Raiden');
+    expect(await footerLogo.evaluate((el) => getComputedStyle(el).filter)).toMatch(/invert\(1\)/);
+    // El logo invertido va directamente sobre el pie: ningún ancestro entre el pie y la imagen pinta un fondo blanco
+    const whiteAncestors = await footerLogo.evaluate((el) => {
+      let n = el.parentElement;
+      let count = 0;
+      while (n && n.tagName !== 'FOOTER') {
+        const bg = getComputedStyle(n).backgroundColor;
+        if (bg === 'rgb(255, 255, 255)') count++;
+        n = n.parentElement;
+      }
+      return count;
+    });
+    expect(whiteAncestors).toBe(0);
+    const headerLogo = page.locator('header .logo img');
+    expect(await headerLogo.evaluate((el) => getComputedStyle(el).filter)).toBe('none');
   });
 });

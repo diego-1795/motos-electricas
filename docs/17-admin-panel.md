@@ -1,10 +1,10 @@
 # 17 — Panel de administración
 
-El catálogo (productos y repuestos) vive como ficheros JSON en el repositorio y se publica con cada commit (git como CMS). Desde ADR-018 existe un **panel `/admin` ligero sobre git** para que la tienda edite precios, oculte fichas y, en el caso del administrador, cree, edite o borre productos sin tocar git: el panel escribe los mismos JSON mediante la API de GitHub y Cloudflare Pages reconstruye el sitio. No hay base de datos. El diseño sobre Supabase (§3) queda como evolución futura si el volumen lo justifica.
+El catálogo (productos y repuestos) y el blog viven como ficheros en el repositorio (JSON y Markdown) y se publican con cada commit (git como CMS). Desde ADR-018 existe un **panel `/admin` ligero sobre git** para que la tienda edite precios, oculte fichas y, en el caso del administrador, cree, edite o borre productos sin tocar git: el panel escribe los mismos ficheros mediante la API de GitHub y Cloudflare Pages reconstruye el sitio. ADR-023 amplía el panel al **blog** (solo admin), a la **subida de PDF** (manual y ficha técnica; única subida de ficheros del panel) y añade al editor de producto los campos **Manual de uso / Ficha técnica / Video de YouTube** y las **fotos por ruta**. Las imágenes nunca se suben desde el panel: van por git en webp (ADR-020) y el contenido solo lleva su ruta. No hay base de datos. El diseño sobre Supabase (§3) queda como evolución futura si el volumen lo justifica.
 
-Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018, [19-deployment](./19-deployment.md) §12 (alta en Cloudflare), [23-catalog-editing](./23-catalog-editing.md) (guía de uso para Diego y Wiliam), [10-security](./10-security.md).
+Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018 y ADR-023, [19-deployment](./19-deployment.md) §12 (alta en Cloudflare), [24-guia-administrador](./24-guia-administrador.md) (guía para el cliente, servida también en `/admin/ayuda`), [23-catalog-editing](./23-catalog-editing.md) (guía técnica de edición), [10-security](./10-security.md).
 
-## 1. Panel `/admin` (fase actual, ADR-018)
+## 1. Panel `/admin` (fase actual, ADR-018 + ADR-023)
 
 ### Alcance
 
@@ -13,12 +13,15 @@ Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018, [19-deployme
 | Ver catálogo completo (incluidos ocultos) | ✓ | ✓ |
 | Cambiar precios (`variants[].price.amount`, `price.amount`) | ✓ | ✓ |
 | Ocultar / mostrar (`hidden`) | ✓ | ✓ |
-| Editar cualquier otro campo (categoría, variantes, colores, specs…) | ✓ | ✗ (403) |
+| Editar cualquier otro campo (categoría, variantes, colores, specs, manual, ficha técnica, video…) | ✓ | ✗ (403) |
 | Crear (duplicando una ficha) | ✓ | ✗ (403) |
 | Borrar | ✓ | ✗ (403) |
+| Blog: listar, leer, crear, editar y borrar artículos (ADR-023) | ✓ | ✗ (403; la pestaña no se muestra) |
+| Subir PDF de manual/ficha a `public/docs` (ADR-023) | ✓ | ✗ (403) |
+| Ver la guía `/admin/ayuda` | ✓ | ✓ |
 | Gestionar quién es admin/editor | En Cloudflare (Access + variables); el panel lo muestra | Solo lectura |
 
-Fuera del panel (siguen por git): blog, FAQ, testimonios, categorías, imágenes y textos de `src/config/site.ts`.
+Fuera del panel (siguen por git): **todas las imágenes** (productos, repuestos, blog: se convierten a webp y se colocan en `src/assets/`; el panel solo escribe su ruta), FAQ, testimonios, categorías y textos de `src/config/site.ts`.
 
 ### Arquitectura
 
@@ -39,16 +42,20 @@ Navegador ──(Cloudflare Access: login por email)──▶ /admin  (HTML est�
 
 | Pieza | Dónde | Notas |
 |---|---|---|
-| Página y layout | `src/pages/admin/index.astro`, `src/layouts/AdminLayout.astro` | Sin cabecera, carrito ni analítica; `noindex`; fuera de sitemap, robots y Pagefind |
-| Islas | `src/islands/admin/*` | Lista, precio inline, interruptor ocultar, editor de ficha (admin), confirmación de borrado, estado de publicación |
+| Página y layout | `src/pages/admin/index.astro`, `src/pages/admin/ayuda.astro`, `src/layouts/AdminLayout.astro` | Sin cabecera, carrito ni analítica; `noindex`; fuera de sitemap, robots y Pagefind. `/admin/ayuda` renderiza `docs/24-guia-administrador.md` |
+| Islas | `src/islands/admin/*` | Lista, precio inline, interruptor ocultar, editor de ficha (admin), confirmación de borrado, estado de publicación; `BlogPanel`/`BlogEditor` (pestaña Blog), `ImageFields` (imagen por ruta + alt + ancho × alto), `PdfUpload` (manual/ficha) |
 | Cliente HTTP | `src/services/admin/AdminApiClient.ts` | Único punto de `fetch`; sin lógica de negocio |
-| Contrato del API | `src/domain/admin.ts` | Tipos compartidos por islas y Functions |
-| Política de roles | `src/domain/adminPolicy.ts` | Pura; `applyProductPatch`/`applyPartPatch` solo tocan precio y `hidden` |
+| Contrato del API | `src/domain/admin.ts` | Tipos compartidos por islas y Functions (catálogo, blog, subidas) |
+| Política de roles | `src/domain/adminPolicy.ts` | Pura; `applyProductPatch`/`applyPartPatch` solo tocan precio y `hidden`; operaciones `blog` y `upload` solo admin |
 | Reglas de catálogo | `src/domain/catalogRules.ts` | Una variante por defecto, Premium ≥ Estándar, PEN, batería, referencias |
-| Esquemas | `src/content/schemas.ts` | Los mismos zod del build (`content.config.ts`) |
-| Functions | `functions/api/admin/*` | `_middleware.ts` (Access + rol), `me`, `catalog`, `products/[slug]`, `repuestos/[slug]`, `deploy`; `_lib/` (JWT, GitHub, handlers) |
+| Reglas del blog | `src/domain/blogRules.ts` | Slug, campos obligatorios, fechas ISO, foto `~/assets/blog/*.webp` con alt, `relatedProducts` existentes, sin €/EUR/carnet/IVA (lo mismo que `validate:content`) |
+| Frontmatter | `src/domain/frontmatter.ts` | Lector/escritor determinista del subconjunto YAML de los artículos (sin dependencias) |
+| Subidas | `src/domain/uploads.ts` | Solo PDF: ruta blanca `public/docs/<kebab>.pdf`, cabecera real `%PDF-` y tope de 10 MB |
+| Video | `src/domain/video.ts` | `normalizeYouTubeUrl` → `https://www.youtube.com/watch?v=<id>` |
+| Esquemas | `src/content/schemas.ts` | Los mismos zod del build (`content.config.ts`): `productSchema`, `partSchema`, `blogSchema` + `parsePost` |
+| Functions | `functions/api/admin/*` | `_middleware.ts` (Access + rol), `me`, `catalog`, `products/[slug]`, `repuestos/[slug]`, `deploy`, `blog/index`, `blog/[slug]`, `uploads`; `_lib/` (JWT, GitHub, handlers, blog, uploads) |
 | Visibilidad | `src/domain/catalog.ts` → `visibleOnly` | Aplicada en `all()` de `src/data/json.ts` (y del ejemplo Supabase) |
-| Cabeceras | `public/_headers` (`/admin`, `/api/admin/*`) | CSP propia (`connect-src 'self'`), `no-store`, `X-Robots-Tag: noindex` |
+| Cabeceras | `public/_headers` (`/admin`, `/admin/*`, `/api/admin/*`) | CSP propia (`connect-src 'self'`), `no-store`, `X-Robots-Tag: noindex` (sin cambios en ADR-023) |
 
 ### API
 
@@ -61,8 +68,25 @@ Navegador ──(Cloudflare Access: login por email)──▶ /admin  (HTML est�
 | `PUT /api/admin/products/:slug` · `/repuestos/:slug` | admin | `{ sha?, data, reason? }` (sin `sha` = crear) | ficha + commit |
 | `DELETE …/:slug` | admin | `{ sha, reason? }` | commit; 409 si otra ficha lo referencia |
 | `GET /api/admin/deploy` | ambos | — | estado del último build de Pages o `available: false` |
+| `GET /api/admin/blog` | admin | — | `BlogList`: `{ posts: [{ slug, title, category, publishedAt, updatedAt?, author, hasImage, sha, path }], branch }`, más reciente primero |
+| `GET /api/admin/blog/:slug` | admin | — | `BlogEntry`: `{ slug, frontmatter, body, sha, path }` (frontmatter ya validado con `blogSchema`) |
+| `PUT /api/admin/blog/:slug` | admin | `{ sha?, reason?, frontmatter, body }` (sin `sha` = crear) | `BlogWriteResult` = `BlogEntry` + `commit`; escribe `src/content/blog/<slug>.md` con frontmatter determinista |
+| `DELETE /api/admin/blog/:slug` | admin | `{ sha, reason? }` | `{ path, commit }` (sin comprobación de referencias: nadie apunta a un artículo) |
+| `POST /api/admin/uploads` | admin | `{ path, contentBase64, reason? }` · `path` = `public/docs/<kebab>.pdf` (solo PDF) | `UploadResult`: `{ path, ref ("/docs/x.pdf"), bytes, sha, replaced, commit }`; si el fichero existe lo sustituye |
 
-Errores en JSON `{ code, error, details? }`: 401 sin identidad, 403 fuera de rol, 404, 409 conflicto de `sha` o referencias, 422 validación (lista de errores legibles), 502 fallo de GitHub.
+Errores en JSON `{ code, error, details? }`: 401 sin identidad, 403 fuera de rol, 404, 409 conflicto de `sha` o referencias, 413 cuerpo demasiado grande, 422 validación (lista de errores legibles; en uploads: ruta fuera de `public/docs`, cabecera que no es `%PDF-`, tamaño), 502 fallo de GitHub o fichero del repo que no pasa el esquema.
+
+Commits: `chore(catalog): …` (productos y repuestos), `chore(blog): <crear|actualizar|borrar> <slug> por <email>` y `chore(assets): subir <ruta> por <email>`.
+
+### Blog y subidas (ADR-023)
+
+- **Artículos.** `src/content/blog/<slug>.md` = frontmatter (`title`, `description`, `category`, `publishedAt`, `updatedAt?`, `author`, `image?`, `relatedProducts`) + cuerpo Markdown. `blogSchema` vive en `src/content/schemas.ts` y lo usan tanto `content.config.ts` como las Functions; `parsePost` añade `blogRules`. El tiempo de lectura no se escribe (ADR-016). El servidor serializa el frontmatter con `src/domain/frontmatter.ts` (cadenas JSON entre comillas dobles, listas en línea, `image` en bloque, orden fijo de claves): guardar sin cambios no produce diff. Un fichero del repo escrito a mano con YAML fuera de ese subconjunto (bloques `|`, anclas, tabuladores) se señala con 502 y se corrige por git.
+- **Imágenes: siempre por git, solo por ruta.** El panel no sube imágenes (ni de productos ni del blog). El cliente envía las fotos a Diego, que las convierte a webp (`cwebp -q 90`, ADR-020) y las coloca en `src/assets/products/` o `src/assets/blog/`. En el panel, la galería del producto (`images[]`), la foto de cada color (`colors[].image`) y la foto del artículo (`image`) son campos visibles de ruta + alt + ancho × alto (`ImageFields`), validados con `safeUrl` (`~/assets/`, `/` o `https://`; en el blog, `~/assets/blog/<kebab>.webp`). Una ruta inexistente hace fallar el build: el producto puede guardarse `hidden` hasta que las fotos estén.
+- **PDF.** `public/docs/<slug>-manual.pdf` y `<slug>-ficha.pdf` (cabecera `%PDF-`); el editor de producto rellena `manualUrl`/`datasheetUrl` con `/docs/…`. `public/docs/` se crea con la primera subida.
+- **Topes.** PDF 10 MB, cuerpo de `/uploads` 14 MB (`MAX_UPLOAD_BODY_BYTES`). GitHub admite 100 MB, pero una Pages Function tiene 128 MB de memoria y el cuerpo pasa por JSON + base64 (×1,33) + decodificación: 10 MB de PDF ≈ 24 MB en memoria con margen. Un manual mayor se comprime antes.
+- **Cada subida de PDF es un commit propio** (y un build) distinto del guardado de la ficha: subir el PDF y no guardar la ficha deja el fichero en `public/docs` sin enlazar (inofensivo).
+- **Video.** `videoUrl` se normaliza a `https://www.youtube.com/watch?v=<id>` (`src/domain/video.ts`); `ProductTabs.astro` extrae el id y crea el iframe de `youtube-nocookie.com` solo al pulsar reproducir (CSP global ya con `frame-src https://www.youtube-nocookie.com`).
+- **Subpeticiones.** `GET /api/admin/blog` lee cada `.md` (1 + N): con el límite de 50 por petición del plan gratuito, hasta ~45 artículos (hoy 8). Misma salida que el catálogo si crece: Git Trees API.
 
 ### Flujo de un cambio de precio
 
@@ -83,12 +107,12 @@ Errores en JSON `{ code, error, details? }`: 401 sin identidad, 403 fuera de rol
 ### Límites
 
 - Cada guardado es un commit y un build (2–3 min). Adecuado para < 20 cambios por semana.
-- No sube imágenes: las fotos siguen por git ([23-catalog-editing](./23-catalog-editing.md) §5).
+- Solo sube PDFs (ADR-023): todas las imágenes siguen por git en webp ([23-catalog-editing](./23-catalog-editing.md) §3 y §5); el panel las referencia por ruta.
 - Si dos personas editan la misma ficha, la segunda recibe 409 y debe recargar.
 - Requiere el despliegue en Cloudflare Pages (fase 16) con Access configurado; hasta entonces solo funciona en modo local.
 - **Tamaño del catálogo:** `GET /api/admin/catalog` (y `DELETE`, que comprueba referencias) lee cada JSON con una subpetición a GitHub: 2 + N llamadas. El plan gratuito de Workers/Pages permite 50 subpeticiones por petición, así que el panel soporta hasta **~45 fichas** (hoy 31). Al acercarse, cambiar la lectura a la Git Trees/Data API (un árbol + blobs) o cachear el catálogo; está anotado en el roadmap.
 - Un JSON corrupto en el repo hace fallar la carga completa del catálogo (502 con el fichero señalado): se corrige por git.
-- Cuerpos limitados a 256 KB, slugs a 80 caracteres, motivo del commit a 300 caracteres.
+- Cuerpos limitados a 256 KB (14 MB en `/uploads`), slugs a 80 caracteres, motivo del commit a 300 caracteres, cuerpo de un artículo a 60 000 caracteres.
 
 ## 2. Git como CMS (vía alternativa, siempre disponible)
 
@@ -159,6 +183,7 @@ Roles `admin`, `editor` y `ventas` en `admin_users.role`, copiados al JWT con `c
 |---|---|---|
 | 0 | Git como CMS | Hecho (MVP) |
 | 1 | Panel ligero sobre git (`/admin`, Access, Functions, GitHub, `hidden`) — ADR-018 | Hecho en código; operativo al desplegar en Pages (fase 16 del roadmap) |
-| 2 | Estado real del build desde la API de Pages; subida de imágenes por el panel | Opcional |
+| 1b | Blog en el panel, PDF de manual/ficha, campos manual/ficha/video, fotos por ruta, guía `/admin/ayuda` — ADR-023 | Hecho en código (2026-11-04); mismo requisito de despliegue |
+| 2 | Estado real del build desde la API de Pages | Opcional |
 | 3 | Supabase (esquema, RLS, `SupabaseProductRepository`, módulos de §3) | Solo si > 40 productos o > 20 cambios/semana, o entra ventas |
 | 4 | Solicitudes de pedido, clientes, WhatsApp Business API | Tras la fase 3 |

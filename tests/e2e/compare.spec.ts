@@ -31,6 +31,16 @@ test.describe('Comparador', () => {
     // Cabecera: 1 columna de etiqueta + 3 modelos
     await expect(table.locator('thead th')).toHaveCount(4);
     await expect(table.locator('tbody tr').first().locator('td')).toHaveCount(3);
+    // Filas (cliente, 2026-11-04): "Asientos" en vez de "Plazas", sin licencia, garantía de 6 meses en motor y batería
+    const rowLabels = table.locator('tbody th[scope="row"]');
+    await expect(rowLabels.filter({ hasText: /^Asientos$/ })).toHaveCount(1);
+    await expect(rowLabels.filter({ hasText: /^Plazas$/ })).toHaveCount(0);
+    await expect(rowLabels.filter({ hasText: /Licencia/ })).toHaveCount(0);
+    await expect(table).not.toContainText('Licencia');
+    const warrantyRow = table.locator('tbody tr', { hasText: 'Garantía' });
+    await expect(warrantyRow).toHaveCount(1);
+    await expect(warrantyRow.locator('td').first()).toHaveText('6 meses (motor y batería)');
+    await expect(table).not.toContainText('12 meses');
 
     await table.getByRole('button', { name: /^Quitar / }).first().click();
     await expect(table.locator('thead th')).toHaveCount(3);

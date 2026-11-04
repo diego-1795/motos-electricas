@@ -30,6 +30,11 @@ export const site = {
     facebook: 'https://www.facebook.com/EGMOTORSPERU',
     youtube: '',
   },
+  /**
+   * Garantía comercial de la gama (meses, motor y batería; cliente 2026-11-04).
+   * Las fichas llevan su propio `specs.warrantyMonths`; un test comprueba que coinciden.
+   */
+  warrantyMonths: 6,
   /** Máximo de modelos en el comparador */
   compareLimit: 3,
   /** Máximo de unidades por línea de carrito */

@@ -16,7 +16,7 @@ const message = 'Hola 👋 Quiero iniciar una reclamación de garantía. Modelo:
 
 <BaseLayout
   title="Garantía y servicio posventa"
-  description="12 meses de garantía en batería y motor de tu bicimoto o trimoto RAIDEN. Qué cubre, qué no cubre y cómo gestionar una reclamación con nuestro servicio técnico en Callao."
+  description={`${site.warrantyMonths} meses de garantía en motor y batería de tu bicimoto o trimoto RAIDEN. Qué cubre, qué no cubre y cómo gestionar una reclamación con nuestro servicio técnico en Callao.`}
   path="/garantia"
   jsonLd={[breadcrumbSchema(crumbs)]}
 >
@@ -27,8 +27,8 @@ const message = 'Hola 👋 Quiero iniciar una reclamación de garantía. Modelo:
     <div class="prose">
       <ul role="list" class="war__summary">
         <li class="card">
-          <strong>12 meses</strong>
-          <span class="muted">Garantía en batería y motor frente a defectos de fabricación</span>
+          <strong>{site.warrantyMonths} meses</strong>
+          <span class="muted">Garantía en motor y batería frente a defectos de fabricación</span>
         </li>
         <li class="card">
           <strong>Servicio técnico propio</strong>
@@ -42,7 +42,7 @@ const message = 'Hola 👋 Quiero iniciar una reclamación de garantía. Modelo:
 
       <h2>Plazos de garantía</h2>
       <p>
-        Todos los vehículos RAIDEN cuentan con <strong>12 meses de garantía en batería y motor</strong> desde la fecha de entrega, válida en todo el Perú y sin
+        Todos los vehículos RAIDEN cuentan con <strong>{site.warrantyMonths} meses de garantía en motor y batería</strong> desde la fecha de entrega, válida en todo el Perú y sin
         perjuicio de los derechos que reconoce al consumidor el Código de Protección y Defensa del Consumidor. El plazo exacto de cada modelo aparece en su ficha
         técnica.
       </p>

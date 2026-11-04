@@ -1,6 +1,6 @@
 import { test, expect, type Page, type Route } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import type { AdminCatalog, AdminError, AdminUser, CatalogEntry, DeployStatus, WriteResult } from '../../src/domain/admin';
+import type { AdminCatalog, AdminError, AdminUser, BlogEntry, BlogSummary, CatalogEntry, DeployStatus, UploadResult, WriteResult } from '../../src/domain/admin';
 import type { Part, Product } from '../../src/domain/types';
 import { makePart, makeProduct, premiumVariant, variant } from '../unit/fixtures';
 
@@ -9,7 +9,45 @@ import { makePart, makeProduct, premiumVariant, variant } from '../unit/fixtures
  * Pages Functions no corren en `astro preview`. Catálogo sintético: 2 productos (uno oculto)
  * y 2 repuestos. El mock guarda estado por test (sha y datos avanzan con cada escritura) y
  * aplica el contrato del PATCH como el servidor (422 ante claves extra o tipos incorrectos).
+ * Blog y subidas (ADR-023): 2 artículos; el mock de /blog y /uploads responde 403 al editor.
  */
+
+const posts: BlogEntry[] = [
+  {
+    slug: 'como-cuidar-la-bateria',
+    frontmatter: { title: 'Cómo cuidar la batería', description: 'Guía práctica.', category: 'baterias', publishedAt: '2026-10-27T08:00:00.000Z', author: 'Equipo Raiden', relatedProducts: ['aguila-test'] },
+    body: 'Carga después de cada uso.\n\n## Resumen\n\nNunca la dejes vacía.\n',
+    sha: 'sha-bateria-1',
+    path: 'src/content/blog/como-cuidar-la-bateria.md',
+  },
+  {
+    slug: 'necesito-licencia',
+    frontmatter: {
+      title: '¿Necesito licencia?',
+      description: 'Respuesta honesta.',
+      category: 'legislacion',
+      publishedAt: '2026-10-23T08:00:00.000Z',
+      author: 'Equipo Raiden',
+      image: { src: '~/assets/blog/necesito-licencia.webp', alt: 'Bicimoto', width: 1264, height: 848 },
+      relatedProducts: [],
+    },
+    body: 'En general no.\n',
+    sha: 'sha-licencia-1',
+    path: 'src/content/blog/necesito-licencia.md',
+  },
+];
+
+const summary = (p: BlogEntry): BlogSummary => ({
+  slug: p.slug,
+  title: p.frontmatter.title,
+  category: p.frontmatter.category,
+  publishedAt: p.frontmatter.publishedAt,
+  ...(p.frontmatter.updatedAt ? { updatedAt: p.frontmatter.updatedAt } : {}),
+  author: p.frontmatter.author,
+  hasImage: Boolean(p.frontmatter.image),
+  sha: p.sha,
+  path: p.path,
+});
 
 const products: CatalogEntry<Product>[] = [
   {
@@ -67,6 +105,8 @@ async function mockApi(page: Page, opts: MockOptions) {
   const counters = { catalog: 0, deploy: 0, writes: 0 };
   // Estado por test: cada escritura avanza el sha y los datos, como el repositorio real
   const state: AdminCatalog = { products: clone(products), repuestos: clone(repuestos), branch: 'main' };
+  const blog: BlogEntry[] = clone(posts);
+  const commitOf = (message: string) => ({ sha: 'c0ffee', url: 'https://github.com/x/y/commit/c0ffee', message });
 
   await page.route('**/api/admin/**', async (route) => {
     const req = route.request();
@@ -76,6 +116,40 @@ async function mockApi(page: Page, opts: MockOptions) {
     const body = method === 'GET' ? undefined : req.postDataJSON();
     const headers = await req.allHeaders();
     calls.push({ method, path, body, headers });
+
+    // Blog y subidas (ADR-023): solo admin, como el servidor
+    if (path === '/blog' || path.startsWith('/blog/') || path === '/uploads') {
+      if (opts.role !== 'admin') return json(route, 403, { code: 'forbidden', error: 'Solo el administrador puede gestionar el blog' });
+      if (method === 'GET' && path === '/blog') return json(route, 200, { posts: blog.map(summary), branch: 'main' });
+      if (method === 'POST' && path === '/uploads') {
+        const b = body as { path: string; contentBase64: string };
+        const ref = b.path.startsWith('public/docs/') ? b.path.replace(/^public/, '') : b.path.replace(/^src\/assets/, '~/assets');
+        const result: UploadResult = { path: b.path, ref, bytes: Math.floor((b.contentBase64.length * 3) / 4), sha: 'sha-upload-1', replaced: false, commit: commitOf('subir') };
+        return json(route, 200, result);
+      }
+      const bm = /^\/blog\/([a-z0-9-]+)$/.exec(path);
+      if (!bm) return json(route, 404, { code: 'not_found', error: `Sin mock para ${method} ${path}` });
+      const i = blog.findIndex((p) => p.slug === bm[1]);
+      const entry = blog[i];
+      if (method === 'GET') return entry ? json(route, 200, entry) : json(route, 404, { code: 'not_found', error: 'No existe' });
+      const b = body as Record<string, unknown>;
+      if (opts.writeError) return json(route, opts.writeError.status, opts.writeError.body);
+      if (method === 'DELETE') {
+        if (!entry) return json(route, 404, { code: 'not_found', error: 'No existe' });
+        if (b.sha !== entry.sha) return json(route, 409, { code: 'conflict', error: 'El artículo cambió' });
+        blog.splice(i, 1);
+        return json(route, 200, { path: entry.path, commit: commitOf('borrar') });
+      }
+      if (method === 'PUT') {
+        if (b.sha === undefined && entry) return json(route, 409, { code: 'conflict', error: 'Ya existe' });
+        if (b.sha !== undefined && (!entry || b.sha !== entry.sha)) return json(route, entry ? 409 : 404, { code: entry ? 'conflict' : 'not_found', error: entry ? 'El artículo cambió' : 'No existe' });
+        const saved: BlogEntry = { slug: bm[1]!, frontmatter: b.frontmatter as BlogEntry['frontmatter'], body: b.body as string, sha: `${entry?.sha ?? 'sha-nuevo'}-new`, path: `src/content/blog/${bm[1]}.md` };
+        if (entry) blog[i] = saved;
+        else blog.push(saved);
+        return json(route, 200, { ...saved, commit: commitOf(entry ? 'actualizar' : 'crear') });
+      }
+      return json(route, 405, { code: 'bad_request', error: 'método' });
+    }
 
     if (method === 'GET' && path === '/me') {
       if (!opts.localMode) return json(route, 200, users[opts.role]);
@@ -191,6 +265,9 @@ test.describe('Panel de administración', () => {
     // Ni siquiera en el DOM: sin botón "Nuevo", sin columna "Acciones", sin diálogos de administrador ni selector de modo local
     await expect(page.locator('[data-admin-new], .adm-td-actions, [data-admin-editor], [data-admin-delete], [data-admin-duplicate], [data-admin-simulate]')).toHaveCount(0);
     await expect(page.locator('[data-admin-table="products"] thead th')).toHaveCount(5);
+    // Sin pestaña Blog (ADR-023): solo Productos y Repuestos
+    await expect(page.getByRole('tab')).toHaveCount(2);
+    await expect(page.getByRole('tab', { name: 'Blog' })).toHaveCount(0);
     // La ficha oculta lleva la insignia y el interruptor marcado
     const hiddenRow = page.locator('[data-admin-row="tigre-test"]');
     await expect(hiddenRow.getByText('Oculto', { exact: true })).toBeVisible();
@@ -544,8 +621,12 @@ test.describe('Panel de administración', () => {
     await expect(partsTab).toBeFocused();
     await expect(partsTab).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('[data-admin-table="repuestos"]')).toBeVisible();
+    await page.keyboard.press('ArrowRight'); // admin: tercera pestaña Blog
+    await expect(page.getByRole('tab', { name: 'Blog' })).toBeFocused();
     await page.keyboard.press('ArrowRight'); // circular
     await expect(page.getByRole('tab', { name: /Productos/ })).toBeFocused();
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.getByRole('tab', { name: 'Blog' })).toBeFocused();
     await page.keyboard.press('ArrowLeft');
     await expect(partsTab).toBeFocused();
 
@@ -591,6 +672,255 @@ test.describe('Panel de administración', () => {
     expect(blocking).toEqual([]);
   });
 
+  test('/admin/ayuda renderiza la guía del administrador (noindex) y el panel enlaza a ella', async ({ page, request }) => {
+    const html = await (await request.get('/admin/ayuda')).text();
+    expect(html).toContain('<meta name="robots" content="noindex, nofollow">');
+    expect(html).toContain('Guía del administrador');
+    expect(html).toContain('Subir PDF');
+    await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await expect(page.locator('[data-admin-help]')).toHaveAttribute('href', '/admin/ayuda');
+    await page.locator('[data-admin-help]').click();
+    await expect(page.locator('[data-admin-help-page] h1')).toContainText('Guía del administrador');
+    await expect(page.getByRole('link', { name: 'Volver al panel' })).toHaveAttribute('href', '/admin');
+  });
+
+  test('admin: la pestaña Blog lista los artículos y "Editar" guarda con PUT {sha, frontmatter, body}', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'admin' });
+    await openAdmin(page);
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await expect(page.locator('[data-admin-post]')).toHaveCount(2);
+    await expect(page.locator('[data-admin-post="como-cuidar-la-bateria"]')).toContainText('Baterías');
+    await expect(page.locator('[data-admin-post="necesito-licencia"] td[data-label="Foto"]')).toHaveText('Sí');
+    await expect(page.locator('[data-admin-post="como-cuidar-la-bateria"] td[data-label="Foto"]')).toHaveText('No');
+    await expect(page.locator('[data-admin-post="como-cuidar-la-bateria"]').getByRole('link', { name: /Ver/ })).toHaveAttribute('href', '/blog/como-cuidar-la-bateria');
+
+    await page.getByRole('button', { name: 'Editar artículo Cómo cuidar la batería' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Editar artículo: Cómo cuidar la batería');
+    await expect(dialog.getByLabel('Slug (URL)')).toHaveValue('como-cuidar-la-bateria');
+    await expect(dialog.getByLabel('Slug (URL)')).toHaveAttribute('readonly', '');
+    await expect(dialog.getByLabel('Texto del artículo (Markdown)')).toHaveValue(/Carga después de cada uso/);
+    await expect(dialog).toContainText('min de lectura');
+    await dialog.getByLabel('Título', { exact: true }).fill('Cómo cuidar la batería (2026)');
+    await dialog.getByLabel('Fecha de actualización (opcional)').fill('2026-11-04');
+    await dialog.getByRole('checkbox', { name: /Tigre Test/ }).check();
+    await dialog.getByLabel('Texto del artículo (Markdown)').fill('Texto nuevo con **negrita**.\n\n## Sección\n\n- uno');
+    await dialog.getByLabel('Motivo (opcional)').fill('revisión e2e');
+    await dialog.getByRole('button', { name: 'Guardar' }).click();
+    await expect(dialog).toBeHidden();
+    const put = calls.find((c) => c.method === 'PUT')!;
+    expect(put.path).toBe('/blog/como-cuidar-la-bateria');
+    expect(put.body).toEqual({
+      sha: 'sha-bateria-1',
+      reason: 'revisión e2e',
+      frontmatter: {
+        title: 'Cómo cuidar la batería (2026)',
+        description: 'Guía práctica.',
+        category: 'baterias',
+        publishedAt: '2026-10-27T08:00:00.000Z',
+        updatedAt: '2026-11-04T08:00:00.000Z',
+        author: 'Equipo Raiden',
+        relatedProducts: ['aguila-test', 'tigre-test'],
+      },
+      body: 'Texto nuevo con **negrita**.\n\n## Sección\n\n- uno',
+    });
+    await expect(page.locator('[data-deploy-banner]')).toBeVisible();
+    await expect(page.locator('[data-admin-post="como-cuidar-la-bateria"]')).toContainText('Cómo cuidar la batería (2026)');
+
+    // Borrar exige el slug y envía DELETE {sha}
+    await page.getByRole('button', { name: 'Borrar artículo ¿Necesito licencia?' }).click();
+    const del = page.getByRole('dialog');
+    await expect(del.getByRole('button', { name: 'Borrar', exact: true })).toBeDisabled();
+    await del.getByLabel(/para confirmar/).fill('necesito-licencia');
+    await del.getByRole('button', { name: 'Borrar', exact: true }).click();
+    await expect(del).toBeHidden();
+    expect(calls.find((c) => c.method === 'DELETE')).toMatchObject({ path: '/blog/necesito-licencia', body: { sha: 'sha-licencia-1' } });
+    await expect(page.locator('[data-admin-post]')).toHaveCount(1);
+  });
+
+  test('admin: "Nuevo artículo" propone el slug desde el título, la foto va por ruta (sin subida) y publica con PUT sin sha', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'admin' });
+    await openAdmin(page);
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await page.getByRole('button', { name: 'Nuevo artículo' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Nuevo artículo');
+    // Ningún control de subida de imágenes en el panel (ADR-023: las fotos van por git)
+    await expect(dialog.locator('input[type="file"]')).toHaveCount(0);
+    await dialog.getByLabel('Título', { exact: true }).fill('¿Cómo elegir una bicimoto eléctrica?');
+    await expect(dialog.getByLabel('Slug (URL)')).toHaveValue('como-elegir-una-bicimoto-electrica');
+    await dialog.getByLabel(/Descripción/).fill('Factores a considerar.');
+    await dialog.getByLabel('Categoría').selectOption('compra');
+    await dialog.getByLabel('Texto del artículo (Markdown)').fill('Mira la batería y el motor.');
+
+    // Foto por ruta: se propone ~/assets/blog/<slug>.webp; una ruta fuera de src/assets/blog se rechaza en local
+    await dialog.getByRole('button', { name: 'Añadir foto (por ruta)' }).click();
+    const src = dialog.getByLabel('Foto: ruta');
+    await expect(src).toHaveValue('~/assets/blog/como-elegir-una-bicimoto-electrica.webp');
+    await src.fill('~/assets/products/golden-eagle-negro.webp');
+    await dialog.getByLabel('Foto: texto alternativo').fill('Persona comparando bicimotos');
+    await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
+    await expect(dialog.getByRole('alert')).toContainText('~/assets/blog/<nombre>.webp');
+    expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(0);
+    await src.fill('~/assets/blog/como-elegir-una-bicimoto-electrica.webp');
+    await dialog.getByLabel('Foto: ancho').fill('1600');
+    await dialog.getByLabel('Foto: alto').fill('800');
+
+    await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
+    await expect(dialog).toBeHidden();
+    const put = calls.find((c) => c.method === 'PUT')!;
+    expect(put.path).toBe('/blog/como-elegir-una-bicimoto-electrica');
+    const body = put.body as { sha?: string; frontmatter: BlogEntry['frontmatter']; body: string };
+    expect(body.sha).toBeUndefined();
+    expect(body.frontmatter.title).toBe('¿Cómo elegir una bicimoto eléctrica?');
+    expect(body.frontmatter.category).toBe('compra');
+    expect(body.frontmatter.author).toBe('Equipo Raiden');
+    expect(body.frontmatter.publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}T08:00:00\.000Z$/);
+    expect(body.frontmatter.image).toEqual({ src: '~/assets/blog/como-elegir-una-bicimoto-electrica.webp', alt: 'Persona comparando bicimotos', width: 1600, height: 800 });
+    expect(body.frontmatter.relatedProducts).toEqual([]);
+    expect(body.body).toBe('Mira la batería y el motor.');
+    expect(calls.filter((c) => c.path === '/uploads')).toHaveLength(0);
+    await expect(page.locator('[data-admin-post]')).toHaveCount(3);
+  });
+
+  test('admin: el editor de artículo valida en local (sin petición) y muestra los details de un 422 del servidor', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'admin', writeError: { status: 422, body: { code: 'validation', error: 'El artículo no es válido', details: ['relatedProducts desconocido: zz'] } } });
+    await openAdmin(page);
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await page.getByRole('button', { name: 'Nuevo artículo' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
+    await expect(dialog.getByRole('alert')).toContainText('No se ha guardado');
+    await expect(dialog.getByRole('alert')).toContainText('slug');
+    await expect(dialog.getByRole('alert')).toContainText('title es obligatorio');
+    await expect(dialog.getByRole('alert')).toBeFocused();
+    expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(0);
+    await dialog.getByLabel('Título', { exact: true }).fill('Precios en euros');
+    await dialog.getByLabel(/Descripción/).fill('d');
+    await dialog.getByLabel('Texto del artículo (Markdown)').fill('Cuesta 300 € con IVA');
+    await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
+    await expect(dialog.getByRole('alert')).toContainText('España/EUR');
+    expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(0);
+    await dialog.getByLabel('Texto del artículo (Markdown)').fill('Cuesta S/ 1,200 con IGV');
+    await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
+    await expect(dialog.getByRole('alert')).toContainText('relatedProducts desconocido: zz');
+    expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(1);
+    await expect(page.locator('[data-deploy-banner]')).toHaveCount(0);
+  });
+
+  test('admin: el editor de producto tiene Manual, Ficha técnica y Video; normaliza la URL de YouTube y "Subir PDF" rellena el campo', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'admin' });
+    await openAdmin(page);
+    await page.getByRole('button', { name: 'Editar ficha de Águila Test' }).click();
+    const dialog = page.getByRole('dialog');
+    const manual = dialog.getByLabel('Manual de uso (PDF)');
+    const datasheet = dialog.getByLabel('Ficha técnica (PDF)');
+    const video = dialog.getByLabel('Video de YouTube');
+    await expect(manual).toHaveValue('');
+    await expect(datasheet).toHaveValue('');
+    await expect(video).toHaveValue('');
+
+    // Un enlace que no es de YouTube se rechaza en local, sin petición
+    await video.fill('https://vimeo.com/123');
+    await dialog.getByRole('button', { name: 'Guardar' }).click();
+    await expect(dialog.getByRole('alert')).toContainText('Video de YouTube');
+    expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(0);
+    await manual.fill('docs/sin-barra.pdf');
+    await video.fill('https://youtu.be/dQw4w9WgXcQ?si=abc');
+    await dialog.getByRole('button', { name: 'Guardar' }).click();
+    await expect(dialog.getByRole('alert')).toContainText('Manual de uso (PDF)');
+    expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(0);
+
+    // Subir PDF: POST /uploads con la ruta blanca y el campo se rellena con /docs/<slug>-manual.pdf
+    await dialog.locator('[data-admin-pdf-upload="manual"] input[type="file"]').setInputFiles({ name: 'manual.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n%fake\n') });
+    await expect(manual).toHaveValue('/docs/aguila-test-manual.pdf');
+    await expect(dialog.locator('[data-admin-pdf-upload="manual"]')).toContainText('manual.pdf subido');
+    const upload = calls.find((c) => c.method === 'POST' && c.path === '/uploads')!;
+    expect(upload.body).toMatchObject({ path: 'public/docs/aguila-test-manual.pdf', contentBase64: Buffer.from('%PDF-1.4\n%fake\n').toString('base64') });
+    await datasheet.fill('https://example.com/ficha.pdf');
+
+    await dialog.getByRole('button', { name: 'Guardar' }).click();
+    await expect(dialog).toBeHidden();
+    const put = calls.find((c) => c.method === 'PUT')!;
+    const data = (put.body as { data: Product }).data;
+    expect(data.manualUrl).toBe('/docs/aguila-test-manual.pdf');
+    expect(data.datasheetUrl).toBe('https://example.com/ficha.pdf');
+    expect(data.videoUrl).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+    expect(data.specs).toEqual(products[0]!.data.specs);
+    expect(data.related).toEqual(['tigre-test']);
+    expect(data.images).toEqual(products[0]!.data.images);
+    // Los campos no se duplican en el JSON avanzado al reabrir
+    await page.getByRole('button', { name: 'Editar ficha de Águila Test' }).click();
+    const again = page.getByRole('dialog');
+    await expect(again.getByLabel('Video de YouTube')).toHaveValue('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+    await expect(again.getByLabel('JSON avanzado')).not.toHaveValue(/videoUrl/);
+    await expect(again.getByLabel('JSON avanzado')).not.toHaveValue(/"images"/);
+  });
+
+  test('admin: crear un producto de principio a fin — duplicar, cambiar fotos por ruta (sin subida), precios y guardar oculto con PUT sin sha', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'admin' });
+    await openAdmin(page);
+    await page.getByRole('button', { name: 'Nuevo producto' }).click();
+    const dup = page.getByRole('dialog');
+    await dup.getByLabel('Slug nuevo').fill('storm-x2');
+    await dup.getByLabel('Nombre').fill('Storm X2');
+    await dup.getByRole('button', { name: 'Continuar al editor' }).click();
+    const editor = page.getByRole('dialog');
+    await expect(editor).toContainText('Nuevo producto: Storm X2');
+    // Sin subida de imágenes: solo el selector de PDF del manual y de la ficha
+    await expect(editor.locator('input[type="file"]')).toHaveCount(2);
+    // Las fotos heredadas de la plantilla se ven como rutas editables
+    const src = editor.getByLabel('Foto 1: ruta');
+    await expect(src).toHaveValue('~/assets/test.svg');
+    await src.fill('foto-sin-ruta.webp');
+    await editor.getByRole('button', { name: 'Guardar' }).click();
+    await expect(editor.getByRole('alert')).toContainText('foto 1: la ruta debe empezar por ~/assets/');
+    expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(0);
+    await src.fill('~/assets/products/storm-x2-negro.webp');
+    await editor.getByLabel('Foto 1: texto alternativo').fill('Storm X2 en color negro');
+    await editor.getByLabel('Foto 1: ancho').fill('2020');
+    await editor.getByLabel('Foto 1: alto').fill('2486');
+    await editor.getByRole('button', { name: 'Añadir foto (por ruta)' }).click();
+    await editor.getByLabel('Foto 2: ruta').fill('~/assets/products/storm-x2-rojo.webp');
+    await editor.getByLabel('Foto 2: texto alternativo').fill('Storm X2 en color rojo');
+    await editor.getByLabel('Foto 2: ancho').fill('2020');
+    await editor.getByLabel('Foto 2: alto').fill('2486');
+    await editor.getByLabel('Subtítulo').fill('Bicimoto urbana');
+    await editor.getByRole('checkbox', { name: /Oculto/ }).check();
+    await editor.getByRole('button', { name: 'Guardar' }).click();
+    // El mock no conoce storm-x2 (404) pero la petición ya es la correcta
+    await expect(editor.getByRole('alert')).toContainText('No existe');
+    const put = calls.find((c) => c.method === 'PUT')!;
+    expect(put.path).toBe('/products/storm-x2');
+    const body = put.body as { sha?: string; data: Product };
+    expect(body.sha).toBeUndefined();
+    expect(body.data.slug).toBe('storm-x2');
+    expect(body.data.name).toBe('Storm X2');
+    expect(body.data.subtitle).toBe('Bicimoto urbana');
+    expect(body.data.hidden).toBe(true);
+    expect(body.data.isHero).toBeUndefined();
+    expect(body.data.images).toEqual([
+      { src: '~/assets/products/storm-x2-negro.webp', alt: 'Storm X2 en color negro', width: 2020, height: 2486 },
+      { src: '~/assets/products/storm-x2-rojo.webp', alt: 'Storm X2 en color rojo', width: 2020, height: 2486 },
+    ]);
+    expect(body.data.specs).toEqual(products[0]!.data.specs);
+    expect(body.data.variants.find((v) => v.isDefault)?.id).toBe('estandar');
+    expect(calls.filter((c) => c.path === '/uploads')).toHaveLength(0);
+  });
+
+  test('editor: el API de blog y subidas responde 403 (el mock replica al servidor) y el panel no lo llama', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    expect(calls.some((c) => c.path.startsWith('/blog') || c.path === '/uploads')).toBe(false);
+    const res = await page.evaluate(async () => {
+      const r = await fetch('/api/admin/blog', { credentials: 'same-origin' });
+      return { status: r.status, body: (await r.json()) as { code: string } };
+    });
+    expect(res.status).toBe(403);
+    expect(res.body.code).toBe('forbidden');
+  });
+
   test('axe sin violaciones serious/critical en la vista admin (tabla, accesos) y con el editor abierto', async ({ page }) => {
     await mockApi(page, { role: 'admin' });
     await openAdmin(page);
@@ -606,5 +936,12 @@ test.describe('Panel de administración', () => {
     await page.getByRole('button', { name: 'Editar ficha de Águila Test' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await audit('editor');
+    await page.keyboard.press('Escape');
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await expect(page.locator('[data-admin-post]')).toHaveCount(2);
+    await audit('blog');
+    await page.getByRole('button', { name: 'Editar artículo Cómo cuidar la batería' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await audit('editor de artículo');
   });
 });

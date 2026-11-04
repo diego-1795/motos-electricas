@@ -25,7 +25,6 @@ export interface CompareRow {
   weightKg?: number;
   dimensions?: string;
   seats: number;
-  license: string;
   warranty: string;
   availability: string;
 }
@@ -51,8 +50,7 @@ const ROWS: RowDef[] = [
   { key: 'maxLoadKg', label: 'Carga máxima', fmt: (v) => `${v} kg`, best: 'max' },
   { key: 'weightKg', label: 'Peso', fmt: (v) => (v === undefined ? '—' : `${v} kg`), best: 'min' },
   { key: 'dimensions', label: 'Dimensiones', fmt: (v) => (v ? String(v) : '—') },
-  { key: 'seats', label: 'Plazas', best: 'max' },
-  { key: 'license', label: 'Licencia' },
+  { key: 'seats', label: 'Asientos', best: 'max' },
   { key: 'warranty', label: 'Garantía' },
   { key: 'availability', label: 'Disponibilidad' },
 ];
