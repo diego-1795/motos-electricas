@@ -180,12 +180,8 @@
   ],
   "faqs": [
     {
-      "question": "¿Necesito licencia para manejar la Titan Rhino?",
-      "answer": "La Titan Rhino es una trimoto eléctrica de baja velocidad (25 km/h). En general no requiere licencia de conducir; para uso comercial (carga o reparto) te recomendamos verificar la normativa vigente del MTC y de tu municipalidad y confirmarlo con nuestro asesor."
-    },
-    {
       "question": "¿Cuánta carga soporta?",
-      "answer": "Hasta 250 kg de carga máxima, incluido el conductor. Es una trimoto de una plaza: no lleva pasajero. Superar el límite reduce la autonomía, alarga la frenada y acelera el desgaste."
+      "answer": "Hasta 250 kg de carga máxima, incluido el conductor. Es una trimoto de un solo asiento: no lleva pasajero. Superar el límite reduce la autonomía, alarga la frenada y acelera el desgaste."
     },
     {
       "question": "¿Qué autonomía tiene con carga?",

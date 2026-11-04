@@ -16,7 +16,7 @@ Un repartidor de barrio recorre muchos kilómetros al día en trayectos de arran
 - **Energía:** una carga completa cuesta menos de un sol; unos 500 km al mes salen por S/ 8 a S/ 13 de electricidad ([aquí está la cuenta](/blog/cuanto-cuesta-cargar-una-bicimoto-electrica-en-peru)).
 - **Mantenimiento:** sin aceite, sin bujías, sin cadena. Cables de freno de S/ 25 y poco más.
 - **Sin combustible ni colas en el grifo:** se carga de noche en cualquier tomacorriente de 220 V.
-- **Baja velocidad:** a 25 km/h, en general no requiere licencia de conducir ni placa (verifica la normativa vigente del MTC y de tu municipalidad para uso comercial; te lo explicamos en [este artículo](/blog/necesito-licencia-para-una-bicimoto-electrica-en-peru)).
+- **Baja velocidad:** 25 km/h limitados de fábrica, pensados para moverte con seguridad por tu distrito.
 
 Con jornadas de 30-40 km, el ahorro mensual frente a una moto a gasolina o un alquiler diario paga la bicimoto en pocos meses. Pide la cuenta para tu ruta a nuestro asesor por WhatsApp.
 
@@ -38,7 +38,7 @@ La [Titan Rhino](/trimotos/titan-rhino) (S/ 2,700) es otra categoría. Tres rued
 - **Para quién:** abarrotes, agua y bebidas, gas doméstico, recojo de mercadería en el mercado, mantenimiento y servicios con herramientas, reparto en galpones, mercados y zonas industriales.
 - **Autonomía:** 35-40 km por carga, con carga completa en 6-8 horas.
 - **Ventajas clave:** estabilidad con carga alta o irregular, **modo reversa** para maniobrar en espacios estrechos y bocina 3 en 1 con aviso de retroceso. La cesta delantera queda libre para lo pequeño.
-- **Lo que no hace:** no lleva pasajero (una plaza) y, por su tamaño, necesita un espacio para guardarla.
+- **Lo que no hace:** no lleva pasajero (un solo asiento) y, por su tamaño, necesita un espacio para guardarla.
 
 ## Tabla rápida de decisión
 
@@ -49,7 +49,7 @@ La [Titan Rhino](/trimotos/titan-rhino) (S/ 2,700) es otra categoría. Tres rued
 | Batería | Chilwee 48V 20Ah (0.96 kWh) | Chilwee 60V 20Ah (1.2 kWh) |
 | Autonomía | 40-50 km | 35-40 km |
 | Carga máxima | 150 kg | 250 kg |
-| Plazas | 2 | 1 |
+| Asientos | 2 | 1 |
 | Modo reversa | No | Sí |
 | Velocidad máxima | 25 km/h | 25 km/h |
 | Precio | Desde S/ 1,400 | S/ 2,700 |

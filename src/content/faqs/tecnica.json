@@ -4,11 +4,7 @@
   "items": [
     {
       "question": "¿Qué velocidad alcanza una bicimoto RAIDEN?",
-      "answer": "Todos los modelos, incluida la trimoto Titan Rhino, están limitados de fábrica a 25 km/h. Es una velocidad pensada para moverte con seguridad por tu distrito y que, en general, no requiere licencia de conducir. Las modificaciones para superar ese límite anulan la garantía."
-    },
-    {
-      "question": "¿Necesito licencia de conducir o placa?",
-      "answer": "Las bicimotos de baja velocidad limitadas a 25 km/h en general no requieren licencia de conducir ni placa en el Perú. La normativa puede variar según la ciudad y el uso (personal o comercial), así que te recomendamos verificar con el MTC o tu municipalidad y consultar a nuestro asesor. Usa casco siempre y respeta las normas de tránsito."
+      "answer": "Todos los modelos, incluida la trimoto Titan Rhino, están limitados de fábrica a 25 km/h. Es una velocidad pensada para moverte con seguridad por tu distrito. Las modificaciones para superar ese límite anulan la garantía."
     },
     {
       "question": "¿Cuánta autonomía tienen?",
@@ -28,7 +24,7 @@
     },
     {
       "question": "¿Cuánto peso soportan?",
-      "answer": "Las bicimotos Golden Eagle, Royal Tiger y Vortex Kobra soportan hasta 150 kg entre conductor, pasajero y carga, y tienen dos plazas. La trimoto Titan Rhino soporta hasta 250 kg en una plaza. Superar el límite reduce la autonomía, alarga la frenada y acelera el desgaste."
+      "answer": "Las bicimotos Golden Eagle, Royal Tiger y Vortex Kobra soportan hasta 150 kg entre conductor, pasajero y carga, y tienen dos asientos. La trimoto Titan Rhino soporta hasta 250 kg con un solo asiento. Superar el límite reduce la autonomía, alarga la frenada y acelera el desgaste."
     },
     {
       "question": "¿Sirven para la sierra y para subidas?",

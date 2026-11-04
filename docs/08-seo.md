@@ -122,7 +122,7 @@ Reglas de `Product`: precio de la variante base; `availability` derivada del cam
 ```json
 { "@type": "Article", "headline": "¿Necesito licencia para una bicimoto eléctrica en Perú?", "datePublished": "2026-09-01",
   "dateModified": "2026-09-01", "author": { "@type": "Organization", "name": "Raiden" },
-  "image": "https://raiden.example.com/blog/necesito-licencia.jpg", "mainEntityOfPage": "https://raiden.example.com/blog/necesito-licencia-para-una-bicimoto-electrica-en-peru" }
+  "image": "https://raiden.example.com/blog/como-elegir-una-bicimoto-electrica.webp", "mainEntityOfPage": "https://raiden.example.com/blog/como-elegir-una-bicimoto-electrica" }
 ```
 
 `FAQPage` solo en `/faq` y en productos con bloque de preguntas visible; nunca ocultar el texto.

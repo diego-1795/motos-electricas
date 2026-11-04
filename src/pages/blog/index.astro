@@ -18,7 +18,7 @@ const crumbs = [
 
 <BaseLayout
   title="Blog: guías sobre bicimotos eléctricas"
-  description="Guías, comparativas y consejos sobre bicimotos y trimotos eléctricas en el Perú: autonomía, baterías, licencias, mantenimiento y compra."
+  description="Guías, comparativas y consejos sobre bicimotos y trimotos eléctricas en el Perú: autonomía, baterías, mantenimiento y compra."
   path="/blog"
   jsonLd={[breadcrumbSchema(crumbs), itemListSchema(posts.map((p) => ({ name: p.title, url: `/blog/${p.slug}` })))]}
 >

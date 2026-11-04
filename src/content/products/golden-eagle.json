@@ -258,9 +258,9 @@
     "ocio"
   ],
   "highlights": [
-    "25 km/h · sin licencia (en general)",
+    "25 km/h · velocidad limitada de fábrica",
     "Batería Chilwee 48 V: 30-35 km (Estándar) o 40-50 km (Premium)",
-    "Hasta 150 kg y dos plazas",
+    "Hasta 150 kg y dos asientos",
     "Garantía 6 meses en batería y motor"
   ],
   "technology": [
@@ -291,10 +291,6 @@
   ],
   "faqs": [
     {
-      "question": "¿Necesito licencia para manejar la Golden Eagle?",
-      "answer": "La Golden Eagle es una bicimoto eléctrica de baja velocidad (25 km/h). En general no requiere licencia de conducir ni placa; te recomendamos usar casco y respetar las normas de tránsito. Verifica la normativa vigente del MTC o de tu municipalidad y confírmalo con nuestro asesor."
-    },
-    {
       "question": "¿Cuál es la autonomía real?",
       "answer": "La versión Estándar (350 W, batería 48V 12Ah) recorre entre 30 y 35 km por carga y la Premium (500 W, batería 48V 20Ah) entre 40 y 50 km. La autonomía varía con el peso que lleves, las subidas y la velocidad seleccionada en el interruptor de 3 velocidades de la Golden Eagle."
     },
@@ -320,6 +316,6 @@
   "publishedAt": "2026-10-01",
   "seo": {
     "title": "Golden Eagle: bicimoto eléctrica RAIDEN | Desde S/ 1,200",
-    "description": "Bicimoto eléctrica RAIDEN Golden Eagle: 25 km/h, en general sin licencia, batería Chilwee 48 V, 30-50 km de autonomía, versiones Estándar y Premium. Desde S/ 1,200 con garantía de 6 meses."
+    "description": "Bicimoto eléctrica RAIDEN Golden Eagle: 25 km/h, batería Chilwee 48 V, 30-50 km de autonomía, versiones Estándar y Premium. Desde S/ 1,200 con garantía de 6 meses."
   }
 }

@@ -331,6 +331,8 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 
 **Consecuencias.** Dos fuentes de la cifra (constante + JSON) mantenidas coherentes por test; cambiar la garantía implica tocar la constante, los cinco JSON y los textos que la citan (docs/23 §3). El comparador pierde la fila de licencia. El esquema del panel no cambia.
 
+**Adenda (2026-11-04, misma tarde).** Diego pidió que "licencia" y "plazas" desaparezcan también de la prosa. "Plazas" pasa a "asientos" en descripciones, FAQ y blog. Toda mención a licencia de conducir se retira de highlights ("25 km/h · velocidad limitada de fábrica"), descripciones SEO, categoría Bicimotos, menú de cabecera, metadatos de /blog y /faq, aviso legal (ahora "normativa de tránsito") y del artículo de reparto; se eliminan las FAQ "¿Necesito licencia…?" (una general y una por producto, que quedan con 5) y el artículo `necesito-licencia-para-una-bicimoto-electrica-en-peru` (redactado por el equipo, no por el cliente). El campo `specs.license` y su regla de validación siguen en los datos; la categoría de blog `legislacion` queda sin artículos pero se conserva en el esquema.
+
 ## ADR-022 — Portada según revisión del cliente: hero sin velo sobre el vehículo, clientes en cuadrícula, antetítulos legibles y logo blanco en el pie
 
 **Fecha:** 2026-11-04 · **Estado:** aceptada

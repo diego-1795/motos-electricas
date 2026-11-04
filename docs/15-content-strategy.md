@@ -101,7 +101,6 @@ Calendario editorial vigente (`src/content/blog/<slug>.md`):
 
 | Publicación | Slug | Categoría | Pilar | Enlaza a |
 |---|---|---|---|---|
-| 2026-10-23 | `necesito-licencia-para-una-bicimoto-electrica-en-peru` | legislacion | 1 | Bicimotos, Titan Rhino, Encuentra tu moto |
 | 2026-10-27 | `como-cuidar-la-bateria-de-tu-bicimoto-electrica` | baterias | 2 | Repuestos (baterías, cargadores), Servicio técnico |
 | 2026-10-30 | `bicimoto-electrica-que-es-como-funciona-y-ventajas` (cliente) | guias | 1 | /bicimotos |
 | 2026-11-03 | `cuanto-cuesta-cargar-una-bicimoto-electrica-en-peru` | autonomia | 4 | Golden Eagle, Vortex Kobra, Titan Rhino |

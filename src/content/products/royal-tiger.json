@@ -4,7 +4,7 @@
   "name": "Royal Tiger",
   "subtitle": "Bicimoto eléctrica con carácter",
   "claim": "Afronta nuevas rutas con tu Royal Tiger",
-  "description": "Fuerza que se hace notar. Royal Tiger representa potencia, carácter y confianza para afrontar cada recorrido con una actitud imparable: llantas más anchas de 14 x 2.75\", cesta delantera y dos plazas con hasta 150 kg de carga. Ideal para trabajar y para moverte por la ciudad. Disponible en negro, naranja y rosa.",
+  "description": "Fuerza que se hace notar. Royal Tiger representa potencia, carácter y confianza para afrontar cada recorrido con una actitud imparable: llantas más anchas de 14 x 2.75\", cesta delantera y dos asientos con hasta 150 kg de carga. Ideal para trabajar y para moverte por la ciudad. Disponible en negro, naranja y rosa.",
   "category": "bicimotos",
   "brand": "Raiden",
   "images": [
@@ -241,7 +241,7 @@
     "reparto"
   ],
   "highlights": [
-    "25 km/h · sin licencia (en general)",
+    "25 km/h · velocidad limitada de fábrica",
     "Llantas anchas 14 x 2.75\" y hasta 150 kg",
     "Premium 500 W: 40-50 km por carga",
     "Garantía 6 meses en batería y motor"
@@ -274,10 +274,6 @@
   ],
   "faqs": [
     {
-      "question": "¿Necesito licencia para manejar la Royal Tiger?",
-      "answer": "La Royal Tiger es una bicimoto eléctrica de baja velocidad (25 km/h). En general no requiere licencia de conducir ni placa; te recomendamos usar casco y respetar las normas de tránsito. Verifica la normativa vigente del MTC o de tu municipalidad y confírmalo con nuestro asesor."
-    },
-    {
       "question": "¿Cuál es la autonomía real?",
       "answer": "La versión Estándar (350 W, batería 48V 12Ah) recorre entre 30 y 35 km por carga y la Premium (500 W, batería 48V 20Ah) entre 40 y 50 km. La autonomía varía con el peso que lleves, las subidas y la velocidad seleccionada en el interruptor de 3 velocidades de la Royal Tiger."
     },
@@ -302,6 +298,6 @@
   "publishedAt": "2026-10-01",
   "seo": {
     "title": "Royal Tiger: bicimoto eléctrica RAIDEN | Desde S/ 1,400",
-    "description": "Bicimoto eléctrica RAIDEN Royal Tiger: 25 km/h, en general sin licencia, llantas anchas 14 x 2.75\", batería Chilwee 48 V, hasta 150 kg. Desde S/ 1,400 con garantía de 6 meses. Ideal para reparto."
+    "description": "Bicimoto eléctrica RAIDEN Royal Tiger: 25 km/h, llantas anchas 14 x 2.75\", batería Chilwee 48 V, hasta 150 kg. Desde S/ 1,400 con garantía de 6 meses. Ideal para reparto."
   }
 }
