@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ALL_PRODUCTS_PATH, COMPARE_PATH, FINDER_PATH, PARTS_PATH, categoryPath, partPath, productPath } from '../../src/lib/routes';
+import { ALL_PRODUCTS_PATH, COMPARE_PATH, FINDER_PATH, PARTS_PATH, categoryPath, currentPath, partPath, productPath } from '../../src/lib/routes';
 import { partKindLabel, partKindSingular } from '../../src/lib/labels';
 import type { PartKind } from '../../src/domain/types';
 import { makePart, makeProduct } from './fixtures';
@@ -34,6 +34,18 @@ describe('lib/routes', () => {
       expect(r.startsWith('/')).toBe(true);
       expect(r.endsWith('/')).toBe(false);
     }
+  });
+});
+
+describe('currentPath (Astro.url.pathname con build.format file)', () => {
+  it('quita .html y barras finales; la raíz es /', () => {
+    expect(currentPath('/nosotros.html')).toBe('/nosotros');
+    expect(currentPath('/nosotros')).toBe('/nosotros');
+    expect(currentPath('/bicimotos/golden-eagle.html')).toBe('/bicimotos/golden-eagle');
+    expect(currentPath('/carrito/')).toBe('/carrito');
+    expect(currentPath('/index.html')).toBe('/index');
+    expect(currentPath('/')).toBe('/');
+    expect(currentPath('')).toBe('/');
   });
 });
 

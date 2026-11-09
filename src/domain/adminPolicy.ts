@@ -122,9 +122,12 @@ export function commitMessage(
   scope: CommitScope = 'catalog',
 ): string {
   const body: string[] = [];
-  if (detail.changes?.length) body.push(detail.changes.join('\n'));
+  // Cada cambio en una sola línea: un nombre de variante con saltos de línea no puede añadir trailers al commit
+  const oneLine = (s: string) => s.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim();
+  const changes = (detail.changes ?? []).map(oneLine).filter(Boolean);
+  if (changes.length) body.push(changes.join('\n'));
   // Motivo acotado (texto libre del panel): una línea, sin control chars, máximo MAX_REASON_LENGTH.
-  const reason = (detail.reason ?? '').replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, MAX_REASON_LENGTH);
+  const reason = oneLine(detail.reason ?? '').slice(0, MAX_REASON_LENGTH);
   if (reason) body.push(`Motivo: ${reason}`);
   return `chore(${scope}): ${action} ${slug} por ${email}${body.length ? `\n\n${body.join('\n\n')}` : ''}`;
 }

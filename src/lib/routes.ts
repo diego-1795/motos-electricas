@@ -18,6 +18,14 @@ export function partPath(p: Pick<Part, 'slug'> | string): string {
 }
 
 /** Listado completo de vehículos */
+/**
+ * Ruta canónica a partir de Astro.url.pathname: sin la extensión .html que añade build.format 'file'
+ * (en build, /nosotros se renderiza como /nosotros.html) ni barra final. '/' para la raíz.
+ */
+export function currentPath(pathname: string): string {
+  return pathname.replace(/\.html$/, '').replace(/\/+$/, '') || '/';
+}
+
 export const ALL_PRODUCTS_PATH = '/productos';
 export const PARTS_PATH = '/repuestos';
 export const FINDER_PATH = '/encuentra-tu-moto';

@@ -9,7 +9,7 @@
 
 ## Modelo de amenazas (sitio estático + traspaso a WhatsApp)
 
-Raiden es un sitio 100 % estático sin backend propio, sin cuentas de usuario, sin pagos online y sin cookies. El único "canal de escritura" es un enlace `https://wa.me/<número>?text=...` que el usuario abre voluntariamente. Detalle en [docs/10-security](./docs/10-security.md).
+Raiden es un sitio 100 % estático sin cuentas de usuario, sin pagos online y sin cookies para los visitantes. El único "canal de escritura" público es un enlace `https://wa.me/<número>?text=...` que el usuario abre voluntariamente. La única parte con servidor es el panel `/admin` (dos personas del equipo de la tienda; Pages Functions que escriben en GitHub), con su propio login por contraseña. Detalle en [docs/10-security](./docs/10-security.md) §8b.
 
 | Activo | Amenaza | Control |
 |---|---|---|
@@ -21,6 +21,7 @@ Raiden es un sitio 100 % estático sin backend propio, sin cuentas de usuario, s
 | Cadena de suministro | Paquete npm o Action comprometida | `npm ci` con lockfile, `npm audit --audit-level=high` bloqueante, `--ignore-scripts` donde es posible, `permissions: contents: read`, sin secretos en CI |
 | Secretos | Filtración en bundle/repo | Solo variables `PUBLIC_*` (públicas por diseño); no existen claves privadas en el MVP; `.env` ignorado; CI escanea `src/`, `public/` y `dist/` |
 | Dominio/TLS | Downgrade, suplantación | HSTS (1 año, `includeSubDomains`, `preload`), `upgrade-insecure-requests`, TLS Full (strict) en Cloudflare |
+| Panel `/admin` (ADR-018, ADR-024) | Robo o adivinación de credenciales, CSRF, escalada editor → admin, escritura fuera de `src/content`/`public/docs` | Contraseñas PBKDF2-SHA256 en KV con temporal obligatoria de cambiar; cookie `HttpOnly`/`SameSite=Strict`/`Secure` firmada HMAC que caduca a las 12 h y al cambiar la contraseña; bloqueo tras 5 fallos; `Origin` y `Content-Type: application/json` obligatorios; rol decidido en servidor; PATCH por lista blanca (`Object.hasOwn`); slugs y rutas por regex; mismos esquemas zod que el build; `sha` por fichero (409); Cloudflare Access opcional como segunda barrera |
 
 ## Cabeceras HTTP
 
@@ -48,14 +49,16 @@ Notas sobre la CSP:
 
 ## Variables de entorno
 
-- Únicamente `PUBLIC_SITE_URL`, `PUBLIC_WHATSAPP_NUMBER`, `PUBLIC_CONTACT_EMAIL`, `PUBLIC_ANALYTICS` y `PUBLIC_CF_BEACON_TOKEN`. Todas acaban en el bundle: **nunca** pongas un secreto en una variable `PUBLIC_*`.
-- Si en el futuro aparece una clave privada (Supabase `service_role`, SMTP…), vive solo en GitHub/Cloudflare Secrets y jamás se lee desde `src/`.
+- En el build y el cliente, únicamente `PUBLIC_SITE_URL`, `PUBLIC_WHATSAPP_NUMBER`, `PUBLIC_CONTACT_EMAIL`, `PUBLIC_ANALYTICS` y `PUBLIC_CF_BEACON_TOKEN`. Todas acaban en el bundle: **nunca** pongas un secreto en una variable `PUBLIC_*`.
+- Las Pages Functions del panel leen `SESSION_SECRET` (secreto), `ADMIN_INITIAL_PASSWORDS` (hashes), `GITHUB_TOKEN` (secreto) y el binding KV `ADMIN_KV`, solo en Cloudflare Pages (o `.dev.vars`, ignorado por git). Jamás se leen desde `src/` ni se registran en logs ([docs/19-deployment](./docs/19-deployment.md) §12).
+- Contraseñas: nunca en claro en el repositorio ni en el chat; `npm run admin:password` genera la temporal y su hash.
 
 ## Comprobaciones automáticas (CI)
 
 - `npm audit --audit-level=high` (falla con high/critical).
+- Actions fijadas por SHA de 40 caracteres y `npm ci --ignore-scripts` en todos los jobs (comprobado por la propia CI); el despliegue manual separa build (sin secretos) de deploy (sin `npm ci`).
 - Grep de teléfonos/secretos en `src/` y `public/` (única excepción permitida: el valor por defecto de `src/config/site.ts`).
-- Verificación de que `dist/_headers` existe, de que `dist/` no contiene tokens y de que todo script inline de `dist/` tiene su hash `sha256` en la CSP.
+- Verificación de que `dist/_headers` existe, de que `dist/` no contiene tokens, de que las rutas canónicas existen como `ruta.html` (sin redirección 308 en Pages) y de que todo script inline de `dist/` tiene su hash `sha256` en la CSP.
 - Lighthouse CI con categoría *best-practices* ≥ 0,95 (incluye comprobaciones de CSP y HTTPS).
 
 ## Auditoría manual recomendada antes de cada release

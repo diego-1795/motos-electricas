@@ -156,7 +156,7 @@ export default function ProductConfigurator({ slug, name, variants, colors, imag
       )}
 
       <div class="cfg__actions">
-        <div class="stepper" aria-label="Unidades">
+        <div class="stepper" role="group" aria-label="Unidades">
           <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Menos unidades">
             −
           </button>

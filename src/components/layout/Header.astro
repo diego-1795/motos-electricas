@@ -2,7 +2,7 @@
 import { site } from '../../config/site';
 import CartButton from '../../islands/CartButton';
 import Logo from '../ui/Logo.astro';
-import { ALL_PRODUCTS_PATH, COMPARE_PATH, FINDER_PATH, PARTS_PATH } from '../../lib/routes';
+import { ALL_PRODUCTS_PATH, COMPARE_PATH, FINDER_PATH, PARTS_PATH, currentPath } from '../../lib/routes';
 
 /**
  * Cabecera. Navegación del cliente: PRODUCTOS ▼ · PROMOCIONES · BLOG · SERVICIO TÉCNICO · CONTACTO · NOSOTROS
@@ -33,7 +33,7 @@ const nav = [
   { href: '/contacto', label: 'Contacto' },
   { href: '/nosotros', label: 'Nosotros' },
 ];
-const current = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const current = currentPath(Astro.url.pathname);
 const isCurrent = (href: string) => current === href || current.startsWith(href + '/');
 const productsActive = [...productLinks, ...productTools].some((l) => isCurrent(l.href));
 ---
@@ -41,7 +41,7 @@ const productsActive = [...productLinks, ...productTools].some((l) => isCurrent(
 <header class:list={['header', { 'header--dark': dark }]} data-pagefind-ignore>
   <div class="container header__inner">
     <a href="/" class="header__brand" aria-label={`${site.name} — inicio`}>
-      <Logo invert={dark} />
+      <Logo invert={dark} priority />
     </a>
 
     <nav class="header__nav" aria-label="Principal">
@@ -52,7 +52,6 @@ const productsActive = [...productLinks, ...productTools].some((l) => isCurrent(
             class:list={['header__link header__dd-btn', { 'is-active': productsActive }]}
             aria-expanded="false"
             aria-controls="nav-productos"
-            aria-haspopup="true"
             data-dropdown-btn
           >
             Productos

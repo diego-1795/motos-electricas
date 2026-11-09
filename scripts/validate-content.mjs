@@ -109,6 +109,10 @@ for (const f of blogFiles) {
     : [];
   for (const s of slugs) if (!productSlugs.has(s)) err(file, `relatedProducts desconocido: ${s}`);
   if (/€|EUR|carnet|\bIVA\b/.test(src)) err(file, 'contiene referencias a España/EUR (usar S/, IGV, licencia)');
+  // Misma regla que src/domain/blogRules.ts RAW_HTML_RE: el Markdown se renderiza con HTML crudo permitido
+  if (/<\s*\/?\s*(script|iframe|object|embed|meta|style|link|base|form|input|button|svg|math|frame|frameset|template|slot|noscript)\b/i.test(src)) {
+    err(file, 'contiene etiquetas HTML crudas (<script>, <iframe>, <meta>, <style>, <form>…): usar solo Markdown');
+  }
 }
 
 if (errors.length) {

@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import type { CategorySlug, Product, UseCase } from '../domain/types';
 import { recommend, useCaseLabel, type FinderAnswers, type Recommendation } from '../domain/recommendation';
 import { formatMoney } from '../domain/money';
@@ -47,6 +47,11 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
   const [cargo, setCargo] = useState<number | null>(null);
   const [results, setResults] = useState<Recommendation[] | null>(null);
 
+  // El foco va a los resultados cuando ya existen en el DOM (tras el render del paso 3), no antes
+  useEffect(() => {
+    if (step === 3) document.getElementById('finder-results')?.focus();
+  }, [step]);
+
   const toggle = <T,>(list: T[], v: T, set: (l: T[]) => void) => set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
   const finish = () => {
@@ -62,7 +67,6 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
     setResults(r);
     track({ name: 'finder_complete', topSlug: r[0]?.product.slug });
     setStep(3);
-    document.getElementById('finder-results')?.focus();
   };
 
   const restart = () => {
@@ -90,8 +94,8 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
         <fieldset class="bf__step">
           <legend>
             <h2>¿Para qué la usarás?</h2>
-            <p class="muted">Elige todo lo que aplique.</p>
           </legend>
+          <p class="muted">Elige todo lo que aplique.</p>
           <div class="bf__choices">
             {USES.map((u) => (
               <label class="choice" key={u}>
@@ -149,8 +153,8 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
         <fieldset class="bf__step">
           <legend>
             <h2>¿Llevarás carga?</h2>
-            <p class="muted">Si transportas mercadería, te recomendaremos una trimoto.</p>
           </legend>
+          <p class="muted">Si transportas mercadería, te recomendaremos una trimoto.</p>
           <div class="bf__choices bf__choices--stack">
             {CARGO.map((c, i) => (
               <label class="choice" key={c.label}>
@@ -174,7 +178,7 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
       )}
 
       {step === 3 && results && (
-        <section id="finder-results" tabindex={-1} class="bf__results" aria-live="polite">
+        <section id="finder-results" tabindex={-1} class="bf__results">
           <h2>Estas son las bicimotos que mejor encajan contigo</h2>
           <p class="muted">Ordenadas por compatibilidad con tus respuestas.</p>
           <ol role="list" class="bf__list">
@@ -184,8 +188,9 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
                 <li key={r.product.slug} class="card bf__card" data-finder-result>
                   <img src={images[r.product.slug]} alt="" width="320" height="400" loading={i === 0 ? 'eager' : 'lazy'} />
                   <div class="bf__cardbody">
-                    <div class="bf__score" aria-label={`Compatibilidad ${r.score}%`}>
+                    <div class="bf__score">
                       <span style={`--w:${r.score}%`} />
+                      <span class="visually-hidden">Compatibilidad </span>
                       <strong>{r.score}%</strong>
                     </div>
                     <h3>{r.product.name}</h3>

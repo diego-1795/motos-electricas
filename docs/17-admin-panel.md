@@ -19,17 +19,20 @@ Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018 y ADR-023, [1
 | Blog: listar, leer, crear, editar y borrar artículos (ADR-023) | ✓ | ✗ (403; la pestaña no se muestra) |
 | Subir PDF de manual/ficha a `public/docs` (ADR-023) | ✓ | ✗ (403) |
 | Ver la guía `/admin/ayuda` | ✓ | ✓ |
-| Gestionar quién es admin/editor | En Cloudflare (Access + variables); el panel lo muestra | Solo lectura |
+| Cambiar su propia contraseña (ADR-024) | ✓ | ✓ |
+| Gestionar quién es admin/editor y asignar contraseñas temporales | En Cloudflare (variables `ADMIN_EMAILS`/`EDITOR_EMAILS`, `ADMIN_INITIAL_PASSWORDS`); el panel lo muestra | Solo ve su propio email |
 
 Fuera del panel (siguen por git): **todas las imágenes** (productos, repuestos, blog: se convierten a webp y se colocan en `src/assets/`; el panel solo escribe su ruta), FAQ, testimonios, categorías y textos de `src/config/site.ts`.
 
 ### Arquitectura
 
 ```
-Navegador ──(Cloudflare Access: login por email)──▶ /admin  (HTML estático + isla Preact, noindex)
-   │                                                   │ fetch mismo origen
+Navegador ─────────────────────────────────────────▶ /admin  (HTML estático + isla Preact, noindex)
+   │  POST /api/admin/auth/login (email + contraseña) → cookie de sesión HttpOnly (ADR-024)
    └──────────────────────────────────────────────────▶ /api/admin/*  (Pages Functions, functions/api/admin)
-                                                          │ 1. verifica JWT de Access (JWKS del equipo)
+                                                          │ 0. Origin propio + Content-Type JSON (CSRF)
+                                                          │ 1. sesión: cookie firmada + usuario en KV (ADMIN_KV)
+                                                          │    [opcional: además JWT de Cloudflare Access]
                                                           │ 2. rol = ADMIN_EMAILS / EDITOR_EMAILS (servidor)
                                                           │ 3. valida con src/content/schemas.ts + catalogRules
                                                           │ 4. aplica adminPolicy (editor: solo precio/hidden)
@@ -43,7 +46,8 @@ Navegador ──(Cloudflare Access: login por email)──▶ /admin  (HTML est�
 | Pieza | Dónde | Notas |
 |---|---|---|
 | Página y layout | `src/pages/admin/index.astro`, `src/pages/admin/ayuda.astro`, `src/layouts/AdminLayout.astro` | Sin cabecera, carrito ni analítica; `noindex`; fuera de sitemap, robots y Pagefind. `/admin/ayuda` renderiza `docs/24-guia-administrador.md` |
-| Islas | `src/islands/admin/*` | Lista, precio inline, interruptor ocultar, editor de ficha (admin), confirmación de borrado, estado de publicación; `BlogPanel`/`BlogEditor` (pestaña Blog), `ImageFields` (imagen por ruta + alt + ancho × alto), `PdfUpload` (manual/ficha) |
+| Islas | `src/islands/admin/*` | `LoginForm` y `PasswordForm` (ADR-024), lista, precio inline, interruptor ocultar, editor de ficha (admin), confirmación de borrado, estado de publicación; `BlogPanel`/`BlogEditor` (pestaña Blog), `ImageFields` (imagen por ruta + alt + ancho × alto), `PdfUpload` (manual/ficha) |
+| Acceso | `functions/api/admin/_lib/auth.ts` + `src/domain/adminAuth.ts` | PBKDF2, cookie HMAC, usuarios y contadores en KV `ADMIN_KV`, política de contraseñas (≥ 10 caracteres, sin email ni secuencias); `_lib/access.ts` solo para el JWT opcional de Access |
 | Cliente HTTP | `src/services/admin/AdminApiClient.ts` | Único punto de `fetch`; sin lógica de negocio |
 | Contrato del API | `src/domain/admin.ts` | Tipos compartidos por islas y Functions (catálogo, blog, subidas) |
 | Política de roles | `src/domain/adminPolicy.ts` | Pura; `applyProductPatch`/`applyPartPatch` solo tocan precio y `hidden`; operaciones `blog` y `upload` solo admin |
@@ -61,7 +65,10 @@ Navegador ──(Cloudflare Access: login por email)──▶ /admin  (HTML est�
 
 | Método y ruta | Quién | Cuerpo | Respuesta |
 |---|---|---|---|
-| `GET /api/admin/me` | ambos | — | `AdminUser` (email, rol, listas, rama, modo local) |
+| `POST /api/admin/auth/login` | cualquiera (sin sesión) | `{ email, password }` | `AdminUser` + cookie `raiden_admin`; 401 credenciales (mismo mensaje si el email no existe), 423 bloqueo temporal, 415 sin `Content-Type: application/json` |
+| `POST /api/admin/auth/logout` | cualquiera | — | `{ ok: true }`; borra la cookie |
+| `POST /api/admin/auth/password` | ambos (con sesión) | `{ currentPassword, newPassword }` | `AdminUser` + cookie nueva; 401 actual incorrecta, 422 política; invalida las otras sesiones |
+| `GET /api/admin/me` | ambos | — | `AdminUser` (email, rol, listas —vacías para el editor—, rama, modo local, `mustChangePassword`) |
 | `GET /api/admin/catalog` | ambos | — | productos y repuestos con `sha` y ruta (incluye ocultos) |
 | `PATCH /api/admin/products/:slug` | ambos | `{ sha, prices?: {variantId: céntimos}, hidden?, reason? }` | ficha actualizada + commit |
 | `PATCH /api/admin/repuestos/:slug` | ambos | `{ sha, price?, hidden?, reason? }` | ídem |
@@ -90,15 +97,15 @@ Commits: `chore(catalog): …` (productos y repuestos), `chore(blog): <crear|act
 
 ### Flujo de un cambio de precio
 
-1. Wiliam entra en `https://<dominio>/admin`; Access le pide el email y un código de un solo uso.
+1. Wiliam entra en `https://<dominio>/admin` con su email y su contraseña (la primera vez, la temporal que le dio Diego, que el panel le obliga a cambiar).
 2. El panel carga `me` y `catalog`. Cambia el precio Estándar a 1,250 y pulsa Guardar.
 3. `PATCH /api/admin/products/royal-tiger` con `{ sha, prices: { estandar: 125000 } }`.
-4. La Function comprueba el JWT, resuelve `editor`, lee el JSON actual de GitHub, compara el `sha`, aplica el patch (rechaza cualquier otra clave), valida (Premium ≥ Estándar) y hace el commit `chore(catalog): actualizar royal-tiger por wiliam@…`.
+4. La Function comprueba la cookie de sesión (y el JWT de Access si está activado), resuelve `editor`, lee el JSON actual de GitHub, compara el `sha`, aplica el patch (rechaza cualquier otra clave), valida (Premium ≥ Estándar) y hace el commit `chore(catalog): actualizar royal-tiger por wiliam@…`.
 5. Pages detecta el push y reconstruye. El panel muestra "Publicando… ~3 min" (o el estado real si la API de Pages está configurada).
 
 ### Seguridad
 
-- Access es la puerta: sin JWT válido no hay respuesta útil (401). El rol se decide en el servidor con `ADMIN_EMAILS`/`EDITOR_EMAILS`; la interfaz solo oculta lo que el rol no puede hacer.
+- La sesión por contraseña es la puerta (ADR-024): sin cookie válida no hay respuesta útil (401). Contraseñas en PBKDF2 (KV), temporal obligatoria de cambiar, bloqueo tras 5 intentos, cookie `HttpOnly`/`SameSite=Strict`, `Origin` y `Content-Type` comprobados. Cloudflare Access, si se configura, es una segunda barrera. El rol se decide en el servidor con `ADMIN_EMAILS`/`EDITOR_EMAILS`; la interfaz solo oculta lo que el rol no puede hacer.
 - El token de GitHub es *fine-grained*, limitado al repositorio y al permiso *Contents*; vive en las variables de Pages (secreto), nunca en `src/` ni en `PUBLIC_*`.
 - Todo lo que se escribe pasa por los esquemas del build: un JSON inválido no llega al repo (y si llegara, CI y el build lo detendrían).
 - Auditoría = historial de git: cada commit lleva autor (email), acción, slug, cambios y motivo.
@@ -109,7 +116,7 @@ Commits: `chore(catalog): …` (productos y repuestos), `chore(blog): <crear|act
 - Cada guardado es un commit y un build (2–3 min). Adecuado para < 20 cambios por semana.
 - Solo sube PDFs (ADR-023): todas las imágenes siguen por git en webp ([23-catalog-editing](./23-catalog-editing.md) §3 y §5); el panel las referencia por ruta.
 - Si dos personas editan la misma ficha, la segunda recibe 409 y debe recargar.
-- Requiere el despliegue en Cloudflare Pages (fase 16) con Access configurado; hasta entonces solo funciona en modo local.
+- Requiere el despliegue en Cloudflare Pages (fase 16) con el KV `ADMIN_KV`, `SESSION_SECRET` y `ADMIN_INITIAL_PASSWORDS`; hasta entonces funciona en local con `npm run admin:dev` (login real contra el KV local de wrangler).
 - **Tamaño del catálogo:** `GET /api/admin/catalog` (y `DELETE`, que comprueba referencias) lee cada JSON con una subpetición a GitHub: 2 + N llamadas. El plan gratuito de Workers/Pages permite 50 subpeticiones por petición, así que el panel soporta hasta **~45 fichas** (hoy 31). Al acercarse, cambiar la lectura a la Git Trees/Data API (un árbol + blobs) o cachear el catálogo; está anotado en el roadmap.
 - Un JSON corrupto en el repo hace fallar la carga completa del catálogo (502 con el fichero señalado): se corrige por git.
 - Cuerpos limitados a 256 KB (14 MB en `/uploads`), slugs a 80 caracteres, motivo del commit a 300 caracteres, cuerpo de un artículo a 60 000 caracteres.
@@ -184,6 +191,7 @@ Roles `admin`, `editor` y `ventas` en `admin_users.role`, copiados al JWT con `c
 | 0 | Git como CMS | Hecho (MVP) |
 | 1 | Panel ligero sobre git (`/admin`, Access, Functions, GitHub, `hidden`) — ADR-018 | Hecho en código; operativo al desplegar en Pages (fase 16 del roadmap) |
 | 1b | Blog en el panel, PDF de manual/ficha, campos manual/ficha/video, fotos por ruta, guía `/admin/ayuda` — ADR-023 | Hecho en código (2026-11-04); mismo requisito de despliegue |
+| 1c | Login por email y contraseña con sesión propia (KV + cookie), contraseña temporal obligatoria de cambiar, Access opcional — ADR-024 | Hecho en código (2026-11-08); funciona ya en local |
 | 2 | Estado real del build desde la API de Pages | Opcional |
 | 3 | Supabase (esquema, RLS, `SupabaseProductRepository`, módulos de §3) | Solo si > 40 productos o > 20 cambios/semana, o entra ventas |
 | 4 | Solicitudes de pedido, clientes, WhatsApp Business API | Tras la fase 3 |

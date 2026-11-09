@@ -50,7 +50,8 @@ Ver [docs/13-cloudflare](./docs/13-cloudflare.md) para límites del plan y qué 
 | `npm run build` | Build de producción en `./dist/` |
 | `npm run preview` | Sirve `dist/` localmente (no aplica `public/_headers`) |
 | `npm run check` | `astro check` (tipos + `.astro`) y `tsc` del proyecto `functions/` (panel de administración) |
-| `npm run admin:dev` | Panel `/admin` en local: `wrangler pages dev dist` en `http://localhost:8788` (requiere `npm run build` y `.dev.vars`; ver docs/19-deployment.md §12.5) |
+| `npm run admin:dev` | Panel `/admin` en local: `wrangler pages dev dist --kv ADMIN_KV` en `http://localhost:8788` (requiere `npm run build` y `.dev.vars`; login por email y contraseña, ADR-024; ver docs/19-deployment.md §12.5) |
+| `npm run admin:password -- <email>` | Genera una contraseña temporal y su hash para `ADMIN_INITIAL_PASSWORDS`; con `--secret`, un `SESSION_SECRET` |
 | `npm test` | Tests unitarios (Vitest) |
 | `npm run test:e2e` | Tests E2E + accesibilidad (Playwright + axe) |
 | `npm audit --audit-level=high` | Auditoría de dependencias (bloqueante en CI) |

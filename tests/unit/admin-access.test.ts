@@ -11,16 +11,23 @@ import {
   verifyAccessJwt,
   type AccessConfig,
 } from '../../functions/api/admin/_lib/access';
-import { HttpError } from '../../functions/api/admin/_lib/http';
+import { hashPassword, issueSession, loginWithPassword } from '../../functions/api/admin/_lib/auth';
 import type { Env } from '../../functions/api/admin/_lib/env';
+import { HttpError } from '../../functions/api/admin/_lib/http';
 import { onRequest } from '../../functions/api/admin/_middleware';
+import { memoryKv } from './memoryKv';
 
-/** Autenticación del panel (ADR-018): JWT de Cloudflare Access verificado con WebCrypto + modo local. */
+/**
+ * Identidad del panel (ADR-018, ADR-024): sesión por contraseña como vía normal, modo local en localhost y
+ * Cloudflare Access como segunda barrera opcional (JWT RS256 verificado con WebCrypto contra el JWKS).
+ */
 
 const TEAM = 'raiden.cloudflareaccess.com';
 const AUD = 'aud-de-prueba-1234567890abcdef';
 const cfg: AccessConfig = { teamHost: TEAM, aud: AUD };
 const NOW = 1_800_000_000; // segundos Unix fijos
+const SECRET = 'secreto-de-pruebas-con-mas-de-treinta-y-dos-caracteres';
+const TEMP = 'Temporal-1234-abcd';
 
 const b64url = (bytes: Uint8Array | string): string => {
   const bin = typeof bytes === 'string' ? bytes : String.fromCharCode(...bytes);
@@ -54,6 +61,22 @@ const validClaims = (over: Record<string, unknown> = {}) => ({
   exp: NOW + 3600,
   ...over,
 });
+
+/** Claims válidos "ahora" (para los tests que pasan por el middleware, que usa Date.now()). */
+const freshClaims = (over: Record<string, unknown> = {}) => {
+  const now = Math.floor(Date.now() / 1000);
+  return validClaims({ iat: now - 10, nbf: now - 10, exp: now + 3600, ...over });
+};
+
+/** Env con login por contraseña activo y una cookie de sesión ya emitida para `email`. */
+async function passwordEnv(email: string, over: Partial<Env> = {}): Promise<{ env: Env; cookie: string }> {
+  const kv = memoryKv();
+  const env: Env = { ADMIN_KV: kv as unknown as Env['ADMIN_KV'], SESSION_SECRET: SECRET, ADMIN_INITIAL_PASSWORDS: `${email}:${await hashPassword(TEMP, 1000)}`, ...over };
+  const request = new Request('https://raiden.pages.dev/api/admin/auth/login');
+  const identity = await loginWithPassword(env, request, email, TEMP);
+  const cookie = (await issueSession(env, request, identity)).split(';')[0]!;
+  return { env, cookie };
+}
 
 const jwksFetch = vi.fn();
 
@@ -205,12 +228,13 @@ describe('verifyAccessJwt', () => {
     await expect(verifyAccessJwt(await sign(validClaims({ exp: String(NOW + 3600) })), cfg, { now: NOW })).rejects.toThrow(/caducado/);
   });
 
-  it('la cookie CF_Authorization se verifica igual que la cabecera', async () => {
-    const prodEnv: Env = { CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD };
-    const ok = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: `CF_Authorization=${await sign(validClaims())}` } });
-    await expect(authenticate(ok, prodEnv, { now: NOW })).resolves.toEqual({ email: 'diego@example.com', localMode: false });
-    const forged = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: `CF_Authorization=${await sign(validClaims(), { key: otherPrivateKey })}` } });
-    await expect(authenticate(forged, prodEnv, { now: NOW })).rejects.toMatchObject({ status: 401 });
+  it('la cookie CF_Authorization se verifica igual que la cabecera (con la sesión por contraseña ya abierta)', async () => {
+    const { env, cookie } = await passwordEnv('diego@example.com', { CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD });
+    const now = Math.floor(Date.now() / 1000);
+    const ok = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: `${cookie}; CF_Authorization=${await sign(freshClaims())}` } });
+    await expect(authenticate(ok, env, { now })).resolves.toEqual({ email: 'diego@example.com', localMode: false, mustChange: true });
+    const forged = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: `${cookie}; CF_Authorization=${await sign(freshClaims(), { key: otherPrivateKey })}` } });
+    await expect(authenticate(forged, env, { now })).rejects.toMatchObject({ status: 401 });
   });
 });
 
@@ -251,58 +275,67 @@ describe('modo local', () => {
 
   it('la cabecera x-admin-local-user solo cuenta en modo local', async () => {
     expect(localIdentity(req('http://localhost:8788/x', { [LOCAL_USER_HEADER]: 'wiliam@example.com' }), localEnv)).toBe('wiliam@example.com');
-    // Producción: la cabecera no otorga identidad; sin JWT → 401
+    // Producción: la cabecera no otorga identidad; sin sesión → 401
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const prodEnv: Env = { ...localEnv, CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD };
-    await expect(authenticate(req('https://raiden.pages.dev/api/admin/me', { [LOCAL_USER_HEADER]: 'wiliam@example.com' }), prodEnv)).rejects.toMatchObject({ status: 401 });
+    const { env } = await passwordEnv('diego@example.com', { ...localEnv });
+    await expect(authenticate(req('https://raiden.pages.dev/api/admin/me', { [LOCAL_USER_HEADER]: 'wiliam@example.com' }), env)).rejects.toMatchObject({ status: 401 });
     warn.mockRestore();
   });
 });
 
 describe('authenticate', () => {
-  const prodEnv: Env = { CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD };
-
   it('modo local → localMode: true y email en minúsculas', async () => {
     const env: Env = { ADMIN_LOCAL_USER: 'Diegoo.1795@gmail.com' };
-    await expect(authenticate(new Request('http://localhost:8788/api/admin/me'), env)).resolves.toEqual({ email: 'diegoo.1795@gmail.com', localMode: true });
+    await expect(authenticate(new Request('http://localhost:8788/api/admin/me'), env)).resolves.toEqual({ email: 'diegoo.1795@gmail.com', localMode: true, mustChange: false });
   });
 
-  it('producción con JWT válido → localMode: false', async () => {
-    const token = await sign(validClaims());
-    const request = new Request('https://raiden.pages.dev/api/admin/me', { headers: { 'Cf-Access-Jwt-Assertion': token } });
-    await expect(authenticate(request, prodEnv, { now: NOW })).resolves.toEqual({ email: 'diego@example.com', localMode: false });
+  it('sesión por contraseña válida → identidad (sin Access configurado no se exige JWT)', async () => {
+    const { env, cookie } = await passwordEnv('diego@example.com');
+    const request = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } });
+    await expect(authenticate(request, env)).resolves.toEqual({ email: 'diego@example.com', localMode: false, mustChange: true });
   });
 
-  it('sin JWT → 401; JWT inválido → 401 unauthorized', async () => {
-    await expect(authenticate(new Request('https://raiden.pages.dev/api/admin/me'), prodEnv)).rejects.toMatchObject({ status: 401, code: 'unauthorized' });
-    const bad = new Request('https://raiden.pages.dev/api/admin/me', { headers: { 'Cf-Access-Jwt-Assertion': await sign(validClaims({ aud: ['x'] })) } });
-    await expect(authenticate(bad, prodEnv, { now: NOW })).rejects.toMatchObject({ status: 401, code: 'unauthorized' });
+  it('sin cookie → 401; cookie manipulada → 401 unauthorized', async () => {
+    const { env, cookie } = await passwordEnv('diego@example.com');
+    await expect(authenticate(new Request('https://raiden.pages.dev/api/admin/me'), env)).rejects.toMatchObject({ status: 401, code: 'unauthorized' });
+    const bad = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: `${cookie}x` } });
+    await expect(authenticate(bad, env)).rejects.toMatchObject({ status: 401, code: 'unauthorized' });
   });
 
-  it('sin CF_ACCESS_TEAM_DOMAIN/CF_ACCESS_AUD en producción → 500 de configuración, nunca abre el panel', async () => {
-    const token = await sign(validClaims());
-    const request = new Request('https://raiden.pages.dev/api/admin/me', { headers: { 'Cf-Access-Jwt-Assertion': token } });
-    const err = await authenticate(request, { CF_ACCESS_AUD: AUD }, { now: NOW }).catch((e: unknown) => e);
+  it('con Access configurado: sesión sin JWT → 401; JWT de otro email → 403; solo JWT sin sesión → 401; ambos coherentes → identidad', async () => {
+    const { env, cookie } = await passwordEnv('diego@example.com', { CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD });
+    const now = Math.floor(Date.now() / 1000);
+    await expect(authenticate(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } }), env, { now })).rejects.toMatchObject({ status: 401 });
+    const other = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie, 'Cf-Access-Jwt-Assertion': await sign(freshClaims({ email: 'intruso@example.com' })) } });
+    await expect(authenticate(other, env, { now })).rejects.toMatchObject({ status: 403 });
+    // Access es segunda barrera, no sustituto: el JWT solo no abre
+    await expect(authenticate(new Request('https://raiden.pages.dev/api/admin/me', { headers: { 'Cf-Access-Jwt-Assertion': await sign(freshClaims()) } }), env, { now })).rejects.toMatchObject({ status: 401 });
+    const both = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie, 'Cf-Access-Jwt-Assertion': await sign(freshClaims()) } });
+    await expect(authenticate(both, env, { now })).resolves.toEqual({ email: 'diego@example.com', localMode: false, mustChange: true });
+  });
+
+  it('sin ADMIN_KV / SESSION_SECRET en producción → 500 de configuración, nunca abre el panel', async () => {
+    const request = new Request('https://raiden.pages.dev/api/admin/me');
+    const err = await authenticate(request, { CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(HttpError);
     expect(err).toMatchObject({ status: 500 });
-    expect((err as HttpError).message).toMatch(/CF_ACCESS_TEAM_DOMAIN/);
-    await expect(authenticate(request, {}, { now: NOW })).rejects.toMatchObject({ status: 500 });
+    expect((err as HttpError).message).toMatch(/ADMIN_KV/);
+    await expect(authenticate(request, {})).rejects.toMatchObject({ status: 500 });
   });
 
-  it('con ADMIN_LOCAL_USER definido por error en producción (host no local) se sigue exigiendo el JWT', async () => {
+  it('con ADMIN_LOCAL_USER definido por error en producción (host no local) se sigue exigiendo la sesión', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const env: Env = { ...prodEnv, ADMIN_LOCAL_USER: 'diegoo.1795@gmail.com', NODE_ENV: 'development' };
+    const { env, cookie } = await passwordEnv('diego@example.com', { ADMIN_LOCAL_USER: 'diegoo.1795@gmail.com', NODE_ENV: 'development' });
     await expect(authenticate(new Request('https://raiden.pages.dev/api/admin/me'), env)).rejects.toMatchObject({ status: 401 });
-    const token = await sign(validClaims());
-    const withJwt = new Request('https://raiden.pages.dev/api/admin/me', { headers: { 'Cf-Access-Jwt-Assertion': token, [LOCAL_USER_HEADER]: 'intruso@example.com' } });
-    // La identidad es la del JWT, nunca la de la cabecera local
-    await expect(authenticate(withJwt, env, { now: NOW })).resolves.toEqual({ email: 'diego@example.com', localMode: false });
+    const withSession = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie, [LOCAL_USER_HEADER]: 'intruso@example.com' } });
+    // La identidad es la de la sesión, nunca la de la cabecera local
+    await expect(authenticate(withSession, env)).resolves.toEqual({ email: 'diego@example.com', localMode: false, mustChange: true });
     warn.mockRestore();
   });
 });
 
 describe('middleware /api/admin/* (integración)', () => {
-  const prodEnv: Env = { CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD, ADMIN_EMAILS: 'Diego@example.com', EDITOR_EMAILS: 'wiliam@example.com' };
+  const lists = { ADMIN_EMAILS: 'Diego@example.com', EDITOR_EMAILS: 'wiliam@example.com' };
 
   type Ctx = Parameters<typeof onRequest>[0];
   function run(request: Request, env: Env, next: () => Promise<Response> = async () => new Response('ok', { status: 200 })) {
@@ -320,36 +353,44 @@ describe('middleware /api/admin/* (integración)', () => {
     return { data, response: onRequest(context) };
   }
 
-  it('sin JWT → 401 JSON con no-store y sin ejecutar la ruta', async () => {
+  it('sin sesión → 401 JSON con no-store y sin ejecutar la ruta', async () => {
+    const { env } = await passwordEnv('diego@example.com', lists);
     const next = vi.fn(async () => new Response('ok'));
-    const { response } = run(new Request('https://raiden.pages.dev/api/admin/me'), prodEnv, next);
-    const res = await response;
+    const res = await run(new Request('https://raiden.pages.dev/api/admin/me'), env, next).response;
     expect(res.status).toBe(401);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
     expect(await res.json()).toMatchObject({ code: 'unauthorized' });
     expect(next).not.toHaveBeenCalled();
   });
 
-  it('JWT válido pero email fuera de las listas → 403 y la ruta no se ejecuta', async () => {
+  it('sesión válida pero email fuera de las listas → 403 y la ruta no se ejecuta', async () => {
     const next = vi.fn(async () => new Response('ok'));
-    // Nota: el middleware usa Date.now(); un exp lejano mantiene el token válido en el test
-    const token = await sign(validClaims({ email: 'intruso@example.com', exp: Math.floor(Date.now() / 1000) + 3600, nbf: 0, iat: 0 }));
-    const res = await run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { 'Cf-Access-Jwt-Assertion': token } }), prodEnv, next).response;
+    const { env, cookie } = await passwordEnv('intruso@example.com', lists);
+    const res = await run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } }), env, next).response;
     expect(res.status).toBe(403);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
     expect(next).not.toHaveBeenCalled();
   });
 
   it('admin válido → la ruta recibe el usuario con rol resuelto en servidor y la respuesta lleva no-store', async () => {
-    const token = await sign(validClaims({ exp: Math.floor(Date.now() / 1000) + 3600, nbf: 0, iat: 0 }));
-    const { data, response } = run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { 'Cf-Access-Jwt-Assertion': token } }), prodEnv);
+    const { env, cookie } = await passwordEnv('diego@example.com', lists);
+    const { data, response } = run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } }), env);
     const res = await response;
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
-    expect(data.user).toEqual({ email: 'diego@example.com', role: 'admin', admins: ['diego@example.com'], editors: ['wiliam@example.com'], localMode: false, branch: 'main' });
+    expect(data.user).toEqual({ email: 'diego@example.com', role: 'admin', admins: ['diego@example.com'], editors: ['wiliam@example.com'], localMode: false, branch: 'main', mustChangePassword: true });
   });
 
-  it('sin configuración de Access → 500 de configuración (nunca deja pasar)', async () => {
+  it('con Access configurado además de la sesión: sin JWT → 401; con JWT coherente → 200', async () => {
+    const { env, cookie } = await passwordEnv('diego@example.com', { ...lists, CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD });
+    const next = vi.fn(async () => new Response('ok'));
+    expect((await run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } }), env, next).response).status).toBe(401);
+    expect(next).not.toHaveBeenCalled();
+    const ok = await run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie, 'Cf-Access-Jwt-Assertion': await sign(freshClaims()) } }), env, next).response;
+    expect(ok.status).toBe(200);
+  });
+
+  it('sin configuración del login (ADMIN_KV / SESSION_SECRET) → 500 de configuración (nunca deja pasar)', async () => {
     const next = vi.fn(async () => new Response('ok'));
     const res = await run(new Request('https://raiden.pages.dev/api/admin/me'), { ADMIN_EMAILS: 'diego@example.com' }, next).response;
     expect(res.status).toBe(500);
@@ -359,8 +400,8 @@ describe('middleware /api/admin/* (integración)', () => {
 
   it('excepción inesperada en la ruta → 500 genérico sin stack ni detalles', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const token = await sign(validClaims({ exp: Math.floor(Date.now() / 1000) + 3600, nbf: 0, iat: 0 }));
-    const res = await run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { 'Cf-Access-Jwt-Assertion': token } }), prodEnv, async () => {
+    const { env, cookie } = await passwordEnv('diego@example.com', lists);
+    const res = await run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } }), env, async () => {
       throw new Error('secreto interno ghp_xxx');
     }).response;
     expect(res.status).toBe(500);

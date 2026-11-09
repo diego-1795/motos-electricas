@@ -86,7 +86,12 @@ const catIcons: Record<string, string> = {
   <!-- 2. PRODUCTOS RECIENTES -->
   <section class="section recent" aria-labelledby="recent-h">
     <div class="container">
-      <SectionHeading eyebrow="Productos recientes" title="Descubre tu instinto RAIDEN" text="Bicimotos de 25 km/h y trimotos convertibles pasajeros/carga. Disponibles en versiones estándar y premium, garantía de 6 meses en batería y motor." />
+      <SectionHeading
+        id="recent-h"
+        eyebrow="Productos recientes"
+        title="Descubre tu instinto RAIDEN"
+        text={`Bicimotos de 25 km/h y trimotos convertibles pasajeros/carga. Disponibles en versiones estándar y premium, garantía de ${site.warrantyMonths} meses en batería y motor.`}
+      />
       <div class="grid-products recent__grid">
         {recent.map((p) => <ProductCard product={p} categoryLabel={categoryNames[p.category]} />)}
       </div>
@@ -100,7 +105,7 @@ const catIcons: Record<string, string> = {
   <!-- 3. RAIDERS SATISFECHOS -->
   <section class="section raiders surface-dark" aria-labelledby="raiders-h">
     <div class="container">
-      <SectionHeading eyebrow="Raiders satisfechos" title="Somos parte de cada momento, de cada historia" align="center" />
+      <SectionHeading id="raiders-h" eyebrow="Raiders satisfechos" title="Somos parte de cada momento, de cada historia" align="center" />
       <ClientGrid images={raiders} />
     </div>
   </section>
@@ -108,14 +113,15 @@ const catIcons: Record<string, string> = {
   <!-- 4. COMUNIDAD RAIDEN -->
   <section class="section community" aria-labelledby="community-h">
     <div class="container">
-      <SectionHeading eyebrow="Comunidad RAIDEN" title="Nuestros Raiders nos recomiendan" align="center" />
+      <SectionHeading id="community-h" eyebrow="Comunidad RAIDEN" title="Nuestros Raiders nos recomiendan" align="center" />
       {
         testimonials.length > 0 && (
           <ul role="list" class="community__list">
             {testimonials.map((t) => (
               <li class="community__card">
-                <p class="community__stars" aria-label={`${t.rating} de 5 estrellas`}>
-                  {'★★★★★'.slice(0, t.rating)}
+                <p class="community__stars">
+                  <span class="visually-hidden">{t.rating} de 5 estrellas</span>
+                  <span aria-hidden="true">{'★★★★★'.slice(0, t.rating)}</span>
                 </p>
                 <blockquote>
                   <p>“{t.text}”</p>
@@ -170,7 +176,7 @@ const catIcons: Record<string, string> = {
       <section class="section blog" aria-labelledby="blog-h">
         <div class="container">
           <div class="blog__head">
-            <SectionHeading eyebrow="Blog" title="Aprende antes de decidir" />
+            <SectionHeading id="blog-h" eyebrow="Blog" title="Aprende antes de decidir" />
             <a href="/blog" class="btn btn--ghost">Todos los artículos →</a>
           </div>
           <ul role="list" class="blog__list">

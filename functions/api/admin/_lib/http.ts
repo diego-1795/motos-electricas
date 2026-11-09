@@ -89,8 +89,16 @@ export const MAX_UPLOAD_BODY_BYTES = 14 * 1024 * 1024;
 
 const payloadTooLarge = (max: number) => new HttpError('bad_request', `El cuerpo de la petición supera el máximo de ${Math.round(max / 1024)} KB`, undefined, 413);
 
-/** Cuerpo JSON como objeto plano; JSON inválido o no-objeto → 400; demasiado grande → 413. */
+const unsupportedMediaType = () => new HttpError('bad_request', 'Content-Type debe ser application/json', undefined, 415);
+
+/**
+ * Cuerpo JSON como objeto plano; Content-Type distinto de application/json → 415 (un `<form enctype="text/plain">`
+ * de otro sitio no puede fabricar una petición válida: tercera barrera CSRF tras SameSite=Strict y Origin);
+ * JSON inválido o no-objeto → 400; demasiado grande → 413.
+ */
 export async function readJsonBody(request: Request, maxBytes = MAX_BODY_BYTES): Promise<Record<string, unknown>> {
+  const contentType = request.headers.get('Content-Type') ?? '';
+  if (!/^application\/json(\s*;.*)?$/i.test(contentType.trim())) throw unsupportedMediaType();
   const declared = Number(request.headers.get('Content-Length') ?? '');
   if (Number.isFinite(declared) && declared > maxBytes) throw payloadTooLarge(maxBytes);
   let text: string;

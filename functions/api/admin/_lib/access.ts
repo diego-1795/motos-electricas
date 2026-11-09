@@ -1,14 +1,17 @@
 import { LOCAL_USER_HEADER } from '../../../../src/domain/admin';
+import { passwordAuthConfigured, sessionIdentity } from './auth';
 import type { Env } from './env';
-import { configError, unauthorized } from './http';
+import { configError, forbidden, unauthorized } from './http';
 
 /**
- * Autenticación del panel (ADR-018).
- *  - Producción: JWT de Cloudflare Access (cabecera `Cf-Access-Jwt-Assertion`, fallback cookie
- *    `CF_Authorization`) verificado RS256 con WebCrypto contra el JWKS del equipo.
- *  - Local (`wrangler pages dev`): identidad simulada SOLO si ADMIN_LOCAL_USER está definido,
- *    NODE_ENV !== 'production' y el host es localhost / 127.0.0.1 / [::1].
- * Nunca se registra el JWT ni el token completo.
+ * Autenticación del panel (ADR-018, ADR-024). Orden:
+ *  1. Local (`wrangler pages dev`): identidad simulada SOLO si ADMIN_LOCAL_USER está definido,
+ *     NODE_ENV !== 'production' y el host es localhost / 127.0.0.1 / [::1].
+ *  2. Sesión por contraseña: cookie firmada emitida por POST /auth/login (auth.ts). Es la vía normal.
+ *  3. Cloudflare Access (opcional, segunda barrera): si CF_ACCESS_TEAM_DOMAIN y CF_ACCESS_AUD están
+ *     definidos se exige además el JWT (`Cf-Access-Jwt-Assertion` o cookie `CF_Authorization`),
+ *     verificado RS256 con WebCrypto contra el JWKS del equipo, y su email debe ser el de la sesión.
+ * Nunca se registra el JWT, la cookie ni el token completo.
  */
 
 export const JWT_HEADER = 'Cf-Access-Jwt-Assertion';
@@ -25,6 +28,8 @@ export interface AccessConfig {
 export interface Identity {
   email: string;
   localMode: boolean;
+  /** true mientras la contraseña siga siendo la temporal (ADR-024) */
+  mustChange: boolean;
 }
 
 export class AccessError extends Error {
@@ -217,23 +222,29 @@ export async function verifyAccessJwt(token: string, cfg: AccessConfig, opts: Ve
 /* ---------- Punto de entrada ---------- */
 
 /**
- * Identidad de la petición: modo local o JWT de Access. Lanza HttpError:
- * 500 si falta la configuración de Access, 401 si no hay JWT válido.
+ * Identidad de la petición: modo local, o sesión por contraseña (+ Access si está configurado). Lanza HttpError:
+ * 500 si faltan ADMIN_KV / SESSION_SECRET, 401 sin sesión válida (o sin JWT válido cuando Access está activo),
+ * 403 si el JWT de Access pertenece a otro email que la sesión.
  */
 export async function authenticate(request: Request, env: Env, opts: VerifyOptions = {}): Promise<Identity> {
   const local = localIdentity(request, env);
-  if (local) return { email: local.toLowerCase(), localMode: true };
+  if (local) return { email: local.toLowerCase(), localMode: true, mustChange: false };
+
+  if (!passwordAuthConfigured(env)) throw configError('faltan ADMIN_KV (binding KV) y/o SESSION_SECRET (ADR-024)');
+  const session = await sessionIdentity(env, request, opts.now);
+  if (!session) throw unauthorized('Inicia sesión con tu email y contraseña');
 
   const cfg = accessConfig(env);
-  if (!cfg) throw configError('faltan CF_ACCESS_TEAM_DOMAIN y/o CF_ACCESS_AUD (Cloudflare Access)');
-
-  const token = extractToken(request);
-  if (!token) throw unauthorized('Falta el JWT de Cloudflare Access');
-  try {
-    const { email } = await verifyAccessJwt(token, cfg, opts);
-    return { email, localMode: false };
-  } catch (e) {
-    if (e instanceof AccessError) throw unauthorized(`JWT de Access rechazado: ${e.message}`);
-    throw e;
+  if (cfg) {
+    const token = extractToken(request);
+    if (!token) throw unauthorized('Falta el JWT de Cloudflare Access');
+    try {
+      const { email } = await verifyAccessJwt(token, cfg, opts);
+      if (email !== session.email) throw forbidden('La sesión de Cloudflare Access pertenece a otro usuario');
+    } catch (e) {
+      if (e instanceof AccessError) throw unauthorized(`JWT de Access rechazado: ${e.message}`);
+      throw e;
+    }
   }
+  return { email: session.email, localMode: false, mustChange: session.mustChange };
 }

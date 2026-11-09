@@ -63,6 +63,11 @@ const slides = products.filter((p) => p.heroImage);
     <button type="button" class="hs__arrow" aria-label="Modelo siguiente" data-next>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
     </button>
+    {/* WCAG 2.2.2: el carrusel avanza solo, así que siempre hay un control para detenerlo (también en táctil) */}
+    <button type="button" class="hs__arrow hs__pause" aria-pressed="false" aria-label="Pausar el carrusel" data-pause>
+      <svg class="hs__icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" /></svg>
+      <svg class="hs__icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+    </button>
   </div>
 </section>
 
@@ -76,6 +81,9 @@ const slides = products.filter((p) => p.heroImage);
     let index = 0;
     let timer: ReturnType<typeof setInterval> | undefined;
     let paused = false;
+    // Pausa explícita del usuario (botón): prevalece sobre hover/foco/táctil hasta que vuelva a pulsar
+    let userPaused = false;
+    const pauseBtn = root.querySelector<HTMLButtonElement>('[data-pause]');
 
     // Mientras dura un desplazamiento programático, el handler de scroll no debe
     // reinterpretar las posiciones intermedias como "nueva diapositiva activa".
@@ -123,7 +131,7 @@ const slides = products.filter((p) => p.heroImage);
 
     function start() {
       stop();
-      if (reduce.matches || slides.length < 2 || paused) return;
+      if (reduce.matches || slides.length < 2 || paused || userPaused) return;
       timer = setInterval(() => {
         if (document.hidden) return;
         go(index + 1);
@@ -154,6 +162,16 @@ const slides = products.filter((p) => p.heroImage);
     root.addEventListener('touchstart', () => stop(), { passive: true });
     root.addEventListener('touchend', () => start(), { passive: true });
     reduce.addEventListener('change', start);
+    pauseBtn?.addEventListener('click', () => {
+      userPaused = !userPaused;
+      pauseBtn.setAttribute('aria-pressed', String(userPaused));
+      pauseBtn.setAttribute('aria-label', userPaused ? 'Reanudar el carrusel' : 'Pausar el carrusel');
+      root.classList.toggle('is-user-paused', userPaused);
+      if (userPaused) stop();
+      else start();
+    });
+    // Con movimiento reducido no hay autoplay: el botón de pausa sobra
+    if (reduce.matches || slides.length < 2) pauseBtn?.setAttribute('hidden', '');
     paint();
     start();
   }
@@ -288,12 +306,19 @@ const slides = products.filter((p) => p.heroImage);
     background: transparent;
     transition: width var(--t-base) var(--ease);
   }
+  .hs__pause .hs__icon-play,
+  .hs.is-user-paused .hs__pause .hs__icon-pause {
+    display: none;
+  }
+  .hs.is-user-paused .hs__pause .hs__icon-play {
+    display: block;
+  }
   .hs__dot::before {
     content: '';
     width: 0.625rem;
     height: 0.625rem;
     border-radius: var(--r-full);
-    background: var(--n-600);
+    background: var(--n-400); /* ≥ 3:1 sobre #111 (WCAG 1.4.11) */
     transition:
       width var(--t-base) var(--ease),
       background var(--t-base) var(--ease);

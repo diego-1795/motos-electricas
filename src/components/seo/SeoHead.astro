@@ -10,12 +10,16 @@ const fullTitle = buildTitle(title);
 const desc = clampDescription(description);
 const url = canonical(path);
 const ogImage = absolute(image ?? '/og-default.png');
+// Fuera del dominio de producción (previews *.pages.dev, builds locales con otra PUBLIC_SITE_URL) el sitio no se indexa
+// (docs/13-cloudflare.md §4). Astro.site viene de astro.config.mjs; site.url de la misma variable.
+const foreignHost = Boolean(Astro.site) && new URL(Astro.site!).host !== new URL(site.url).host;
+const robotsNoindex = noindex || foreignHost;
 ---
 
 <title>{fullTitle}</title>
 <meta name="description" content={desc} />
 <link rel="canonical" href={url} />
-{noindex && <meta name="robots" content="noindex, nofollow" />}
+{robotsNoindex && <meta name="robots" content="noindex, nofollow" />}
 <meta property="og:type" content={type === 'product' ? 'website' : type} />
 <meta property="og:site_name" content={site.name} />
 <meta property="og:locale" content="es_PE" />

@@ -35,7 +35,7 @@ DESCUBRIMIENTO → PRODUCTO → COMPARAR → CONFIGURAR → CARRITO → SOLICITU
 | 18 | [Analítica](./18-analytics.md) | `AnalyticsService`, catálogo de eventos, adaptadores, embudo |
 | 19 | [Despliegue](./19-deployment.md) | Pipeline en Cloudflare Pages, verificación, rollback, alternativas |
 | 20 | [Migración](./20-migration.md) | Cambio de hosting, SSG → SSR, JSON → Supabase, Business API |
-| 21 | [Decisiones (ADR)](./21-decisions.md) | ADR-001 a ADR-018 |
+| 21 | [Decisiones (ADR)](./21-decisions.md) | ADR-001 a ADR-024 |
 | 22 | [Roadmap](./22-roadmap.md) | Fases del MVP y post-MVP |
 
 ## Agentes
@@ -82,3 +82,4 @@ Roles del equipo con responsabilidades, límites y criterios de aceptación. El 
 2. Cada documento se actualiza en el mismo PR que cambia el comportamiento que describe.
 3. Los archivos de `/agents` son la fuente de verdad de responsabilidades; si cambia un límite, cambia también la matriz de gobernanza en [agents/tech-lead.md](../agents/tech-lead.md).
 - [23 — Edición del catálogo](./23-catalog-editing.md)
+- [25 — Auditoría 2026-11-08](./25-auditoria-2026-11-08.md)

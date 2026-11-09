@@ -31,6 +31,7 @@ const tiersOf = (p: Product) => TIERS.filter((t) => p.variants.some((v) => v.tie
       <span>Filtros</span>
       <span class="filters__count muted" data-count>{products.length} modelos</span>
     </button>
+    <p class="filters__count filters__count--desktop muted" data-count-desktop>{products.length} modelos</p>
     <div class="filters__body" id="filters-body">
       {
         !lockedType && (
@@ -134,7 +135,8 @@ const tiersOf = (p: Product) => TIERS.filter((t) => p.variants.some((v) => v.tie
     const grid = root.querySelector<HTMLElement>('[data-grid]')!;
     const items = Array.from(grid.querySelectorAll<HTMLElement>('[data-item]'));
     const empty = root.querySelector<HTMLElement>('[data-empty]')!;
-    const countBadge = root.querySelector<HTMLElement>('[data-count]');
+    // Dos recuentos: el del botón (móvil) y el texto fijo (escritorio); se actualizan ambos
+    const countBadges = Array.from(root.querySelectorAll<HTMLElement>('[data-count], [data-count-desktop]'));
     const resultsText = root.querySelector<HTMLElement>('[data-results-text]');
     const total = items.length;
 
@@ -184,7 +186,7 @@ const tiersOf = (p: Product) => TIERS.filter((t) => p.variants.some((v) => v.tie
       const current = Array.from(grid.children);
       if (sorted.some((el, i) => el !== current[i])) sorted.forEach((el) => grid.appendChild(el));
       empty.hidden = visible > 0;
-      if (countBadge) countBadge.textContent = `${visible} ${visible === 1 ? 'modelo' : 'modelos'}`;
+      for (const badge of countBadges) badge.textContent = `${visible} ${visible === 1 ? 'modelo' : 'modelos'}`;
       if (resultsText) {
         resultsText.innerHTML = visible
           ? `1 – <span data-count-inline>${visible}</span> de ${total} resultados`
@@ -265,6 +267,14 @@ const tiersOf = (p: Product) => TIERS.filter((t) => p.variants.some((v) => v.tie
   }
   .filters.is-open .filters__summary {
     border-radius: var(--r-lg) var(--r-lg) 0 0;
+  }
+  .filters__count--desktop {
+    display: none;
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    background: var(--bg-elev);
+    font-weight: 600;
   }
   .filters__body {
     display: none;
@@ -351,9 +361,13 @@ const tiersOf = (p: Product) => TIERS.filter((t) => p.variants.some((v) => v.tie
       position: sticky;
       top: 4.75rem;
     }
+    /* Escritorio: el panel siempre está abierto; el botón desaparece del DOM accesible para no anunciar
+       un estado "contraído" que no se corresponde con la pantalla. El recuento se muestra como texto. */
     .filters__summary {
-      pointer-events: none;
-      border-radius: var(--r-lg) var(--r-lg) 0 0;
+      display: none;
+    }
+    .filters__count--desktop {
+      display: block;
     }
     .filters__body {
       display: grid;

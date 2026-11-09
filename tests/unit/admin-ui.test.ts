@@ -191,10 +191,10 @@ describe('AdminApiClient', () => {
     const err = await fails(api.me());
     expect(err.status).toBe(401);
     expect(err.code).toBe('unauthorized');
-    expect(err.message).toBe('Sin sesión de acceso');
+    expect(err.message).toBe('Sin sesión: inicia sesión');
   });
 
-  it('una redirección (Cloudflare Access mandando al login) se trata como sesión caducada (401)', async () => {
+  it('una redirección (un perímetro externo mandando a su login) se trata como sesión caducada (401)', async () => {
     const opaque = { type: 'opaqueredirect', status: 0, ok: false, text: async () => '' } as unknown as Response;
     const { api } = client(() => opaque);
     const err = await fails(api.catalog());

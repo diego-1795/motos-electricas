@@ -1,7 +1,7 @@
 ---
 /**
  * /admin — panel de administración del catálogo (ADR-018). HTML estático + isla Preact;
- * la autenticación la pone Cloudflare Access delante y las Pages Functions de /api/admin/*.
+ * la autenticación (email + contraseña, cookie de sesión; ADR-024) la hacen las Pages Functions de /api/admin/*.
  */
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import Logo from '../../components/ui/Logo.astro';

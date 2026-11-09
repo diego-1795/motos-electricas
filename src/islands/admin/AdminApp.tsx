@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { AdminCatalog, AdminKind, AdminUser, CatalogEntry, CommitInfo, DeleteResult, WriteResult } from '../../domain/admin';
 import type { Part, Product } from '../../domain/types';
-import { adminApi, AdminApiError } from '../../services/admin/AdminApiClient';
+import { adminApi, AdminApiError, SESSION_EXPIRED_MESSAGE } from '../../services/admin/AdminApiClient';
 import { AdminContext, CONFLICT_MESSAGE, findEntry, kindLabel, normalize, roleLabel, type AdminCtx, type AdminTab, type Tone } from './context';
 import CatalogTable from './CatalogTable';
 import DeployBanner from './DeployBanner';
@@ -11,16 +11,22 @@ import PartEditor from './PartEditor';
 import DuplicateDialog from './DuplicateDialog';
 import ConfirmDelete from './ConfirmDelete';
 import BlogPanel from './BlogPanel';
+import LoginForm from './LoginForm';
+import PasswordForm from './PasswordForm';
+import Modal from './Modal';
 
 /**
  * Raíz del panel /admin (ADR-018). Carga identidad y catálogo, mantiene el estado global
  * (catálogo con sha, mensajes aria-live, último commit para el banner) y abre los diálogos.
- * La pestaña Blog (ADR-023) solo existe para el administrador y carga su lista aparte.
+ * Sesión (ADR-024): sin cookie válida muestra el inicio de sesión; con contraseña temporal obliga a
+ * cambiarla antes de cargar nada. La pestaña Blog (ADR-023) solo existe para el administrador.
  * Toda petición pasa por AdminApiClient; las reglas de negocio viven en src/domain.
  */
 
 type Phase =
   | { kind: 'loading' }
+  | { kind: 'login'; notice?: string }
+  | { kind: 'must-change'; user: AdminUser }
   | { kind: 'denied'; status: number; message: string }
   | { kind: 'error'; message: string; config?: boolean }
   | { kind: 'ready'; user: AdminUser; catalog: AdminCatalog };
@@ -30,6 +36,7 @@ type Dialog =
   | { type: 'create'; kind: AdminKind; draft: Product | Part }
   | { type: 'duplicate'; kind: AdminKind }
   | { type: 'delete'; kind: AdminKind; slug: string }
+  | { type: 'password' }
   | null;
 
 const CATALOG_TABS: AdminKind[] = ['products', 'repuestos'];
@@ -50,23 +57,58 @@ export default function AdminApp() {
 
   const notify = useCallback((text: string, tone: Tone = 'info') => setStatus((s) => ({ text, tone, seq: s.seq + 1 })), []);
 
+  /** Con el usuario ya identificado: catálogo → panel (o cambio de contraseña obligatorio). */
+  const enter = useCallback(
+    async (user: AdminUser) => {
+      if (user.mustChangePassword) {
+        setPhase({ kind: 'must-change', user });
+        return;
+      }
+      setPhase({ kind: 'loading' });
+      try {
+        const catalog = await api.catalog();
+        catalogRef.current = catalog;
+        setPhase({ kind: 'ready', user, catalog });
+      } catch (e) {
+        if (e instanceof AdminApiError && e.status === 401) setPhase({ kind: 'login', notice: SESSION_EXPIRED_MESSAGE });
+        else if (e instanceof AdminApiError && e.status === 403) setPhase({ kind: 'denied', status: 403, message: e.message });
+        else if (e instanceof AdminApiError && e.code === 'config') setPhase({ kind: 'error', message: e.message, config: true });
+        else setPhase({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
+      }
+    },
+    [api],
+  );
+
   const load = useCallback(async () => {
     setPhase({ kind: 'loading' });
     catalogRef.current = null;
     try {
-      const [user, catalog] = await Promise.all([api.me(), api.catalog()]);
-      catalogRef.current = catalog;
-      setPhase({ kind: 'ready', user, catalog });
+      const user = await api.me();
+      await enter(user);
     } catch (e) {
-      if (e instanceof AdminApiError && (e.status === 401 || e.status === 403)) setPhase({ kind: 'denied', status: e.status, message: e.message });
+      // Un 401 "normal" es simplemente que no hay sesión; una redirección de un perímetro externo llega como sesión caducada
+      if (e instanceof AdminApiError && e.status === 401) setPhase({ kind: 'login', notice: e.message === SESSION_EXPIRED_MESSAGE ? e.message : undefined });
+      else if (e instanceof AdminApiError && e.status === 403) setPhase({ kind: 'denied', status: 403, message: e.message });
       else if (e instanceof AdminApiError && e.code === 'config') setPhase({ kind: 'error', message: e.message, config: true });
       else setPhase({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
     }
-  }, [api]);
+  }, [api, enter]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const logout = useCallback(async () => {
+    setDialog(null);
+    try {
+      await api.logout();
+    } catch {
+      // la cookie caduca sola; la pantalla de login se muestra igualmente
+    }
+    catalogRef.current = null;
+    api.setLocalUser(null);
+    setPhase({ kind: 'login', notice: 'Has cerrado la sesión' });
+  }, [api]);
 
   const reload = useCallback(async () => {
     try {
@@ -75,6 +117,10 @@ export default function AdminApp() {
       setPhase((p) => (p.kind === 'ready' ? { ...p, catalog } : p));
       setReloadSeq((n) => n + 1);
     } catch (e) {
+      if (e instanceof AdminApiError && e.status === 401) {
+        setPhase({ kind: 'login', notice: SESSION_EXPIRED_MESSAGE });
+        return;
+      }
       notify(`No se pudo recargar el catálogo: ${e instanceof Error ? e.message : String(e)}`, 'error');
     }
   }, [api, notify]);
@@ -84,6 +130,12 @@ export default function AdminApp() {
   const handleError = useCallback(
     (err: unknown): string => {
       if (err instanceof AdminApiError) {
+        if (err.status === 401) {
+          // Sesión caducada en mitad del trabajo: volver al inicio de sesión (lo escrito sin guardar se pierde)
+          setDialog(null);
+          setPhase({ kind: 'login', notice: SESSION_EXPIRED_MESSAGE });
+          return SESSION_EXPIRED_MESSAGE;
+        }
         if (err.status === 409) {
           notify(CONFLICT_MESSAGE, 'error');
           void reload();
@@ -186,22 +238,46 @@ export default function AdminApp() {
     );
   }
 
+  if (phase.kind === 'login') {
+    return <LoginForm notice={phase.notice} onLoggedIn={(user) => void enter(user)} />;
+  }
+
+  if (phase.kind === 'must-change') {
+    return (
+      <div class="adm__panel adm-login" data-admin-must-change>
+        <div class="card adm-login__card">
+          <h2>Elige tu contraseña</h2>
+          <p class="muted">
+            Conectado como <strong>{phase.user.email}</strong>
+          </p>
+          <PasswordForm user={phase.user} forced onChanged={(user) => void enter(user)} />
+          <p class="hint">
+            <button type="button" class="btn btn--ghost btn--sm" onClick={() => void logout()}>
+              Cerrar sesión
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (phase.kind === 'denied') {
     return (
       <div class="adm__panel card adm-denied" data-admin-denied>
         <h2>Sin acceso</h2>
-        {phase.status === 401 ? (
-          <p>No hay una sesión válida de Cloudflare Access. Vuelve a abrir <code>/admin</code>, escribe tu email y el código de un solo uso que recibirás.</p>
-        ) : (
-          <p>
-            Tu email entró por Cloudflare Access pero no está autorizado en el panel (no figura en <code>ADMIN_EMAILS</code> ni en <code>EDITOR_EMAILS</code>). Pide al
-            administrador de la tienda (Diego) que lo añada.
-          </p>
-        )}
+        <p>
+          Tu email está identificado pero no está autorizado en el panel (no figura en <code>ADMIN_EMAILS</code> ni en <code>EDITOR_EMAILS</code>). Pide al administrador de
+          la tienda (Diego) que lo añada.
+        </p>
         <p class="hint">Detalle del servidor: {phase.message}</p>
-        <button type="button" class="btn btn--secondary" onClick={() => void load()}>
-          Reintentar
-        </button>
+        <div class="adm-who__actions">
+          <button type="button" class="btn btn--secondary" onClick={() => void load()}>
+            Reintentar
+          </button>
+          <button type="button" class="btn btn--ghost" onClick={() => void logout()}>
+            Cerrar sesión
+          </button>
+        </div>
       </div>
     );
   }
@@ -213,8 +289,8 @@ export default function AdminApp() {
         <p>{phase.kind === 'error' ? phase.message : 'Estado desconocido'}</p>
         {phase.kind === 'error' && phase.config && (
           <p class="hint">
-            Faltan variables del proyecto de Cloudflare Pages (<code>ADMIN_EMAILS</code>, <code>GITHUB_TOKEN</code>, <code>GITHUB_REPO</code>…). Esto lo corrige Diego (administrador); ver
-            docs/19-deployment.md §12.
+            Faltan variables o bindings del proyecto de Cloudflare Pages (<code>ADMIN_KV</code>, <code>SESSION_SECRET</code>, <code>ADMIN_EMAILS</code>, <code>GITHUB_TOKEN</code>…).
+            Esto lo corrige Diego (administrador); ver docs/19-deployment.md §12.
           </p>
         )}
         <button type="button" class="btn btn--secondary" onClick={() => void load()}>
@@ -261,6 +337,16 @@ export default function AdminApp() {
               rama {user.branch}
             </span>
             {user.localMode && <span class="badge badge--new">Modo local</span>}
+          </span>
+          <span class="adm-who__actions">
+            {!user.localMode && (
+              <button type="button" class="btn btn--ghost btn--sm" onClick={() => setDialog({ type: 'password' })} data-admin-change-password>
+                Cambiar contraseña
+              </button>
+            )}
+            <button type="button" class="btn btn--secondary btn--sm" onClick={() => void logout()} data-admin-logout>
+              Cerrar sesión
+            </button>
           </span>
         </div>
 
@@ -325,6 +411,18 @@ export default function AdminApp() {
 
         <AccessPanel onSimulate={simulate} />
 
+        {dialog?.type === 'password' && (
+          <Modal title="Cambiar contraseña" onClose={() => setDialog(null)}>
+            <PasswordForm
+              user={user}
+              onCancel={() => setDialog(null)}
+              onChanged={() => {
+                setDialog(null);
+                notify('Contraseña cambiada. Las demás sesiones abiertas con la contraseña anterior se han cerrado.');
+              }}
+            />
+          </Modal>
+        )}
         {dialog?.type === 'duplicate' && isAdmin && <DuplicateDialog kind={dialog.kind} onClose={() => setDialog(null)} onContinue={(draft) => openCreate(dialog.kind, draft)} />}
         {dialog?.type === 'edit' && isAdmin && (() => {
           const entry = findEntry(catalog, dialog.kind, dialog.slug);

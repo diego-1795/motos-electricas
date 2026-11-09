@@ -10,6 +10,10 @@
 #   - Secret CLOUDFLARE_ACCOUNT_ID : ID de la cuenta.
 #   - Variables (no secretas) PUBLIC_SITE_URL y PUBLIC_WHATSAPP_NUMBER del entorno "production".
 #
+# Seguridad (auditoría 2026-11-08): el build (npm ci --ignore-scripts, sin secretos) y el despliegue (sin
+# npm ci, solo el artefacto) son jobs separados, de modo que ni una dependencia con postinstall ni el código
+# del repo ven el token de Cloudflare; actions fijadas por SHA; el input `branch` es una lista cerrada.
+#
 # Portabilidad: el único paso específico de Cloudflare es el último (wrangler pages deploy).
 # En Vercel/Netlify se sustituye por `vercel deploy --prebuilt` / `netlify deploy --dir=dist`.
 name: deploy-cloudflare-pages
@@ -18,24 +22,25 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: Rama de Pages a la que desplegar (main = producción; otra = preview)
-        required: false
+        description: Rama de Pages a la que desplegar (main = producción; preview = rama de pruebas)
+        required: true
+        type: choice
         default: main
+        options: [main, preview]
 
 permissions:
   contents: read
-  deployments: write
 
 concurrency:
-  group: deploy-${{ github.event.inputs.branch || 'main' }}
+  group: deploy-${{ inputs.branch }}
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
-      name: ${{ github.event.inputs.branch == 'main' && 'production' || 'preview' }}
+      name: ${{ inputs.branch == 'main' && 'production' || 'preview' }}
     env:
       PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
       PUBLIC_WHATSAPP_NUMBER: ${{ vars.PUBLIC_WHATSAPP_NUMBER }}
@@ -43,20 +48,42 @@ jobs:
       PUBLIC_ANALYTICS: ${{ vars.PUBLIC_ANALYTICS }}
       PUBLIC_CF_BEACON_TOKEN: ${{ vars.PUBLIC_CF_BEACON_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22.12.0
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm audit --audit-level=high
       - run: npx astro check
       - run: npm run build
       - name: Verificar artefacto
-        run: test -f dist/_headers && test -f dist/index.html
+        run: test -f dist/_headers && test -f dist/index.html && test -f dist/productos.html
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dist
+          path: dist
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      deployments: write
+    environment:
+      name: ${{ inputs.branch == 'main' && 'production' || 'preview' }}
+    steps:
+      # Sin checkout ni npm ci: el job solo recibe el artefacto ya validado.
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: dist
+          path: dist
       - name: Deploy a Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.9.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name raiden --branch ${{ github.event.inputs.branch || 'main' }} --commit-dirty=true
+          wranglerVersion: "4.154.0"
+          command: pages deploy dist --project-name raiden --branch ${{ inputs.branch }} --commit-dirty=true

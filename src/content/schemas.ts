@@ -89,7 +89,14 @@ export const variant = z.object({
   isDefault: z.boolean().optional(),
 });
 
-export const color = z.object({ id: z.string(), name: z.string(), hex: z.string(), image: image.optional(), priceDelta: money.optional() });
+/** `hex` acaba en un `style="background:…"` del configurador: solo un color #rrggbb (sin inyección CSS). */
+export const color = z.object({
+  id: z.string(),
+  name: z.string(),
+  hex: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'hex debe ser un color #rrggbb'),
+  image: image.optional(),
+  priceDelta: money.optional(),
+});
 
 export const productSchema = z.object({
   id: z.string(),

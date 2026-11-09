@@ -170,7 +170,7 @@ describe('rutas: orden de comprobaciones', () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
     for (const handler of [onRequestGet, onRequestPut, onRequestDelete, listRoute as unknown as typeof onRequestPut]) {
-      const request = new Request('https://x.test/api/admin/blog/como-cuidar-la-bateria', { method: 'PUT', body: '{"sha":"a"}' });
+      const request = new Request('https://x.test/api/admin/blog/como-cuidar-la-bateria', { method: 'PUT', body: '{"sha":"a"}', headers: { 'Content-Type': 'application/json' } });
       const text = vi.spyOn(request, 'text');
       const res = await handler(ctx(request, editor, 'como-cuidar-la-bateria', {}));
       expect(res.status).toBe(403);
@@ -185,8 +185,8 @@ describe('rutas: orden de comprobaciones', () => {
   it('admin: slug inválido → 400 y cuerpo no JSON → 400 antes de tocar GitHub; sin token → 500 config', async () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
-    expect((await onRequestPut(ctx(new Request('https://x.test', { method: 'PUT', body: '{}' }), admin, '../x', { GITHUB_TOKEN: 't' }))).status).toBe(400);
-    expect((await onRequestPut(ctx(new Request('https://x.test', { method: 'PUT', body: 'no-json' }), admin, 'ok', { GITHUB_TOKEN: 't' }))).status).toBe(400);
+    expect((await onRequestPut(ctx(new Request('https://x.test', { method: 'PUT', body: '{}', headers: { 'Content-Type': 'application/json' } }), admin, '../x', { GITHUB_TOKEN: 't' }))).status).toBe(400);
+    expect((await onRequestPut(ctx(new Request('https://x.test', { method: 'PUT', body: 'no-json', headers: { 'Content-Type': 'application/json' } }), admin, 'ok', { GITHUB_TOKEN: 't' }))).status).toBe(400);
     const res = await onRequestGet(ctx(new Request('https://x.test', { method: 'GET' }), admin, 'ok', {}));
     expect(res.status).toBe(500);
     await expect(res.json()).resolves.toMatchObject({ code: 'config' });

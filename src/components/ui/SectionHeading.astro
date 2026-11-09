@@ -5,13 +5,15 @@ interface Props {
   text?: string;
   as?: 'h1' | 'h2' | 'h3';
   align?: 'left' | 'center';
+  /** id del título, para que la <section> que lo envuelve pueda referenciarlo con aria-labelledby */
+  id?: string;
 }
-const { eyebrow, title, text, as: Tag = 'h2', align = 'left' } = Astro.props;
+const { eyebrow, title, text, as: Tag = 'h2', align = 'left', id } = Astro.props;
 ---
 
 <header class:list={['sh', { 'sh--center': align === 'center' }]}>
   {eyebrow && <p class="eyebrow">{eyebrow}</p>}
-  <Tag>{title}</Tag>
+  <Tag id={id}>{title}</Tag>
   {text && <p class="muted sh__text">{text}</p>}
   <slot />
 </header>

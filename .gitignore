@@ -34,3 +34,9 @@ playwright-report/
 
 # Variables locales de wrangler pages dev (panel de administración); nunca commitear
 .dev.vars
+
+# Estado local de wrangler pages dev (KV/caché de miniflare); nunca commitear
+.wrangler/
+
+# Informes locales de auditoría (gstack /cso); nunca commitear
+.gstack/

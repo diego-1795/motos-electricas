@@ -1,25 +1,34 @@
-import type { AdminUser } from '../../../src/domain/admin';
-import { parseEmailList, resolveRole } from '../../../src/domain/adminPolicy';
 import { authenticate } from './_lib/access';
-import { branchOf, type Data, type Env } from './_lib/env';
+import { assertSameOrigin } from './_lib/auth';
+import { type Data, type Env } from './_lib/env';
 import { NO_STORE, errorResponse, forbidden } from './_lib/http';
+import { buildAdminUser } from './_lib/user';
 
 /**
- * Middleware de /api/admin/* (ADR-018): identidad (Cloudflare Access o modo local),
- * rol en el servidor (ADMIN_EMAILS / EDITOR_EMAILS) y `Cache-Control: no-store` en todo.
- * Deja `context.data.user` para las rutas. 401 sin identidad, 403 sin rol, 500 sin configuración.
+ * Middleware de /api/admin/* (ADR-018, ADR-024): origen propio en toda petición con efectos (CSRF),
+ * identidad (sesión por contraseña, modo local o Cloudflare Access opcional), rol en el servidor
+ * (ADMIN_EMAILS / EDITOR_EMAILS) y `Cache-Control: no-store` en todo. Deja `context.data.user` a las rutas.
+ * 401 sin identidad, 403 sin rol o con contraseña temporal pendiente, 500 sin configuración.
+ * `/auth/login` y `/auth/logout` no exigen sesión (son quienes la crean o la destruyen).
  */
+
+const PUBLIC_PATHS = new Set(['/api/admin/auth/login', '/api/admin/auth/logout']);
+/** Con la contraseña temporal aún sin cambiar solo se puede consultar la identidad y cambiarla. */
+const MUST_CHANGE_ALLOWED = new Set(['/api/admin/me', '/api/admin/auth/password', '/api/admin/auth/logout']);
+
 export const onRequest: PagesFunction<Env, any, Data> = async (context) => {
   const { request, env } = context;
   try {
-    const { email, localMode } = await authenticate(request, env);
-    const admins = parseEmailList(env.ADMIN_EMAILS);
-    const editors = parseEmailList(env.EDITOR_EMAILS);
-    const role = resolveRole(email, { admins, editors });
-    if (!role) throw forbidden(`${email} no figura en ADMIN_EMAILS ni EDITOR_EMAILS`);
-
-    const user: AdminUser = { email, role, admins, editors, localMode, branch: branchOf(env) };
-    context.data.user = user;
+    assertSameOrigin(request);
+    const pathname = new URL(request.url).pathname.replace(/\/+$/, '');
+    if (!PUBLIC_PATHS.has(pathname)) {
+      const identity = await authenticate(request, env);
+      const user = buildAdminUser(env, identity);
+      if (user.mustChangePassword && !MUST_CHANGE_ALLOWED.has(pathname)) {
+        throw forbidden('Debes cambiar tu contraseña temporal antes de usar el panel');
+      }
+      context.data.user = user;
+    }
 
     const res = await context.next();
     const headers = new Headers(res.headers);

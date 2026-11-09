@@ -92,7 +92,14 @@ interface MockOptions {
   firstWriteDelayMs?: number;
   /** Modo local (wrangler pages dev): /me devuelve localMode y respeta la cabecera x-admin-local-user */
   localMode?: boolean;
+  /** Sin cookie de sesión: todo responde 401 hasta un POST /auth/login correcto (ADR-024) */
+  loggedOut?: boolean;
+  /** Contraseña temporal: /me lleva mustChangePassword y el resto responde 403 hasta cambiarla */
+  mustChange?: boolean;
 }
+
+/** Contraseña que acepta el mock de /auth/login y /auth/password (como la temporal asignada por el administrador) */
+const MOCK_PASSWORD = 'Temporal-1234-abcd';
 
 const json = (route: Route, status: number, body: unknown) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
@@ -107,6 +114,8 @@ async function mockApi(page: Page, opts: MockOptions) {
   const state: AdminCatalog = { products: clone(products), repuestos: clone(repuestos), branch: 'main' };
   const blog: BlogEntry[] = clone(posts);
   const commitOf = (message: string) => ({ sha: 'c0ffee', url: 'https://github.com/x/y/commit/c0ffee', message });
+  let session = !opts.loggedOut;
+  let mustChange = Boolean(opts.mustChange);
 
   await page.route('**/api/admin/**', async (route) => {
     const req = route.request();
@@ -116,6 +125,29 @@ async function mockApi(page: Page, opts: MockOptions) {
     const body = method === 'GET' ? undefined : req.postDataJSON();
     const headers = await req.allHeaders();
     calls.push({ method, path, body, headers });
+
+    // Sesión (ADR-024): login, logout y cambio de contraseña; sin sesión todo lo demás es 401
+    if (path === '/auth/login' && method === 'POST') {
+      const b = body as { email?: string; password?: string };
+      if (b.email === users[opts.role].email && b.password === MOCK_PASSWORD) {
+        session = true;
+        return json(route, 200, { ...users[opts.role], ...(mustChange ? { mustChangePassword: true } : {}) });
+      }
+      return json(route, 401, { code: 'unauthorized', error: 'Email o contraseña incorrectos' });
+    }
+    if (path === '/auth/logout' && method === 'POST') {
+      session = false;
+      return json(route, 200, { ok: true });
+    }
+    if (!session) return json(route, 401, { code: 'unauthorized', error: 'Inicia sesión con tu email y contraseña' });
+    if (path === '/auth/password' && method === 'POST') {
+      const b = body as { currentPassword?: string; newPassword?: string };
+      if (b.currentPassword !== MOCK_PASSWORD) return json(route, 401, { code: 'unauthorized', error: 'La contraseña actual no es correcta' });
+      if ((b.newPassword ?? '').length < 10) return json(route, 422, { code: 'validation', error: 'La contraseña nueva no es válida', details: ['La contraseña debe tener al menos 10 caracteres'] });
+      mustChange = false;
+      return json(route, 200, users[opts.role]);
+    }
+    if (mustChange && path !== '/me') return json(route, 403, { code: 'forbidden', error: 'Debes cambiar tu contraseña temporal antes de usar el panel' });
 
     // Blog y subidas (ADR-023): solo admin, como el servidor
     if (path === '/blog' || path.startsWith('/blog/') || path === '/uploads') {
@@ -152,6 +184,7 @@ async function mockApi(page: Page, opts: MockOptions) {
     }
 
     if (method === 'GET' && path === '/me') {
+      if (mustChange) return json(route, 200, { ...users[opts.role], mustChangePassword: true });
       if (!opts.localMode) return json(route, 200, users[opts.role]);
       const sim = headers['x-admin-local-user'];
       const role = sim === users.editor.email ? 'editor' : sim === users.admin.email ? 'admin' : opts.role;
@@ -465,24 +498,97 @@ test.describe('Panel de administración', () => {
     await expect(denied).toContainText('Diego');
   });
 
-  test('sin sesión (401) explica cómo volver a entrar; una redirección de Access (sesión caducada) se trata igual', async ({ page }) => {
-    await page.route('**/api/admin/**', (route) => json(route, 401, { code: 'unauthorized', error: 'Sin sesión de Access' }));
+  test('sin sesión muestra "Iniciar sesión"; credenciales incorrectas avisan sin salir; las correctas abren el panel con su rol', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor', loggedOut: true });
     await page.goto('/admin');
-    const denied = page.locator('[data-admin-denied]');
-    await expect(denied).toBeVisible();
-    await expect(denied).toContainText('Sin acceso');
-    await expect(denied).toContainText('código de un solo uso');
-    await expect(denied).toContainText('Sin sesión de Access');
-    await expect(denied).not.toContainText('ADMIN_EMAILS');
+    const login = page.locator('[data-admin-login]');
+    await expect(login).toBeVisible();
+    await expect(page.locator('[data-admin-app]')).toHaveCount(0);
+    await expect(login.getByLabel('Email')).toBeFocused();
+    // Validación local: sin petición
+    await login.getByRole('button', { name: 'Entrar' }).click();
+    await expect(login.getByRole('alert')).toContainText('email válido');
+    expect(calls.filter((c) => c.path === '/auth/login')).toHaveLength(0);
+    // Contraseña incorrecta: 401 del servidor, se vacía el campo y el foco va al aviso
+    await login.getByLabel('Email').fill('Editor@Example.com ');
+    await login.getByLabel('Contraseña').fill('no-es-esta');
+    await login.getByRole('button', { name: 'Entrar' }).click();
+    await expect(login.getByRole('alert')).toContainText('incorrectos');
+    await expect(login.getByRole('alert')).toBeFocused();
+    await expect(login.getByLabel('Contraseña')).toHaveValue('');
+    expect(calls.find((c) => c.path === '/auth/login')!.body).toEqual({ email: 'editor@example.com', password: 'no-es-esta' });
+    // Correcta: panel con el rol que devuelve el servidor
+    await login.getByLabel('Contraseña').fill(MOCK_PASSWORD);
+    await login.getByRole('button', { name: 'Entrar' }).click();
+    await expect(page.locator('[data-admin-app]')).toHaveAttribute('data-role', 'editor');
+    await expect(page.locator('.adm-who')).toContainText('editor@example.com · Editor');
+    await expect(page.locator('[data-admin-logout]')).toBeVisible();
 
-    // Access caducado: el API "responde" con un 302 al login del equipo. El cliente no lo sigue (redirect: manual)
-    // y lo muestra como sesión caducada en vez de como caída del servidor.
+    // Un perímetro externo que redirige (302) se muestra como sesión caducada sobre el propio login, no como caída
     await page.unroute('**/api/admin/**');
     await page.route('**/api/admin/**', (route) => route.fulfill({ status: 302, headers: { location: 'https://equipo.cloudflareaccess.com/cdn-cgi/access/login' } }));
     await page.goto('/admin');
-    await expect(page.locator('[data-admin-denied]')).toBeVisible();
-    await expect(page.locator('[data-admin-denied]')).toContainText('ha caducado');
+    await expect(page.locator('[data-admin-login]')).toBeVisible();
+    await expect(page.locator('[data-admin-login]')).toContainText('ha caducado');
     await expect(page.locator('[data-admin-error]')).toHaveCount(0);
+  });
+
+  test('contraseña temporal: obliga a elegir una nueva antes de cargar el panel (validación local y 401 del servidor)', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'admin', mustChange: true });
+    await page.goto('/admin');
+    const must = page.locator('[data-admin-must-change]');
+    await expect(must).toBeVisible();
+    await expect(must).toContainText('contraseña temporal');
+    await expect(page.locator('[data-admin-app]')).toHaveCount(0);
+    expect(calls.some((c) => c.path === '/catalog')).toBe(false);
+    await expect(must.getByLabel('Contraseña actual')).toBeFocused();
+
+    const form = must.locator('[data-admin-password-form]');
+    await form.getByLabel('Contraseña actual').fill(MOCK_PASSWORD);
+    await form.getByLabel('Contraseña nueva', { exact: true }).fill('1234567890');
+    await form.getByLabel('Repite la contraseña nueva').fill('1234567891');
+    await form.getByRole('button', { name: 'Cambiar contraseña' }).click();
+    const errors = form.getByRole('alert');
+    await expect(errors).toContainText('predecible');
+    await expect(errors).toContainText('no coinciden');
+    await expect(errors).toBeFocused();
+    expect(calls.filter((c) => c.path === '/auth/password')).toHaveLength(0);
+
+    await form.getByLabel('Contraseña actual').fill('otra-que-no-es');
+    await form.getByLabel('Contraseña nueva', { exact: true }).fill('mi moto azul vuela 2026');
+    await form.getByLabel('Repite la contraseña nueva').fill('mi moto azul vuela 2026');
+    await form.getByRole('button', { name: 'Cambiar contraseña' }).click();
+    await expect(errors).toContainText('actual no es correcta');
+    await expect(form.getByLabel('Contraseña actual')).toHaveValue('');
+
+    await form.getByLabel('Contraseña actual').fill(MOCK_PASSWORD);
+    await form.getByRole('button', { name: 'Cambiar contraseña' }).click();
+    await expect(page.locator('[data-admin-app]')).toHaveAttribute('data-role', 'admin');
+    const change = calls.filter((c) => c.path === '/auth/password');
+    expect(change).toHaveLength(2);
+    expect(change[1]!.body).toEqual({ currentPassword: MOCK_PASSWORD, newPassword: 'mi moto azul vuela 2026' });
+  });
+
+  test('"Cambiar contraseña" abre un diálogo y confirma en la región de estado; "Cerrar sesión" vuelve al inicio de sesión', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await page.locator('[data-admin-change-password]').click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Cambiar contraseña');
+    await dialog.getByLabel('Contraseña actual').fill(MOCK_PASSWORD);
+    await dialog.getByLabel('Contraseña nueva', { exact: true }).fill('Raiden#Callao2026');
+    await dialog.getByLabel('Repite la contraseña nueva').fill('Raiden#Callao2026');
+    await dialog.getByRole('button', { name: 'Cambiar contraseña' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('[data-admin-status]')).toContainText('Contraseña cambiada');
+    expect(calls.find((c) => c.path === '/auth/password')!.body).toEqual({ currentPassword: MOCK_PASSWORD, newPassword: 'Raiden#Callao2026' });
+
+    await page.locator('[data-admin-logout]').click();
+    await expect(page.locator('[data-admin-login]')).toBeVisible();
+    await expect(page.locator('[data-admin-login]')).toContainText('Has cerrado la sesión');
+    expect(calls.some((c) => c.path === '/auth/logout' && c.method === 'POST')).toBe(true);
+    // Tras cerrar, el API responde 401 y el panel no se muestra
+    await expect(page.locator('[data-admin-app]')).toHaveCount(0);
   });
 
   test('un 422 lista los details del servidor junto al precio y en el editor, sin banner de publicación', async ({ page }) => {
@@ -921,15 +1027,25 @@ test.describe('Panel de administración', () => {
     expect(res.body.code).toBe('forbidden');
   });
 
-  test('axe sin violaciones serious/critical en la vista admin (tabla, accesos) y con el editor abierto', async ({ page }) => {
-    await mockApi(page, { role: 'admin' });
-    await openAdmin(page);
-    await page.waitForLoadState('networkidle');
+  test('axe sin violaciones serious/critical en login, cambio de contraseña, vista admin (tabla, accesos) y con el editor abierto', async ({ page }) => {
     const audit = async (label: string) => {
       const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag22aa']).analyze();
       const blocking = results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => ({ id: v.id, help: v.help, nodes: v.nodes.slice(0, 5).map((n) => n.target.join(' ')) }));
       expect(blocking, `violaciones serious/critical (${label})`).toEqual([]);
     };
+    await mockApi(page, { role: 'admin', loggedOut: true });
+    await page.goto('/admin');
+    await expect(page.locator('[data-admin-login]')).toBeVisible();
+    await audit('login');
+    await page.unroute('**/api/admin/**');
+    await mockApi(page, { role: 'admin', mustChange: true });
+    await page.goto('/admin');
+    await expect(page.locator('[data-admin-must-change]')).toBeVisible();
+    await audit('cambio de contraseña obligatorio');
+    await page.unroute('**/api/admin/**');
+    await mockApi(page, { role: 'admin' });
+    await openAdmin(page);
+    await page.waitForLoadState('networkidle');
     await audit('tabla');
     await page.locator('[data-price-input="aguila-test:estandar"]').fill('1300');
     await audit('precio editado');

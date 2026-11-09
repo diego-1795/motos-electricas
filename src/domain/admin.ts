@@ -5,7 +5,10 @@ import type { Part, Product } from './types';
  * (functions/api/admin/*) y las islas Preact (src/islands/admin/*).
  * Solo tipos: sin lógica ni dependencias. La política de roles está en adminPolicy.ts.
  *
- * Rutas (mismo origen, tras Cloudflare Access):
+ * Rutas (mismo origen; sesión por cookie tras login con contraseña, ADR-024):
+ *   POST   /api/admin/auth/login             LoginBody          → AdminUser (+ cookie de sesión)
+ *   POST   /api/admin/auth/logout            —                  → { ok: true } (borra la cookie)
+ *   POST   /api/admin/auth/password          ChangePasswordBody → AdminUser (nueva cookie; invalida las demás sesiones)
  *   GET    /api/admin/me                     → AdminUser
  *   GET    /api/admin/catalog                → AdminCatalog
  *   PATCH  /api/admin/products/:slug         ProductPatch  → WriteResult<Product>   (admin y editor)
@@ -26,8 +29,9 @@ import type { Part, Product } from './types';
  */
 
 import type { BlogFrontmatter } from './blogRules';
+import type { ChangePasswordBody, LoginBody } from './adminAuth';
 
-export type { BlogFrontmatter };
+export type { BlogFrontmatter, ChangePasswordBody, LoginBody };
 
 export type AdminRole = 'admin' | 'editor';
 
@@ -44,6 +48,11 @@ export interface AdminUser {
   localMode: boolean;
   /** Rama de GitHub sobre la que se escribe (GITHUB_BRANCH, por defecto main) */
   branch: string;
+  /**
+   * true mientras el usuario siga con su contraseña temporal (ADR-024): el servidor solo admite
+   * /me, /auth/password y /auth/logout hasta que la cambie. Ausente = false.
+   */
+  mustChangePassword?: boolean;
 }
 
 /** Fichero del repositorio: datos + sha del blob (control de concurrencia) */
@@ -111,7 +120,10 @@ export interface DeleteResult {
   commit: CommitInfo;
 }
 
-/** 'config' = variables de entorno del panel incompletas (HTTP 500); 'upstream' = fallo de GitHub o de la API de Pages (502) */
+/**
+ * 'config' = variables de entorno del panel incompletas (HTTP 500); 'upstream' = fallo de GitHub o de la API de Pages (502).
+ * 'forbidden' también cubre el bloqueo temporal del login (HTTP 423) y la petición con `Origin` ajeno (403).
+ */
 export type AdminErrorCode = 'unauthorized' | 'forbidden' | 'not_found' | 'conflict' | 'validation' | 'bad_request' | 'upstream' | 'config';
 
 export interface AdminError {
@@ -130,7 +142,6 @@ export interface DeployStatus {
   createdAt?: string;
   url?: string;
   commitSha?: string;
-  commitMessage?: string;
 }
 
 /* ---------- Blog (ADR-023) ---------- */

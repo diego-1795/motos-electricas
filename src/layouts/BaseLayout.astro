@@ -11,6 +11,7 @@ import SearchModal from '../components/layout/SearchModal.astro';
 import CartDrawer from '../islands/CartDrawer';
 import Toaster from '../islands/Toaster';
 import type { PageMeta } from '../lib/seo/meta';
+import { currentPath } from '../lib/routes';
 import { site } from '../config/site';
 import { organizationSchema, websiteSchema } from '../lib/seo/jsonld';
 
@@ -20,7 +21,7 @@ interface Props extends PageMeta {
   dark?: boolean;
 }
 const { jsonLd = [], dark = false, ...meta } = Astro.props;
-const showFab = Astro.url.pathname.replace(/\/+$/, '') !== '/carrito';
+const showFab = currentPath(Astro.url.pathname) !== '/carrito';
 const schemas = meta.path === '/' ? [organizationSchema(), websiteSchema(), ...jsonLd] : jsonLd;
 // Pagefind: solo se indexan las páginas con data-pagefind-body (las noindex quedan fuera del buscador).
 const searchable = !meta.noindex;

@@ -6,7 +6,9 @@
       "url": [
         "http://localhost/",
         "http://localhost/productos",
-        "http://localhost/bicimotos/golden-eagle"
+        "http://localhost/bicimotos/golden-eagle",
+        "http://localhost/encuentra-tu-moto",
+        "http://localhost/carrito"
       ],
       "numberOfRuns": 2,
       "settings": {

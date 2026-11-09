@@ -55,6 +55,16 @@ describe('blogRules', () => {
     expect(blogRules('ok', fm({ image: { src: '~/assets/blog/x.webp', alt: ' ', width: 1, height: 1 } }), 'x')).toEqual(['image.alt es obligatorio (texto alternativo de la foto)']);
   });
 
+  it('el cuerpo no admite HTML crudo peligroso ni enlaces javascript:/data: (solo Markdown)', () => {
+    for (const tag of ['<script>alert(1)</script>', '<META http-equiv="refresh" content="0;url=https://x">', '<style>body{display:none}</style>', '<form action="https://wa.me/1">', '< iframe src=x>', '<svg onload=alert(1)>', '<base href="https://x">']) {
+      expect(blogRules('ok', fm(), `Texto\n\n${tag}`, ctx), tag).toEqual([expect.stringMatching(/HTML/)]);
+    }
+    expect(blogRules('ok', fm(), '[clic](javascript:alert(1))', ctx)).toEqual([expect.stringMatching(/enlaces/)]);
+    expect(blogRules('ok', fm(), '[clic](data:text/html;base64,PHNjcmlwdD4=)', ctx)).toEqual([expect.stringMatching(/enlaces/)]);
+    // Markdown normal, <br> o texto con "<" no se bloquean
+    expect(blogRules('ok', fm(), 'Precio < 1,500 y **negrita**\n\n[ok](https://raiden.pe) [mail](mailto:a@b.pe) [ruta](/bicimotos)\n\nLínea<br>otra', ctx)).toEqual([]);
+  });
+
   it('sin referencias a España/EUR (misma regla que validate:content)', () => {
     for (const bad of ['Cuesta 300 €', 'precio en EUR', 'necesitas carnet', 'incluye IVA']) {
       expect(blogRules('ok', fm(), bad), bad).toEqual([expect.stringMatching(/España\/EUR/)]);

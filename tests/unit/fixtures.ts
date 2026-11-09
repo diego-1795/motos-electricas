@@ -58,7 +58,7 @@ export function makeProduct(over: Partial<Product> = {}): Product {
     images: [{ src: '~/assets/test.svg', alt: 'test', width: 800, height: 500 }],
     specs: baseSpecs(),
     variants: [variant()],
-    colors: [{ id: 'negro', name: 'Negro', hex: '#000' }],
+    colors: [{ id: 'negro', name: 'Negro', hex: '#000000' }],
     accessories: [],
     related: [],
     useCases: ['ciudad'],

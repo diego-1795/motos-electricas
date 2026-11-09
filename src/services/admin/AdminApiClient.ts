@@ -8,7 +8,9 @@ import type {
   BlogList,
   BlogPutBody,
   BlogWriteResult,
+  ChangePasswordBody,
   DeleteBody,
+  LoginBody,
   DeleteResult,
   DeployStatus,
   PartPatch,
@@ -22,9 +24,9 @@ import { LOCAL_USER_HEADER } from '../../domain/admin';
 import type { Part, Product } from '../../domain/types';
 
 /**
- * Cliente HTTP del panel de administración (ADR-018): único punto de `fetch` hacia
- * `/api/admin/*` (mismo origen, tras Cloudflare Access). Sin lógica de negocio:
- * serializa, deserializa y convierte los errores JSON del servidor en AdminApiError.
+ * Cliente HTTP del panel de administración (ADR-018, ADR-024): único punto de `fetch` hacia
+ * `/api/admin/*` (mismo origen; la sesión viaja en una cookie HttpOnly que crea /auth/login).
+ * Sin lógica de negocio: serializa, deserializa y convierte los errores JSON del servidor en AdminApiError.
  */
 
 export class AdminApiError extends Error {
@@ -61,7 +63,7 @@ const CODE_BY_STATUS: Record<number, AdminErrorCode> = {
 /** Solo se acepta un `code` del contrato; cualquier otro valor del cuerpo se ignora y se deduce del estado HTTP */
 const KNOWN_CODES: ReadonlySet<string> = new Set<AdminErrorCode>(['unauthorized', 'forbidden', 'not_found', 'conflict', 'validation', 'bad_request', 'upstream', 'config']);
 
-export const SESSION_EXPIRED_MESSAGE = 'La sesión de Cloudflare Access ha caducado: recarga la página para volver a identificarte';
+export const SESSION_EXPIRED_MESSAGE = 'La sesión ha caducado: vuelve a iniciar sesión con tu email y contraseña';
 
 export class AdminApiClient {
   private localUser: string | null = null;
@@ -82,6 +84,20 @@ export class AdminApiClient {
 
   me(): Promise<AdminUser> {
     return this.request<AdminUser>('GET', '/me');
+  }
+
+  /* Sesión (ADR-024) */
+
+  login(body: LoginBody): Promise<AdminUser> {
+    return this.request<AdminUser>('POST', '/auth/login', body);
+  }
+
+  logout(): Promise<{ ok: true }> {
+    return this.request<{ ok: true }>('POST', '/auth/logout', {});
+  }
+
+  changePassword(body: ChangePasswordBody): Promise<AdminUser> {
+    return this.request<AdminUser>('POST', '/auth/password', body);
   }
 
   catalog(): Promise<AdminCatalog> {
@@ -139,8 +155,8 @@ export class AdminApiClient {
         headers,
         credentials: 'same-origin',
         cache: 'no-store',
-        // El API nunca redirige: una redirección es Cloudflare Access mandando al login (sesión caducada).
-        // Con 'follow' acabaría en un error CORS indistinguible de una caída del servidor.
+        // El API nunca redirige: una redirección es un perímetro externo (p. ej. Cloudflare Access, si está
+        // activado) mandando a su login. Con 'follow' acabaría en un error CORS indistinguible de una caída.
         redirect: 'manual',
         body: body === undefined ? undefined : JSON.stringify(body),
       });
@@ -165,7 +181,7 @@ export class AdminApiClient {
     if (!res.ok) {
       const err = (json && typeof json === 'object' && !Array.isArray(json) ? json : {}) as Partial<AdminError>;
       const code: AdminErrorCode = typeof err.code === 'string' && KNOWN_CODES.has(err.code) ? err.code : (CODE_BY_STATUS[res.status] ?? 'upstream');
-      const message = typeof err.error === 'string' && err.error ? err.error : res.status === 401 ? 'Sin sesión de acceso' : `Error ${res.status} del servidor`;
+      const message = typeof err.error === 'string' && err.error ? err.error : res.status === 401 ? 'Sin sesión: inicia sesión' : `Error ${res.status} del servidor`;
       const details = Array.isArray(err.details) ? err.details.filter((d): d is string => typeof d === 'string') : [];
       throw new AdminApiError(res.status, code, message, details);
     }

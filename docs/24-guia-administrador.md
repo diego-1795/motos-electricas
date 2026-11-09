@@ -9,13 +9,16 @@ Una regla importante desde el principio: **las fotos no se suben desde el panel*
 ## 1. Entrar al panel
 
 1. Abre en el navegador `https://<dominio de la web>/admin` (guárdalo en favoritos: el enlace no aparece en la web pública).
-2. Cloudflare te pedirá tu **correo electrónico**. Escribe el correo con el que te dieron acceso y pulsa continuar.
-3. Recibirás en ese correo un **código de un solo uso**. Escríbelo en la pantalla de Cloudflare. La sesión dura 24 horas; después vuelve a pedirte el código.
-4. Ya dentro, arriba verás "Conectado como <tu correo> · Administrador" (o "· Editor") y las pestañas del panel.
+2. Escribe tu **correo electrónico** y tu **contraseña** y pulsa **Entrar**.
+3. **La primera vez** entrarás con la contraseña temporal que te dio Diego. El panel te pedirá elegir una nueva antes de seguir: escribe la temporal en "Contraseña actual", y tu contraseña nueva dos veces. Debe tener al menos 10 caracteres (una frase con espacios vale) y no puede ser tu correo ni una secuencia tipo `1234567890`. Solo tú la conocerás.
+4. Ya dentro, arriba verás "Conectado como <tu correo> · Administrador" (o "· Editor"), los botones **Cambiar contraseña** y **Cerrar sesión**, y las pestañas del panel. La sesión dura 12 horas; después vuelve a pedirte la contraseña.
 
-*[Captura: pantalla de Cloudflare Access pidiendo el correo]* · *[Captura: panel abierto con las pestañas Productos, Repuestos y Blog]*
+*[Captura: pantalla de inicio de sesión]* · *[Captura: panel abierto con las pestañas Productos, Repuestos y Blog]*
 
-Si ves **"Sin acceso"**: tu correo entró en Cloudflare pero no está autorizado en el panel. Pide al administrador (Diego) que lo añada.
+- **Cambiar la contraseña cuando quieras:** botón **Cambiar contraseña** (arriba). Al cambiarla se cierran las demás sesiones que tuvieras abiertas en otros dispositivos.
+- **Si la olvidas:** pide a Diego una contraseña temporal nueva; al entrar con ella tendrás que elegir otra.
+- Si te equivocas 5 veces seguidas, el acceso de tu cuenta queda bloqueado 15 minutos.
+- Si ves **"Sin acceso"**: tu correo y contraseña son correctos pero ese correo no está autorizado en el panel. Pide al administrador (Diego) que lo añada.
 
 En la esquina superior derecha del panel hay un enlace **Ayuda** que abre esta guía.
 
@@ -31,6 +34,7 @@ En la esquina superior derecha del panel hay un enlace **Ayuda** que abre esta g
 | Escribir, editar o borrar artículos del blog | Sí | No |
 | Subir el PDF del manual o de la ficha técnica | Sí | No |
 | Subir fotos | Nadie desde el panel: se envían a Diego, que las coloca por git (sección 6) | — |
+| Cambiar su propia contraseña | Sí | Sí |
 
 El editor no ve los botones ni la pestaña de las acciones que no puede hacer; y aunque los viera, el servidor las rechaza.
 

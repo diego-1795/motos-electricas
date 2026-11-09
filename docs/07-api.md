@@ -73,7 +73,7 @@ Reseñas públicas reales del negocio para "Comunidad RAIDEN" (portada). Un arch
 
 ## 3. API REST futura
 
-> La única API que existe hoy es la del panel de administración (`/api/admin/*`, Pages Functions tras Cloudflare Access): catálogo (ADR-018) y blog + subidas (ADR-023). Su contrato está en [17-admin-panel](./17-admin-panel.md) §1 "API" y en `src/domain/admin.ts`. Lo que sigue es el diseño futuro sobre Supabase.
+> La única API que existe hoy es la del panel de administración (`/api/admin/*`, Pages Functions con login por contraseña, ADR-024): catálogo (ADR-018) y blog + subidas (ADR-023). Su contrato está en [17-admin-panel](./17-admin-panel.md) §1 "API" y en `src/domain/admin.ts`. Lo que sigue es el diseño futuro sobre Supabase.
 
 Base: `https://<proyecto>.supabase.co/functions/v1` para Edge Functions y PostgREST para lecturas. El frontend la consume desde `SupabaseProductRepository` (build) y desde islas (escrituras). Versionado por prefijo de ruta `/api/v1/...` cuando exista gateway propio; hasta entonces, versionado por cabecera `Accept-Version: 1`.
 

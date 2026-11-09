@@ -22,6 +22,13 @@ export const FOREIGN_MARKET_RE = /€|EUR|carnet|\bIVA\b/;
 
 export const MAX_BODY_CHARS = 60_000;
 
+/**
+ * Astro renderiza el Markdown con HTML crudo permitido. La CSP frena <script>, javascript: e <iframe> ajenos,
+ * pero no <meta http-equiv=refresh>, <style>, <form> o <base>: el cuerpo de un artículo solo admite Markdown.
+ * (Se comprueba igual en el panel y en validate:content.)
+ */
+export const RAW_HTML_RE = /<\s*\/?\s*(script|iframe|object|embed|meta|style|link|base|form|input|button|svg|math|frame|frameset|template|slot|noscript)\b/i;
+
 /** "¿Cómo elegir una bicimoto eléctrica?" → "como-elegir-una-bicimoto-electrica" (slug propuesto para un artículo nuevo). */
 export function slugify(text: string): string {
   return text
@@ -55,6 +62,8 @@ export function blogRules(slug: string, fm: BlogFrontmatter, body: string, ctx: 
   }
   if (!body.trim()) errs.push('el cuerpo del artículo está vacío');
   if (body.length > MAX_BODY_CHARS) errs.push(`el cuerpo supera los ${MAX_BODY_CHARS} caracteres`);
+  if (RAW_HTML_RE.test(body)) errs.push('el cuerpo no puede contener etiquetas HTML (<script>, <iframe>, <meta>, <style>, <form>…): usa solo Markdown');
+  if (/\]\(\s*(javascript|data|vbscript):/i.test(body)) errs.push('los enlaces del artículo solo pueden ser http(s), rutas del sitio o mailto:');
   const text = `${fm.title}\n${fm.description}\n${body}`;
   if (FOREIGN_MARKET_RE.test(text)) errs.push('contiene referencias a España/EUR (€, EUR, carnet, IVA): usar S/, IGV, licencia');
   return errs;

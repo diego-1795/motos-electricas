@@ -77,8 +77,9 @@ beforeEach(() => {
 });
 
 describe('me y catálogo', () => {
-  it('me devuelve el usuario del middleware', () => {
-    expect(me({ user: editor })).toBe(editor);
+  it('me devuelve el usuario del middleware; al editor no le muestra la lista de administradores', () => {
+    expect(me({ user: admin })).toBe(admin);
+    expect(me({ user: editor })).toEqual({ ...editor, admins: [], editors: [editor.email] });
   });
 
   it('catalog incluye los ocultos, con sha y ruta; productos por featured desc y repuestos por nombre', async () => {
@@ -324,7 +325,7 @@ describe('deploy', () => {
       createdAt: '2026-10-24T10:00:00Z',
       url: 'https://abc.raiden.pages.dev',
       commitSha: 'deadbeef',
-      commitMessage: 'chore(catalog): actualizar x',
+      // commit_message no se reenvía: lleva el email del autor y el motivo del cambio
     });
   });
 

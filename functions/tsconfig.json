@@ -22,6 +22,8 @@
     "../src/domain/**/*.ts",
     "../src/content/schemas.ts",
     "../tests/unit/admin-access.test.ts",
+    "../tests/unit/admin-auth.test.ts",
+    "../tests/unit/memoryKv.ts",
     "../tests/unit/admin-github.test.ts",
     "../tests/unit/admin-handlers.test.ts",
     "../tests/unit/admin-http.test.ts",

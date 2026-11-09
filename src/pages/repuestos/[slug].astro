@@ -10,7 +10,7 @@ import { formatMoney } from '../../domain/money';
 import { availabilityLabel } from '../../domain/product';
 import { publicSrc } from '../../lib/images';
 import { breadcrumbSchema, partSchema } from '../../lib/seo/jsonld';
-import { canonical } from '../../lib/seo/meta';
+import { absolute, canonical } from '../../lib/seo/meta';
 import { PARTS_PATH, partPath, productPath } from '../../lib/routes';
 import { partKindLabel, partKindSingular } from '../../lib/labels';
 
@@ -25,7 +25,7 @@ const sameKind = (await repos.parts.all()).filter((p) => p.kind === a.kind && p.
 const path = partPath(a);
 const url = canonical(path);
 const imageSrc = a.image ? publicSrc(a.image) : undefined;
-const imageUrl = imageSrc ? `${Astro.site?.origin ?? ''}${imageSrc}` : undefined;
+const imageUrl = imageSrc ? absolute(imageSrc) : undefined;
 const badge = a.availability === 'en-stock' ? 'badge--stock' : a.availability === 'bajo-pedido' ? 'badge--order' : a.availability === 'proximamente' ? 'badge--soon' : '';
 const crumbs = [
   { name: 'Inicio', url: '/' },

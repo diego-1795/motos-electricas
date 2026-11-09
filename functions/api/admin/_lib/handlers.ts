@@ -45,8 +45,10 @@ const KIND_LABEL: Record<AdminKind, string> = { products: 'producto', repuestos:
 
 /* ---------- Lectura ---------- */
 
+/** El editor no necesita (ni debe recibir) la lista de emails administradores: son la mitad de una credencial. */
 export function me(ctx: Pick<HandlerContext, 'user'>): AdminUser {
-  return ctx.user;
+  const u = ctx.user;
+  return u.role === 'admin' ? u : { ...u, admins: [], editors: [u.email] };
 }
 
 function parseStored<T>(path: string, content: string): T {
@@ -238,9 +240,9 @@ export async function deployStatus(env: Env, fetchImpl: typeof fetch = fetch): P
     const status: DeployStatus = { available: true, state: mapDeployState(d.latest_stage) };
     if (d.created_on) status.createdAt = d.created_on;
     if (d.url) status.url = d.url;
+    // Solo el hash: el mensaje del commit lleva el email del autor y el motivo (no se reenvía a ningún rol)
     const meta = d.deployment_trigger?.metadata;
     if (meta?.commit_hash) status.commitSha = meta.commit_hash;
-    if (meta?.commit_message) status.commitMessage = meta.commit_message;
     return status;
   } catch (e) {
     console.warn('[admin] no se pudo consultar la API de Pages:', e instanceof Error ? e.message : String(e));

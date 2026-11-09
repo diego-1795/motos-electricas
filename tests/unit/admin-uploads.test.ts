@@ -140,7 +140,7 @@ describe('POST /api/admin/uploads (ruta)', () => {
     ({ request, env, data: { user }, params: {}, functionPath: '', waitUntil: () => {}, passThroughOnException: () => {}, next: async () => new Response() }) as unknown as Ctx;
 
   it('editor → 403 antes de leer el cuerpo', async () => {
-    const request = new Request('https://x.test/api/admin/uploads', { method: 'POST', body: '{}' });
+    const request = new Request('https://x.test/api/admin/uploads', { method: 'POST', body: '{}', headers: { 'Content-Type': 'application/json' } });
     const text = vi.spyOn(request, 'text');
     const res = await onRequestPost(ctx(request, editor, {}));
     expect(res.status).toBe(403);
@@ -149,11 +149,11 @@ describe('POST /api/admin/uploads (ruta)', () => {
 
   it('admin: acepta cuerpos mayores que el de las fichas (hasta MAX_UPLOAD_BODY_BYTES) y rechaza más grandes con 413', async () => {
     const big = `{"path":"public/docs/x.pdf","contentBase64":"${'A'.repeat(MAX_BODY_BYTES * 2)}"}`;
-    const res = await onRequestPost(ctx(new Request('https://x.test/api/admin/uploads', { method: 'POST', body: big }), admin, {}));
+    const res = await onRequestPost(ctx(new Request('https://x.test/api/admin/uploads', { method: 'POST', body: big, headers: { 'Content-Type': 'application/json' } }), admin, {}));
     expect(res.status).toBe(500); // pasó la lectura del cuerpo; falla por falta de GITHUB_TOKEN (config)
     await expect(res.json()).resolves.toMatchObject({ code: 'config' });
-    const huge = new Request('https://x.test/api/admin/uploads', { method: 'POST', body: '{}' });
-    Object.defineProperty(huge, 'headers', { value: new Headers({ 'Content-Length': String(MAX_UPLOAD_BODY_BYTES + 1) }) });
+    const huge = new Request('https://x.test/api/admin/uploads', { method: 'POST', body: '{}', headers: { 'Content-Type': 'application/json' } });
+    Object.defineProperty(huge, 'headers', { value: new Headers({ 'Content-Type': 'application/json', 'Content-Length': String(MAX_UPLOAD_BODY_BYTES + 1) }) });
     const text = vi.spyOn(huge, 'text');
     expect((await onRequestPost(ctx(huge, admin, { GITHUB_TOKEN: 't' }))).status).toBe(413);
     expect(text).not.toHaveBeenCalled();

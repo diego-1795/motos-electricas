@@ -47,6 +47,13 @@
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store
 
+# Manuales y fichas técnicas en PDF subidos desde el panel (ADR-023): se descargan, no se abren inline en el
+# visor del navegador dentro del origen del sitio (un PDF con JavaScript queda fuera de la página).
+/docs/*
+  Content-Disposition: attachment
+  X-Content-Type-Options: nosniff
+  Cache-Control: public, max-age=3600, must-revalidate
+
 # Activos con hash en el nombre: caché inmutable de un año.
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable

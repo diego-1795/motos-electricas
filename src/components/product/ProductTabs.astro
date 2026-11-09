@@ -4,6 +4,7 @@ import type { FeatureGroups, SpecRow, VariantSpecs } from '../../domain/specTabl
 import SpecTiles from './SpecTiles.astro';
 import Pic from '../ui/Pic.astro';
 import WhatsAppLink from '../ui/WhatsAppLink.astro';
+import { site } from '../../config/site';
 
 /**
  * Pestañas de la ficha: Ficha técnica · Especificaciones · Manual de uso · Video.
@@ -38,6 +39,10 @@ function youtubeId(url?: string): string | undefined {
   return m?.[1];
 }
 const ytId = youtubeId(videoUrl);
+// Aviso de "próximamente" sin fechas escritas a mano: si el lanzamiento ya pasó, no se anuncia una fecha pasada
+const launch = new Date(`${site.videoLaunchDate}T00:00:00-05:00`);
+const launchPending = Date.now() < launch.getTime();
+const launchLabel = new Intl.DateTimeFormat(site.locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Lima' }).format(launch);
 
 const tabs = [
   { id: 'ficha', label: 'Ficha técnica' },
@@ -174,7 +179,13 @@ const tabs = [
         </div>
       ) : (
         <p class="muted ptabs__soon">
-          Lanzamiento oficial <strong>1 de diciembre de 2026</strong> en nuestro canal de YouTube.
+          {launchPending ? (
+            <>
+              Lanzamiento oficial el <strong>{launchLabel}</strong> en nuestro canal de YouTube.
+            </>
+          ) : (
+            <>Próximamente en nuestro canal de YouTube.</>
+          )}
         </p>
       )
     }

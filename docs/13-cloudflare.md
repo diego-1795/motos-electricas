@@ -148,17 +148,17 @@ Cualquier uso de estas capacidades requiere revisión DevOps + Tech Lead (regla 
 
 Regla: si una funcionalidad no se puede reproducir con un fichero del repositorio o con una variable de entorno estándar, no entra en el MVP. El panel de administración cumple la regla: `functions/` es código del repositorio y todo lo demás son variables de entorno.
 
-## 11. Cloudflare Access para el panel `/admin` (ADR-018)
+## 11. Cloudflare Access para el panel `/admin` (ADR-018; opcional desde ADR-024)
 
-Configuración en Zero Trust (gratuito hasta 50 usuarios). Pasos detallados en [19-deployment](./19-deployment.md) §12.
+Desde ADR-024 el panel se protege con su propio login por email y contraseña ([19-deployment](./19-deployment.md) §12). Access es una **segunda barrera opcional**: si se configura, las Functions exigen además el JWT. Configuración en Zero Trust (gratuito hasta 50 usuarios):
 
 1. **Zero Trust → Settings → Custom Pages**: anotar el *team domain* (`<equipo>.cloudflareaccess.com`) → variable `CF_ACCESS_TEAM_DOMAIN`.
 2. **Access → Applications → Add → Self-hosted**: dominio `raiden.pe` (y `www`), rutas `/admin` y `/api/admin` (una aplicación con dos rutas, o dos aplicaciones con la misma política). Duración de sesión: 24 h. Método: *One-time PIN* (código al email); no hace falta proveedor de identidad.
 3. **Política "Catálogo RAIDEN"** (Allow): *Emails* = los de Diego y Wiliam. Cualquier otro email ve la pantalla de Access y no entra.
 4. En la aplicación, *Overview → Application Audience (AUD) Tag* → variable `CF_ACCESS_AUD`.
-5. El dominio `*.pages.dev` no pasa por Access salvo que se añada como dominio de la aplicación: para no dejar `/admin` abierto ahí, añadir también `raiden.pages.dev` a la aplicación (misma política). Mientras no exista `CF_ACCESS_*`, las Functions responden 500 y no exponen nada.
+5. El dominio `*.pages.dev` no pasa por Access salvo que se añada como dominio de la aplicación; con Access activado, añadir también `raiden.pages.dev` (misma política). Sin `CF_ACCESS_*`, el panel funciona solo con contraseña.
 
-Las Functions no confían en que Access "esté delante": verifican el JWT en cada petición (firma, `aud`, `iss`, `exp`), de modo que una ruta mal configurada en Access no abre el API.
+Las Functions no confían en que Access "esté delante": verifican el JWT en cada petición (firma, `aud`, `iss`, `exp`) y exigen que su email sea el de la sesión por contraseña, de modo que una ruta mal configurada en Access no abre el API.
 
 ## 9. Costes
 

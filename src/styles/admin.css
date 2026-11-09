@@ -350,6 +350,35 @@
   min-width: min(100%, 20rem);
 }
 
+/* Inicio de sesión y cambio de contraseña (ADR-024) */
+.adm-login {
+  align-items: center;
+  padding-block: var(--s-8);
+}
+.adm-login__card {
+  width: min(100%, 26rem);
+  padding: var(--s-6);
+}
+.adm-login__card h2 {
+  font-size: var(--fs-xl);
+}
+.adm-login .adm-status {
+  min-height: 0;
+}
+.adm-login .adm-form__actions {
+  justify-content: stretch;
+  border-top: 0;
+  padding-top: 0;
+}
+.adm-login .adm-form__actions .btn {
+  flex: 1;
+}
+.adm-who__actions {
+  display: inline-flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
 /* Sin acceso / error */
 .adm-denied {
   padding: var(--s-8);

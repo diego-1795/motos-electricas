@@ -12,10 +12,10 @@ Referencias: [17-admin-panel](./17-admin-panel.md) (qué hace el panel y por qu�
 ### 0.1 Entrar
 
 1. Abrir `https://<dominio>/admin` (el enlace no aparece en la web; guardarlo en favoritos).
-2. Cloudflare Access pide el **email** y envía un **código de un solo uso**; introducirlo. Solo entran los emails autorizados (Diego como administrador, Wiliam como editor). La sesión dura 24 horas.
+2. Escribir el **email** y la **contraseña** (ADR-024). La primera vez, con la contraseña temporal que entrega Diego, el panel obliga a elegir una nueva. Solo entran los emails autorizados (Diego como administrador, Wiliam como editor). La sesión dura 12 horas; "Cambiar contraseña" y "Cerrar sesión" están arriba a la derecha.
 3. El panel muestra arriba "Conectado como <email> · Administrador" (o "Editor") y dos pestañas: **Productos** (bicimotos, trimotos y promociones) y **Repuestos**, con el número de fichas. El cuadro "Buscar por nombre o slug" filtra la pestaña activa. Las fichas ocultas llevan la insignia "Oculto".
 
-Si aparece "Sin acceso": el email entró por Access pero no está en `ADMIN_EMAILS` ni `EDITOR_EMAILS`; pedir a Diego que lo añada ([19-deployment](./19-deployment.md) §12.6).
+Si aparece "Sin acceso": el email y la contraseña son correctos pero el email no está en `ADMIN_EMAILS` ni `EDITOR_EMAILS`; pedir a Diego que lo añada ([19-deployment](./19-deployment.md) §12.6).
 
 ### 0.2 Cambiar un precio (Diego y Wiliam)
 
@@ -50,7 +50,7 @@ Cada guardado es un commit en GitHub con el mensaje `chore(catalog): actualizar 
 
 ### 0.8 Accesos
 
-La sección **Accesos** del panel muestra "Administradores", "Editores" y la "Rama de escritura" (normalmente `main`); en desarrollo aparece además la insignia "Modo local" y el selector "Simular como…" para probar la vista de cada rol. Para cambiar los accesos, Diego edita en Cloudflare la política de Access (emails que pueden entrar) y las variables `ADMIN_EMAILS` / `EDITOR_EMAILS` del proyecto de Pages, y relanza el build ([19-deployment](./19-deployment.md) §12.6).
+La sección **Accesos** del panel muestra "Administradores", "Editores" y la "Rama de escritura" (normalmente `main`); en desarrollo aparece además la insignia "Modo local" y el selector "Simular como…" para probar la vista de cada rol. Para cambiar los accesos, Diego edita las variables `ADMIN_EMAILS` / `EDITOR_EMAILS` y `ADMIN_INITIAL_PASSWORDS` del proyecto de Pages (y la política de Access, si está activado) y relanza el build ([19-deployment](./19-deployment.md) §12.2 y §12.6). El editor solo ve su propio email en esta sección.
 
 ---
 

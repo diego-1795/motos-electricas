@@ -20,30 +20,25 @@ Raiden en MVP es un sitio estático sin backend propio, sin cuentas de usuario y
 
 ## 2. Cabeceras de seguridad (`public/_headers`)
 
-Formato Cloudflare Pages/Netlify. La CSP permite el script inline mínimo que Astro genera para islas mediante `'unsafe-inline'` solo en estilos (los `style` inline de `inlineStylesheets`), no en scripts: Astro emite los scripts de islas como módulos externos en `/_astro/`, por lo que `script-src 'self'` basta. El beacon de Cloudflare Web Analytics se incluye únicamente si está activado.
+**Fuente de verdad: [`public/_headers`](../public/_headers)** (formato Cloudflare Pages/Netlify), replicado byte a byte en [`vercel.json`](../vercel.json). Este documento no copia la política literal (la auditoría del 2026-11-08 encontró tres versiones distintas en los docs): aquí solo se explica cada directiva. La CI comprueba en cada build que todo script inline de `dist/` tiene su hash en la CSP (paso "CSP: hashes de scripts inline" de `ci.yml`).
 
-```
-/*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me https://api.whatsapp.com; upgrade-insecure-requests
-  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  X-Content-Type-Options: nosniff
-  X-Frame-Options: DENY
-  Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
-  Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Resource-Policy: same-origin
-  X-Permitted-Cross-Domain-Policies: none
+| Directiva / cabecera | Valor en `_headers` | Por qué |
+|---|---|---|
+| `script-src` | `'self'` + 10 hashes `sha256-…` + `'wasm-unsafe-eval'` + `https://static.cloudflareinsights.com` | Sin `'unsafe-inline'`. Astro inlina el runtime de islas (4 scripts) y los `<script>` pequeños de 6 componentes: se autorizan por hash y cambian al actualizar Astro o editar esos componentes (la CI imprime los hashes nuevos). `wasm-unsafe-eval`: Pagefind compila WebAssembly. El beacon de Cloudflare solo se carga si `PUBLIC_CF_BEACON_TOKEN` está definido. |
+| `style-src` | `'self' 'unsafe-inline'` | Estilos scoped de Astro (`inlineStylesheets: 'auto'`) e islas Preact. |
+| `img-src` / `font-src` | `'self' data:` / `'self'` | Imágenes y fuentes self-hosted. |
+| `connect-src` | `'self' https://cloudflareinsights.com` | Solo el propio origen (y el beacon si está activo). |
+| `frame-src` | `https://www.youtube-nocookie.com` | Facade de vídeo de la ficha: el iframe se crea solo al pulsar reproducir. |
+| `frame-ancestors` / `X-Frame-Options` | `'none'` / `DENY` | Anti clickjacking. |
+| `object-src`, `base-uri`, `manifest-src`, `worker-src` | `'none'`, `'self'`, `'self'`, `'self'` | Cierre por defecto. |
+| `form-action` | `'self' https://wa.me` | Por si el carrito pasara a `<form action>`. Los enlaces `wa.me` son navegaciones `<a href>` y no dependen de la CSP. |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains; preload` | `preload` solo tras verificar que todos los subdominios sirven HTTPS. |
+| `Referrer-Policy`, `Permissions-Policy`, `COOP`, `CORP`, `X-Content-Type-Options`, `X-Permitted-Cross-Domain-Policies` | ver fichero | Endurecimiento estándar. |
+| `/admin`, `/admin/*` | CSP propia (`connect-src 'self'`, `frame-src 'none'`, solo los 4 hashes del runtime), `X-Robots-Tag: noindex`, `Cache-Control: no-store` | Panel de administración (ADR-018). |
+| `/docs/*` | `Content-Disposition: attachment`, `nosniff` | Los PDF subidos desde el panel se descargan en vez de abrirse en el visor dentro del origen del sitio. |
+| `/_astro/*` | `Cache-Control: public, max-age=31536000, immutable` | Activos con hash en el nombre. |
 
-/_astro/*
-  Cache-Control: public, max-age=31536000, immutable
-```
-
-Notas:
-- Los enlaces `wa.me` son navegaciones `<a href>`, no afectadas por `connect-src`; `form-action` se incluye por si en el futuro el carrito usa `<form action>`.
-- Si un script inline resulta imprescindible (p. ej. tema oscuro anti-flash), se usa `sha256-…` calculado en build, nunca `'unsafe-inline'` en `script-src`.
-- Si se desactiva Cloudflare Web Analytics, se eliminan los dos orígenes `cloudflareinsights`.
-- HSTS `preload` solo tras verificar que todos los subdominios sirven HTTPS.
-- Equivalente Vercel (`vercel.json` → `headers`) en [20-migration](./20-migration.md). Se prueba con securityheaders.com y Mozilla Observatory antes de cada release.
+Se prueba con securityheaders.com y Mozilla Observatory antes de cada release. Cualquier cambio de CSP: Security + Tech Lead ([agents/security.md](../agents/security.md)).
 
 ## 3. Variables de entorno
 
@@ -107,14 +102,17 @@ Clave `raiden:cart:v1` contiene solo `{ version, items: [{productId, variantId, 
 - **CAPTCHA**: Cloudflare Turnstile (gratuito, sin cookies de rastreo) en formularios con escritura en backend. Añadir `https://challenges.cloudflare.com` a `script-src` y `frame-src` solo entonces.
 - **Admin sobre Supabase**: Auth, MFA, sesiones cortas, RLS por rol ([17-admin-panel](./17-admin-panel.md) §3), solo si el catálogo crece.
 
-## 8b. Panel de administración `/admin` (ADR-018)
+## 8b. Panel de administración `/admin` (ADR-018, ADR-024)
 
-- **Perímetro:** Cloudflare Access (Zero Trust) delante de `/admin` y `/api/admin/*`; política "Allow" con la lista de emails permitidos y login por código de un solo uso. Sin sesión de Access, Cloudflare ni siquiera entrega el HTML.
-- **Verificación en servidor:** las Pages Functions validan el JWT `Cf-Access-Jwt-Assertion` (firma RS256 contra el JWKS del equipo, `aud`, `iss`, `exp`) y resuelven el rol con `ADMIN_EMAILS`/`EDITOR_EMAILS`. La interfaz no decide nada: un editor que llame a `PUT`/`DELETE` o envíe un `PATCH` con campos fuera de precio/`hidden` recibe 403/422.
-- **Secretos:** `GITHUB_TOKEN` (token *fine-grained*, permiso *Contents* solo sobre el repositorio) y, opcional, `CF_API_TOKEN` (solo lectura de deployments) viven en las variables de Pages marcadas como secreto. Nunca en `src/`, `PUBLIC_*`, `.env.example` ni en logs (las Functions no registran cabeceras ni tokens). La CI sigue comprobando que `dist/` no contiene secretos.
+- **Identidad (ADR-024):** email + contraseña contra las Pages Functions. Contraseñas en PBKDF2-SHA256 (100 000 iteraciones, sal aleatoria) guardadas en el KV `ADMIN_KV`; la temporal que asigna el administrador va ya en hash en `ADMIN_INITIAL_PASSWORDS` y hay que cambiarla en la primera entrada. Sesión en cookie `raiden_admin` firmada con HMAC-SHA256 (`SESSION_SECRET`), `HttpOnly`, `SameSite=Strict`, `Secure`, `Path=/api/admin`, 12 h; lleva la versión de la contraseña, así que cambiarla invalida las demás sesiones. Bloqueo tras 5 fallos por cuenta / 20 por IP durante 15 min (423); mismo mensaje y mismo coste para email desconocido y contraseña incorrecta.
+- **CSRF:** cookie `SameSite=Strict` + `Origin` igual al propio origen en toda petición con efectos (403) + `Content-Type: application/json` obligatorio (415).
+- **Perímetro opcional:** Cloudflare Access (Zero Trust) delante de `/admin` y `/api/admin/*`. Si `CF_ACCESS_TEAM_DOMAIN`/`CF_ACCESS_AUD` están definidos, las Functions exigen además el JWT `Cf-Access-Jwt-Assertion` (firma RS256 contra el JWKS del equipo, `aud`, `iss`, `exp`) y que su email coincida con el de la sesión.
+- **Rol en servidor:** `ADMIN_EMAILS`/`EDITOR_EMAILS`; sin rol no se emite cookie. La interfaz no decide nada: un editor que llame a `PUT`/`DELETE` o envíe un `PATCH` con campos fuera de precio/`hidden` recibe 403/422. El editor no recibe la lista de administradores en `/me`.
+- **Secretos:** `SESSION_SECRET`, `GITHUB_TOKEN` (token *fine-grained*, permiso *Contents* solo sobre el repositorio) y, opcional, `CF_API_TOKEN` (solo lectura de deployments) viven en las variables de Pages marcadas como secreto. Nunca en `src/`, `PUBLIC_*`, `.env.example` ni en logs (las Functions no registran cabeceras ni tokens). La CI sigue comprobando que `dist/` no contiene secretos.
 - **Validación:** todo lo que se escribe pasa por `src/content/schemas.ts` (`strict`, sin claves desconocidas) y `src/domain/catalogRules.ts`; el `sha` del fichero evita sobrescrituras ciegas (409).
 - **Cabeceras:** `public/_headers` da a `/admin` una CSP propia (`default-src 'self'`, `connect-src 'self'`, sin terceros, `frame-src 'none'`), `X-Robots-Tag: noindex` y `Cache-Control: no-store`; `/api/admin/*` también `no-store`.
-- **Modo local:** la identidad simulada (`ADMIN_LOCAL_USER`) solo se acepta si el host de la petición es `localhost` y `NODE_ENV` no es `production`; nunca se define en Pages.
+- **Modo local:** la identidad simulada (`ADMIN_LOCAL_USER`) solo se acepta si el host de la petición es `localhost` y `NODE_ENV` no es `production`; nunca se define en Pages y en `.dev.vars` va comentada por defecto (el login real funciona en local con el KV de wrangler).
+- **Blog:** el cuerpo Markdown no admite etiquetas HTML crudas (`<script>`, `<iframe>`, `<meta>`, `<style>`, `<form>`…) ni enlaces `javascript:`/`data:`; lo comprueban `blogRules` (panel) y `validate:content` (CI). Los PDF de `/docs/*` se sirven con `Content-Disposition: attachment`.
 - **Auditoría:** el historial de git (`chore(catalog): <acción> <slug> por <email>` + motivo) es el registro; GitHub conserva autor, fecha y diff.
 
 ## 9. Cumplimiento legal en Perú (Ley N.º 29733 e INDECOPI)

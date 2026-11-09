@@ -34,7 +34,8 @@ function collectJs(file, acc) {
 
 let failed = false;
 for (const [route, b] of Object.entries(BUDGETS)) {
-  const html = join(DIST, route === '/' ? 'index.html' : `${route}/index.html`);
+  // build.format 'file' (astro.config.mjs): /productos → dist/productos.html; la raíz sigue siendo index.html
+  const html = join(DIST, route === '/' ? 'index.html' : `${route}.html`);
   const doc = readFileSync(html, 'utf8');
   seen.clear();
   const js = new Set();

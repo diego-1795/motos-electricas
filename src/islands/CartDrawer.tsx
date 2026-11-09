@@ -85,7 +85,7 @@ export default function CartDrawer() {
                       {[i.variantName, i.colorName].filter(Boolean).join(' · ')}
                     </small>
                     <div class="cd__row">
-                      <div class="stepper" aria-label={`Cantidad de ${i.name}`}>
+                      <div class="stepper" role="group" aria-label={`Cantidad de ${i.name}`}>
                         <button type="button" onClick={() => setQuantity(i.key, i.quantity - 1)} aria-label="Reducir cantidad">
                           −
                         </button>

@@ -6,6 +6,25 @@ const scrollLeft = (page: Page) => page.locator('[data-track]').evaluate((el) =>
 const slideOffset = (page: Page, i: number) => page.locator('[data-slide]').nth(i).evaluate((el) => (el as HTMLElement).offsetLeft);
 
 test.describe('Portada: hero slider', () => {
+  test('el carrusel se puede pausar y reanudar con un botón (WCAG 2.2.2); en pausa no avanza solo', async ({ page }) => {
+    await page.goto('/');
+    const pause = page.locator('[data-pause]');
+    await expect(pause).toBeVisible();
+    await expect(pause).toHaveAttribute('aria-pressed', 'false');
+    await expect(pause).toHaveAccessibleName('Pausar el carrusel');
+    await pause.click();
+    await expect(pause).toHaveAttribute('aria-pressed', 'true');
+    await expect(pause).toHaveAccessibleName('Reanudar el carrusel');
+    await expect(page.locator('[data-slider]')).toHaveClass(/is-user-paused/);
+    // Sin interacción con el carrusel (ratón fuera) la diapositiva activa no cambia
+    await page.mouse.move(5, 5);
+    await page.waitForTimeout(6500);
+    await expect(dot(page, 0)).toHaveAttribute('aria-selected', 'true');
+    await pause.click();
+    await expect(pause).toHaveAttribute('aria-pressed', 'false');
+    await expect(pause).toHaveAccessibleName('Pausar el carrusel');
+  });
+
   test('4 diapositivas, un solo h1, flechas y puntos cambian la activa', async ({ page }) => {
     await page.goto('/');
     const slides = page.locator('[data-slide]');

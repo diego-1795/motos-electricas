@@ -40,16 +40,24 @@ describe('assertSlug', () => {
 });
 
 describe('readJsonBody', () => {
-  const req = (body: string | null, headers: Record<string, string> = {}) => new Request('https://x.test/api/admin/products/a', { method: 'PATCH', body, headers });
+  const req = (body: string | null, headers: Record<string, string> = { 'Content-Type': 'application/json' }) => new Request('https://x.test/api/admin/products/a', { method: 'PATCH', body, headers });
   const rejects = async (r: Request): Promise<HttpError> => {
     const e = await readJsonBody(r).then(() => null, (err: unknown) => err);
     expect(e).toBeInstanceOf(HttpError);
     return e as HttpError;
   };
 
-  it('objeto JSON → objeto; sin Content-Type también se acepta', async () => {
-    await expect(readJsonBody(req('{"sha":"a","hidden":true}'))).resolves.toEqual({ sha: 'a', hidden: true });
-    await expect(readJsonBody(req(' {"a":1} ', { 'Content-Type': 'text/plain' }))).resolves.toEqual({ a: 1 });
+  it('objeto JSON con Content-Type application/json (con o sin charset) → objeto', async () => {
+    await expect(readJsonBody(req('{"sha":"a","hidden":true}', { 'Content-Type': 'application/json' }))).resolves.toEqual({ sha: 'a', hidden: true });
+    await expect(readJsonBody(req(' {"a":1} ', { 'Content-Type': 'application/json; charset=utf-8' }))).resolves.toEqual({ a: 1 });
+    await expect(readJsonBody(req('{"a":1}', { 'Content-Type': 'Application/JSON' }))).resolves.toEqual({ a: 1 });
+  });
+
+  it('sin Content-Type, text/plain o x-www-form-urlencoded → 415 aunque el cuerpo sea JSON válido (anti CSRF por formulario)', async () => {
+    expect((await rejects(req('{"a":1}', {}))).status).toBe(415);
+    expect((await rejects(req('{"a":1}', { 'Content-Type': 'text/plain' }))).status).toBe(415);
+    expect((await rejects(req('{"a":1}', { 'Content-Type': 'application/x-www-form-urlencoded' }))).status).toBe(415);
+    expect((await rejects(req('{"a":1}', { 'Content-Type': 'application/jsonx' }))).status).toBe(415);
   });
 
   it('vacío, JSON inválido, array, string o null → 400', async () => {
@@ -69,7 +77,7 @@ describe('readJsonBody', () => {
     expect(real.code).toBe('bad_request');
     // Content-Length declarado grande: se corta antes de leer
     const r = req('{"a":1}');
-    Object.defineProperty(r, 'headers', { value: new Headers({ 'Content-Length': String(MAX_BODY_BYTES + 1) }) });
+    Object.defineProperty(r, 'headers', { value: new Headers({ 'Content-Type': 'application/json', 'Content-Length': String(MAX_BODY_BYTES + 1) }) });
     const text = vi.spyOn(r, 'text');
     expect((await rejects(r)).status).toBe(413);
     expect(text).not.toHaveBeenCalled();
@@ -126,7 +134,7 @@ describe('entryRoutes: orden de comprobaciones', () => {
 
   it('editor → PUT y DELETE responden 403 antes de leer el cuerpo y sin necesitar GITHUB_TOKEN', async () => {
     for (const handler of [routes.onRequestPut, routes.onRequestDelete]) {
-      const request = new Request('https://x.test/api/admin/products/golden-eagle', { method: 'PUT', body: '{"sha":"a","data":{}}' });
+      const request = new Request('https://x.test/api/admin/products/golden-eagle', { method: 'PUT', body: '{"sha":"a","data":{}}', headers: { 'Content-Type': 'application/json' } });
       const text = vi.spyOn(request, 'text');
       const res = await handler(ctx(request, editor, 'golden-eagle', {}));
       expect(res.status).toBe(403);
@@ -140,7 +148,7 @@ describe('entryRoutes: orden de comprobaciones', () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
     for (const slug of ['../secrets', 'a/b', 'Golden', 'x'.repeat(MAX_SLUG_LENGTH + 1)]) {
-      const request = new Request('https://x.test/api/admin/products/x', { method: 'PATCH', body: '{"sha":"a"}' });
+      const request = new Request('https://x.test/api/admin/products/x', { method: 'PATCH', body: '{"sha":"a"}', headers: { 'Content-Type': 'application/json' } });
       const text = vi.spyOn(request, 'text');
       const res = await routes.onRequestPatch(ctx(request, admin, slug, { GITHUB_TOKEN: 't' }));
       expect(res.status, slug).toBe(400);
@@ -153,9 +161,9 @@ describe('entryRoutes: orden de comprobaciones', () => {
   it('cuerpo no JSON → 400 sin tocar GitHub; sin GITHUB_TOKEN → 500 de configuración (tras validar el cuerpo)', async () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
-    const bad = new Request('https://x.test/api/admin/products/golden-eagle', { method: 'PATCH', body: 'no-json' });
+    const bad = new Request('https://x.test/api/admin/products/golden-eagle', { method: 'PATCH', body: 'no-json', headers: { 'Content-Type': 'application/json' } });
     expect((await routes.onRequestPatch(ctx(bad, editor, 'golden-eagle', { GITHUB_TOKEN: 't' }))).status).toBe(400);
-    const ok = new Request('https://x.test/api/admin/products/golden-eagle', { method: 'PATCH', body: '{"sha":"a"}' });
+    const ok = new Request('https://x.test/api/admin/products/golden-eagle', { method: 'PATCH', body: '{"sha":"a"}', headers: { 'Content-Type': 'application/json' } });
     const res = await routes.onRequestPatch(ctx(ok, editor, 'golden-eagle', {}));
     expect(res.status).toBe(500);
     await expect(res.json()).resolves.toMatchObject({ code: 'config' });

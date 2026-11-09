@@ -55,7 +55,7 @@ export default function CartPage() {
                 <small class="muted">{formatMoney(i.unitPrice)} / ud.</small>
               </div>
               <div class="cp__controls">
-                <div class="stepper" aria-label={`Cantidad de ${i.name}`}>
+                <div class="stepper" role="group" aria-label={`Cantidad de ${i.name}`}>
                   <button type="button" onClick={() => setQuantity(i.key, i.quantity - 1)} aria-label="Reducir cantidad">
                     −
                   </button>

@@ -35,6 +35,11 @@ export const site = {
    * Las fichas llevan su propio `specs.warrantyMonths`; un test comprueba que coinciden.
    */
   warrantyMonths: 6,
+  /**
+   * Fecha (ISO) del lanzamiento del canal de video anunciado por el cliente. Las fichas sin `videoUrl`
+   * la muestran como "Lanzamiento oficial el …" hasta ese día y "Próximamente" después (sin fechas caducadas a mano).
+   */
+  videoLaunchDate: '2026-12-01',
   /** Máximo de modelos en el comparador */
   compareLimit: 3,
   /** Máximo de unidades por línea de carrito */

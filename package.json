@@ -21,7 +21,8 @@
     "validate:content": "node scripts/validate-content.mjs",
     "check:jsonld": "node scripts/check-jsonld.mjs",
     "check:functions": "tsc -p functions/tsconfig.json",
-    "admin:dev": "wrangler pages dev dist --port 8788 --compatibility-date=2026-10-01"
+    "admin:dev": "wrangler pages dev dist --port 8788 --compatibility-date=2026-10-01 --kv ADMIN_KV",
+    "admin:password": "node scripts/admin-password.mjs"
   },
   "dependencies": {
     "@astrojs/preact": "^6.1.1",

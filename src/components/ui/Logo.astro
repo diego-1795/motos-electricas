@@ -10,6 +10,8 @@
  *                        Solo el pie de página lo usa (excepción al logo azul aceptada por el cliente, 2026-11-04);
  *                        cabecera y resto del sitio van en azul sobre claro.
  * - height             → altura en px (28–32 en header; 40–48 en footer)
+ * - priority           → sobre el pliegue (cabecera): carga inmediata. El resto (pie) va lazy para no competir
+ *                        con la imagen LCP (docs/09-performance.md §: eager+high solo en el LCP).
  */
 import { Image } from 'astro:assets';
 import { site } from '../../config/site';
@@ -22,24 +24,16 @@ interface Props {
   variant?: 'full' | 'wordmark' | 'mark';
   invert?: boolean;
   height?: number;
+  priority?: boolean;
 }
 
-const { variant = 'full', invert = false, height = 32 } = Astro.props;
+const { variant = 'full', invert = false, height = 32, priority = false } = Astro.props;
 const src = variant === 'mark' ? logoMark : variant === 'wordmark' ? logoWordmark : logoFull;
 const width = Math.round((height * src.width) / src.height);
 ---
 
 <span class:list={['logo', `logo--${variant}`, { 'logo--invert': invert }, Astro.props.class]} style={`--logo-h: ${height}px`}>
-  <Image
-    src={src}
-    alt={site.name}
-    width={width}
-    height={height}
-    densities={[1, 2, 3]}
-    loading="eager"
-    decoding="async"
-    fetchpriority="high"
-  />
+  <Image src={src} alt={site.name} width={width} height={height} densities={[1, 2, 3]} loading={priority ? 'eager' : 'lazy'} decoding="async" fetchpriority={priority ? 'auto' : 'low'} />
 </span>
 
 <style>

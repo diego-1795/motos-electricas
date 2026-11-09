@@ -8,7 +8,8 @@ test.describe('Cabecera: desplegable Productos (escritorio)', () => {
     const btn = page.locator('[data-dropdown-btn]');
     const panel = page.locator('[data-dropdown-panel]');
     await expect(btn).toHaveAttribute('aria-expanded', 'false');
-    await expect(btn).toHaveAttribute('aria-haspopup', 'true');
+    // Es un "disclosure" de navegación (Tab entre enlaces), no un menú ARIA: sin aria-haspopup (anunciaría navegación con flechas)
+    await expect(btn).not.toHaveAttribute('aria-haspopup');
     await expect(btn).toHaveAttribute('aria-controls', 'nav-productos');
     await expect(panel).toBeHidden();
 

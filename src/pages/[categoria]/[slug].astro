@@ -17,7 +17,7 @@ import { featureGroups, specTable, specTiles, variantSpecs } from '../../domain/
 import { formatMoney } from '../../domain/money';
 import { publicSrc, resolveImage } from '../../lib/images';
 import { breadcrumbSchema, faqSchema, productSchema } from '../../lib/seo/jsonld';
-import { canonical } from '../../lib/seo/meta';
+import { absolute, canonical } from '../../lib/seo/meta';
 import { categoryPath, COMPARE_PATH, PARTS_PATH, partPath, productPath } from '../../lib/routes';
 import { formatMoney as fm } from '../../domain/money';
 
@@ -41,7 +41,7 @@ const crumbs = [
   { name: category?.name ?? 'Productos', url: category ? categoryPath(category.slug) : '/productos' },
   { name: p.name, url: path },
 ];
-const imageUrls = p.images.map((i) => `${Astro.site?.origin ?? ''}${publicSrc(i)}`);
+const imageUrls = p.images.map((i) => absolute(publicSrc(i)));
 const avail = productAvailability(p);
 
 /* Galería = fotos por color. Primera imagen SSR (LCP); el resto se cambia desde la isla. */

@@ -26,8 +26,9 @@ export default function AccessPanel({ onSimulate }: Props) {
         </div>
       </div>
       <p class="hint">
-        Los accesos se cambian en Cloudflare: Access → política de la aplicación (emails que pueden entrar) y variables <code>ADMIN_EMAILS</code> /{' '}
-        <code>EDITOR_EMAILS</code> del proyecto de Pages. Rama de escritura: <code>{user.branch}</code>.
+        Cada persona entra con su email y su contraseña (la cambia desde "Cambiar contraseña" cuando quiera). Quién es administrador o editor se decide en las
+        variables <code>ADMIN_EMAILS</code> / <code>EDITOR_EMAILS</code> del proyecto de Cloudflare Pages; una contraseña temporal nueva la asigna Diego (
+        <code>ADMIN_INITIAL_PASSWORDS</code>). Rama de escritura: <code>{user.branch}</code>.
       </p>
       {user.localMode && (
         <div class="adm-access__local">

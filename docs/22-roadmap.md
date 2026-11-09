@@ -34,7 +34,7 @@ Prioridad: P1 (siguiente trimestre), P2 (cuando haya volumen), P3 (expansión).
 | Iniciativa | Prioridad | Prerequisitos | Descripción breve |
 |---|---|---|---|
 | Supabase como origen de datos | P1 | Fase 12; ruta c de [20-migration](./20-migration.md) | Catálogo en Postgres con doble lectura y test de paridad |
-| Admin | Hecho (ligero sobre git, ADR-018) | Fase 16 (Pages + Access) | Precios, ocultar, CRUD de fichas vía API de GitHub. Pendiente opcional: subida de imágenes; Supabase solo si el catálogo crece; ver [17-admin-panel](./17-admin-panel.md) |
+| Admin | Hecho (ligero sobre git, ADR-018; login por contraseña, ADR-024) | Fase 16 (Pages + KV) | Precios, ocultar, CRUD de fichas vía API de GitHub. Pendiente opcional: subida de imágenes; Supabase solo si el catálogo crece; ver [17-admin-panel](./17-admin-panel.md) |
 | Stock y disponibilidad | P1 | Admin | Campo `stock` por variante, badge "Disponible / Bajo pedido", ficha con `prerender = false` solo si se exige tiempo real |
 | CRM ligero | P1 | Supabase | Tablas `customers`, `order_requests`, `whatsapp_requests`; estado del pedido; registro manual desde admin |
 | Usuarios | P2 | Supabase Auth | Cuenta opcional para guardar carrito y ver solicitudes; nunca obligatoria para pedir |
@@ -58,7 +58,7 @@ Prioridad: P1 (siguiente trimestre), P2 (cuando haya volumen), P3 (expansión).
 | H4 — Listo para indexar | Fases 10–12 | 7 | Search Console sin errores en preview |
 | H5 — Producción | Fases 13–16 | 9 | Checklist post-deploy completa; dominio público |
 | H6 — Datos en Supabase | Post-MVP P1 | +6 | Paridad JSON/Supabase dos semanas |
-| H7 — Admin operativo | Hecho en código (ADR-018, 2026-10-24): panel `/admin` ligero sobre git; operativo al completar la fase 16 | — | Wiliam cambia precios y oculta fichas sin git; Diego crea/edita/borra |
+| H7 — Admin operativo | Hecho en código (ADR-018, 2026-10-24; ADR-024, 2026-11-08: login propio por contraseña, ya probable en local); operativo en producción al completar la fase 16 | — | Wiliam cambia precios y oculta fichas sin git; Diego crea/edita/borra |
 
 ## 4. Riesgos
 
