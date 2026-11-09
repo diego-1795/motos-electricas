@@ -71,7 +71,7 @@ Roles del equipo con responsabilidades, límites y criterios de aceptación. El 
 | Estado | nanostores ^1.5 + `@nanostores/persistent` (`raiden:cart:v1`) |
 | SEO | `@astrojs/sitemap` (excluye `/carrito` y `/comparar`) |
 | Tests | Vitest ^4, Playwright ^1.62 |
-| Node | >= 22.12 |
+| Node | >= 22.23.4 |
 | Hosting MVP | Cloudflare Pages (free) |
 | Datos MVP | JSON en `src/content/` (git como CMS) |
 | Datos futuros | Supabase Postgres + Auth + RLS |

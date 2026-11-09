@@ -29,7 +29,7 @@ Creación desde el dashboard (Workers & Pages → Create → Pages → Connect t
 | Build command | `npm run build` |
 | Build output directory | `dist` |
 | Root directory | `/` |
-| Node version | 22 (variable `NODE_VERSION=22.12.0`) |
+| Node version | 22 (variable `NODE_VERSION=22.23.4`) |
 | Build system | v3 |
 
 El preset Astro de Cloudflare ejecuta `npm ci` automáticamente cuando existe `package-lock.json`. El lockfile se versiona siempre.
@@ -40,7 +40,7 @@ Solo se exponen variables con prefijo `PUBLIC_`; no existen secretos en el front
 
 | Variable | Producción | Preview | Uso |
 |---|---|---|---|
-| `NODE_VERSION` | `22.12.0` | `22.12.0` | Versión de Node en el builder |
+| `NODE_VERSION` | `22.23.4` | `22.23.4` | Versión de Node en el builder |
 | `PUBLIC_SITE_URL` | `https://raiden.pe` | `https://raiden-preview.pages.dev` | `site` de Astro: canonicals, sitemap, JSON-LD |
 | `PUBLIC_WHATSAPP_NUMBER` | Número real E.164 sin `+` | Número de pruebas del equipo | `src/config/site.ts` |
 | `PUBLIC_ANALYTICS_ADAPTER` | `cloudflare` o `noop` | `console` | Selección de adaptador de `AnalyticsService` |

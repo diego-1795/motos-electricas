@@ -6,7 +6,7 @@ Responsable del pipeline, el despliegue y la operación de Raiden con coste cero
 
 ## Responsabilidades
 
-- Configurar GitHub Actions: instalación con Node ≥ 22.12, `astro check`, Vitest, build, Playwright con axe-core y Lighthouse CI en cada PR.
+- Configurar GitHub Actions: instalación con Node ≥ 22.23.4, `astro check`, Vitest, build, Playwright con axe-core y Lighthouse CI en cada PR.
 - Configurar Cloudflare Pages: build `astro build`, directorio `dist`, variables `PUBLIC_SITE_URL` y `PUBLIC_WHATSAPP_NUMBER` por entorno (producción y preview), Node 22.
 - Desplegar `public/_headers` (cabeceras de seguridad y caché) y `public/_redirects` (301 por cambio de slug) y documentar su equivalente en `vercel.json`.
 - Gestionar dominio, DNS y certificado TLS en Cloudflare; forzar HTTPS.
@@ -78,7 +78,7 @@ Ejemplo de paso de CI:
 - [ ] Lighthouse CI ejecutado contra la URL de preview.
 - [ ] Documentación de despliegue y rollback actualizada.
 - [ ] Cambio específico de Cloudflare revisado por Tech Lead y reflejado en [20-migration](../docs/20-migration.md).
-- [ ] `package-lock.json` coherente y Node ≥ 22.12 en CI.
+- [ ] `package-lock.json` coherente y Node ≥ 22.23.4 en CI.
 
 ## Decisiones que puede tomar
 

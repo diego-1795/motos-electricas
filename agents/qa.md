@@ -73,7 +73,7 @@ expect(decodeURIComponent(href!.split('text=')[1])).toContain('Total estimado');
 - [ ] Fixtures sin datos reales ni teléfonos reales.
 - [ ] Tests deterministas: sin `waitForTimeout`, con esperas por estado.
 - [ ] Defectos reportados con pasos, viewport y captura.
-- [ ] Suite ejecutable en local con Node ≥ 22.12 sin servicios externos.
+- [ ] Suite ejecutable en local con Node ≥ 22.23.4 sin servicios externos.
 
 ## Decisiones que puede tomar
 

@@ -78,7 +78,7 @@ Netlify lee `public/_headers` y `public/_redirects` con el mismo formato que Clo
   command = "npm run build"
   publish = "dist"
 [build.environment]
-  NODE_VERSION = "22.12.0"
+  NODE_VERSION = "22.23.4"
 ```
 
 ### Nginx

@@ -29,7 +29,7 @@ Flujo resultante: `push` a rama → Cloudflare construye preview y comenta la UR
 | Build command | `npm run build` |
 | Build output directory | `dist` |
 | Root directory | `/` |
-| Node version | `NODE_VERSION=22.12.0` (variable de entorno) |
+| Node version | `NODE_VERSION=22.23.4` (variable de entorno) |
 | Install command | `npm ci` (por defecto) |
 
 `npm run build` ejecuta `astro check && astro build`. Si `astro check` falla, no hay despliegue.
@@ -38,7 +38,7 @@ Flujo resultante: `push` a rama → Cloudflare construye preview y comenta la UR
 
 | Variable | Production | Preview | Uso |
 |---|---|---|---|
-| `NODE_VERSION` | `22.12.0` | `22.12.0` | Runtime de build |
+| `NODE_VERSION` | `22.23.4` | `22.23.4` | Runtime de build |
 | `PUBLIC_SITE_URL` | `https://raiden.pe` (o dominio final) | `https://preview.raiden.pe` | `site` en `astro.config.mjs`, canonicals, sitemap |
 | `PUBLIC_WHATSAPP_NUMBER` | Número real de ventas | Número de pruebas del equipo | `src/config/site.ts` |
 | `PUBLIC_ANALYTICS_PROVIDER` | `cloudflare` (o `noop`) | `console` | [18-analytics](./18-analytics.md) |
@@ -111,13 +111,13 @@ Porque el artefacto es `dist/`, cambiar de hosting es configuración, no código
 - Versionado semántico en `package.json`; cada despliegue a producción corresponde a un tag `vX.Y.Z` en `main`.
 - `CHANGELOG.md` con secciones Added/Changed/Fixed; se actualiza en la PR que introduce el cambio.
 - Dependencias: `npm ci` con `package-lock.json` commiteado; actualizaciones de Astro y Preact en PR propia con Lighthouse CI en verde.
-- Node fijado con `NODE_VERSION` y `.nvmrc` (`22.12.0`) para que local, CI y Pages coincidan.
+- Node fijado con `NODE_VERSION` y `.nvmrc` (`22.23.4`) para que local, CI y Pages coincidan.
 
 ## 11. Runbook
 
 | Situación | Acción |
 |---|---|
-| Build falla en Pages | Abrir el log; reproducir con `npm ci && npm run build` en local con Node 22.12. Causa habitual: `astro check` o variable ausente |
+| Build falla en Pages | Abrir el log; reproducir con `npm ci && npm run build` en local con Node 22.23.4. Causa habitual: `astro check` o variable ausente |
 | Sitio caído tras deploy | Rollback (sección 8); después investigar en la preview |
 | Enlace WhatsApp abre número incorrecto | Comprobar `PUBLIC_WHATSAPP_NUMBER` del entorno; relanzar build. No hay números en código |
 | Cabeceras ausentes | Verificar que `public/_headers` está en `dist/_headers`; `_headers` no admite comodines anidados mal formados: validar con `npx wrangler pages dev dist` |
@@ -189,7 +189,13 @@ cp .dev.vars.example .dev.vars   # rellenar SESSION_SECRET, ADMIN_INITIAL_PASSWO
 npm run build && npm run admin:dev   # http://localhost:8788/admin
 ```
 
-`wrangler pages dev dist --kv ADMIN_KV` sirve el build estático, las Functions de `functions/` y un KV local (persistido en `.wrangler/state`, ignorado por git): el login por contraseña funciona igual que en producción. Para desarrollar la interfaz sin contraseña, descomentar `ADMIN_LOCAL_USER` (solo cuenta en `localhost`; cabecera `x-admin-local-user` para probar el rol editor desde el propio panel). Las escrituras van a la rama `GITHUB_BRANCH` indicada: crear antes `admin-sandbox` desde `main` para no lanzar builds de producción desde el portátil. Sin `GITHUB_TOKEN` el panel carga pero el catálogo devuelve 500 de configuración.
+`wrangler pages dev dist --kv ADMIN_KV` sirve el build estático, las Functions de `functions/` y un KV local (persistido en `.wrangler/state`, ignorado por git): el login por contraseña funciona igual que en producción. Para desarrollar la interfaz sin contraseña, descomentar `ADMIN_LOCAL_USER` (solo cuenta en `localhost`; cabecera `x-admin-local-user` para probar el rol editor desde el propio panel). Las escrituras van a la rama `GITHUB_BRANCH` indicada: crear antes `admin-sandbox` desde `main` para no lanzar builds de producción desde el portátil. Sin `GITHUB_TOKEN` el login funciona pero el catálogo devuelve 500 de configuración.
+
+Para volver a probar la contraseña temporal en local (o "resetear" un usuario), con el servidor parado:
+
+```bash
+npx wrangler kv key delete "user:<email>" --namespace-id ADMIN_KV --local
+```
 
 ### 12.6 Operación
 

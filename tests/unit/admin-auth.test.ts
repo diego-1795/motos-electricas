@@ -323,7 +323,9 @@ describe('rutas /auth/* y middleware (integración)', () => {
     expect((await mw).status).toBe(200); // el middleware deja pasar /auth/password con la temporal
     const changed = await route(passwordRoute, postJson(`${ORIGIN}/api/admin/auth/password`, { currentPassword: TEMP, newPassword: 'mi moto azul vuela 2026' }, headers), env, data);
     expect(changed.status).toBe(200);
-    expect(await changed.json()).toEqual({ email: WILIAM, role: 'editor', admins: [DIEGO], editors: [WILIAM], localMode: false, branch: 'main' });
+    // La respuesta al editor nunca lleva la lista de administradores (tampoco la del login)
+    expect(await login.json()).toEqual({ email: WILIAM, role: 'editor', admins: [], editors: [WILIAM], localMode: false, branch: 'main', mustChangePassword: true });
+    expect(await changed.json()).toEqual({ email: WILIAM, role: 'editor', admins: [], editors: [WILIAM], localMode: false, branch: 'main' });
     const cookie2 = changed.headers.get('Set-Cookie')!.split(';')[0]!;
     expect(cookie2).not.toBe(cookie);
     expect((await run(req(`${ORIGIN}/api/admin/catalog`, { headers: { Cookie: cookie2 } }), env).response).status).toBe(200);

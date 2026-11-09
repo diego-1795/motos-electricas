@@ -17,6 +17,14 @@ export function buildAdminUser(env: Env, identity: { email: string; localMode: b
   return user;
 }
 
+/**
+ * Vista del usuario que se devuelve al navegador (/me, login, cambio de contraseña): el editor no necesita
+ * (ni debe recibir) la lista de emails administradores, que son la mitad de una credencial.
+ */
+export function publicUser(u: AdminUser): AdminUser {
+  return u.role === 'admin' ? u : { ...u, admins: [], editors: [u.email] };
+}
+
 /** Un email con contraseña válida pero sin rol no debe ni iniciar sesión: misma comprobación antes de emitir la cookie. */
 export function hasRole(env: Env, email: string): boolean {
   return resolveRole(email, { admins: parseEmailList(env.ADMIN_EMAILS), editors: parseEmailList(env.EDITOR_EMAILS) }) !== null;

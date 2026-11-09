@@ -1,7 +1,7 @@
 import { changePassword, issueSession } from '../_lib/auth';
 import type { Data, Env } from '../_lib/env';
 import { errorResponse, forbidden, json, readJsonBody } from '../_lib/http';
-import { buildAdminUser } from '../_lib/user';
+import { buildAdminUser, publicUser } from '../_lib/user';
 
 /**
  * POST /api/admin/auth/password  ChangePasswordBody { currentPassword, newPassword } → AdminUser + nueva cookie (ADR-024).
@@ -16,7 +16,7 @@ export const onRequestPost: PagesFunction<Env, any, Data> = async (context) => {
     const identity = await changePassword(context.env, current.email, body.currentPassword, body.newPassword);
     const user = buildAdminUser(context.env, { ...identity, localMode: false });
     const cookie = await issueSession(context.env, context.request, identity);
-    return json(user, 200, { 'Set-Cookie': cookie });
+    return json(publicUser(user), 200, { 'Set-Cookie': cookie });
   } catch (e) {
     return errorResponse(e);
   }

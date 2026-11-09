@@ -17,6 +17,7 @@ import { parsePart, parseProduct, type ParseResult } from '../../../../src/conte
 import type { Env } from './env';
 import { serializeJson, type ContentStore, type ListedFile } from './github';
 import { badRequest, conflict, forbidden, isPlainObject, notFound, upstream, validation } from './http';
+import { publicUser } from './user';
 
 /**
  * Handlers puros del panel (ADR-018): reciben el almacén y el usuario ya autenticado;
@@ -45,10 +46,9 @@ const KIND_LABEL: Record<AdminKind, string> = { products: 'producto', repuestos:
 
 /* ---------- Lectura ---------- */
 
-/** El editor no necesita (ni debe recibir) la lista de emails administradores: son la mitad de una credencial. */
+/** GET /me: el usuario del middleware en su vista pública (sin lista de administradores para el editor). */
 export function me(ctx: Pick<HandlerContext, 'user'>): AdminUser {
-  const u = ctx.user;
-  return u.role === 'admin' ? u : { ...u, admins: [], editors: [u.email] };
+  return publicUser(ctx.user);
 }
 
 function parseStored<T>(path: string, content: string): T {

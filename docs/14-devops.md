@@ -82,7 +82,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22.12.0, cache: npm }
+        with: { node-version: 22.23.4, cache: npm }
       - run: npm ci
       - run: npx astro check
   unit:
@@ -90,7 +90,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22.12.0, cache: npm }
+        with: { node-version: 22.23.4, cache: npm }
       - run: npm ci
       - run: npx vitest run
   build:
@@ -99,7 +99,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22.12.0, cache: npm }
+        with: { node-version: 22.23.4, cache: npm }
       - run: npm ci
       - run: npm run build
       - uses: actions/upload-artifact@v4
@@ -110,7 +110,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22.12.0, cache: npm }
+        with: { node-version: 22.23.4, cache: npm }
       - run: npm ci
       - uses: actions/download-artifact@v4
         with: { name: dist, path: dist }
@@ -126,7 +126,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22.12.0, cache: npm }
+        with: { node-version: 22.23.4, cache: npm }
       - run: npm ci
       - uses: actions/download-artifact@v4
         with: { name: dist, path: dist }

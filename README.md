@@ -38,7 +38,7 @@ Ver [docs/13-cloudflare](./docs/13-cloudflare.md) para límites del plan y qué 
 
 ## Requisitos
 
-- Node **≥ 22.12** (`engines` en `package.json`; `NODE_VERSION=22.12.0` en Pages y CI)
+- Node **≥ 22.23.4** (`engines` en `package.json`; `NODE_VERSION=22.23.4` en Pages y CI)
 - npm (con `package-lock.json` versionado; usar `npm ci`)
 
 ## Comandos
@@ -128,7 +128,7 @@ Integración Git (zero-config), sin adapter ni `wrangler.toml`:
 | Framework preset | Astro |
 | Build command | `npm run build` |
 | Build output directory | `dist` |
-| `NODE_VERSION` | `22.12.0` |
+| `NODE_VERSION` | `22.23.4` |
 | Variables | `PUBLIC_SITE_URL`, `PUBLIC_WHATSAPP_NUMBER` (+ opcionales) en Production y Preview |
 
 Cada push a `main` despliega producción; cualquier otra rama genera una preview `https://<rama>.raiden.pages.dev`. `public/_headers` se copia a `dist/` y Cloudflare aplica las cabeceras. Rollback: Pages → Deployments → "Rollback to this deployment".

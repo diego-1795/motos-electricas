@@ -11,7 +11,7 @@ Guía de implementación del frontend de Raiden. Complementa [01-architecture](.
 | Islas | Preact ^10 vía `@astrojs/preact` con `compat: false` (sin alias de React) |
 | Estado | `nanostores` + `@nanostores/persistent` + `@nanostores/preact` |
 | Estilos | CSS custom properties + `<style>` scoped de Astro. Sin Tailwind, sin librerías UI |
-| Node | >= 22.12 |
+| Node | >= 22.23.4 |
 
 Reglas de TypeScript:
 
