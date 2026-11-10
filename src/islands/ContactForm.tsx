@@ -23,6 +23,7 @@ export default function ContactForm() {
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState<Errors>({});
   const [sent, setSent] = useState<'whatsapp' | 'email' | null>(null);
+  const [waUrl, setWaUrl] = useState<string | null>(null);
 
   function validate(): boolean {
     const e: Errors = {};
@@ -44,7 +45,10 @@ export default function ContactForm() {
     e.preventDefault();
     if (!validate()) return;
     track({ name: 'whatsapp_click', source: 'contact' });
-    window.open(buildUrl(site.whatsappNumber, text()), '_blank', 'noopener,noreferrer');
+    const url = buildUrl(site.whatsappNumber, text());
+    window.open(url, '_blank', 'noopener,noreferrer');
+    // Si un bloqueador de emergentes lo impide, el aviso de abajo ofrece el mismo enlace para abrirlo a mano
+    setWaUrl(url);
     setSent('whatsapp');
   };
 
@@ -152,9 +156,16 @@ export default function ContactForm() {
       </div>
 
       <p class="hint" aria-live="polite">
-        {sent === 'whatsapp'
-          ? 'Se abrió WhatsApp con tu mensaje. Si no se abrió, revisa el bloqueo de ventanas emergentes.'
-          : sent === 'email'
+        {sent === 'whatsapp' ? (
+          <>
+            Se abrió WhatsApp con tu mensaje. ¿No se abrió?{' '}
+            {waUrl && (
+              <a href={waUrl} target="_blank" rel="noopener noreferrer" data-contact-wa-fallback>
+                Abrir WhatsApp
+              </a>
+            )}
+          </>
+        ) : sent === 'email'
             ? 'Se abrió tu aplicación de correo con el mensaje preparado.'
             : 'El mensaje se abre en tu WhatsApp o correo para que lo envíes tú. No guardamos tus datos en esta web.'}
       </p>

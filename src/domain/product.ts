@@ -33,6 +33,33 @@ export function maxRange(p: Product): number {
   return Math.max(...p.variants.map((v) => effectiveSpecs(p, v).rangeKm));
 }
 
+/**
+ * Cifras de la gama para los textos del sitio (cabecera, portada, buscador): salen del catálogo, no se escriben
+ * a mano. Autonomías por carga de las bicimotos (mínima y máxima entre todas sus versiones), su velocidad
+ * máxima y la autonomía máxima de las trimotos. null si no hay bicimotos.
+ */
+export interface FleetFacts {
+  bikeRangeMinKm: number;
+  bikeRangeMaxKm: number;
+  bikeTopSpeedKmh: number;
+  /** null si el catálogo no tiene trimotos */
+  trikeRangeMaxKm: number | null;
+}
+
+export function fleetFacts(products: Pick<Product, 'category' | 'specs' | 'variants'>[]): FleetFacts | null {
+  const specsOf = (category: Product['category']): Specs[] =>
+    products.filter((p) => p.category === category).flatMap((p) => p.variants.map((v) => ({ ...p.specs, ...(v.specsOverride ?? {}) })));
+  const bikes = specsOf('bicimotos');
+  if (!bikes.length) return null;
+  const trikes = specsOf('trimotos');
+  return {
+    bikeRangeMinKm: Math.min(...bikes.map((s) => s.rangeMinKm ?? s.rangeKm)),
+    bikeRangeMaxKm: Math.max(...bikes.map((s) => s.rangeKm)),
+    bikeTopSpeedKmh: Math.max(...bikes.map((s) => s.topSpeedKmh)),
+    trikeRangeMaxKm: trikes.length ? Math.max(...trikes.map((s) => s.rangeKm)) : null,
+  };
+}
+
 export function productAvailability(p: Product): Availability {
   const order: Availability[] = ['en-stock', 'bajo-pedido', 'proximamente', 'agotado'];
   return p.variants

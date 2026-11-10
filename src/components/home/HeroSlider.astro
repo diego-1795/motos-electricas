@@ -102,6 +102,14 @@ const slides = products.filter((p) => p.heroImage);
     });
     function paint() {
       dots.forEach((d, i) => d.setAttribute('aria-selected', String(i === index)));
+      // Solo la diapositiva visible es operable: las demás quedan inertes para que sus enlaces no sean paradas de
+      // tabulación fuera de pantalla. Si el foco estaba en una que deja de verse, pasa a su punto del carrusel.
+      const focused = document.activeElement;
+      slides.forEach((s, i) => {
+        const active = i === index;
+        if (!active && focused instanceof HTMLElement && s.contains(focused)) dots[index]?.focus();
+        s.toggleAttribute('inert', !active);
+      });
     }
     // Detecta la diapositiva visible al hacer scroll/swipe
     let raf = 0;

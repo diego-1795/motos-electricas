@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "node scripts/validate-content.mjs",
     "build": "astro build",
     "postbuild": "pagefind --site dist && node scripts/check-csp.mjs",
     "preview": "astro preview",
@@ -17,7 +18,7 @@
     "test:e2e": "playwright test",
     "check": "astro check && npm run check:functions",
     "perf:budget": "node scripts/check-budgets.mjs",
-    "perf:lhci": "lhci autorun",
+    "perf:lhci": "npx --yes @lhci/cli@0.16.0 autorun --config=.lighthouserc.json",
     "validate:content": "node scripts/validate-content.mjs",
     "check:jsonld": "node scripts/check-jsonld.mjs",
     "check:csp": "node scripts/check-csp.mjs",

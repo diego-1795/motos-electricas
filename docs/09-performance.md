@@ -85,38 +85,21 @@ Brotli y HTTP/3 los aplica Cloudflare. Equivalente Vercel en `vercel.json` ([20-
 
 ## 9. Lighthouse CI
 
-`lighthouserc.cjs` en la raíz; se ejecuta en GitHub Actions sobre `dist/` tras el build.
+Configuración real en [`.lighthouserc.json`](../.lighthouserc.json); se ejecuta en GitHub Actions (`ci.yml`, job `lighthouse`, `@lhci/cli` a versión fija) sobre el `dist/` del build, y en local con `npm run perf:lhci`.
 
-```js
-module.exports = {
-  ci: {
-    collect: {
-      staticDistDir: './dist',
-      url: ['/', '/productos', '/bicimotos/golden-eagle', '/carrito', '/encuentra-tu-moto'],
-      numberOfRuns: 3,
-      settings: { preset: 'mobile' }
-    },
-    assert: {
-      assertions: {
-        'categories:performance': ['error', { minScore: 0.95 }],
-        'categories:accessibility': ['error', { minScore: 1 }],
-        'categories:seo': ['error', { minScore: 1 }],
-        'largest-contentful-paint': ['error', { maxNumericValue: 2000 }],
-        'cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
-        'interaction-to-next-paint': ['warn', { maxNumericValue: 200 }],
-        'total-blocking-time': ['error', { maxNumericValue: 200 }],
-        'resource-summary:script:size': ['error', { maxNumericValue: 61440 }],
-        'resource-summary:stylesheet:size': ['error', { maxNumericValue: 30720 }],
-        'resource-summary:total:size': ['error', { maxNumericValue: 1048576 }],
-        'unused-javascript': 'warn'
-      }
-    },
-    upload: { target: 'temporary-public-storage' }
-  }
-};
-```
+| Ajuste | Valor | Motivo |
+|---|---|---|
+| URLs | `/`, `/productos.html`, `/bicimotos/golden-eagle.html`, `/encuentra-tu-moto.html`, `/carrito.html` | Con `build.format: 'file'` el servidor estático de LHCI necesita la extensión; el contenido es el de la URL canónica |
+| Ejecuciones | 2 por URL, throttling simulado | Tiempo de CI |
+| `categories:performance` | error < 0,90 | Fotografía real a sangre en portada y fichas (ADR-015, addendum 2026-10-23) |
+| `categories:accessibility` | error < 1 | Sin excepciones |
+| `categories:seo` | error < 1, salvo `/carrito` | `/carrito` es `noindex` a propósito y Lighthouse lo penaliza (`is-crawlable`) |
+| `categories:best-practices` | error < 0,95 | |
+| `largest-contentful-paint` | aviso > 2500 ms | Decisión del 2026-10-23: aviso, no bloqueo; en simulación móvil ronda 3,1 s por la foto del hero. Revisar con datos de campo tras el despliegue (§10) |
+| `cumulative-layout-shift` | error > 0,1 | |
+| `total-blocking-time` | error > 150 ms | |
 
-`resource-summary:*:size` mide bytes transferidos (comprimidos cuando el servidor estático de LHCI comprime; si no, se aplica factor 3 en la revisión manual). Script npm propuesto: `"lhci": "lhci autorun"` ([11-testing](./11-testing.md)).
+El peso de JS, CSS y HTML por página no lo mide Lighthouse sino `npm run perf:budget` (`scripts/check-budgets.mjs`, §2), que es bloqueante en CI.
 
 ## 10. Medición en campo
 

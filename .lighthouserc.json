@@ -34,13 +34,13 @@
             "categories:accessibility": [
               "error",
               {
-                "minScore": 0.95
+                "minScore": 1
               }
             ],
             "categories:seo": [
               "error",
               {
-                "minScore": 0.95
+                "minScore": 1
               }
             ],
             "categories:best-practices": [
@@ -81,7 +81,7 @@
             "categories:accessibility": [
               "error",
               {
-                "minScore": 0.95
+                "minScore": 1
               }
             ],
             "categories:best-practices": [

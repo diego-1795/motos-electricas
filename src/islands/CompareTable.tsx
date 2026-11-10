@@ -105,8 +105,9 @@ export default function CompareTable({ products }: { products: CompareRow[] }) {
       {selected.length === 0 ? (
         <p class="muted cmp__empty">Aún no has elegido modelos. Añade hasta {site.compareLimit} desde el catálogo o con el selector.</p>
       ) : (
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Tabla comparativa de modelos" tabIndex={0}>
           <table class="table table--sticky cmp__table">
+            <caption class="visually-hidden">Comparación de {selected.map((p) => p.name).join(', ')}</caption>
             <thead>
               <tr>
                 <th scope="col">

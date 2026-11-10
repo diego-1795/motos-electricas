@@ -23,11 +23,19 @@ test.describe('Comparador', () => {
     await expect(page.locator('div[role="status"]')).toContainText('hasta 3 modelos');
     await expect(fourth).toHaveAttribute('aria-pressed', 'false');
     expect((await readStorage<string[]>(page, COMPARE_KEY))?.length).toBe(3);
+    // El aviso se puede cerrar a mano (no depende solo del temporizador de 5 s)
+    const close = page.getByRole('button', { name: 'Cerrar aviso' });
+    await expect(close).toBeVisible();
+    await close.click();
+    await expect(page.locator('.toast')).toHaveCount(0);
 
     await page.goto('/comparar');
     await expect(page.locator('h1')).toHaveText('Comparador');
     const table = page.locator('[data-compare-table]');
     await expect(table).toBeVisible();
+    // La tabla tiene título accesible y su contenedor desplazable es una región enfocable con teclado
+    await expect(table.locator('caption')).toContainText('Comparación de');
+    await expect(page.getByRole('region', { name: 'Tabla comparativa de modelos' })).toHaveAttribute('tabindex', '0');
     // Cabecera: 1 columna de etiqueta + 3 modelos
     await expect(table.locator('thead th')).toHaveCount(4);
     await expect(table.locator('tbody tr').first().locator('td')).toHaveCount(3);

@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroSlider from '../components/home/HeroSlider.astro';
 import ClientGrid from '../components/home/ClientGrid.astro';
 import { isCatalogVehicle } from '../domain/catalog';
+import { fleetFacts } from '../domain/product';
 import PreloadImage from '../components/ui/PreloadImage.astro';
 import ProductCard from '../components/product/ProductCard.astro';
 import SectionHeading from '../components/ui/SectionHeading.astro';
@@ -21,6 +22,8 @@ const products = (await repos.products.all()).filter(isCatalogVehicle);
 const hero = products.find((p) => p.isHero) ?? products[0]!;
 /* Primera diapositiva del hero (misma lógica que HeroSlider: productos con heroImage) */
 const firstSlide = products.find((p) => p.heroImage);
+// Velocidad de las bicimotos para el texto de la sección: del catálogo, no escrita a mano
+const facts = fleetFacts(products);
 const recent = [...products].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt) || b.featured - a.featured).slice(0, 4);
 const categories = await repos.categories.all();
 const categoryNames = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
@@ -52,7 +55,7 @@ const catIcons: Record<string, string> = {
 ---
 
 <BaseLayout
-  title={`${site.name} — Bicimotos y trimotos eléctricas en Perú. ${site.tagline}`}
+  title={`${site.name} · Bicimotos y trimotos eléctricas en Perú`}
   description={site.description}
   path="/"
   image={hero.heroImage ? publicSrc(hero.heroImage) : publicSrc(hero.images[0]!)}
@@ -90,7 +93,7 @@ const catIcons: Record<string, string> = {
         id="recent-h"
         eyebrow="Productos recientes"
         title="Descubre tu instinto RAIDEN"
-        text={`Bicimotos de 25 km/h y trimotos convertibles pasajeros/carga. Disponibles en versiones estándar y premium, garantía de ${site.warrantyMonths} meses en batería y motor.`}
+        text={`Bicimotos${facts ? ` de ${facts.bikeTopSpeedKmh} km/h` : ''} y trimotos convertibles pasajeros/carga. Disponibles en versiones estándar y premium, garantía de ${site.warrantyMonths} meses en batería y motor.`}
       />
       <div class="grid-products recent__grid">
         {recent.map((p) => <ProductCard product={p} categoryLabel={categoryNames[p.category]} />)}

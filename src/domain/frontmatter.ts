@@ -182,7 +182,9 @@ export function parseFrontmatter(text: string): ParsedDocument {
 const isScalar = (v: unknown): v is Scalar => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
 
 function scalar(v: Scalar): string {
-  if (typeof v === 'string') return JSON.stringify(v);
+  // JSON.stringify deja U+2028/U+2029 en crudo (son separadores de línea para las expresiones regulares del
+  // lector): se escapan para que un texto pegado con esos caracteres pueda volver a leerse.
+  if (typeof v === 'string') return JSON.stringify(v).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
   if (typeof v === 'number') {
     if (!Number.isFinite(v)) throw new Error('frontmatter: número no finito');
     return String(v);

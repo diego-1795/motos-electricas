@@ -6,6 +6,20 @@ const scrollLeft = (page: Page) => page.locator('[data-track]').evaluate((el) =>
 const slideOffset = (page: Page, i: number) => page.locator('[data-slide]').nth(i).evaluate((el) => (el as HTMLElement).offsetLeft);
 
 test.describe('Portada: hero slider', () => {
+  test('solo la diapositiva visible es operable: las demás quedan inertes y el foco no se pierde al cambiar', async ({ page }) => {
+    await page.goto('/');
+    const slides = page.locator('[data-slide]');
+    await expect(slides.nth(0)).not.toHaveAttribute('inert');
+    for (const i of [1, 2, 3]) await expect(slides.nth(i)).toHaveAttribute('inert', '');
+    // Con el foco en el enlace de la primera, pasar a la siguiente lo lleva al punto activo (no a <body>)
+    await slides.nth(0).getByRole('link', { name: 'Descubrir modelo' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(dot(page, 1)).toHaveAttribute('aria-selected', 'true');
+    await expect(dot(page, 1)).toBeFocused();
+    await expect(slides.nth(0)).toHaveAttribute('inert', '');
+    await expect(slides.nth(1)).not.toHaveAttribute('inert');
+  });
+
   test('el carrusel se puede pausar y reanudar con un botón (WCAG 2.2.2); en pausa no avanza solo', async ({ page }) => {
     await page.goto('/');
     const pause = page.locator('[data-pause]');

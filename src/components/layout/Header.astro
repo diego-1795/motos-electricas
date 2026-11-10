@@ -2,6 +2,9 @@
 import { site } from '../../config/site';
 import CartButton from '../../islands/CartButton';
 import Logo from '../ui/Logo.astro';
+import { repos } from '../../data';
+import { isCatalogVehicle } from '../../domain/catalog';
+import { fleetFacts } from '../../domain/product';
 import { ALL_PRODUCTS_PATH, COMPARE_PATH, FINDER_PATH, PARTS_PATH, currentPath } from '../../lib/routes';
 
 /**
@@ -15,8 +18,10 @@ interface Props {
 }
 const { dark = false } = Astro.props;
 
+// Velocidad de las bicimotos en el desplegable: del catálogo (repositorio), no escrita a mano
+const facts = fleetFacts((await repos.products.all()).filter(isCatalogVehicle));
 const productLinks = [
-  { href: '/bicimotos', label: 'Bicimotos', desc: '25 km/h · ciudad y reparto' },
+  { href: '/bicimotos', label: 'Bicimotos', desc: facts ? `${facts.bikeTopSpeedKmh} km/h · ciudad y reparto` : 'Ciudad y reparto' },
   { href: '/trimotos', label: 'Trimotos', desc: 'Carga y trabajo' },
   { href: PARTS_PATH, label: 'Repuestos', desc: 'Baterías, motores y más' },
   { href: ALL_PRODUCTS_PATH, label: 'Todos los productos', desc: 'Catálogo completo' },

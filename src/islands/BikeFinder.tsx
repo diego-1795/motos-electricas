@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import type { CategorySlug, Product, UseCase } from '../domain/types';
 import { recommend, useCaseLabel, type FinderAnswers, type Recommendation } from '../domain/recommendation';
 import { formatMoney } from '../domain/money';
-import { fromPrice, effectiveSpecs, maxRange, powerLabel } from '../domain/product';
+import { fromPrice, effectiveSpecs, fleetFacts, maxRange, powerLabel } from '../domain/product';
 import { track } from '../services/analytics/AnalyticsService';
 import { ALL_PRODUCTS_PATH, productPath } from '../lib/routes';
 
@@ -46,6 +46,8 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
   const [range, setRange] = useState<number | null>(null);
   const [cargo, setCargo] = useState<number | null>(null);
   const [results, setResults] = useState<Recommendation[] | null>(null);
+  // Autonomías del texto de ayuda: del catálogo recibido, no escritas a mano
+  const facts = fleetFacts(products);
 
   // El foco va a los resultados cuando ya existen en el DOM (tras el render del paso 3), no antes
   useEffect(() => {
@@ -125,7 +127,12 @@ export default function BikeFinder({ products, images, categoryNames }: Props) {
                 </label>
               ))}
             </div>
-            <p class="hint">Las bicimotos RAIDEN recorren 30-50 km por carga según la versión; la trimoto, hasta 40 km.</p>
+            {facts && (
+              <p class="hint">
+                Las bicimotos RAIDEN recorren {facts.bikeRangeMinKm}-{facts.bikeRangeMaxKm} km por carga según la versión
+                {facts.trikeRangeMaxKm !== null && `; la trimoto, hasta ${facts.trikeRangeMaxKm} km`}.
+              </p>
+            )}
           </fieldset>
           <fieldset class="bf__group">
             <legend class="label">Presupuesto</legend>
