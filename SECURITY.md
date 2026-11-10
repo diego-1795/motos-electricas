@@ -29,7 +29,7 @@ Definidas en [`public/_headers`](./public/_headers) (Cloudflare Pages/Netlify) y
 
 | Cabecera | Valor |
 |---|---|
-| `Content-Security-Policy` | `default-src 'self'; script-src 'self' 'sha256-…' ×6 https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests` |
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self' 'sha256-…' ×9 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests` |
 | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains; preload` |
 | `X-Content-Type-Options` | `nosniff` |
 | `X-Frame-Options` | `DENY` |

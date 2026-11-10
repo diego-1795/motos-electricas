@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "postbuild": "pagefind --site dist",
+    "postbuild": "pagefind --site dist && node scripts/check-csp.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
@@ -20,6 +20,7 @@
     "perf:lhci": "lhci autorun",
     "validate:content": "node scripts/validate-content.mjs",
     "check:jsonld": "node scripts/check-jsonld.mjs",
+    "check:csp": "node scripts/check-csp.mjs",
     "check:functions": "tsc -p functions/tsconfig.json",
     "admin:dev": "wrangler pages dev dist --port 8788 --compatibility-date=2026-10-01 --kv ADMIN_KV",
     "admin:password": "node scripts/admin-password.mjs"

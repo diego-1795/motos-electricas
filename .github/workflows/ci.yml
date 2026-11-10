@@ -48,7 +48,8 @@ jobs:
       - name: No hay teléfonos ni secretos hardcodeados
         run: |
           set -euo pipefail
-          hits=$(grep -rnE "\+51[0-9 ]{9,12}|\b51?9[0-9]{8}\b|api[_-]?key|secret|service_role|sk_live" src public --include='*' \
+          # `\bsecret\b`: la palabra suelta, no "secreto" en la prosa del blog
+          hits=$(grep -rnE "\+51[0-9 ]{9,12}|\b51?9[0-9]{8}\b|api[_-]?key|\bsecret\b|client_secret|service_role|sk_live" src public --include='*' \
             | grep -v '^src/config/site.ts' || true)
           if [ -n "$hits" ]; then echo "$hits"; echo "::error::Posible secreto o número hardcodeado"; exit 1; fi
       # Las actions deben ir fijadas por SHA completo y npm ci siempre con --ignore-scripts (cadena de suministro).
@@ -104,25 +105,10 @@ jobs:
           if grep -rIlE "SUPABASE_SERVICE|service_role|sk_live|Bearer [A-Za-z0-9._-]{20,}" dist; then
             echo "::error::Secreto detectado en dist/"; exit 1; fi
       # Astro inlina el runtime de islas y los <script> pequeños; la CSP los autoriza por hash
-      # (sin 'unsafe-inline'). Si cambia Astro o un <script> de componente, este paso falla y
-      # muestra los hashes que faltan para actualizar public/_headers y vercel.json.
+      # (sin 'unsafe-inline'). Si cambia Astro o un <script> de componente, scripts/check-csp.mjs falla y
+      # muestra los hashes que faltan en public/_headers y vercel.json (también corre en el postbuild).
       - name: "CSP: hashes de scripts inline"
-        run: |
-          node - <<'EOF'
-          const fs = require('fs'), path = require('path'), crypto = require('crypto');
-          const csp = fs.readFileSync('dist/_headers', 'utf8').match(/Content-Security-Policy:\s*(.*)/)[1];
-          const allowed = new Set([...csp.matchAll(/'(sha256-[^']+)'/g)].map(m => m[1]));
-          const missing = new Map();
-          (function walk(d) { for (const f of fs.readdirSync(d)) { const p = path.join(d, f);
-            if (fs.statSync(p).isDirectory()) walk(p); else if (p.endsWith('.html')) {
-              const html = fs.readFileSync(p, 'utf8'); const re = /<script\b([^>]*)>([\s\S]*?)<\/script>/g; let m;
-              while ((m = re.exec(html))) { if (/\bsrc=/.test(m[1]) || /ld\+json/.test(m[1])) continue;
-                const h = 'sha256-' + crypto.createHash('sha256').update(m[2], 'utf8').digest('base64');
-                if (!allowed.has(h)) missing.set(h, p + ' :: ' + m[2].slice(0, 60).replace(/\s+/g, ' ')); } } } })('dist');
-          if (missing.size) { for (const [h, w] of missing) console.log(`'${h}'  <- ${w}`);
-            console.log('::error::Scripts inline sin hash en la CSP de public/_headers (y vercel.json)'); process.exit(1); }
-          console.log(`OK: ${allowed.size} hashes en CSP cubren todos los scripts inline de dist/`);
-          EOF
+        run: npm run check:csp
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dist

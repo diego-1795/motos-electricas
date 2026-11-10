@@ -31,4 +31,4 @@ Consult these guides before working on related tasks:
 - Estilos: tokens en `src/styles/tokens.css`; sin Tailwind ni librerías UI.
 - Contenido: JSON/MD en `src/content/*` validado por `src/content.config.ts`.
 - Decisiones nuevas → ADR en `docs/21-decisions.md`.
-- Verifica siempre: `npm run check && npm run build && npm test`.
+- Verifica siempre: `npm run check && npm run build && npm test`. El build termina con `scripts/check-csp.mjs`: si editas un `<script>` de un componente `.astro` fallará hasta que actualices su hash en `public/_headers` y `vercel.json`.

@@ -73,7 +73,7 @@
         .cfg__actions .btn{flex:1}
 
 /* CartPage.tsx (vacío) */
-.cp{display:grid;gap:var(--s-8)}
+.cp{display:grid;gap:var(--s-8);align-content:start;min-height:60vh;min-height:60svh}
         .cp__items ul{display:flex;flex-direction:column;gap:var(--s-3);margin-bottom:var(--s-4)}
         .cp__item{display:grid;grid-template-columns:5rem 1fr;gap:var(--s-4);padding:var(--s-4);align-items:start}
         .cp__thumb{width:5rem;height:5rem;border-radius:var(--r-md);background:var(--bg-sunken);overflow:hidden}

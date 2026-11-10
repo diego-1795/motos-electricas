@@ -3,7 +3,7 @@
 #
 # CSP: sin 'unsafe-inline' en script-src. Los módulos grandes van a /_astro/ ('self'), pero Astro inlina
 # el runtime de islas (astro-island, client:load/idle/visible) y los <script> pequeños de componentes
-# (Header, SearchModal, ProductTabs, CatalogView, HeroSlider, ClientGallery). Esos 10 scripts inline (4 del runtime + 6 de
+# (Header, SearchModal, ProductTabs, CatalogView, HeroSlider). Esos 9 scripts inline (4 del runtime + 5 de
 # componentes) se autorizan por hash sha256.
 # Los hashes del runtime cambian al actualizar Astro; los de componentes, al editar su <script>.
 # CI (ci.yml, job build, paso "CSP: hashes de scripts inline") comprueba que todo script inline de dist/
@@ -15,7 +15,7 @@
 # frame-src youtube-nocookie: facade de vídeo de la ficha de producto (el iframe solo se crea al pulsar reproducir).
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-xIb/Pa7FUshAu4ihwjchYcQpyCI8eS8kt40GpOAYCz8=' 'sha256-UIrFqcaitjA3OKa9mHKajg3N+0Y7tW9+y0o3QmMFeZQ=' 'sha256-1BvDVWLr3QCC20uHhUDi27eDFVJpk1uMQJGIWKUks2I=' 'sha256-0O7iB6zr9x0r6X6eWYITC9V5q+yWCGAoFvcysBGbY9Q=' 'sha256-fR6+KtJQwBxrnvAQ0pkFEM3geLjScBRfDyCOYDtluu8=' 'sha256-gxUm/G6eAkYTpFssyUzyQp+VqXSGUDA1nzb9oeKhFS8=' 'sha256-lw1proxdDijaTAnZU7JW1/iJ0QCq+B3ln/iVRy08IpQ=' 'sha256-AXQNpXnH2KwiQVBqx3cFz96ATQzvgp7nMYDiXrCI+w0=' 'sha256-kSSKTJg+uZ3PSJdH/hkrlEw+WsUKXtj97Hfig2llIVo=' 'sha256-WhHiABsluR561tPLuJu2uae34qj7i1PyDZBDCOoX3ew=' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-xIb/Pa7FUshAu4ihwjchYcQpyCI8eS8kt40GpOAYCz8=' 'sha256-UIrFqcaitjA3OKa9mHKajg3N+0Y7tW9+y0o3QmMFeZQ=' 'sha256-1BvDVWLr3QCC20uHhUDi27eDFVJpk1uMQJGIWKUks2I=' 'sha256-0O7iB6zr9x0r6X6eWYITC9V5q+yWCGAoFvcysBGbY9Q=' 'sha256-fR6+KtJQwBxrnvAQ0pkFEM3geLjScBRfDyCOYDtluu8=' 'sha256-gxUm/G6eAkYTpFssyUzyQp+VqXSGUDA1nzb9oeKhFS8=' 'sha256-lw1proxdDijaTAnZU7JW1/iJ0QCq+B3ln/iVRy08IpQ=' 'sha256-2xilv2NjjARrYDKKA0z5DiP/b9/Q2EqXI+UXbEdEqCs=' 'sha256-0zkYd4l0sWtxzvmwy8oHHWAwAw9ZIqTeqrKfz96n57E=' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

@@ -24,7 +24,7 @@ Raiden en MVP es un sitio estático sin backend propio, sin cuentas de usuario y
 
 | Directiva / cabecera | Valor en `_headers` | Por qué |
 |---|---|---|
-| `script-src` | `'self'` + 10 hashes `sha256-…` + `'wasm-unsafe-eval'` + `https://static.cloudflareinsights.com` | Sin `'unsafe-inline'`. Astro inlina el runtime de islas (4 scripts) y los `<script>` pequeños de 6 componentes: se autorizan por hash y cambian al actualizar Astro o editar esos componentes (la CI imprime los hashes nuevos). `wasm-unsafe-eval`: Pagefind compila WebAssembly. El beacon de Cloudflare solo se carga si `PUBLIC_CF_BEACON_TOKEN` está definido. |
+| `script-src` | `'self'` + 9 hashes `sha256-…` + `'wasm-unsafe-eval'` + `https://static.cloudflareinsights.com` | Sin `'unsafe-inline'`. Astro inlina el runtime de islas (4 scripts) y los `<script>` pequeños de 5 componentes (Header, SearchModal, ProductTabs, CatalogView, HeroSlider): se autorizan por hash y cambian al actualizar Astro o editar esos componentes (la CI imprime los hashes nuevos). `wasm-unsafe-eval`: Pagefind compila WebAssembly. El beacon de Cloudflare solo se carga si `PUBLIC_CF_BEACON_TOKEN` está definido. |
 | `style-src` | `'self' 'unsafe-inline'` | Estilos scoped de Astro (`inlineStylesheets: 'auto'`) e islas Preact. |
 | `img-src` / `font-src` | `'self' data:` / `'self'` | Imágenes y fuentes self-hosted. |
 | `connect-src` | `'self' https://cloudflareinsights.com` | Solo el propio origen (y el beacon si está activo). |
