@@ -105,18 +105,15 @@ export class DataLayerAnalytics implements AnalyticsService {
 }
 ```
 
-Selección por entorno en `src/services/analytics/index.ts`:
+Selección por entorno en `src/lib/analytics-init.ts`:
 
 ```ts
-const provider = import.meta.env.PUBLIC_ANALYTICS_PROVIDER ?? 'noop';
-export const analytics: AnalyticsService =
-  provider === 'console' ? new ConsoleAnalytics()
-  : provider === 'cloudflare' ? new CloudflareBeaconAnalytics(import.meta.env.PUBLIC_CF_BEACON_TOKEN)
-  : provider === 'datalayer' ? new DataLayerAnalytics()
-  : new NoopAnalytics();
+const mode = import.meta.env.PUBLIC_ANALYTICS as string | undefined;
+configureAnalytics(mode === 'console' ? consoleAdapter : mode === 'datalayer' ? dataLayerAdapter : noopAdapter);
+// Cloudflare Web Analytics no es un adaptador: si PUBLIC_CF_BEACON_TOKEN está definido se añade su <script defer>.
 ```
 
-Variables: `PUBLIC_ANALYTICS_PROVIDER` (`noop|console|cloudflare|datalayer`) y `PUBLIC_CF_BEACON_TOKEN`. Ambas son públicas por diseño; ver [19-deployment](./19-deployment.md).
+Variables: `PUBLIC_ANALYTICS` (`console|datalayer`; vacío = noop) y `PUBLIC_CF_BEACON_TOKEN`. Ambas son públicas por diseño; ver [19-deployment](./19-deployment.md).
 
 ## 5. Regla: nunca bloquear el render
 
@@ -168,7 +165,7 @@ Cuando exista Supabase (`order_requests`, `whatsapp_requests`), el panel de pedi
 |---|---|---|
 | Unit | `enqueue` ejecuta todos los trabajos y absorbe excepciones; selección de adaptador por variable; `DataLayerAnalytics` hace `push` con la forma `{ event, ...props }` | Vitest |
 | Unit | Tipado: `track('add_to_cart', {...})` rechaza props incorrectos (test de tipos con `expectTypeOf`) | Vitest |
-| E2E | Con `PUBLIC_ANALYTICS_PROVIDER=datalayer`, el flujo catálogo → carrito → WhatsApp deja en `window.dataLayer` exactamente la secuencia esperada | Playwright |
+| E2E | Con `PUBLIC_ANALYTICS=datalayer`, el flujo catálogo → carrito → WhatsApp deja en `window.dataLayer` exactamente la secuencia esperada | Playwright |
 | E2E | Ningún evento contiene claves `name`, `phone`, `email`, `notes` | Playwright (aserción sobre `dataLayer`) |
 | Performance | Con el proveedor `cloudflare`, Lighthouse no reporta script bloqueante y el JS total sigue < 60 KB gz | Lighthouse CI |
 | Manual | Los eventos aparecen en el panel del proveedor en preview antes de pasar a producción | Checklist de despliegue |

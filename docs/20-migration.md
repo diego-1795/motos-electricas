@@ -67,7 +67,7 @@ Equivalente completo en `vercel.json`:
 }
 ```
 
-Nota: al salir de Cloudflare se eliminan de la CSP los hosts de `cloudflareinsights.com` y se cambia `PUBLIC_ANALYTICS_PROVIDER` (ruta e).
+Nota: al salir de Cloudflare se eliminan de la CSP los hosts de `cloudflareinsights.com` y se vacía `PUBLIC_CF_BEACON_TOKEN` (ruta e).
 
 ### `netlify.toml`
 
@@ -123,12 +123,12 @@ Reversión: `PUBLIC_WHATSAPP_MODE=link`.
 
 ## (e) noop analytics → otro proveedor
 
-1. Si el proveedor ya existe como adaptador (`console`, `cloudflare`, `datalayer`): cambiar `PUBLIC_ANALYTICS_PROVIDER` y rebuild.
+1. Si el proveedor ya existe como adaptador (`console`, `datalayer`): cambiar `PUBLIC_ANALYTICS` y rebuild. Cloudflare Web Analytics se activa o desactiva solo con `PUBLIC_CF_BEACON_TOKEN`.
 2. Si es nuevo (Plausible, Umami, PostHog): crear `adapters/<Proveedor>Analytics.ts` implementando `AnalyticsService`, usar `enqueue`, añadir el caso al selector, ampliar la CSP con su host y actualizar `/legal/privacidad`.
 3. Si el proveedor usa cookies o identificadores persistentes, es obligatorio gestor de consentimiento antes de activarlo.
 4. Validar con el test E2E de [18-analytics](./18-analytics.md) §9 en preview.
 
-Reversión: `PUBLIC_ANALYTICS_PROVIDER=noop`.
+Reversión: `PUBLIC_ANALYTICS` vacío (noop) y `PUBLIC_CF_BEACON_TOKEN` vacío.
 
 ## (f) Cambio de tipografías self-hosted
 

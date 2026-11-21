@@ -7,7 +7,7 @@ Procedimiento de despliegue de Raiden en Cloudflare Pages desde GitHub, con veri
 - El artefacto de despliegue es la carpeta `dist/` generada por `astro build` (`output: 'static'`). Cualquier servidor de ficheros estáticos puede servirla.
 - No hay secretos en build: solo variables `PUBLIC_*`.
 - Producción se despliega únicamente desde `main`. Cualquier otra rama genera una preview.
-- Nada específico de Cloudflare en el código fuente; lo específico vive en `public/_headers`, `public/_redirects` y la configuración del panel.
+- Nada específico de Cloudflare en el código fuente; lo específico vive en `public/_headers`, `public/_redirects` (cuando haya dominio, §6), `functions/` (panel `/admin`) y la configuración del panel de Cloudflare.
 
 ## 2. Pipeline en Cloudflare Pages desde GitHub
 
@@ -16,7 +16,7 @@ Procedimiento de despliegue de Raiden en Cloudflare Pages desde GitHub, con veri
 3. Configuración de build (sección 3). Guardar y lanzar el primer despliegue.
 4. Añadir las variables de entorno para Production y Preview (sección 4). Relanzar el build (las variables no se aplican a builds anteriores).
 5. Configurar dominio personalizado (sección 6).
-6. Activar "Build caching" y, en Preview, "Preview deployments: all branches" con acceso protegido mediante Cloudflare Access (gratuito hasta 50 usuarios) para que las previews no se indexen ni sean públicas.
+6. Activar "Build caching" y, en Settings → Builds → Branch control, dejar "Preview branches: None" hasta definir las variables de Preview ([13-cloudflare](./13-cloudflare.md) §5): una preview sin variables sale con `raiden.example.com` y el número de WhatsApp por defecto, y las previews no llevan `noindex` automático.
 7. En GitHub: proteger `main` (PR obligatoria, checks `ci` en verde: lint, typecheck, vitest, playwright, lighthouse-ci).
 
 Flujo resultante: `push` a rama → Cloudflare construye preview y comenta la URL en la PR → revisión → merge a `main` → build de producción → dominio actualizado en 1–2 minutos.
@@ -32,27 +32,27 @@ Flujo resultante: `push` a rama → Cloudflare construye preview y comenta la UR
 | Node version | `NODE_VERSION=22.23.4` (variable de entorno) |
 | Install command | `npm ci` (por defecto) |
 
-`npm run build` ejecuta `astro check && astro build`. Si `astro check` falla, no hay despliegue.
+`npm run build` ejecuta, en orden, `prebuild` (`scripts/validate-content.mjs`: valida el catálogo), `astro build` y `postbuild` (índice de Pagefind y `scripts/check-csp.mjs`: todo script inline debe tener su hash en `_headers`). Si cualquiera falla, Pages no publica y sigue sirviendo el último deploy correcto. `astro check` no corre en el build de Pages: lo ejecutan la CI (`ci.yml`) y el workflow manual `deploy-cloudflare-pages.yml`.
 
 ## 4. Variables por entorno
 
 | Variable | Production | Preview | Uso |
 |---|---|---|---|
 | `NODE_VERSION` | `22.23.4` | `22.23.4` | Runtime de build |
-| `PUBLIC_SITE_URL` | `https://raiden.pe` (o dominio final) | `https://preview.raiden.pe` | `site` en `astro.config.mjs`, canonicals, sitemap |
-| `PUBLIC_WHATSAPP_NUMBER` | Número real de ventas | Número de pruebas del equipo | `src/config/site.ts` |
-| `PUBLIC_ANALYTICS_PROVIDER` | `cloudflare` (o `noop`) | `console` | [18-analytics](./18-analytics.md) |
-| `PUBLIC_CF_BEACON_TOKEN` | Token del panel Web Analytics | vacío | Beacon |
-| `PUBLIC_ROBOTS` | `index` | `noindex` | `robots.txt` y meta robots se generan según este valor |
-| Panel de administración (`ADMIN_EMAILS`, `EDITOR_EMAILS`, `CF_ACCESS_*`, `GITHUB_*`, `CF_API_TOKEN`…) | Ver §12 | Normalmente vacías (sin panel en previews) | Pages Functions `functions/api/admin` (ADR-018) |
+| `PUBLIC_SITE_URL` | `https://raiden.pe` (provisional: `https://raiden.pages.dev`) | URL de la preview | `site` en `astro.config.mjs`, canonicals, sitemap, `robots.txt`, JSON-LD |
+| `PUBLIC_WHATSAPP_NUMBER` | Número real de ventas (`51` + 9 dígitos, sin `+`) | Número de pruebas del equipo | `src/config/site.ts` |
+| `PUBLIC_CONTACT_EMAIL` | Email de contacto real | El mismo o uno de pruebas | Pie y JSON-LD `Organization` |
+| `PUBLIC_ANALYTICS` | vacío (noop) o `datalayer` | `console` | Adaptador de `AnalyticsService` ([18-analytics](./18-analytics.md)) |
+| `PUBLIC_CF_BEACON_TOKEN` | Token de Web Analytics o vacío | vacío | Carga el beacon de Cloudflare ([13-cloudflare](./13-cloudflare.md) §6) |
+| Panel de administración (`ADMIN_EMAILS`, `EDITOR_EMAILS`, `SESSION_SECRET`, `ADMIN_INITIAL_PASSWORDS`, `GITHUB_*`, binding `ADMIN_KV`…) | Ver §12 | Normalmente vacías (sin panel en previews) | Pages Functions `functions/api/admin` (ADR-018, ADR-024) |
 
-En preview, `public/_headers` añade `X-Robots-Tag: noindex` cuando `PUBLIC_ROBOTS=noindex` (se genera en build copiando la plantilla correspondiente desde `scripts/headers.mjs`).
+No hay `noindex` por entorno: `robots.txt` (`src/pages/robots.txt.ts`) siempre permite indexar salvo `/carrito`, `/comparar`, `/admin` y `/api/`, y las canónicas apuntan a `PUBLIC_SITE_URL`. Las previews se controlan desactivándolas o protegiéndolas (§5).
 
 ## 5. Previews por PR
 
 - Cada PR obtiene `https://<hash>.raiden.pages.dev` y, por rama, `https://<rama>.raiden.pages.dev`.
 - El bot de Cloudflare publica la URL en la PR. QA ejecuta la checklist de la sección 7 sobre esa URL.
-- Las previews usan el número de WhatsApp de pruebas: ningún clic de QA llega a ventas.
+- Solo si se activan (§2 paso 6) y con las variables de Preview definidas: las previews usan el número de WhatsApp de pruebas, así ningún clic de QA llega a ventas.
 - Las previews caducan con la rama; no se conservan como entornos permanentes.
 
 ## 6. Dominio y HTTPS
@@ -60,7 +60,7 @@ En preview, `public/_headers` añade `X-Robots-Tag: noindex` cuando `PUBLIC_ROBO
 1. Pages → Custom domains → añadir `raiden.pe` y `www.raiden.pe`.
 2. Si el DNS está en Cloudflare, los registros CNAME se crean solos; si no, crear `CNAME www → raiden.pages.dev` y usar CNAME flattening o ALIAS en el apex.
 3. SSL/TLS: modo Full (strict); certificado Universal emitido automáticamente. Activar "Always Use HTTPS" y HSTS (max-age 6 meses, includeSubDomains, preload solo tras dos semanas sin incidencias).
-4. Redirección `www → apex` (o al revés, una sola canónica) en `public/_redirects`:
+4. Redirección `www → apex` (o al revés, una sola canónica): crear `public/_redirects`, que todavía no existe (contenido completo en [13-cloudflare](./13-cloudflare.md) §3):
 
 ```
 https://www.raiden.pe/* https://raiden.pe/:splat 301
@@ -74,7 +74,7 @@ https://www.raiden.pe/* https://raiden.pe/:splat 301
 |---|---|---|---|
 | 1 | Cabeceras de seguridad | `curl -I https://raiden.pe` | CSP, HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` presentes |
 | 2 | Sitemap | `curl https://raiden.pe/sitemap-index.xml` | 200, URLs con el dominio canónico, sin `/carrito` ni `/comparar` |
-| 3 | robots | `curl https://raiden.pe/robots.txt` | `Allow: /`, `Sitemap:` con URL absoluta; en preview `Disallow: /` |
+| 3 | robots | `curl https://raiden.pe/robots.txt` | `Allow: /`, `Disallow: /admin` y `/api/`, `Sitemap:` con el dominio de `PUBLIC_SITE_URL` |
 | 4 | Enlace WhatsApp | Añadir un producto, abrir carrito, pulsar "Solicitar pedido" | URL `https://wa.me/<número>?text=...` con el número de producción y mensaje decodificado correcto |
 | 5 | Lighthouse móvil en `/`, un listado y una ficha | `npx lhci autorun` o PageSpeed Insights | Performance ≥ 90, LCP < 2,0 s, INP < 200 ms, CLS < 0,1 |
 | 6 | Imágenes | DevTools → Network | AVIF/WebP servidos, `width`/`height` presentes, sin CLS |
@@ -123,7 +123,8 @@ Porque el artefacto es `dist/`, cambiar de hosting es configuración, no código
 | Cabeceras ausentes | Verificar que `public/_headers` está en `dist/_headers`; `_headers` no admite comodines anidados mal formados: validar con `npx wrangler pages dev dist` |
 | Sitemap con dominio `raiden.example.com` | `PUBLIC_SITE_URL` no definido en ese entorno |
 | Certificado pendiente > 15 min | Comprobar que el CNAME apunta a `raiden.pages.dev` y que no hay registros AAAA residuales |
-| Preview indexada en Google | Confirmar `PUBLIC_ROBOTS=noindex` y Cloudflare Access activo en previews |
+| Preview indexada en Google | No hay `noindex` automático: desactivar previews (Branch control → None) o protegerlas con Cloudflare Access, y pedir la retirada en Search Console |
+| Build falla en `check-csp` | Se editó un `<script>` de un componente `.astro` o se actualizó Astro: copiar los hashes que imprime el log a `public/_headers` y `vercel.json` |
 | Necesidad de purgar caché | Pages invalida por despliegue; para assets con hash no es necesario. Para `robots.txt` o `_headers`: Caching → Purge by URL |
 
 Responsable operativo: DevOps. Aprobación de cambios en este documento: DevOps + Tech Lead (portabilidad).
@@ -140,7 +141,7 @@ El panel necesita Pages Functions, un KV y las variables de abajo (ADR-024: logi
 
 ### 12.2 KV, secreto de sesión y contraseñas temporales (ADR-024)
 
-1. **KV:** Workers & Pages → KV → *Create namespace* → `raiden-admin`. En el proyecto de Pages: Settings → Functions → **KV namespace bindings** → variable `ADMIN_KV` → ese namespace (Production; en Preview, otro namespace o ninguno).
+1. **KV:** Workers & Pages → KV → *Create namespace* → `raiden-admin`. En el proyecto de Pages: Settings → **Bindings** → Add → KV namespace (en la interfaz antigua, Settings → Functions → KV namespace bindings) → variable `ADMIN_KV` → ese namespace (Production; en Preview, otro namespace o ninguno).
 2. **Secreto de sesión:** en el portátil, `npm run admin:password -- --secret` → copiar el valor a la variable `SESSION_SECRET` (marcar *Encrypt*). Distinto del de `.dev.vars`.
 3. **Contraseñas temporales:** por cada persona, `npm run admin:password -- <email>`. Imprime la contraseña en claro **una sola vez** (entregarla en mano o por un canal distinto del email) y la línea `email:pbkdf2-sha256:…` para la variable `ADMIN_INITIAL_PASSWORDS` (varias separadas por coma). Al entrar por primera vez el panel obliga a cambiarla; después la variable deja de consultarse para ese email.
 4. **Resetear una contraseña:** generar otra entrada para ese email, sustituirla en la variable, borrar la clave `user:<email>` del KV (Workers & Pages → KV → raiden-admin → *View*) y *Retry deployment*.
