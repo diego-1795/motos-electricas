@@ -7,7 +7,7 @@ Procedimiento de despliegue de Raiden en Cloudflare Pages desde GitHub, con veri
 - El artefacto de despliegue es la carpeta `dist/` generada por `astro build` (`output: 'static'`). Cualquier servidor de ficheros estáticos puede servirla.
 - No hay secretos en build: solo variables `PUBLIC_*`.
 - Producción se despliega únicamente desde `main`. Cualquier otra rama genera una preview.
-- Nada específico de Cloudflare en el código fuente; lo específico vive en `public/_headers`, `public/_redirects` (cuando haya dominio, §6), `functions/` (panel `/admin`) y la configuración del panel de Cloudflare.
+- Nada específico de Cloudflare en el código fuente; lo específico vive en `public/_headers`, `public/_redirects` (solo si hiciera falta), `functions/` (panel `/admin`) y la configuración del panel de Cloudflare.
 
 ## 2. Pipeline en Cloudflare Pages desde GitHub
 
@@ -39,7 +39,7 @@ Flujo resultante: `push` a rama → Cloudflare construye preview y comenta la UR
 | Variable | Production | Preview | Uso |
 |---|---|---|---|
 | `NODE_VERSION` | `22.23.4` | `22.23.4` | Runtime de build |
-| `PUBLIC_SITE_URL` | `https://raiden.pe` (provisional: `https://raiden.pages.dev`) | URL de la preview | `site` en `astro.config.mjs`, canonicals, sitemap, `robots.txt`, JSON-LD |
+| `PUBLIC_SITE_URL` | `https://raiden.com.pe` (provisional: `https://raiden.pages.dev`) | URL de la preview | `site` en `astro.config.mjs`, canonicals, sitemap, `robots.txt`, JSON-LD |
 | `PUBLIC_WHATSAPP_NUMBER` | Número real de ventas (`51` + 9 dígitos, sin `+`) | Número de pruebas del equipo | `src/config/site.ts` |
 | `PUBLIC_CONTACT_EMAIL` | Email de contacto real | El mismo o uno de pruebas | Pie y JSON-LD `Organization` |
 | `PUBLIC_ANALYTICS` | vacío (noop) o `datalayer` | `console` | Adaptador de `AnalyticsService` ([18-analytics](./18-analytics.md)) |
@@ -57,29 +57,26 @@ No hay `noindex` por entorno: `robots.txt` (`src/pages/robots.txt.ts`) siempre p
 
 ## 6. Dominio y HTTPS
 
-1. Pages → Custom domains → añadir `raiden.pe` y `www.raiden.pe`.
-2. Si el DNS está en Cloudflare, los registros CNAME se crean solos; si no, crear `CNAME www → raiden.pages.dev` y usar CNAME flattening o ALIAS en el apex.
-3. SSL/TLS: modo Full (strict); certificado Universal emitido automáticamente. Activar "Always Use HTTPS" y HSTS (max-age 6 meses, includeSubDomains, preload solo tras dos semanas sin incidencias).
-4. Redirección `www → apex` (o al revés, una sola canónica): crear `public/_redirects`, que todavía no existe (contenido completo en [13-cloudflare](./13-cloudflare.md) §3):
+Dominio: `raiden.com.pe` (comprado el 2026-11-22 en un registrador peruano). Pasos detallados en [13-cloudflare](./13-cloudflare.md) §4:
 
-```
-https://www.raiden.pe/* https://raiden.pe/:splat 301
-```
-
-5. Comprobar que `PUBLIC_SITE_URL` coincide exactamente con la canónica elegida.
+1. Añadir la zona `raiden.com.pe` a Cloudflare (plan Free) y cambiar los nameservers en el registrador por los dos de Cloudflare: Pages exige la zona en Cloudflare para usar el apex.
+2. Cuando la zona esté *Active*: Pages → Custom domains → añadir `raiden.com.pe` y `www.raiden.com.pe` (los CNAME se crean solos).
+3. SSL/TLS: modo Full (strict); certificado Universal emitido automáticamente; "Always Use HTTPS" activado. HSTS ya lo envía `_headers` (1 año, `includeSubDomains; preload`).
+4. Redirección `www → apex` con una **Redirect Rule** de Cloudflare (plantilla "Redirect from WWW to root", 301). No en `public/_redirects`: Pages no admite redirecciones a nivel de dominio en ese fichero.
+5. `PUBLIC_SITE_URL=https://raiden.com.pe` en Production, *Retry deployment*, y comprobar que coincide exactamente con la canónica.
 
 ## 7. Verificación post-deploy (checklist)
 
 | # | Comprobación | Cómo | Resultado esperado |
 |---|---|---|---|
-| 1 | Cabeceras de seguridad | `curl -I https://raiden.pe` | CSP, HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` presentes |
-| 2 | Sitemap | `curl https://raiden.pe/sitemap-index.xml` | 200, URLs con el dominio canónico, sin `/carrito` ni `/comparar` |
-| 3 | robots | `curl https://raiden.pe/robots.txt` | `Allow: /`, `Disallow: /admin` y `/api/`, `Sitemap:` con el dominio de `PUBLIC_SITE_URL` |
+| 1 | Cabeceras de seguridad | `curl -I https://raiden.com.pe` | CSP, HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` presentes |
+| 2 | Sitemap | `curl https://raiden.com.pe/sitemap-index.xml` | 200, URLs con el dominio canónico, sin `/carrito` ni `/comparar` |
+| 3 | robots | `curl https://raiden.com.pe/robots.txt` | `Allow: /`, `Disallow: /admin` y `/api/`, `Sitemap:` con el dominio de `PUBLIC_SITE_URL` |
 | 4 | Enlace WhatsApp | Añadir un producto, abrir carrito, pulsar "Solicitar pedido" | URL `https://wa.me/<número>?text=...` con el número de producción y mensaje decodificado correcto |
 | 5 | Lighthouse móvil en `/`, un listado y una ficha | `npx lhci autorun` o PageSpeed Insights | Performance ≥ 90, LCP < 2,0 s, INP < 200 ms, CLS < 0,1 |
 | 6 | Imágenes | DevTools → Network | AVIF/WebP servidos, `width`/`height` presentes, sin CLS |
-| 7 | 404 | `curl -I https://raiden.pe/no-existe` | 404 con página propia |
-| 8 | Redirección www | `curl -I https://www.raiden.pe/` | 301 a la canónica |
+| 7 | 404 | `curl -I https://raiden.com.pe/no-existe` | 404 con página propia |
+| 8 | Redirección www | `curl -I https://www.raiden.com.pe/` | 301 a la canónica |
 | 9 | Analítica | Panel de Cloudflare Web Analytics | Visitas registradas en los primeros 10 minutos |
 | 10 | Sin secretos | `grep -r "SUPABASE_SERVICE" dist/` | Sin resultados |
 
@@ -172,16 +169,16 @@ Las tres opcionales permiten que el panel muestre el estado real del último bui
 
 | # | Comprobación | Resultado esperado |
 |---|---|---|
-| 1 | `https://raiden.pe/admin` sin sesión | Pantalla "Iniciar sesión" (email + contraseña); con Access activado, antes el 302 a `<equipo>.cloudflareaccess.com` |
-| 2 | `curl -i https://raiden.pe/api/admin/me` sin sesión | 401 JSON `{ code: "unauthorized" }` con `Cache-Control: no-store`, nunca datos |
-| 2b | `curl -i -X POST https://raiden.pe/api/admin/auth/login -d '{}'` | 415 (sin `Content-Type: application/json`); con la cabecera y credenciales falsas, 401; a la sexta vez, 423 |
+| 1 | `https://raiden.com.pe/admin` sin sesión | Pantalla "Iniciar sesión" (email + contraseña); con Access activado, antes el 302 a `<equipo>.cloudflareaccess.com` |
+| 2 | `curl -i https://raiden.com.pe/api/admin/me` sin sesión | 401 JSON `{ code: "unauthorized" }` con `Cache-Control: no-store`, nunca datos |
+| 2b | `curl -i -X POST https://raiden.com.pe/api/admin/auth/login -d '{}'` | 415 (sin `Content-Type: application/json`); con la cabecera y credenciales falsas, 401; a la sexta vez, 423 |
 | 3 | Entrar con el email de Diego y su contraseña temporal | Pide elegir una contraseña nueva; después panel con rol **admin**, botones Nuevo/Editar ficha/Borrar visibles |
 | 4 | Entrar con el email de Wiliam (otra ventana privada) | Mismo cambio obligatorio; rol **editor**: solo precios y ocultar/mostrar, sin lista de administradores en Accesos |
 | 4b | "Cambiar contraseña" y recargar en la otra ventana | La otra sesión queda cerrada (vuelve al inicio de sesión) |
 | 5 | Cambiar un precio de prueba y revertirlo | Dos commits `chore(catalog): actualizar … por …` en GitHub y dos builds en Pages |
-| 6 | `curl -I https://raiden.pe/admin` con sesión | `Cache-Control: no-store`, `X-Robots-Tag: noindex`, CSP con `connect-src 'self'` |
-| 7 | `https://raiden.pe/sitemap-0.xml` y `/robots.txt` | Sin `/admin` ni `/legal/*`; `Disallow: /admin` |
-| 8 | `curl -I https://raiden.pe/productos` | **200** (no 308 a `/productos/`): `build.format: 'file'`, ADR-024 |
+| 6 | `curl -I https://raiden.com.pe/admin` con sesión | `Cache-Control: no-store`, `X-Robots-Tag: noindex`, CSP con `connect-src 'self'` |
+| 7 | `https://raiden.com.pe/sitemap-0.xml` y `/robots.txt` | Sin `/admin` ni `/legal/*`; `Disallow: /admin` |
+| 8 | `curl -I https://raiden.com.pe/productos` | **200** (no 308 a `/productos/`): `build.format: 'file'`, ADR-024 |
 
 ### 12.5 Desarrollo local (sin Cloudflare)
 

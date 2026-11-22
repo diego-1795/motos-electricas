@@ -63,7 +63,7 @@ Solo existen variables con prefijo `PUBLIC_` (se leen en build y llegan al bundl
 
 | Variable | Ejemplo | Uso |
 |---|---|---|
-| `PUBLIC_SITE_URL` | `https://raiden.pe` | URL canónica: canonicals, sitemap, JSON-LD, OG |
+| `PUBLIC_SITE_URL` | `https://raiden.com.pe` | URL canónica: canonicals, sitemap, JSON-LD, OG |
 | `PUBLIC_WHATSAPP_NUMBER` | `51989853431` | Número de ventas, formato internacional sin `+` |
 | `PUBLIC_CONTACT_EMAIL` | `raiden.peru@gmail.com` | Email del pie y del JSON-LD |
 | `PUBLIC_ANALYTICS` | `console` \| `datalayer` \| vacío | Adaptador de analítica (vacío = noop) |

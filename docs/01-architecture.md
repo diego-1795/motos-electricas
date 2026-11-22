@@ -177,7 +177,7 @@ export const productRepository: ProductRepository = new JsonProductRepository();
 
 | Variable | Obligatoria | Ejemplo | Uso |
 |---|---|---|---|
-| `PUBLIC_SITE_URL` | Sí en producción | `https://raiden.pe` | `site` en `astro.config.mjs`, canónicas, sitemap |
+| `PUBLIC_SITE_URL` | Sí en producción | `https://raiden.com.pe` | `site` en `astro.config.mjs`, canónicas, sitemap |
 | `PUBLIC_WHATSAPP_NUMBER` | Sí | `51989853431` (sin `+`) | Enlace `wa.me` |
 | `PUBLIC_ANALYTICS` | No | vacío (noop) \| `console` \| `datalayer` | Selección del adaptador (Cloudflare Web Analytics va aparte, con `PUBLIC_CF_BEACON_TOKEN`) |
 | `PUBLIC_CF_ANALYTICS_TOKEN` | No | token del beacon | Solo si adapter = `cloudflare` |

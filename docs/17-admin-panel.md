@@ -162,7 +162,7 @@ Se activa solo si se cumple el criterio de §4 (más de 40 productos o más de 2
 
 ### Dónde correría el panel
 
-| Criterio | A. `/admin` en el mismo proyecto con adapter SSR | B. Aplicación separada (`admin.raiden.pe`) |
+| Criterio | A. `/admin` en el mismo proyecto con adapter SSR | B. Aplicación separada (`admin.raiden.com.pe`) |
 |---|---|---|
 | Cambios en `astro.config` | `prerender = false` solo en `/admin/*` + adapter | Ninguno en el sitio público |
 | Riesgo para el sitio público | Medio: comparte dependencias, CSP y presupuesto de bundle | Nulo |

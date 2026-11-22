@@ -13,7 +13,7 @@ Raiden se despliega en Cloudflare Pages (plan Free) como hosting estático. Clou
 | Ficheros por deploy | 20.000 | ~300 páginas + ~1.500 imágenes derivadas (AVIF/WebP) |
 | Tamaño por fichero | 25 MB | Imagen más grande < 1 MB tras sharp |
 | Proyectos | Sin límite práctico | 1 (`raiden`) |
-| Dominios personalizados | 100 por proyecto | 2 (`raiden.pe`, `www.raiden.pe`, provisional) |
+| Dominios personalizados | 100 por proyecto | 2 (`raiden.com.pe`, comprado el 2026-11-22, y `www.raiden.com.pe`) |
 | Retención de deploys | Sin caducidad | Rollback instantáneo a cualquier deploy |
 
 Riesgo a vigilar: el límite de 20.000 ficheros. Cada `<Image>` con `widths` múltiples y dos formatos genera N×2 ficheros. El presupuesto se controla en [09-performance](./09-performance.md): máximo 4 anchos por imagen de producto.
@@ -41,7 +41,7 @@ Solo se exponen al build variables con prefijo `PUBLIC_`; no existen secretos en
 | Variable | Producción | Preview | Uso |
 |---|---|---|---|
 | `NODE_VERSION` | `22.23.4` | `22.23.4` | Versión de Node en el builder (Astro 7.4 no compila con menos) |
-| `PUBLIC_SITE_URL` | `https://raiden.pe` (provisional: `https://raiden.pages.dev`) | URL de la preview | `site` de Astro: canonicals, sitemap, robots.txt, JSON-LD, OG |
+| `PUBLIC_SITE_URL` | `https://raiden.com.pe` (provisional: `https://raiden.pages.dev`) | URL de la preview | `site` de Astro: canonicals, sitemap, robots.txt, JSON-LD, OG |
 | `PUBLIC_WHATSAPP_NUMBER` | Número real E.164 sin `+` | Número de pruebas del equipo | `src/config/site.ts` |
 | `PUBLIC_CONTACT_EMAIL` | Email de contacto real | El mismo o uno de pruebas | Pie y JSON-LD `Organization` |
 | `PUBLIC_ANALYTICS` | vacío (noop) o `datalayer` | `console` | Adaptador de `AnalyticsService`: `console` \| `datalayer` \| vacío = noop |
@@ -70,12 +70,13 @@ Notas:
 
 ### `public/_redirects` (todavía no existe)
 
-No hace falta hasta tener dominio propio. La barra final ya no necesita regla: con `build.format: 'file'` Pages sirve `/productos` con 200 y redirige `/productos/` → `/productos` (ADR-024). Cuando haya dominio, crear el fichero con la canónica:
+La barra final no necesita regla: con `build.format: 'file'` Pages sirve `/productos` con 200 y redirige `/productos/` → `/productos` (ADR-024).
+
+**La redirección `www → apex` no puede ir aquí**: `_redirects` de Cloudflare Pages no admite redirecciones a nivel de dominio (`https://www…/*`), solo rutas relativas. Se hace con una regla de Cloudflare (§4, paso 4). En Netlify sí funcionaría en este fichero; en Vercel va en `vercel.json` ([20-migration](./20-migration.md)).
+
+Solo haría falta crear el fichero si las rutas del catálogo anterior llegaron a indexarse:
 
 ```
-# Canonical: www -> apex
-https://www.raiden.pe/*  https://raiden.pe/:splat  301
-
 # Rutas del catálogo anterior (ADR-015): solo si llegaron a indexarse
 /motos-electricas          /productos     301
 /accesorios                /repuestos     301
@@ -83,15 +84,19 @@ https://www.raiden.pe/*  https://raiden.pe/:splat  301
 /motos-electricas-urbanas  /bicimotos     301
 ```
 
-Cloudflare Pages soporta hasta 2.000 redirecciones estáticas y 100 dinámicas por proyecto. No se usan reglas con `200` (rewrites) porque Vercel y Netlify las interpretan de forma distinta.
+Cloudflare Pages soporta hasta 2.000 redirecciones estáticas y 100 dinámicas por proyecto, y no las aplica a las rutas que sirven las Pages Functions (`/api/admin/*`). No se usan reglas con `200` (rewrites) porque Vercel y Netlify las interpretan de forma distinta.
 
 ## 4. Dominios y DNS
 
-1. Añadir el dominio en el proyecto: Custom domains → Set up a custom domain → `raiden.pe` y `www.raiden.pe`.
-2. Si la zona DNS está en Cloudflare, se crean automáticamente registros `CNAME` hacia `raiden.pages.dev` (apex mediante CNAME flattening). Si el DNS está en otro registrador, se crea manualmente `CNAME www → raiden.pages.dev` y para el apex se usa ALIAS/ANAME o se traslada la zona.
-3. Certificado TLS: emitido automáticamente (Universal SSL). Modo SSL/TLS en "Full (strict)".
-4. Activar "Always Use HTTPS" y HSTS solo tras confirmar que todos los subdominios sirven TLS.
-5. Verificación de propiedad en Google Search Console mediante registro TXT ([08-seo](./08-seo.md)).
+`raiden.com.pe` está registrado en un registrador peruano (Cloudflare Registrar no vende `.pe`). Pages solo acepta el **apex** como dominio propio si la zona DNS está en Cloudflare, así que se delegan los nameservers:
+
+1. **Zona en Cloudflare:** Account home → *Onboard a domain* → `raiden.com.pe` → plan **Free**. Revisar los registros DNS que importe (si el registrador tenía MX de correo, conservarlos). Cloudflare muestra dos nameservers (`<nombre>.ns.cloudflare.com`).
+2. **Nameservers en el registrador:** en el panel donde se compró el dominio, sustituir los DNS por los dos de Cloudflare. La propagación de `.pe` puede tardar de minutos a 24 h; Cloudflare avisa por email cuando la zona queda *Active*.
+3. **Dominios en Pages:** proyecto → Custom domains → *Set up a custom domain* → `raiden.com.pe`, y después `www.raiden.com.pe`. Con la zona en Cloudflare, los CNAME hacia `raiden.pages.dev` se crean solos (apex mediante CNAME flattening).
+4. **Redirección `www → apex`** (una sola canónica): Rules → *Redirect Rules* → plantilla **"Redirect from WWW to root"** (`https://www.raiden.com.pe/*` → `https://raiden.com.pe/${1}`, 301, conservando la query). Alternativa equivalente: *Bulk Redirects*, como describe la guía de Pages "Redirecting www to domain apex".
+5. **TLS:** certificado emitido automáticamente (Universal SSL). SSL/TLS en "Full (strict)" y "Always Use HTTPS" activado. `_headers` ya envía HSTS con `includeSubDomains; preload`: no crear subdominios sin HTTPS.
+6. **`PUBLIC_SITE_URL=https://raiden.com.pe`** en Production y *Retry deployment*.
+7. Verificación de propiedad en Google Search Console mediante registro TXT ([08-seo](./08-seo.md)).
 
 El dominio `*.pages.dev` sigue activo tras añadir el dominio propio y sirve el mismo build. El contenido duplicado lo resuelven las canónicas: cada página emite `<link rel="canonical">` hacia `PUBLIC_SITE_URL`, de modo que la copia en `pages.dev` remite al dominio real. No hay `noindex` automático por entorno: `robots.txt` siempre permite indexar (salvo `/carrito`, `/comparar`, `/admin` y `/api/`). Por eso `PUBLIC_SITE_URL` debe cambiarse al dominio final (y relanzar el build) en cuanto se conecte.
 
@@ -131,7 +136,7 @@ Cualquier uso de estas capacidades requiere revisión DevOps + Tech Lead (regla 
 |---|---|---|
 | Cloudflare Images / Image Resizing | Coste y lock-in de URLs | `<Image>` de Astro con sharp en build |
 | Transform Rules / Page Rules para cabeceras | Viven fuera del repositorio | `public/_headers` versionado |
-| Bulk Redirects en dashboard | No auditables en git | `public/_redirects` |
+| Bulk Redirects / Redirect Rules en dashboard | No auditables en git | `public/_redirects` para rutas. Única excepción: la Redirect Rule `www → apex` (§4), porque `_redirects` de Pages no admite redirecciones de dominio |
 | Workers KV para contenido | Lock-in de API | JSON en `src/content/` y, después, Supabase |
 | Durable Objects | Sin caso de uso | — |
 | Email Routing para formularios | Dependencia del proveedor | `EmailService` con adaptador (Resend u otro) |
@@ -146,7 +151,7 @@ Regla: si una funcionalidad no se puede reproducir con un fichero del repositori
 Desde ADR-024 el panel se protege con su propio login por email y contraseña ([19-deployment](./19-deployment.md) §12). Access es una **segunda barrera opcional**: si se configura, las Functions exigen además el JWT. Configuración en Zero Trust (gratuito hasta 50 usuarios):
 
 1. **Zero Trust → Settings → Custom Pages**: anotar el *team domain* (`<equipo>.cloudflareaccess.com`) → variable `CF_ACCESS_TEAM_DOMAIN`.
-2. **Access → Applications → Add → Self-hosted**: dominio `raiden.pe` (y `www`), rutas `/admin` y `/api/admin` (una aplicación con dos rutas, o dos aplicaciones con la misma política). Duración de sesión: 24 h. Método: *One-time PIN* (código al email); no hace falta proveedor de identidad.
+2. **Access → Applications → Add → Self-hosted**: dominio `raiden.com.pe` (y `www`), rutas `/admin` y `/api/admin` (una aplicación con dos rutas, o dos aplicaciones con la misma política). Duración de sesión: 24 h. Método: *One-time PIN* (código al email); no hace falta proveedor de identidad.
 3. **Política "Catálogo RAIDEN"** (Allow): *Emails* = los de Diego y Wiliam. Cualquier otro email ve la pantalla de Access y no entra.
 4. En la aplicación, *Overview → Application Audience (AUD) Tag* → variable `CF_ACCESS_AUD`.
 5. El dominio `*.pages.dev` no pasa por Access salvo que se añada como dominio de la aplicación; con Access activado, añadir también `raiden.pages.dev` (misma política). Sin `CF_ACCESS_*`, el panel funciona solo con contraseña.
@@ -171,7 +176,7 @@ Escenario de crecimiento: Pages Pro (20 USD/mes) solo aporta 5.000 builds y buil
 - [ ] Repositorio conectado, rama de producción `main`.
 - [ ] `NODE_VERSION`, `PUBLIC_SITE_URL`, `PUBLIC_WHATSAPP_NUMBER`, `PUBLIC_CONTACT_EMAIL` definidas en Production (y en Preview si hay previews).
 - [ ] Cabeceras de `public/_headers` verificadas con `curl -I`.
-- [ ] Dominio propio con TLS "Full (strict)", `PUBLIC_SITE_URL` actualizado y `public/_redirects` creado con la redirección www → apex.
+- [ ] Dominio propio con TLS "Full (strict)", `PUBLIC_SITE_URL` actualizado y Redirect Rule www → apex (§4).
 - [ ] Preview branches en "None" o limitadas a `feat/*`, `fix/*`, `content/*` con variables de Preview definidas.
 - [ ] Web Analytics: `PUBLIC_CF_BEACON_TOKEN` definido o vacío (sin inyección automática de Pages).
 - [ ] Panel `/admin`: KV, variables y comprobaciones de [19-deployment](./19-deployment.md) §12.

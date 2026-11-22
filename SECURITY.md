@@ -4,7 +4,7 @@
 
 - Escribe a **security@raiden.example.com** (sustituir por el buzón real antes del lanzamiento) o abre un *Security Advisory* privado en GitHub (Security → Report a vulnerability). **No** abras issues públicos para vulnerabilidades.
 - Incluye: URL afectada, pasos para reproducir, impacto estimado y, si lo tienes, un PoC. Respondemos en un máximo de 5 días laborables y publicamos la corrección junto con el crédito al reportante si lo desea.
-- Alcance: el sitio público (`https://raiden.pe` y previews `*.pages.dev`), este repositorio y sus workflows de CI. Fuera de alcance: WhatsApp/Meta, Cloudflare y GitHub como plataformas, y ataques que requieran un dispositivo o navegador ya comprometido.
+- Alcance: el sitio público (`https://raiden.com.pe` y previews `*.pages.dev`), este repositorio y sus workflows de CI. Fuera de alcance: WhatsApp/Meta, Cloudflare y GitHub como plataformas, y ataques que requieran un dispositivo o navegador ya comprometido.
 - Versiones soportadas: solo la rama `main` desplegada en producción.
 
 ## Modelo de amenazas (sitio estático + traspaso a WhatsApp)
@@ -63,7 +63,7 @@ Notas sobre la CSP:
 
 ## Auditoría manual recomendada antes de cada release
 
-1. `curl -I https://raiden.pe` → CSP, HSTS, nosniff, Referrer-Policy, Permissions-Policy presentes.
+1. `curl -I https://raiden.com.pe` → CSP, HSTS, nosniff, Referrer-Policy, Permissions-Policy presentes.
 2. securityheaders.com y Mozilla Observatory con nota A/A+.
 3. Consola del navegador sin violaciones CSP en `/`, una ficha de producto, `/carrito`, `/comparar` y `/encuentra-tu-moto`.
 4. Añadir un producto, escribir notas con `<script>` y saltos de línea, pulsar "Solicitar pedido": el texto llega codificado en `?text=` y nunca se renderiza como HTML.

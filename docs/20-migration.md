@@ -62,7 +62,7 @@ Equivalente completo en `vercel.json`:
     }
   ],
   "redirects": [
-    { "source": "/:path*", "has": [{ "type": "host", "value": "www.raiden.pe" }], "destination": "https://raiden.pe/:path*", "permanent": true }
+    { "source": "/:path*", "has": [{ "type": "host", "value": "www.raiden.com.pe" }], "destination": "https://raiden.com.pe/:path*", "permanent": true }
   ]
 }
 ```

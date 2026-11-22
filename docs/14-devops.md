@@ -141,7 +141,7 @@ El despliegue no lo hace Actions: Cloudflare Pages construye desde el push a `ma
 |---|---|---|---|---|---|
 | Local | `npm run dev` | `http://localhost:4321` | Número de pruebas en `.env` | `console` | No |
 | Preview | Rama `feat/*`, `fix/*`, `content/*` | `https://<rama>.raiden.pages.dev` | Número de pruebas | `console` | No (`noindex`) |
-| Producción | `main` | `https://raiden.pe` | Número real | `cloudflare` | Sí |
+| Producción | `main` | `https://raiden.com.pe` | Número real | `cloudflare` | Sí |
 
 `.env.example` versionado con todas las `PUBLIC_*` documentadas; `.env` en `.gitignore`.
 
@@ -179,7 +179,7 @@ El formato se verifica en CI con `npx prettier --check .` dentro del job `check`
 
 ## 8. Observabilidad mínima
 
-- Disponibilidad: un monitor HTTP externo gratuito (UptimeRobot o similar) contra `https://raiden.pe/` y `/productos` cada 5 min, alerta por correo.
+- Disponibilidad: un monitor HTTP externo gratuito (UptimeRobot o similar) contra `https://raiden.com.pe/` y `/productos` cada 5 min, alerta por correo.
 - Rendimiento real: Cloudflare Web Analytics (Core Web Vitals RUM) y Search Console para errores de rastreo.
 - Errores de cliente: no se instala Sentry en MVP. `AnalyticsService` expone `trackError` con adaptador `noop`; se conecta a un servicio cuando haya backend.
 - Builds: notificaciones de fallo de Cloudflare Pages y de Actions al correo del Tech Lead.
@@ -195,7 +195,7 @@ El formato se verifica en CI con `npx prettier --check .` dentro del job `check`
 
 ### Incidencia (sitio caído o flujo de WhatsApp roto)
 
-1. Confirmar con el monitor externo y con `curl -I https://raiden.pe` desde otra red.
+1. Confirmar con el monitor externo y con `curl -I https://raiden.com.pe` desde otra red.
 2. Clasificar: DNS/TLS (panel Cloudflare), build (último deploy), aplicación (E2E contra producción con `PLAYWRIGHT_BASE_URL`).
 3. Si el último deploy es sospechoso: rollback (runbook anterior).
 4. Si es DNS/TLS: revisar registros y modo SSL "Full (strict)"; no tocar reglas fuera del repositorio.
