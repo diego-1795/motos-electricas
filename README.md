@@ -131,7 +131,7 @@ Integración Git (zero-config), sin adapter ni `wrangler.toml`:
 | `NODE_VERSION` | `22.23.4` |
 | Variables | `PUBLIC_SITE_URL`, `PUBLIC_WHATSAPP_NUMBER` (+ opcionales) en Production y Preview |
 
-Cada push a `main` despliega producción; cualquier otra rama genera una preview `https://<rama>.raiden.pages.dev`. `public/_headers` se copia a `dist/` y Cloudflare aplica las cabeceras. Rollback: Pages → Deployments → "Rollback to this deployment".
+Cada push a `main` despliega producción; cualquier otra rama genera una preview `https://<rama>.motos-electricas.pages.dev`. `public/_headers` se copia a `dist/` y Cloudflare aplica las cabeceras. Rollback: Pages → Deployments → "Rollback to this deployment".
 
 Alternativa (despliegue solo tras CI verde): workflow manual [`deploy-cloudflare-pages.yml`](./.github/workflows/deploy-cloudflare-pages.yml) con `cloudflare/wrangler-action` y los secrets `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`.
 

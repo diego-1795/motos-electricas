@@ -37,4 +37,4 @@ GITHUB_BRANCH=admin-sandbox
 # Opcional: estado del último despliegue (API de Pages). Sin estas tres, el panel muestra "publicando… ~3 min".
 CF_API_TOKEN=
 CF_ACCOUNT_ID=
-CF_PAGES_PROJECT=raiden
+CF_PAGES_PROJECT=motos-electricas

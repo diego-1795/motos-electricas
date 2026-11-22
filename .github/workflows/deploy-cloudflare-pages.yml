@@ -86,4 +86,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.154.0"
-          command: pages deploy dist --project-name raiden --branch ${{ inputs.branch }} --commit-dirty=true
+          command: pages deploy dist --project-name motos-electricas --branch ${{ inputs.branch }} --commit-dirty=true

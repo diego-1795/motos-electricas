@@ -39,7 +39,7 @@ Flujo resultante: `push` a rama → Cloudflare construye preview y comenta la UR
 | Variable | Production | Preview | Uso |
 |---|---|---|---|
 | `NODE_VERSION` | `22.23.4` | `22.23.4` | Runtime de build |
-| `PUBLIC_SITE_URL` | `https://raiden.com.pe` (provisional: `https://raiden.pages.dev`) | URL de la preview | `site` en `astro.config.mjs`, canonicals, sitemap, `robots.txt`, JSON-LD |
+| `PUBLIC_SITE_URL` | `https://raiden.com.pe` (provisional: `https://motos-electricas.pages.dev`) | URL de la preview | `site` en `astro.config.mjs`, canonicals, sitemap, `robots.txt`, JSON-LD |
 | `PUBLIC_WHATSAPP_NUMBER` | Número real de ventas (`51` + 9 dígitos, sin `+`) | Número de pruebas del equipo | `src/config/site.ts` |
 | `PUBLIC_CONTACT_EMAIL` | Email de contacto real | El mismo o uno de pruebas | Pie y JSON-LD `Organization` |
 | `PUBLIC_ANALYTICS` | vacío (noop) o `datalayer` | `console` | Adaptador de `AnalyticsService` ([18-analytics](./18-analytics.md)) |
@@ -50,7 +50,7 @@ No hay `noindex` por entorno: `robots.txt` (`src/pages/robots.txt.ts`) siempre p
 
 ## 5. Previews por PR
 
-- Cada PR obtiene `https://<hash>.raiden.pages.dev` y, por rama, `https://<rama>.raiden.pages.dev`.
+- Cada PR obtiene `https://<hash>.motos-electricas.pages.dev` y, por rama, `https://<rama>.motos-electricas.pages.dev`.
 - El bot de Cloudflare publica la URL en la PR. QA ejecuta la checklist de la sección 7 sobre esa URL.
 - Solo si se activan (§2 paso 6) y con las variables de Preview definidas: las previews usan el número de WhatsApp de pruebas, así ningún clic de QA llega a ventas.
 - Las previews caducan con la rama; no se conservan como entornos permanentes.
@@ -119,7 +119,7 @@ Porque el artefacto es `dist/`, cambiar de hosting es configuración, no código
 | Enlace WhatsApp abre número incorrecto | Comprobar `PUBLIC_WHATSAPP_NUMBER` del entorno; relanzar build. No hay números en código |
 | Cabeceras ausentes | Verificar que `public/_headers` está en `dist/_headers`; `_headers` no admite comodines anidados mal formados: validar con `npx wrangler pages dev dist` |
 | Sitemap con dominio `raiden.example.com` | `PUBLIC_SITE_URL` no definido en ese entorno |
-| Certificado pendiente > 15 min | Comprobar que el CNAME apunta a `raiden.pages.dev` y que no hay registros AAAA residuales |
+| Certificado pendiente > 15 min | Comprobar que el CNAME apunta a `motos-electricas.pages.dev` y que no hay registros AAAA residuales |
 | Preview indexada en Google | No hay `noindex` automático: desactivar previews (Branch control → None) o protegerlas con Cloudflare Access, y pedir la retirada en Search Console |
 | Build falla en `check-csp` | Se editó un `<script>` de un componente `.astro` o se actualizó Astro: copiar los hashes que imprime el log a `public/_headers` y `vercel.json` |
 | Necesidad de purgar caché | Pages invalida por despliegue; para assets con hash no es necesario. Para `robots.txt` o `_headers`: Caching → Purge by URL |
@@ -161,7 +161,7 @@ El panel necesita Pages Functions, un KV y las variables de abajo (ADR-024: logi
 | `GITHUB_BRANCH` | `main` | No |
 | `CF_API_TOKEN` (opcional) | token de API con *Account → Cloudflare Pages: Read* | **Sí** |
 | `CF_ACCOUNT_ID` (opcional) | ID de la cuenta | No |
-| `CF_PAGES_PROJECT` (opcional) | `raiden` (nombre del proyecto de Pages) | No |
+| `CF_PAGES_PROJECT` (opcional) | `motos-electricas` (nombre del proyecto de Pages) | No |
 
 Las tres opcionales permiten que el panel muestre el estado real del último build; sin ellas muestra "Publicando… ~3 min". Tras guardar las variables, **Retry deployment** para que las Functions las reciban. **No definir nunca `ADMIN_LOCAL_USER` en Pages**: el runtime de Pages no define `NODE_ENV`, así que la garantía real en producción es que esa variable no exista (la comprobación de host `localhost` es la segunda barrera). En *Preview* dejar todo vacío salvo que se quiera probar el panel contra una rama (`GITHUB_BRANCH` = esa rama).
 

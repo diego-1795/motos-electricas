@@ -12,7 +12,7 @@ Raiden se despliega en Cloudflare Pages (plan Free) como hosting estático. Clou
 | Peticiones | Ilimitadas | — |
 | Ficheros por deploy | 20.000 | ~300 páginas + ~1.500 imágenes derivadas (AVIF/WebP) |
 | Tamaño por fichero | 25 MB | Imagen más grande < 1 MB tras sharp |
-| Proyectos | Sin límite práctico | 1 (`raiden`) |
+| Proyectos | Sin límite práctico | 1 (`motos-electricas`, creado el 2026-11-22) |
 | Dominios personalizados | 100 por proyecto | 2 (`raiden.com.pe`, comprado el 2026-11-22, y `www.raiden.com.pe`) |
 | Retención de deploys | Sin caducidad | Rollback instantáneo a cualquier deploy |
 
@@ -41,7 +41,7 @@ Solo se exponen al build variables con prefijo `PUBLIC_`; no existen secretos en
 | Variable | Producción | Preview | Uso |
 |---|---|---|---|
 | `NODE_VERSION` | `22.23.4` | `22.23.4` | Versión de Node en el builder (Astro 7.4 no compila con menos) |
-| `PUBLIC_SITE_URL` | `https://raiden.com.pe` (provisional: `https://raiden.pages.dev`) | URL de la preview | `site` de Astro: canonicals, sitemap, robots.txt, JSON-LD, OG |
+| `PUBLIC_SITE_URL` | `https://raiden.com.pe` (provisional: `https://motos-electricas.pages.dev`) | URL de la preview | `site` de Astro: canonicals, sitemap, robots.txt, JSON-LD, OG |
 | `PUBLIC_WHATSAPP_NUMBER` | Número real E.164 sin `+` | Número de pruebas del equipo | `src/config/site.ts` |
 | `PUBLIC_CONTACT_EMAIL` | Email de contacto real | El mismo o uno de pruebas | Pie y JSON-LD `Organization` |
 | `PUBLIC_ANALYTICS` | vacío (noop) o `datalayer` | `console` | Adaptador de `AnalyticsService`: `console` \| `datalayer` \| vacío = noop |
@@ -92,7 +92,7 @@ Cloudflare Pages soporta hasta 2.000 redirecciones estáticas y 100 dinámicas p
 
 1. **Zona en Cloudflare:** Account home → *Onboard a domain* → `raiden.com.pe` → plan **Free**. Revisar los registros DNS que importe (si el registrador tenía MX de correo, conservarlos). Cloudflare muestra dos nameservers (`<nombre>.ns.cloudflare.com`).
 2. **Nameservers en el registrador:** en el panel donde se compró el dominio, sustituir los DNS por los dos de Cloudflare. La propagación de `.pe` puede tardar de minutos a 24 h; Cloudflare avisa por email cuando la zona queda *Active*.
-3. **Dominios en Pages:** proyecto → Custom domains → *Set up a custom domain* → `raiden.com.pe`, y después `www.raiden.com.pe`. Con la zona en Cloudflare, los CNAME hacia `raiden.pages.dev` se crean solos (apex mediante CNAME flattening).
+3. **Dominios en Pages:** proyecto → Custom domains → *Set up a custom domain* → `raiden.com.pe`, y después `www.raiden.com.pe`. Con la zona en Cloudflare, los CNAME hacia `motos-electricas.pages.dev` se crean solos (apex mediante CNAME flattening).
 4. **Redirección `www → apex`** (una sola canónica): Rules → *Redirect Rules* → plantilla **"Redirect from WWW to root"** (`https://www.raiden.com.pe/*` → `https://raiden.com.pe/${1}`, 301, conservando la query). Alternativa equivalente: *Bulk Redirects*, como describe la guía de Pages "Redirecting www to domain apex".
 5. **TLS:** certificado emitido automáticamente (Universal SSL). SSL/TLS en "Full (strict)" y "Always Use HTTPS" activado. `_headers` ya envía HSTS con `includeSubDomains; preload`: no crear subdominios sin HTTPS.
 6. **`PUBLIC_SITE_URL=https://raiden.com.pe`** en Production y *Retry deployment*.
@@ -102,10 +102,10 @@ El dominio `*.pages.dev` sigue activo tras añadir el dominio propio y sirve el 
 
 ## 5. Preview deployments por rama
 
-- Cada push a una rama distinta de `main` genera un deploy en `https://<hash>.raiden.pages.dev` y un alias estable `https://<rama>.raiden.pages.dev`.
+- Cada push a una rama distinta de `main` genera un deploy en `https://<hash>.motos-electricas.pages.dev` y un alias estable `https://<rama>.motos-electricas.pages.dev`.
 - Mientras no se definan las variables del entorno Preview, dejar Settings → Builds → Branch control → "Preview branches: **None**": una preview sin variables se construye con `raiden.example.com` y el número de WhatsApp por defecto, y gasta builds.
 - Cuando se quieran previews: definir las variables de Preview (número de pruebas, `PUBLIC_SITE_URL` de la preview) y pasar a "Custom" incluyendo `feat/*`, `fix/*`, `content/*` y excluyendo `renovate/*` y `dependabot/*`.
-- Las previews son públicas y **no** llevan `noindex` automático (ver §4); su canónica apunta a su propia `PUBLIC_SITE_URL`. Si se quiere que no sean accesibles, protegerlas con Cloudflare Access (gratis hasta 50 usuarios).
+- Las previews son públicas y **no** llevan `noindex` automático (ver §4); su canónica apunta a su propia `PUBLIC_SITE_URL`. Si se quiere que no sean accesibles, protegerlas con Cloudflare Access (gratis hasta 50 usuarios). **Estado (2026-11-22):** la política de Access de las previews está activada: las URLs por despliegue `https://<hash>.motos-electricas.pages.dev` redirigen al login de `motos-electricas-pages.cloudflareaccess.com`; la de producción (`motos-electricas.pages.dev`) y el dominio propio siguen públicos.
 - La URL del preview se publica automáticamente como comentario en la PR mediante la integración de GitHub.
 
 ## 6. Cloudflare Web Analytics (opcional)
@@ -154,7 +154,7 @@ Desde ADR-024 el panel se protege con su propio login por email y contraseña ([
 2. **Access → Applications → Add → Self-hosted**: dominio `raiden.com.pe` (y `www`), rutas `/admin` y `/api/admin` (una aplicación con dos rutas, o dos aplicaciones con la misma política). Duración de sesión: 24 h. Método: *One-time PIN* (código al email); no hace falta proveedor de identidad.
 3. **Política "Catálogo RAIDEN"** (Allow): *Emails* = los de Diego y Wiliam. Cualquier otro email ve la pantalla de Access y no entra.
 4. En la aplicación, *Overview → Application Audience (AUD) Tag* → variable `CF_ACCESS_AUD`.
-5. El dominio `*.pages.dev` no pasa por Access salvo que se añada como dominio de la aplicación; con Access activado, añadir también `raiden.pages.dev` (misma política). Sin `CF_ACCESS_*`, el panel funciona solo con contraseña.
+5. El dominio `*.pages.dev` no pasa por Access salvo que se añada como dominio de la aplicación; con Access activado, añadir también `motos-electricas.pages.dev` (misma política). Sin `CF_ACCESS_*`, el panel funciona solo con contraseña.
 
 Las Functions no confían en que Access "esté delante": verifican el JWT en cada petición (firma, `aud`, `iss`, `exp`) y exigen que su email sea el de la sesión por contraseña, de modo que una ruta mal configurada en Access no abre el API.
 

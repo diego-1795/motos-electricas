@@ -140,7 +140,7 @@ El despliegue no lo hace Actions: Cloudflare Pages construye desde el push a `ma
 | Entorno | Origen | URL | WhatsApp | Analítica | Indexable |
 |---|---|---|---|---|---|
 | Local | `npm run dev` | `http://localhost:4321` | Número de pruebas en `.env` | `console` | No |
-| Preview | Rama `feat/*`, `fix/*`, `content/*` | `https://<rama>.raiden.pages.dev` | Número de pruebas | `console` | No (`noindex`) |
+| Preview | Rama `feat/*`, `fix/*`, `content/*` | `https://<rama>.motos-electricas.pages.dev` | Número de pruebas | `console` | No (`noindex`) |
 | Producción | `main` | `https://raiden.com.pe` | Número real | `cloudflare` | Sí |
 
 `.env.example` versionado con todas las `PUBLIC_*` documentadas; `.env` en `.gitignore`.
