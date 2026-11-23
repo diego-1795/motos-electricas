@@ -185,7 +185,7 @@ export const productRepository: ProductRepository = new JsonProductRepository();
 
 Se validan al arrancar en `src/config/site.ts`; un número de WhatsApp ausente hace fallar el build en producción y muestra aviso en desarrollo.
 
-**Variables del panel de administración** (solo las leen las Pages Functions de `functions/api/admin`, nunca el build ni el cliente; ADR-018, alta en [19-deployment](./19-deployment.md) §12): `ADMIN_EMAILS`, `EDITOR_EMAILS`, `SESSION_SECRET` (secreto), `ADMIN_INITIAL_PASSWORDS` (hashes), el binding KV `ADMIN_KV` (ADR-024), `GITHUB_TOKEN` (secreto), `GITHUB_REPO`, `GITHUB_BRANCH`, y opcionales `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD` (Access como segunda barrera), `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`. En local van en `.dev.vars` (plantilla `.dev.vars.example`; `npm run admin:dev` añade el KV) junto con `ADMIN_LOCAL_USER`, que solo tiene efecto en `localhost` y va comentado por defecto.
+**Variables del panel de administración** (solo las leen las Pages Functions de `functions/api/admin`, nunca el build ni el cliente; ADR-018, alta en [19-deployment](./19-deployment.md) §12): `ADMIN_USERS`, `EDITOR_USERS` (ADR-025), `SESSION_SECRET` (secreto), `ADMIN_INITIAL_PASSWORDS` (hashes), el binding KV `ADMIN_KV` (ADR-024), `GITHUB_TOKEN` (secreto), `GITHUB_REPO`, `GITHUB_BRANCH`, y opcionales `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD` (Access como segunda barrera), `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_PAGES_PROJECT`. En local van en `.dev.vars` (plantilla `.dev.vars.example`; `npm run admin:dev` añade el KV) junto con `ADMIN_LOCAL_USER`, que solo tiene efecto en `localhost` y va comentado por defecto.
 
 ## 8b. Panel de administración (`functions/`, ADR-018)
 

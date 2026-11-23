@@ -36,7 +36,7 @@ export default function PasswordForm({ user, forced = false, onChanged, onCancel
   const submit = async (e: Event) => {
     e.preventDefault();
     if (busy) return;
-    const local = [...(current ? [] : ['Escribe tu contraseña actual']), ...passwordErrors(next, { email: user.email, current }), ...(next !== repeat ? ['Las dos contraseñas nuevas no coinciden'] : [])];
+    const local = [...(current ? [] : ['Escribe tu contraseña actual']), ...passwordErrors(next, { username: user.username, current }), ...(next !== repeat ? ['Las dos contraseñas nuevas no coinciden'] : [])];
     if (local.length) {
       setErrors(local);
       return;
@@ -66,7 +66,7 @@ export default function PasswordForm({ user, forced = false, onChanged, onCancel
         </p>
       )}
       {/* Campo oculto para que el gestor de contraseñas asocie la cuenta (recomendación de autocomplete) */}
-      <input type="text" name="username" autocomplete="username" value={user.email} readOnly hidden aria-hidden="true" tabIndex={-1} />
+      <input type="text" name="username" autocomplete="username" value={user.username} readOnly hidden aria-hidden="true" tabIndex={-1} />
       <div class="field">
         <label class="label" for={`${id}-current`}>
           Contraseña actual
@@ -90,7 +90,7 @@ export default function PasswordForm({ user, forced = false, onChanged, onCancel
           disabled={busy}
         />
         <span id={`${id}-hint`} class="hint">
-          Al menos {MIN_PASSWORD_LENGTH} caracteres; evita tu email y secuencias como 1234567890. Puedes usar una frase con espacios.
+          Al menos {MIN_PASSWORD_LENGTH} caracteres; evita tu usuario y secuencias como 1234567890. Puedes usar una frase con espacios.
         </span>
       </div>
       <div class="field">

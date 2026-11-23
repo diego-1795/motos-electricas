@@ -229,10 +229,10 @@ describe('verifyAccessJwt', () => {
   });
 
   it('la cookie CF_Authorization se verifica igual que la cabecera (con la sesión por contraseña ya abierta)', async () => {
-    const { env, cookie } = await passwordEnv('diego@example.com', { CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD });
+    const { env, cookie } = await passwordEnv('admin', { CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD });
     const now = Math.floor(Date.now() / 1000);
     const ok = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: `${cookie}; CF_Authorization=${await sign(freshClaims())}` } });
-    await expect(authenticate(ok, env, { now })).resolves.toEqual({ email: 'diego@example.com', localMode: false, mustChange: true });
+    await expect(authenticate(ok, env, { now })).resolves.toEqual({ username: 'admin', localMode: false, mustChange: true });
     const forged = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: `${cookie}; CF_Authorization=${await sign(freshClaims(), { key: otherPrivateKey })}` } });
     await expect(authenticate(forged, env, { now })).rejects.toMatchObject({ status: 401 });
   });
@@ -247,7 +247,7 @@ describe('extractToken', () => {
 });
 
 describe('modo local', () => {
-  const localEnv: Env = { ADMIN_LOCAL_USER: 'diegoo.1795@gmail.com', NODE_ENV: 'development' };
+  const localEnv: Env = { ADMIN_LOCAL_USER: 'admin', NODE_ENV: 'development' };
   const req = (url: string, headers: Record<string, string> = {}) => new Request(url, { headers });
 
   it('isLocalHost solo acepta localhost, 127.0.0.1 y [::1]', () => {
@@ -259,9 +259,9 @@ describe('modo local', () => {
   });
 
   it('activo solo con host local + ADMIN_LOCAL_USER + NODE_ENV ≠ production', () => {
-    expect(localIdentity(req('http://localhost:8788/api/admin/me'), localEnv)).toBe('diegoo.1795@gmail.com');
-    expect(localIdentity(req('http://127.0.0.1:8788/api/admin/me'), localEnv)).toBe('diegoo.1795@gmail.com');
-    expect(localIdentity(req('http://[::1]:8788/api/admin/me'), localEnv)).toBe('diegoo.1795@gmail.com');
+    expect(localIdentity(req('http://localhost:8788/api/admin/me'), localEnv)).toBe('admin');
+    expect(localIdentity(req('http://127.0.0.1:8788/api/admin/me'), localEnv)).toBe('admin');
+    expect(localIdentity(req('http://[::1]:8788/api/admin/me'), localEnv)).toBe('admin');
     expect(localIdentity(req('http://localhost:8788/api/admin/me'), { ...localEnv, NODE_ENV: 'production' })).toBeNull();
     expect(localIdentity(req('http://localhost:8788/api/admin/me'), { NODE_ENV: 'development' })).toBeNull();
   });
@@ -274,44 +274,47 @@ describe('modo local', () => {
   });
 
   it('la cabecera x-admin-local-user solo cuenta en modo local', async () => {
-    expect(localIdentity(req('http://localhost:8788/x', { [LOCAL_USER_HEADER]: 'wiliam@example.com' }), localEnv)).toBe('wiliam@example.com');
+    expect(localIdentity(req('http://localhost:8788/x', { [LOCAL_USER_HEADER]: 'william' }), localEnv)).toBe('william');
     // Producción: la cabecera no otorga identidad; sin sesión → 401
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const { env } = await passwordEnv('diego@example.com', { ...localEnv });
-    await expect(authenticate(req('https://raiden.pages.dev/api/admin/me', { [LOCAL_USER_HEADER]: 'wiliam@example.com' }), env)).rejects.toMatchObject({ status: 401 });
+    const { env } = await passwordEnv('admin', { ...localEnv });
+    await expect(authenticate(req('https://raiden.pages.dev/api/admin/me', { [LOCAL_USER_HEADER]: 'william' }), env)).rejects.toMatchObject({ status: 401 });
     warn.mockRestore();
   });
 });
 
 describe('authenticate', () => {
   it('modo local → localMode: true y email en minúsculas', async () => {
-    const env: Env = { ADMIN_LOCAL_USER: 'Diegoo.1795@gmail.com' };
-    await expect(authenticate(new Request('http://localhost:8788/api/admin/me'), env)).resolves.toEqual({ email: 'diegoo.1795@gmail.com', localMode: true, mustChange: false });
+    const env: Env = { ADMIN_LOCAL_USER: 'Admin' };
+    await expect(authenticate(new Request('http://localhost:8788/api/admin/me'), env)).resolves.toEqual({ username: 'admin', localMode: true, mustChange: false });
   });
 
   it('sesión por contraseña válida → identidad (sin Access configurado no se exige JWT)', async () => {
-    const { env, cookie } = await passwordEnv('diego@example.com');
+    const { env, cookie } = await passwordEnv('admin');
     const request = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } });
-    await expect(authenticate(request, env)).resolves.toEqual({ email: 'diego@example.com', localMode: false, mustChange: true });
+    await expect(authenticate(request, env)).resolves.toEqual({ username: 'admin', localMode: false, mustChange: true });
   });
 
   it('sin cookie → 401; cookie manipulada → 401 unauthorized', async () => {
-    const { env, cookie } = await passwordEnv('diego@example.com');
+    const { env, cookie } = await passwordEnv('admin');
     await expect(authenticate(new Request('https://raiden.pages.dev/api/admin/me'), env)).rejects.toMatchObject({ status: 401, code: 'unauthorized' });
     const bad = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: `${cookie}x` } });
     await expect(authenticate(bad, env)).rejects.toMatchObject({ status: 401, code: 'unauthorized' });
   });
 
-  it('con Access configurado: sesión sin JWT → 401; JWT de otro email → 403; solo JWT sin sesión → 401; ambos coherentes → identidad', async () => {
-    const { env, cookie } = await passwordEnv('diego@example.com', { CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD });
+  it('con Access configurado: sesión sin JWT → 401; solo JWT sin sesión → 401; sesión + JWT válido → identidad de la sesión', async () => {
+    const { env, cookie } = await passwordEnv('admin', { CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD });
     const now = Math.floor(Date.now() / 1000);
     await expect(authenticate(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } }), env, { now })).rejects.toMatchObject({ status: 401 });
-    const other = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie, 'Cf-Access-Jwt-Assertion': await sign(freshClaims({ email: 'intruso@example.com' })) } });
-    await expect(authenticate(other, env, { now })).rejects.toMatchObject({ status: 403 });
+    // El panel ya no guarda emails (ADR-025): quién pasa Access lo decide su política; el usuario es el de la sesión
+    const other = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie, 'Cf-Access-Jwt-Assertion': await sign(freshClaims({ email: 'otra@example.com' })) } });
+    await expect(authenticate(other, env, { now })).resolves.toMatchObject({ username: 'admin' });
+    const forged = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie, 'Cf-Access-Jwt-Assertion': `${await sign(freshClaims())}x` } });
+    await expect(authenticate(forged, env, { now })).rejects.toMatchObject({ status: 401 });
     // Access es segunda barrera, no sustituto: el JWT solo no abre
     await expect(authenticate(new Request('https://raiden.pages.dev/api/admin/me', { headers: { 'Cf-Access-Jwt-Assertion': await sign(freshClaims()) } }), env, { now })).rejects.toMatchObject({ status: 401 });
     const both = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie, 'Cf-Access-Jwt-Assertion': await sign(freshClaims()) } });
-    await expect(authenticate(both, env, { now })).resolves.toEqual({ email: 'diego@example.com', localMode: false, mustChange: true });
+    await expect(authenticate(both, env, { now })).resolves.toEqual({ username: 'admin', localMode: false, mustChange: true });
   });
 
   it('sin ADMIN_KV / SESSION_SECRET en producción → 500 de configuración, nunca abre el panel', async () => {
@@ -325,17 +328,17 @@ describe('authenticate', () => {
 
   it('con ADMIN_LOCAL_USER definido por error en producción (host no local) se sigue exigiendo la sesión', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const { env, cookie } = await passwordEnv('diego@example.com', { ADMIN_LOCAL_USER: 'diegoo.1795@gmail.com', NODE_ENV: 'development' });
+    const { env, cookie } = await passwordEnv('admin', { ADMIN_LOCAL_USER: 'admin', NODE_ENV: 'development' });
     await expect(authenticate(new Request('https://raiden.pages.dev/api/admin/me'), env)).rejects.toMatchObject({ status: 401 });
-    const withSession = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie, [LOCAL_USER_HEADER]: 'intruso@example.com' } });
+    const withSession = new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie, [LOCAL_USER_HEADER]: 'intruso' } });
     // La identidad es la de la sesión, nunca la de la cabecera local
-    await expect(authenticate(withSession, env)).resolves.toEqual({ email: 'diego@example.com', localMode: false, mustChange: true });
+    await expect(authenticate(withSession, env)).resolves.toEqual({ username: 'admin', localMode: false, mustChange: true });
     warn.mockRestore();
   });
 });
 
 describe('middleware /api/admin/* (integración)', () => {
-  const lists = { ADMIN_EMAILS: 'Diego@example.com', EDITOR_EMAILS: 'wiliam@example.com' };
+  const lists = { ADMIN_USERS: 'Admin', EDITOR_USERS: 'william' };
 
   type Ctx = Parameters<typeof onRequest>[0];
   function run(request: Request, env: Env, next: () => Promise<Response> = async () => new Response('ok', { status: 200 })) {
@@ -354,7 +357,7 @@ describe('middleware /api/admin/* (integración)', () => {
   }
 
   it('sin sesión → 401 JSON con no-store y sin ejecutar la ruta', async () => {
-    const { env } = await passwordEnv('diego@example.com', lists);
+    const { env } = await passwordEnv('admin', lists);
     const next = vi.fn(async () => new Response('ok'));
     const res = await run(new Request('https://raiden.pages.dev/api/admin/me'), env, next).response;
     expect(res.status).toBe(401);
@@ -365,7 +368,7 @@ describe('middleware /api/admin/* (integración)', () => {
 
   it('sesión válida pero email fuera de las listas → 403 y la ruta no se ejecuta', async () => {
     const next = vi.fn(async () => new Response('ok'));
-    const { env, cookie } = await passwordEnv('intruso@example.com', lists);
+    const { env, cookie } = await passwordEnv('intruso', lists);
     const res = await run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } }), env, next).response;
     expect(res.status).toBe(403);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
@@ -373,16 +376,16 @@ describe('middleware /api/admin/* (integración)', () => {
   });
 
   it('admin válido → la ruta recibe el usuario con rol resuelto en servidor y la respuesta lleva no-store', async () => {
-    const { env, cookie } = await passwordEnv('diego@example.com', lists);
+    const { env, cookie } = await passwordEnv('admin', lists);
     const { data, response } = run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } }), env);
     const res = await response;
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
-    expect(data.user).toEqual({ email: 'diego@example.com', role: 'admin', admins: ['diego@example.com'], editors: ['wiliam@example.com'], localMode: false, branch: 'main', mustChangePassword: true });
+    expect(data.user).toEqual({ username: 'admin', role: 'admin', admins: ['admin'], editors: ['william'], localMode: false, branch: 'main', mustChangePassword: true });
   });
 
   it('con Access configurado además de la sesión: sin JWT → 401; con JWT coherente → 200', async () => {
-    const { env, cookie } = await passwordEnv('diego@example.com', { ...lists, CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD });
+    const { env, cookie } = await passwordEnv('admin', { ...lists, CF_ACCESS_TEAM_DOMAIN: 'raiden', CF_ACCESS_AUD: AUD });
     const next = vi.fn(async () => new Response('ok'));
     expect((await run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } }), env, next).response).status).toBe(401);
     expect(next).not.toHaveBeenCalled();
@@ -392,7 +395,7 @@ describe('middleware /api/admin/* (integración)', () => {
 
   it('sin configuración del login (ADMIN_KV / SESSION_SECRET) → 500 de configuración (nunca deja pasar)', async () => {
     const next = vi.fn(async () => new Response('ok'));
-    const res = await run(new Request('https://raiden.pages.dev/api/admin/me'), { ADMIN_EMAILS: 'diego@example.com' }, next).response;
+    const res = await run(new Request('https://raiden.pages.dev/api/admin/me'), { ADMIN_USERS: 'admin' }, next).response;
     expect(res.status).toBe(500);
     expect(await res.json()).toMatchObject({ code: 'config' });
     expect(next).not.toHaveBeenCalled();
@@ -400,7 +403,7 @@ describe('middleware /api/admin/* (integración)', () => {
 
   it('excepción inesperada en la ruta → 500 genérico sin stack ni detalles', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { env, cookie } = await passwordEnv('diego@example.com', lists);
+    const { env, cookie } = await passwordEnv('admin', lists);
     const res = await run(new Request('https://raiden.pages.dev/api/admin/me', { headers: { Cookie: cookie } }), env, async () => {
       throw new Error('secreto interno ghp_xxx');
     }).response;

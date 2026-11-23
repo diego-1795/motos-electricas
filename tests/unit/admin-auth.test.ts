@@ -10,7 +10,9 @@ import {
   loginWithPassword,
   parseHash,
   parseInitialPasswords,
+  generateTempPassword,
   readUser,
+  resetPassword,
   sessionCookie,
   sessionIdentity,
   signSession,
@@ -23,13 +25,14 @@ import { onRequest } from '../../functions/api/admin/_middleware';
 import { onRequestPost as loginRoute } from '../../functions/api/admin/auth/login';
 import { onRequestPost as logoutRoute } from '../../functions/api/admin/auth/logout';
 import { onRequestPost as passwordRoute } from '../../functions/api/admin/auth/password';
+import { onRequestPost as resetRoute } from '../../functions/api/admin/users/reset';
 import { memoryKv, type MemoryKv } from './memoryKv';
 
-/** Acceso por contraseña del panel (ADR-024): hashes, cookie firmada, bloqueo, cambio de contraseña y middleware. */
+/** Acceso por usuario y contraseña del panel (ADR-024, ADR-025): hashes, cookie firmada, bloqueo, cambio de contraseña y middleware. */
 
 const SECRET = 'un-secreto-de-pruebas-con-mas-de-treinta-y-dos-caracteres';
-const DIEGO = 'diego@example.com';
-const WILIAM = 'wiliam@example.com';
+const ADMIN = 'admin';
+const WILLIAM = 'william';
 const TEMP = 'Temporal-1234-abcd';
 const ITER = 1000; // rápido en tests; el formato admite cualquier valor ≥ 1000
 
@@ -43,14 +46,14 @@ const fails = async (p: Promise<unknown>): Promise<HttpError> => {
   return e as HttpError;
 };
 
-async function envWith(over: Partial<Env> = {}, initial: Record<string, string> = { [DIEGO]: TEMP, [WILIAM]: TEMP }): Promise<Env> {
-  const entries = await Promise.all(Object.entries(initial).map(async ([email, pwd]) => `${email}:${await hashPassword(pwd, ITER)}`));
+async function envWith(over: Partial<Env> = {}, initial: Record<string, string> = { [ADMIN]: TEMP, [WILLIAM]: TEMP }): Promise<Env> {
+  const entries = await Promise.all(Object.entries(initial).map(async ([username, pwd]) => `${username}:${await hashPassword(pwd, ITER)}`));
   return {
     ADMIN_KV: kv as unknown as Env['ADMIN_KV'],
     SESSION_SECRET: SECRET,
     ADMIN_INITIAL_PASSWORDS: entries.join(', '),
-    ADMIN_EMAILS: DIEGO,
-    EDITOR_EMAILS: WILIAM,
+    ADMIN_USERS: ADMIN,
+    EDITOR_USERS: WILLIAM,
     ...over,
   };
 }
@@ -78,8 +81,9 @@ describe('política de contraseñas (dominio)', () => {
     expect(passwordErrors(123)).toEqual(['La contraseña debe ser texto']);
   });
 
-  it('rechaza el email, la actual y las triviales; acepta frases', () => {
-    expect(passwordErrors('Diego@Example.com', { email: DIEGO })).toContainEqual(expect.stringContaining('email'));
+  it('rechaza el usuario, la actual y las triviales; acepta frases', () => {
+    expect(passwordErrors('Admin', { username: ADMIN })).toContainEqual(expect.stringContaining('usuario'));
+    expect(passwordErrors('administracion 2026', { username: ADMIN })).toEqual([]);
     expect(passwordErrors(TEMP, { current: TEMP })).toContainEqual(expect.stringContaining('distinta de la actual'));
     for (const trivial of ['1234567890', '0987654321', 'aaaaaaaaaa', 'abababababab', 'qwertyuiop', 'abcdefghijkl']) {
       expect(passwordErrors(trivial), trivial).toContainEqual(expect.stringContaining('predecible'));
@@ -109,25 +113,26 @@ describe('hash de contraseña', () => {
     }
   });
 
-  it('parseInitialPasswords: email en minúsculas, separadores variados, entradas rotas ignoradas con aviso', async () => {
+  it('parseInitialPasswords: usuario en minúsculas, separadores variados, entradas rotas ignoradas con aviso', async () => {
     const h = await hashPassword(TEMP, ITER);
-    const map = parseInitialPasswords(`Diego@Example.com:${h};\n ${WILIAM}:${h}, roto, sin-arroba:${h}, ${DIEGO}:pbkdf2-sha256:nope`);
-    expect([...map.keys()]).toEqual([DIEGO, WILIAM]);
-    expect(map.get(DIEGO)).toBe(h);
+    // Las entradas antiguas por email ya no son usuarios válidos: se ignoran
+    const map = parseInitialPasswords(`Admin:${h};\n ${WILLIAM}:${h}, roto, viejo@example.com:${h}, ${ADMIN}:pbkdf2-sha256:nope`);
+    expect([...map.keys()]).toEqual([ADMIN, WILLIAM]);
+    expect(map.get(ADMIN)).toBe(h);
     expect(console.warn).toHaveBeenCalled();
     expect(parseInitialPasswords(undefined).size).toBe(0);
   });
 });
 
 describe('cookie de sesión', () => {
-  const claims = { email: DIEGO, v: 1, iat: nowS(), exp: nowS() + SESSION_TTL_S };
+  const claims = { sub: ADMIN, v: 1, iat: nowS(), exp: nowS() + SESSION_TTL_S };
 
   it('firma y verifica; otra clave, payload manipulado o firma recortada → null', async () => {
     const token = await signSession(claims, SECRET);
     await expect(verifySession(token, SECRET, nowS())).resolves.toEqual(claims);
     await expect(verifySession(token, SECRET + 'x', nowS())).resolves.toBeNull();
     const [payload, sig] = token.split('.') as [string, string];
-    const forged = Buffer.from(JSON.stringify({ ...claims, email: WILIAM })).toString('base64url');
+    const forged = Buffer.from(JSON.stringify({ ...claims, sub: WILLIAM })).toString('base64url');
     await expect(verifySession(`${forged}.${sig}`, SECRET, nowS())).resolves.toBeNull();
     await expect(verifySession(`${payload}.${sig.slice(0, -2)}`, SECRET, nowS())).resolves.toBeNull();
     await expect(verifySession(payload, SECRET, nowS())).resolves.toBeNull();
@@ -155,48 +160,48 @@ describe('cookie de sesión', () => {
 describe('loginWithPassword', () => {
   it('primera entrada con la contraseña temporal: crea el usuario en KV con mustChange y devuelve la identidad', async () => {
     const env = await envWith();
-    const id = await loginWithPassword(env, req('https://raiden.pe/api/admin/auth/login', { ip: '1.1.1.1' }), ' Diego@Example.com ', TEMP);
-    expect(id).toEqual({ email: DIEGO, mustChange: true, version: 1 });
-    const stored = await readUser(kv, DIEGO);
+    const id = await loginWithPassword(env, req('https://raiden.pe/api/admin/auth/login', { ip: '1.1.1.1' }), ' Admin ', TEMP);
+    expect(id).toEqual({ username: ADMIN, mustChange: true, version: 1 });
+    const stored = await readUser(kv, ADMIN);
     expect(stored).toMatchObject({ version: 1, mustChange: true });
     expect(stored!.hash).toMatch(/^pbkdf2-sha256:/);
     // Segunda entrada: ya desde KV, mismo resultado; la temporal del entorno deja de consultarse
-    const again = await loginWithPassword({ ...env, ADMIN_INITIAL_PASSWORDS: '' }, req('https://raiden.pe/x'), DIEGO, TEMP);
+    const again = await loginWithPassword({ ...env, ADMIN_INITIAL_PASSWORDS: '' }, req('https://raiden.pe/x'), ADMIN, TEMP);
     expect(again.mustChange).toBe(true);
   });
 
   it('mismo 401 para contraseña incorrecta y para email desconocido (no revela cuentas)', async () => {
     const env = await envWith();
-    const bad = await fails(loginWithPassword(env, req('https://raiden.pe/x'), DIEGO, 'incorrecta-123'));
-    const unknown = await fails(loginWithPassword(env, req('https://raiden.pe/x'), 'nadie@example.com', TEMP));
+    const bad = await fails(loginWithPassword(env, req('https://raiden.pe/x'), ADMIN, 'incorrecta-123'));
+    const unknown = await fails(loginWithPassword(env, req('https://raiden.pe/x'), 'nadie', TEMP));
     expect(bad.status).toBe(401);
     expect(unknown.status).toBe(401);
     expect(bad.message).toBe(unknown.message);
-    expect(await readUser(kv, 'nadie@example.com')).toBeNull();
+    expect(await readUser(kv, 'nadie')).toBeNull();
     for (const invalid of ['', 'no-es-email', null, undefined]) expect((await fails(loginWithPassword(env, req('https://raiden.pe/x'), invalid, TEMP))).status).toBe(401);
-    expect((await fails(loginWithPassword(env, req('https://raiden.pe/x'), DIEGO, ''))).status).toBe(401);
-    expect((await fails(loginWithPassword(env, req('https://raiden.pe/x'), DIEGO, 42))).status).toBe(401);
+    expect((await fails(loginWithPassword(env, req('https://raiden.pe/x'), ADMIN, ''))).status).toBe(401);
+    expect((await fails(loginWithPassword(env, req('https://raiden.pe/x'), ADMIN, 42))).status).toBe(401);
   });
 
   it('bloqueo temporal por cuenta tras N fallos (423), que caduca con el TTL; un acierto limpia el contador', async () => {
     const env = await envWith();
     const r = req('https://raiden.pe/x', { ip: '2.2.2.2' });
-    for (let i = 0; i < LOGIN_MAX_ATTEMPTS_PER_ACCOUNT; i++) expect((await fails(loginWithPassword(env, r, DIEGO, 'mal-mal-mal'))).status).toBe(401);
+    for (let i = 0; i < LOGIN_MAX_ATTEMPTS_PER_ACCOUNT; i++) expect((await fails(loginWithPassword(env, r, ADMIN, 'mal-mal-mal'))).status).toBe(401);
     // Incluso con la contraseña correcta: bloqueado
-    const locked = await fails(loginWithPassword(env, r, DIEGO, TEMP));
+    const locked = await fails(loginWithPassword(env, r, ADMIN, TEMP));
     expect(locked.status).toBe(423);
     expect(locked.message).toMatch(/Demasiados intentos/);
     // Otra cuenta desde la misma IP sigue pudiendo entrar (el tope por IP es mayor)
-    await expect(loginWithPassword(env, r, WILIAM, TEMP)).resolves.toMatchObject({ email: WILIAM });
+    await expect(loginWithPassword(env, r, WILLIAM, TEMP)).resolves.toMatchObject({ username: WILLIAM });
     clock += (LOGIN_LOCKOUT_S + 1) * 1000;
-    await expect(loginWithPassword(env, r, DIEGO, TEMP)).resolves.toMatchObject({ email: DIEGO });
-    expect(await kv.get(`login-fail:account:${DIEGO}`, 'text')).toBeNull();
+    await expect(loginWithPassword(env, r, ADMIN, TEMP)).resolves.toMatchObject({ username: ADMIN });
+    expect(await kv.get(`login-fail:account:${ADMIN}`, 'text')).toBeNull();
   });
 
   it('sin ADMIN_KV o sin SESSION_SECRET → 500 de configuración (nunca abre)', async () => {
     const env = await envWith();
-    expect((await fails(loginWithPassword({ ...env, ADMIN_KV: undefined }, req('https://raiden.pe/x'), DIEGO, TEMP))).status).toBe(500);
-    expect((await fails(loginWithPassword({ ...env, SESSION_SECRET: 'corto' }, req('https://raiden.pe/x'), DIEGO, TEMP))).status).toBe(500);
+    expect((await fails(loginWithPassword({ ...env, ADMIN_KV: undefined }, req('https://raiden.pe/x'), ADMIN, TEMP))).status).toBe(500);
+    expect((await fails(loginWithPassword({ ...env, SESSION_SECRET: 'corto' }, req('https://raiden.pe/x'), ADMIN, TEMP))).status).toBe(500);
   });
 });
 
@@ -204,44 +209,44 @@ describe('sessionIdentity y changePassword', () => {
   it('la cookie emitida identifica; cambiar la contraseña sube la versión y deja fuera a la cookie antigua', async () => {
     const env = await envWith();
     const r = req('https://raiden.pe/api/admin/auth/login');
-    const id = await loginWithPassword(env, r, DIEGO, TEMP);
+    const id = await loginWithPassword(env, r, ADMIN, TEMP);
     const setCookie = await issueSession(env, r, id, nowS());
     const cookie = setCookie.split(';')[0]!;
     const withCookie = req('https://raiden.pe/api/admin/me', { headers: { Cookie: `otra=1; ${cookie}` } });
-    await expect(sessionIdentity(env, withCookie, nowS())).resolves.toEqual({ email: DIEGO, mustChange: true, version: 1 });
+    await expect(sessionIdentity(env, withCookie, nowS())).resolves.toEqual({ username: ADMIN, mustChange: true, version: 1 });
 
-    const changed = await changePassword(env, DIEGO, TEMP, 'mi moto azul vuela 2026');
-    expect(changed).toEqual({ email: DIEGO, mustChange: false, version: 2 });
+    const changed = await changePassword(env, ADMIN, TEMP, 'mi moto azul vuela 2026');
+    expect(changed).toEqual({ username: ADMIN, mustChange: false, version: 2 });
     await expect(sessionIdentity(env, withCookie, nowS())).resolves.toBeNull(); // versión 1 ya no vale
     const fresh = (await issueSession(env, r, changed, nowS())).split(';')[0]!;
-    await expect(sessionIdentity(env, req('https://raiden.pe/x', { headers: { Cookie: fresh } }), nowS())).resolves.toEqual({ email: DIEGO, mustChange: false, version: 2 });
+    await expect(sessionIdentity(env, req('https://raiden.pe/x', { headers: { Cookie: fresh } }), nowS())).resolves.toEqual({ username: ADMIN, mustChange: false, version: 2 });
     // La temporal ya no sirve; la nueva sí
-    expect((await fails(loginWithPassword(env, r, DIEGO, TEMP))).status).toBe(401);
-    await expect(loginWithPassword(env, r, DIEGO, 'mi moto azul vuela 2026')).resolves.toMatchObject({ mustChange: false, version: 2 });
+    expect((await fails(loginWithPassword(env, r, ADMIN, TEMP))).status).toBe(401);
+    await expect(loginWithPassword(env, r, ADMIN, 'mi moto azul vuela 2026')).resolves.toMatchObject({ mustChange: false, version: 2 });
   });
 
   it('cambio: actual incorrecta → 401; nueva que incumple la política → 422 con details; usuario inexistente → 401', async () => {
     const env = await envWith();
-    await loginWithPassword(env, req('https://raiden.pe/x'), DIEGO, TEMP);
-    expect((await fails(changePassword(env, DIEGO, 'no-es-la-actual', 'mi moto azul vuela 2026'))).status).toBe(401);
-    const weak = await fails(changePassword(env, DIEGO, TEMP, 'corta'));
+    await loginWithPassword(env, req('https://raiden.pe/x'), ADMIN, TEMP);
+    expect((await fails(changePassword(env, ADMIN, 'no-es-la-actual', 'mi moto azul vuela 2026'))).status).toBe(401);
+    const weak = await fails(changePassword(env, ADMIN, TEMP, 'corta'));
     expect(weak.status).toBe(422);
     expect(weak.details).toContainEqual(expect.stringContaining(`${MIN_PASSWORD_LENGTH} caracteres`));
-    expect((await fails(changePassword(env, DIEGO, TEMP, TEMP))).details).toContainEqual(expect.stringContaining('distinta'));
-    expect((await fails(changePassword(env, WILIAM, TEMP, 'mi moto azul vuela 2026'))).status).toBe(401); // nunca entró: no hay registro
+    expect((await fails(changePassword(env, ADMIN, TEMP, TEMP))).details).toContainEqual(expect.stringContaining('distinta'));
+    expect((await fails(changePassword(env, WILLIAM, TEMP, 'mi moto azul vuela 2026'))).status).toBe(401); // nunca entró: no hay registro
     // Nada de lo anterior ha tocado el registro
-    expect(await readUser(kv, DIEGO)).toMatchObject({ version: 1, mustChange: true });
+    expect(await readUser(kv, ADMIN)).toMatchObject({ version: 1, mustChange: true });
   });
 
   it('sesión caducada, firmada con otro secreto o de un usuario borrado de KV → null', async () => {
     const env = await envWith();
     const r = req('https://raiden.pe/x');
-    const id = await loginWithPassword(env, r, DIEGO, TEMP);
+    const id = await loginWithPassword(env, r, ADMIN, TEMP);
     const cookie = (await issueSession(env, r, id, nowS())).split(';')[0]!;
     const withCookie = req('https://raiden.pe/x', { headers: { Cookie: cookie } });
     await expect(sessionIdentity(env, withCookie, nowS() + SESSION_TTL_S + 1)).resolves.toBeNull();
     await expect(sessionIdentity({ ...env, SESSION_SECRET: `${SECRET}-otro` }, withCookie, nowS())).resolves.toBeNull();
-    await kv.delete(`user:${DIEGO}`);
+    await kv.delete(`user:${ADMIN}`);
     await expect(sessionIdentity(env, withCookie, nowS())).resolves.toBeNull();
     await expect(sessionIdentity(env, req('https://raiden.pe/x'), nowS())).resolves.toBeNull();
   });
@@ -276,27 +281,27 @@ describe('rutas /auth/* y middleware (integración)', () => {
   it('login correcto → 200 con AdminUser (mustChangePassword) y Set-Cookie; el middleware deja pasar /auth/login sin sesión', async () => {
     const env = await envWith();
     const next = vi.fn(async () => new Response('login'));
-    const res = await run(postJson(`${ORIGIN}/api/admin/auth/login`, { email: DIEGO, password: TEMP }, { Origin: ORIGIN }), env, next).response;
+    const res = await run(postJson(`${ORIGIN}/api/admin/auth/login`, { username: ADMIN, password: TEMP }, { Origin: ORIGIN }), env, next).response;
     expect(res.status).toBe(200);
     expect(next).toHaveBeenCalled();
     expect(res.headers.get('Cache-Control')).toBe('no-store');
 
-    const login = await route(loginRoute, postJson(`${ORIGIN}/api/admin/auth/login`, { email: DIEGO, password: TEMP }), env);
+    const login = await route(loginRoute, postJson(`${ORIGIN}/api/admin/auth/login`, { username: ADMIN, password: TEMP }), env);
     expect(login.status).toBe(200);
     const cookie = login.headers.get('Set-Cookie')!;
     expect(cookie).toMatch(new RegExp(`^${SESSION_COOKIE}=[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+; Path=/api/admin;.*HttpOnly; SameSite=Strict; Secure$`));
-    expect(await login.json()).toEqual({ email: DIEGO, role: 'admin', admins: [DIEGO], editors: [WILIAM], localMode: false, branch: 'main', mustChangePassword: true });
+    expect(await login.json()).toEqual({ username: ADMIN, role: 'admin', admins: [ADMIN], editors: [WILLIAM], localMode: false, branch: 'main', mustChangePassword: true });
   });
 
   it('credenciales incorrectas → 401 sin cookie; cuerpo no JSON → 400 (sin Content-Type → 415); email con contraseña válida pero sin rol → 401 sin cookie', async () => {
-    const env = await envWith({}, { [DIEGO]: TEMP, 'expulsado@example.com': TEMP });
-    const bad = await route(loginRoute, postJson(`${ORIGIN}/api/admin/auth/login`, { email: DIEGO, password: 'mal-mal-mal' }), env);
+    const env = await envWith({}, { [ADMIN]: TEMP, 'expulsado': TEMP });
+    const bad = await route(loginRoute, postJson(`${ORIGIN}/api/admin/auth/login`, { username: ADMIN, password: 'mal-mal-mal' }), env);
     expect(bad.status).toBe(401);
     expect(bad.headers.get('Set-Cookie')).toBeNull();
     expect((await route(loginRoute, req(`${ORIGIN}/api/admin/auth/login`, { method: 'POST', body: 'no json', headers: { 'Content-Type': 'application/json' } }), env)).status).toBe(400);
     // Sin Content-Type JSON ni siquiera se lee el cuerpo (415): un formulario de otro sitio no puede intentar un login
     expect((await route(loginRoute, req(`${ORIGIN}/api/admin/auth/login`, { method: 'POST', body: '{}' }), env)).status).toBe(415);
-    const noRole = await route(loginRoute, postJson(`${ORIGIN}/api/admin/auth/login`, { email: 'expulsado@example.com', password: TEMP }), env);
+    const noRole = await route(loginRoute, postJson(`${ORIGIN}/api/admin/auth/login`, { username: 'expulsado', password: TEMP }), env);
     expect(noRole.status).toBe(401);
     expect(noRole.headers.get('Set-Cookie')).toBeNull();
     expect(((await noRole.json()) as { error: string }).error).toMatch(/no tiene acceso/);
@@ -304,13 +309,13 @@ describe('rutas /auth/* y middleware (integración)', () => {
 
   it('con la cookie el middleware resuelve el usuario; con contraseña temporal solo deja /me, /auth/password y /auth/logout', async () => {
     const env = await envWith();
-    const login = await route(loginRoute, postJson(`${ORIGIN}/api/admin/auth/login`, { email: WILIAM, password: TEMP }), env);
+    const login = await route(loginRoute, postJson(`${ORIGIN}/api/admin/auth/login`, { username: WILLIAM, password: TEMP }), env);
     const cookie = login.headers.get('Set-Cookie')!.split(';')[0]!;
     const headers = { Cookie: cookie, Origin: ORIGIN };
 
     const me = run(req(`${ORIGIN}/api/admin/me`, { headers }), env);
     expect((await me.response).status).toBe(200);
-    expect(me.data.user).toEqual({ email: WILIAM, role: 'editor', admins: [DIEGO], editors: [WILIAM], localMode: false, branch: 'main', mustChangePassword: true });
+    expect(me.data.user).toEqual({ username: WILLIAM, role: 'editor', admins: [ADMIN], editors: [WILLIAM], localMode: false, branch: 'main', mustChangePassword: true });
 
     const next = vi.fn(async () => new Response('ok'));
     const catalog = await run(req(`${ORIGIN}/api/admin/catalog`, { headers }), env, next).response;
@@ -324,8 +329,8 @@ describe('rutas /auth/* y middleware (integración)', () => {
     const changed = await route(passwordRoute, postJson(`${ORIGIN}/api/admin/auth/password`, { currentPassword: TEMP, newPassword: 'mi moto azul vuela 2026' }, headers), env, data);
     expect(changed.status).toBe(200);
     // La respuesta al editor nunca lleva la lista de administradores (tampoco la del login)
-    expect(await login.json()).toEqual({ email: WILIAM, role: 'editor', admins: [], editors: [WILIAM], localMode: false, branch: 'main', mustChangePassword: true });
-    expect(await changed.json()).toEqual({ email: WILIAM, role: 'editor', admins: [], editors: [WILIAM], localMode: false, branch: 'main' });
+    expect(await login.json()).toEqual({ username: WILLIAM, role: 'editor', admins: [], editors: [WILLIAM], localMode: false, branch: 'main', mustChangePassword: true });
+    expect(await changed.json()).toEqual({ username: WILLIAM, role: 'editor', admins: [], editors: [WILLIAM], localMode: false, branch: 'main' });
     const cookie2 = changed.headers.get('Set-Cookie')!.split(';')[0]!;
     expect(cookie2).not.toBe(cookie);
     expect((await run(req(`${ORIGIN}/api/admin/catalog`, { headers: { Cookie: cookie2 } }), env).response).status).toBe(200);
@@ -352,17 +357,116 @@ describe('rutas /auth/* y middleware (integración)', () => {
 
   it('sin ADMIN_KV / SESSION_SECRET el middleware responde 500 de configuración y no ejecuta la ruta', async () => {
     const next = vi.fn(async () => new Response('ok'));
-    const res = await run(req(`${ORIGIN}/api/admin/me`), { ADMIN_EMAILS: DIEGO }, next).response;
+    const res = await run(req(`${ORIGIN}/api/admin/me`), { ADMIN_USERS: ADMIN }, next).response;
     expect(res.status).toBe(500);
     expect(await res.json()).toMatchObject({ code: 'config' });
     expect(next).not.toHaveBeenCalled();
   });
 
   it('en modo local /auth/password responde 403 (no hay contraseña que cambiar)', async () => {
-    const env = await envWith({ ADMIN_LOCAL_USER: DIEGO });
+    const env = await envWith({ ADMIN_LOCAL_USER: ADMIN });
     const { data, response } = run(req('http://localhost:8788/api/admin/auth/password', { method: 'POST', body: '{}' }), env);
     expect((await response).status).toBe(200);
     const res = await route(passwordRoute, postJson('http://localhost:8788/api/admin/auth/password', { currentPassword: 'a', newPassword: 'mi moto azul vuela 2026' }), env, data);
     expect(res.status).toBe(403);
+  });
+});
+
+describe('restablecer contraseña sin email (ADR-025)', () => {
+  const ORIGIN = 'https://raiden.pe';
+  const NEW_PWD = 'mi moto azul vuela 2026';
+  type Ctx = Parameters<typeof onRequest>[0];
+
+  function mw(request: Request, env: Env) {
+    const data: Record<string, unknown> = {};
+    const context = { request, env, data, params: {}, functionPath: '', waitUntil: () => {}, passThroughOnException: () => {}, next: async () => new Response('ok') } as unknown as Ctx;
+    return { data, response: onRequest(context) };
+  }
+  const call = (fn: typeof resetRoute, request: Request, env: Env, data: Record<string, unknown>) =>
+    fn({ request, env, data, params: {}, functionPath: '', waitUntil: () => {}, passThroughOnException: () => {}, next: async () => new Response('') } as unknown as Parameters<typeof resetRoute>[0]);
+
+  async function loggedIn(env: Env, username: string, password: string): Promise<string> {
+    const login = await call(loginRoute as unknown as typeof resetRoute, postJson(`${ORIGIN}/api/admin/auth/login`, { username, password }), env, {});
+    expect(login.status).toBe(200);
+    return login.headers.get('Set-Cookie')!.split(';')[0]!;
+  }
+
+  it('temporal generada: 16 caracteres sin ambiguos en grupos de 4, distinta cada vez y válida para la política', () => {
+    const a = generateTempPassword();
+    expect(a).toMatch(/^[A-HJ-NP-Za-km-np-z2-9]{4}(-[A-HJ-NP-Za-km-np-z2-9]{4}){3}$/);
+    expect(generateTempPassword()).not.toBe(a);
+    expect(passwordErrors(a)).toEqual([]);
+  });
+
+  it('por entorno: una entrada NUEVA en ADMIN_INITIAL_PASSWORDS restablece (solo vale la nueva temporal); la ya aplicada no vuelve a valer', async () => {
+    const env = await envWith();
+    const r = req(`${ORIGIN}/x`);
+    await loginWithPassword(env, r, ADMIN, TEMP);
+    await changePassword(env, ADMIN, TEMP, NEW_PWD);
+    // La temporal antigua sigue en el entorno pero ya se aplicó: no abre
+    expect((await fails(loginWithPassword(env, r, ADMIN, TEMP))).status).toBe(401);
+
+    // Diego pone otra entrada (misma contraseña distinta sal o contraseña distinta: lo que cuenta es la entrada)
+    const reset = { ...env, ADMIN_INITIAL_PASSWORDS: `${ADMIN}:${await hashPassword('Otra-Temporal-9876', ITER)}` };
+    // Mientras está pendiente, la contraseña anterior deja de valer
+    expect((await fails(loginWithPassword(reset, r, ADMIN, NEW_PWD))).status).toBe(401);
+    const id = await loginWithPassword(reset, r, ADMIN, 'Otra-Temporal-9876');
+    expect(id).toEqual({ username: ADMIN, mustChange: true, version: 3 });
+    // Aplicada: ya no vale una segunda vez después de cambiarla
+    await changePassword(reset, ADMIN, 'Otra-Temporal-9876', 'otra frase larga 2027');
+    expect((await fails(loginWithPassword(reset, r, ADMIN, 'Otra-Temporal-9876'))).status).toBe(401);
+    await expect(loginWithPassword(reset, r, ADMIN, 'otra frase larga 2027')).resolves.toMatchObject({ mustChange: false, version: 4 });
+  });
+
+  it('resetPassword: nueva temporal con mustChange, sube la versión (cierra sesiones) y desbloquea la cuenta', async () => {
+    const env = await envWith();
+    const r = req(`${ORIGIN}/x`, { ip: '9.9.9.9' });
+    await loginWithPassword(env, r, WILLIAM, TEMP);
+    await changePassword(env, WILLIAM, TEMP, NEW_PWD);
+    for (let i = 0; i < LOGIN_MAX_ATTEMPTS_PER_ACCOUNT; i++) await fails(loginWithPassword(env, r, WILLIAM, 'olvidada-del-todo'));
+    expect((await fails(loginWithPassword(env, r, WILLIAM, NEW_PWD))).status).toBe(423);
+
+    const { temporaryPassword } = await resetPassword(env, WILLIAM);
+    expect(await readUser(kv, WILLIAM)).toMatchObject({ version: 3, mustChange: true });
+    const other = req(`${ORIGIN}/x`, { ip: '8.8.8.8' });
+    expect((await fails(loginWithPassword(env, other, WILLIAM, NEW_PWD))).status).toBe(401);
+    await expect(loginWithPassword(env, other, WILLIAM, temporaryPassword)).resolves.toEqual({ username: WILLIAM, mustChange: true, version: 3 });
+    // La entrada del entorno ya aplicada sigue sin valer tras el reset
+    expect((await fails(loginWithPassword(env, other, WILLIAM, TEMP))).status).toBe(401);
+  });
+
+  it('resetPassword de alguien que nunca entró: adopta la entrada del entorno para que no se reactive', async () => {
+    const env = await envWith();
+    const { temporaryPassword } = await resetPassword(env, WILLIAM);
+    const r = req(`${ORIGIN}/x`);
+    expect((await fails(loginWithPassword(env, r, WILLIAM, TEMP))).status).toBe(401);
+    await expect(loginWithPassword(env, r, WILLIAM, temporaryPassword)).resolves.toMatchObject({ mustChange: true, version: 1 });
+  });
+
+  it('POST /users/reset: el admin restablece a otro usuario; el editor, uno mismo, un usuario sin rol o el modo local → rechazo', async () => {
+    const env = await envWith();
+    let adminCookie = await loggedIn(env, ADMIN, TEMP);
+    // Con la temporal pendiente el middleware no deja llegar a /users/reset
+    expect((await mw(req(`${ORIGIN}/api/admin/users/reset`, { method: 'POST', headers: { Cookie: adminCookie, Origin: ORIGIN } }), env).response).status).toBe(403);
+    await changePassword(env, ADMIN, TEMP, NEW_PWD);
+    adminCookie = await loggedIn(env, ADMIN, NEW_PWD);
+
+    const asAdmin = mw(req(`${ORIGIN}/api/admin/users/reset`, { method: 'POST', headers: { Cookie: adminCookie, Origin: ORIGIN } }), env);
+    expect((await asAdmin.response).status).toBe(200);
+    const ok = await call(resetRoute, postJson(`${ORIGIN}/api/admin/users/reset`, { username: ' William ' }), env, asAdmin.data);
+    expect(ok.status).toBe(200);
+    const body = (await ok.json()) as { username: string; temporaryPassword: string };
+    expect(body.username).toBe(WILLIAM);
+    await expect(loginWithPassword(env, req(`${ORIGIN}/x`), WILLIAM, body.temporaryPassword)).resolves.toMatchObject({ mustChange: true });
+
+    const self = await call(resetRoute, postJson(`${ORIGIN}/api/admin/users/reset`, { username: ADMIN }), env, asAdmin.data);
+    expect(self.status).toBe(403);
+    expect((await call(resetRoute, postJson(`${ORIGIN}/api/admin/users/reset`, { username: 'intruso' }), env, asAdmin.data)).status).toBe(404);
+    expect((await call(resetRoute, postJson(`${ORIGIN}/api/admin/users/reset`, { username: 'no válido!' }), env, asAdmin.data)).status).toBe(400);
+
+    const editorUser = { username: WILLIAM, role: 'editor', admins: [], editors: [WILLIAM], localMode: false, branch: 'main' };
+    expect((await call(resetRoute, postJson(`${ORIGIN}/api/admin/users/reset`, { username: ADMIN }), env, { user: editorUser })).status).toBe(403);
+    const localAdmin = { ...editorUser, username: ADMIN, role: 'admin', localMode: true };
+    expect((await call(resetRoute, postJson(`${ORIGIN}/api/admin/users/reset`, { username: WILLIAM }), env, { user: localAdmin })).status).toBe(403);
   });
 });

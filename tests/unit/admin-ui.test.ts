@@ -146,13 +146,13 @@ describe('AdminApiClient', () => {
   });
 
   it('la cabecera de modo local solo viaja mientras hay simulación activa', async () => {
-    const { api, calls } = client(() => jsonRes(200, { email: 'x', role: 'admin', admins: [], editors: [], localMode: true, branch: 'main' }));
+    const { api, calls } = client(() => jsonRes(200, { username: 'x', role: 'admin', admins: [], editors: [], localMode: true, branch: 'main' }));
     await api.me();
     expect((calls[0]!.init.headers as Record<string, string>)[LOCAL_USER_HEADER]).toBeUndefined();
-    api.setLocalUser('editor@example.com');
-    expect(api.getLocalUser()).toBe('editor@example.com');
+    api.setLocalUser('editor1');
+    expect(api.getLocalUser()).toBe('editor1');
     await api.me();
-    expect((calls[1]!.init.headers as Record<string, string>)[LOCAL_USER_HEADER]).toBe('editor@example.com');
+    expect((calls[1]!.init.headers as Record<string, string>)[LOCAL_USER_HEADER]).toBe('editor1');
     api.setLocalUser(null);
     await api.me();
     expect((calls[2]!.init.headers as Record<string, string>)[LOCAL_USER_HEADER]).toBeUndefined();

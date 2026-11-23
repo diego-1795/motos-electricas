@@ -112,7 +112,7 @@ export async function patchEntry<K extends AdminKind>(ctx: HandlerContext, kind:
   if (!result.ok) throw validation(`El cambio sobre ${slug} no es válido`, result.errors);
   if (!result.changes.length) return { sha: current.sha, path, data: current.data, commit: null };
 
-  const message = commitMessage('actualizar', slug, ctx.user.email, { changes: result.changes, reason: body.reason as string | undefined });
+  const message = commitMessage('actualizar', slug, ctx.user.username, { changes: result.changes, reason: body.reason as string | undefined });
   const written = await ctx.store.write(path, serializeJson(result.value), message, current.sha);
   return { sha: written.sha, path, data: result.value as Entity<K>, commit: written.commit };
 }
@@ -162,7 +162,7 @@ export async function putEntry<K extends AdminKind>(ctx: HandlerContext, kind: K
   if (!creating && !existing) throw notFound(`No existe ${path} en el repositorio`);
   if (!creating && existing && existing.sha !== sha) throw staleSha(path);
 
-  const message = commitMessage(creating ? 'crear' : 'actualizar', slug, ctx.user.email, { reason });
+  const message = commitMessage(creating ? 'crear' : 'actualizar', slug, ctx.user.username, { reason });
   const written = await ctx.store.write(path, serializeJson(parsed.value), message, sha);
   return { sha: written.sha, path, data: parsed.value, commit: written.commit };
 }
@@ -198,7 +198,7 @@ export async function deleteEntry(ctx: HandlerContext, kind: AdminKind, slug: st
     throw conflict(`No se puede borrar ${slug}: otras fichas lo referencian. Ocúltalo en su lugar o quita primero las referencias`, refs);
   }
 
-  const { commit } = await ctx.store.remove(path, commitMessage('borrar', slug, ctx.user.email, { reason }), sha);
+  const { commit } = await ctx.store.remove(path, commitMessage('borrar', slug, ctx.user.username, { reason }), sha);
   return { path, commit };
 }
 
@@ -240,7 +240,7 @@ export async function deployStatus(env: Env, fetchImpl: typeof fetch = fetch): P
     const status: DeployStatus = { available: true, state: mapDeployState(d.latest_stage) };
     if (d.created_on) status.createdAt = d.created_on;
     if (d.url) status.url = d.url;
-    // Solo el hash: el mensaje del commit lleva el email del autor y el motivo (no se reenvía a ningún rol)
+    // Solo el hash: el mensaje del commit lleva el usuario del autor y el motivo (no se reenvía a ningún rol)
     const meta = d.deployment_trigger?.metadata;
     if (meta?.commit_hash) status.commitSha = meta.commit_hash;
     return status;

@@ -331,6 +331,21 @@
 .adm-access__lists li {
   overflow-wrap: anywhere;
 }
+.adm-access__user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+  min-height: 2.75rem;
+}
+.adm-reset__temp code {
+  display: inline-block;
+  font-size: var(--fs-lg);
+  letter-spacing: 0.05em;
+  padding: var(--s-2) var(--s-3);
+  user-select: all;
+}
 .adm-access code,
 .adm-denied code,
 .adm-form code {

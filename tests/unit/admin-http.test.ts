@@ -125,8 +125,8 @@ describe('json / errorResponse', () => {
 });
 
 describe('entryRoutes: orden de comprobaciones', () => {
-  const editor: AdminUser = { email: 'wiliam@example.com', role: 'editor', admins: [], editors: ['wiliam@example.com'], localMode: false, branch: 'main' };
-  const admin: AdminUser = { ...editor, email: 'diego@example.com', role: 'admin' };
+  const editor: AdminUser = { username: 'william', role: 'editor', admins: [], editors: ['william'], localMode: false, branch: 'main' };
+  const admin: AdminUser = { ...editor, username: 'admin', role: 'admin' };
   type Ctx = Parameters<ReturnType<typeof entryRoutes>['onRequestPut']>[0];
   const ctx = (request: Request, user: AdminUser, slug: unknown, env: Env = {}) =>
     ({ request, env, data: { user }, params: { slug }, functionPath: '', waitUntil: () => {}, passThroughOnException: () => {}, next: async () => new Response() }) as unknown as Ctx;

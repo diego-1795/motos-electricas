@@ -59,8 +59,8 @@ const tigre = makeProduct({ slug: 'tigre-test', name: 'Tigre Test', featured: 90
 const motor = makePart({ slug: 'motor-test', name: 'Motor de prueba', compatibleWith: ['aguila-test'] });
 const cargador = makePart({ id: 'rp-cargador', slug: 'cargador-test', name: 'Cargador de prueba', kind: 'cargador', price: pen(9000) });
 
-const admin: AdminUser = { email: 'diego@example.com', role: 'admin', admins: ['diego@example.com'], editors: ['wiliam@example.com'], localMode: true, branch: 'main' };
-const editor: AdminUser = { ...admin, email: 'wiliam@example.com', role: 'editor' };
+const admin: AdminUser = { username: 'admin', role: 'admin', admins: ['admin'], editors: ['william'], localMode: true, branch: 'main' };
+const editor: AdminUser = { ...admin, username: 'william', role: 'editor' };
 
 let store: MemoryStore;
 const asAdmin = () => ({ store, user: admin });
@@ -79,7 +79,7 @@ beforeEach(() => {
 describe('me y catálogo', () => {
   it('me devuelve el usuario del middleware; al editor no le muestra la lista de administradores', () => {
     expect(me({ user: admin })).toBe(admin);
-    expect(me({ user: editor })).toEqual({ ...editor, admins: [], editors: [editor.email] });
+    expect(me({ user: editor })).toEqual({ ...editor, admins: [], editors: [editor.username] });
   });
 
   it('catalog incluye los ocultos, con sha y ruta; productos por featured desc y repuestos por nombre', async () => {
@@ -95,7 +95,7 @@ describe('me y catálogo', () => {
 describe('PATCH', () => {
   it('editor cambia el precio: commit "chore(catalog): actualizar <slug> por <email>" con el cambio en el cuerpo', async () => {
     const res = await patchEntry(asEditor(), 'products', 'aguila-test', { sha: 'sha-1', prices: { estandar: 125000 }, reason: 'Subida de proveedor' });
-    expect(res.commit?.message).toBe('chore(catalog): actualizar aguila-test por wiliam@example.com\n\nEstándar: 120000 → 125000\n\nMotivo: Subida de proveedor');
+    expect(res.commit?.message).toBe('chore(catalog): actualizar aguila-test por william\n\nEstándar: 120000 → 125000\n\nMotivo: Subida de proveedor');
     expect(res.data.variants[0]?.price.amount).toBe(125000);
     expect(res.data.variants[1]?.price.amount).toBe(150000);
     expect(res.sha).not.toBe('sha-1');
@@ -190,7 +190,7 @@ describe('PUT', () => {
   it('crear sin sha → OK con commit "crear"', async () => {
     const nuevo = makeProduct({ slug: 'nuevo-test', name: 'Nuevo', variants: [variant({ isDefault: true })], related: ['aguila-test'], accessories: ['cargador-test'] });
     const res = await putEntry(asAdmin(), 'products', 'nuevo-test', { data: nuevo, reason: 'Alta de modelo' });
-    expect(res.commit?.message).toBe('chore(catalog): crear nuevo-test por diego@example.com\n\nMotivo: Alta de modelo');
+    expect(res.commit?.message).toBe('chore(catalog): crear nuevo-test por admin\n\nMotivo: Alta de modelo');
     expect(res.path).toBe(P('nuevo-test'));
     expect(res.data.slug).toBe('nuevo-test');
     expect(store.files.has(P('nuevo-test'))).toBe(true);
@@ -205,7 +205,7 @@ describe('PUT', () => {
 
   it('actualizar con sha → OK; sha desfasado → 409; inexistente con sha → 404', async () => {
     const res = await putEntry(asAdmin(), 'products', 'aguila-test', { sha: 'sha-1', data: { ...aguila, name: 'Águila renombrada' } });
-    expect(res.commit?.message).toMatch(/^chore\(catalog\): actualizar aguila-test por diego@example.com$/);
+    expect(res.commit?.message).toMatch(/^chore\(catalog\): actualizar aguila-test por admin$/);
     expect(res.data.name).toBe('Águila renombrada');
     expect((await fails(putEntry(asAdmin(), 'products', 'aguila-test', { sha: 'sha-1', data: aguila }))).status).toBe(409);
     expect((await fails(putEntry(asAdmin(), 'products', 'fantasma', { sha: 'sha-1', data: { ...aguila, slug: 'fantasma' } }))).status).toBe(404);
@@ -284,7 +284,7 @@ describe('DELETE', () => {
   it('limpio → OK con commit "borrar"', async () => {
     const res = await deleteEntry(asAdmin(), 'repuestos', 'cargador-test', { sha: 'sha-4', reason: 'Descatalogado' });
     expect(res.path).toBe(R('cargador-test'));
-    expect(res.commit.message).toBe('chore(catalog): borrar cargador-test por diego@example.com\n\nMotivo: Descatalogado');
+    expect(res.commit.message).toBe('chore(catalog): borrar cargador-test por admin\n\nMotivo: Descatalogado');
     expect(store.files.has(R('cargador-test'))).toBe(false);
   });
 

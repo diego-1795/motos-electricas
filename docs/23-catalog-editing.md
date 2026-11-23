@@ -13,9 +13,9 @@ Referencias: [17-admin-panel](./17-admin-panel.md) (qué hace el panel y por qu�
 
 1. Abrir `https://<dominio>/admin` (el enlace no aparece en la web; guardarlo en favoritos).
 2. Escribir el **email** y la **contraseña** (ADR-024). La primera vez, con la contraseña temporal que entrega Diego, el panel obliga a elegir una nueva. Solo entran los emails autorizados (Diego como administrador, Wiliam como editor). La sesión dura 12 horas; "Cambiar contraseña" y "Cerrar sesión" están arriba a la derecha.
-3. El panel muestra arriba "Conectado como <email> · Administrador" (o "Editor") y dos pestañas: **Productos** (bicimotos, trimotos y promociones) y **Repuestos**, con el número de fichas. El cuadro "Buscar por nombre o slug" filtra la pestaña activa. Las fichas ocultas llevan la insignia "Oculto".
+3. El panel muestra arriba "Conectado como <usuario> · Administrador" (o "Editor") y dos pestañas: **Productos** (bicimotos, trimotos y promociones) y **Repuestos**, con el número de fichas. El cuadro "Buscar por nombre o slug" filtra la pestaña activa. Las fichas ocultas llevan la insignia "Oculto".
 
-Si aparece "Sin acceso": el email y la contraseña son correctos pero el email no está en `ADMIN_EMAILS` ni `EDITOR_EMAILS`; pedir a Diego que lo añada ([19-deployment](./19-deployment.md) §12.6).
+Si aparece "Sin acceso": el usuario y la contraseña son correctos pero el usuario no está en `ADMIN_USERS` ni `EDITOR_USERS`; pedir a Diego que lo añada ([19-deployment](./19-deployment.md) §12.6).
 
 ### 0.2 Cambiar un precio (Diego y Wiliam)
 

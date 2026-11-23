@@ -1,5 +1,5 @@
 /**
- * Reglas puras del acceso por contraseña al panel (ADR-024). Sin crypto ni I/O: la parte
+ * Reglas puras del acceso por usuario y contraseña al panel (ADR-024, ADR-025). Sin crypto ni I/O: la parte
  * criptográfica (PBKDF2, HMAC de la cookie, KV) vive en functions/api/admin/_lib/auth.ts.
  * Las islas usan estas mismas funciones para validar antes de enviar.
  */
@@ -18,7 +18,7 @@ export const LOGIN_LOCKOUT_S = 15 * 60;
 
 /** Cuerpo de POST /api/admin/auth/login */
 export interface LoginBody {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -30,25 +30,28 @@ export interface ChangePasswordBody {
 
 /** Claims de la cookie de sesión. `v` = versión de la contraseña: cambiarla invalida las sesiones anteriores. */
 export interface SessionClaims {
-  email: string;
+  /** Nombre de usuario (ADR-025) */
+  sub: string;
   v: number;
   /** Segundos Unix */
   iat: number;
   exp: number;
 }
 
-export const normalizeEmail = (raw: unknown): string => (typeof raw === 'string' ? raw.trim().toLowerCase() : '');
+/** Usuario del panel (ADR-025): sin distinguir mayúsculas y sin espacios en los extremos. */
+export const normalizeUsername = (raw: unknown): string => (typeof raw === 'string' ? raw.trim().toLowerCase() : '');
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** 2–32 caracteres: a-z, 0-9, punto, guion y guion bajo; empieza por letra o número. */
+const USERNAME_RE = /^[a-z0-9][a-z0-9._-]{1,31}$/;
 
-export const isEmail = (s: string): boolean => s.length <= 254 && EMAIL_RE.test(s);
+export const isUsername = (s: string): boolean => USERNAME_RE.test(s);
 
 /**
- * Política de contraseñas: longitud mínima, sin espacios en los extremos, distinta del email y de la
+ * Política de contraseñas: longitud mínima, sin espacios en los extremos, distinta del usuario y de la
  * contraseña actual, y no trivial (todo el mismo carácter o secuencias tipo "1234567890").
  * Devuelve la lista de errores (vacía = válida).
  */
-export function passwordErrors(password: unknown, ctx: { email?: string; current?: string } = {}): string[] {
+export function passwordErrors(password: unknown, ctx: { username?: string; current?: string } = {}): string[] {
   if (typeof password !== 'string') return ['La contraseña debe ser texto'];
   const errors: string[] = [];
   if (password !== password.trim()) errors.push('La contraseña no puede empezar ni terminar con espacios');
@@ -56,8 +59,8 @@ export function passwordErrors(password: unknown, ctx: { email?: string; current
   if (password.length > MAX_PASSWORD_LENGTH) errors.push(`La contraseña no puede superar los ${MAX_PASSWORD_LENGTH} caracteres`);
   if (/[\u0000-\u001f\u007f]/.test(password)) errors.push('La contraseña no puede contener caracteres de control');
   const lower = password.toLowerCase();
-  const email = normalizeEmail(ctx.email);
-  if (email && (lower === email || lower === email.split('@')[0])) errors.push('La contraseña no puede ser tu email');
+  const username = normalizeUsername(ctx.username);
+  if (username && lower === username) errors.push('La contraseña no puede ser tu usuario');
   if (ctx.current !== undefined && password === ctx.current) errors.push('La contraseña nueva debe ser distinta de la actual');
   if (password.length >= MIN_PASSWORD_LENGTH && isTrivial(lower)) errors.push('La contraseña es demasiado predecible (repeticiones o secuencias)');
   return errors;
@@ -74,6 +77,3 @@ function isTrivial(lower: string): boolean {
   }
   return /^(.+?)\1+$/.test(lower);
 }
-
-/** Resultado de un intento de login tal como lo interpreta el panel. */
-export type LoginFailure = 'invalid_credentials' | 'locked' | 'no_role';

@@ -7,15 +7,15 @@ import type { AdminUser } from '../../../../src/domain/admin';
  * Ninguna es `PUBLIC_*`: nunca llegan al navegador.
  */
 export interface Env {
-  /** Emails con rol admin (coma, punto y coma o espacio como separador) */
-  ADMIN_EMAILS?: string;
-  /** Emails con rol editor */
-  EDITOR_EMAILS?: string;
-  /** KV con usuarios (`user:<email>`) y contadores de intentos fallidos (ADR-024) */
+  /** Usuarios con rol admin (coma, punto y coma o espacio como separador), p. ej. `admin` (ADR-025) */
+  ADMIN_USERS?: string;
+  /** Usuarios con rol editor, p. ej. `william` */
+  EDITOR_USERS?: string;
+  /** KV con usuarios (`user:<usuario>`) y contadores de intentos fallidos (ADR-024) */
   ADMIN_KV?: KVNamespace;
   /** Secreto (≥ 32 caracteres aleatorios) con el que se firma la cookie de sesión (ADR-024) */
   SESSION_SECRET?: string;
-  /** Contraseñas temporales ya en hash: `email:pbkdf2-sha256:<iter>:<sal>:<hash>` separadas por coma (ADR-024) */
+  /** Contraseñas temporales ya en hash: `usuario:pbkdf2-sha256:<iter>:<sal>:<hash>` separadas por coma (ADR-024, ADR-025) */
   ADMIN_INITIAL_PASSWORDS?: string;
   /** Opcional: equipo de Cloudflare Access (`raiden` o `raiden.cloudflareaccess.com`) como segunda barrera */
   CF_ACCESS_TEAM_DOMAIN?: string;
@@ -27,7 +27,7 @@ export interface Env {
   GITHUB_REPO?: string;
   /** Rama sobre la que se escribe; por defecto main */
   GITHUB_BRANCH?: string;
-  /** Identidad simulada SOLO con `wrangler pages dev` en localhost. Nunca en Pages. */
+  /** Usuario simulado SOLO con `wrangler pages dev` en localhost. Nunca en Pages. */
   ADMIN_LOCAL_USER?: string;
   NODE_ENV?: string;
   /** Opcionales: estado del último despliegue vía API de Pages */

@@ -1,17 +1,21 @@
 import type { AdminRole, PartPatch, ProductPatch } from './admin';
+import { isUsername, normalizeUsername } from './adminAuth';
 import type { Part, Product } from './types';
 
 /**
- * Política de roles del panel (ADR-018). Pura: la aplican las Pages Functions
- * (nunca solo la interfaz). El editor (Wiliam) únicamente puede cambiar precios y
- * ocultar/mostrar; el admin (Diego) puede todo.
+ * Política de roles del panel (ADR-018, ADR-025). Pura: la aplican las Pages Functions
+ * (nunca solo la interfaz). El editor (`william`) únicamente puede cambiar precios y
+ * ocultar/mostrar; el admin (`admin`) puede todo, incluido restablecer la contraseña de otros.
  */
 
-/** `blog` (leer y escribir artículos) y `upload` (subir webp/PDF) son de administrador (ADR-023). */
-export type Operation = 'read' | 'patch' | 'put' | 'delete' | 'blog' | 'upload';
+/**
+ * `blog` (leer y escribir artículos) y `upload` (subir PDF) son de administrador (ADR-023);
+ * `users` (restablecer la contraseña de otro usuario) también (ADR-025).
+ */
+export type Operation = 'read' | 'patch' | 'put' | 'delete' | 'blog' | 'upload' | 'users';
 
 const PERMISSIONS: Record<AdminRole, readonly Operation[]> = {
-  admin: ['read', 'patch', 'put', 'delete', 'blog', 'upload'],
+  admin: ['read', 'patch', 'put', 'delete', 'blog', 'upload', 'users'],
   editor: ['read', 'patch'],
 };
 
@@ -19,17 +23,17 @@ export function canPerform(role: AdminRole, op: Operation): boolean {
   return PERMISSIONS[role].includes(op);
 }
 
-/** "a@x.com, B@y.com;c@z.com" → ['a@x.com','b@y.com','c@z.com'] */
-export function parseEmailList(raw: string | undefined | null): string[] {
+/** "admin, William;otro" → ['admin','william','otro'] (ADR-025). Lo que no sea un usuario válido se descarta. */
+export function parseUserList(raw: string | undefined | null): string[] {
   return (raw ?? '')
     .split(/[\s,;]+/)
-    .map((e) => e.trim().toLowerCase())
-    .filter((e) => e.includes('@'));
+    .map(normalizeUsername)
+    .filter(isUsername);
 }
 
-/** Rol de un email según las listas de configuración; admin prevalece. null = sin acceso al panel. */
-export function resolveRole(email: string | undefined | null, lists: { admins: string[]; editors: string[] }): AdminRole | null {
-  const e = (email ?? '').trim().toLowerCase();
+/** Rol de un usuario según las listas de configuración; admin prevalece. null = sin acceso al panel. */
+export function resolveRole(username: string | undefined | null, lists: { admins: string[]; editors: string[] }): AdminRole | null {
+  const e = normalizeUsername(username);
   if (!e) return null;
   if (lists.admins.includes(e)) return 'admin';
   if (lists.editors.includes(e)) return 'editor';
@@ -113,11 +117,11 @@ export const MAX_REASON_LENGTH = 300;
 /** Ámbito del commit: catálogo (productos/repuestos), blog o assets (subidas). */
 export type CommitScope = 'catalog' | 'blog' | 'assets';
 
-/** Mensaje de commit: `chore(<ámbito>): <acción> <slug> por <email>` + motivo y detalle en el cuerpo. */
+/** Mensaje de commit: `chore(<ámbito>): <acción> <slug> por <usuario>` + motivo y detalle en el cuerpo. */
 export function commitMessage(
   action: 'actualizar' | 'crear' | 'borrar' | 'subir',
   slug: string,
-  email: string,
+  username: string,
   detail: { changes?: string[]; reason?: string } = {},
   scope: CommitScope = 'catalog',
 ): string {
@@ -129,5 +133,5 @@ export function commitMessage(
   // Motivo acotado (texto libre del panel): una línea, sin control chars, máximo MAX_REASON_LENGTH.
   const reason = oneLine(detail.reason ?? '').slice(0, MAX_REASON_LENGTH);
   if (reason) body.push(`Motivo: ${reason}`);
-  return `chore(${scope}): ${action} ${slug} por ${email}${body.length ? `\n\n${body.join('\n\n')}` : ''}`;
+  return `chore(${scope}): ${action} ${slug} por ${username}${body.length ? `\n\n${body.join('\n\n')}` : ''}`;
 }

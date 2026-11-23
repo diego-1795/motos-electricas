@@ -67,8 +67,8 @@ const repuestos: CatalogEntry<Part>[] = [
 ];
 
 const users: Record<'admin' | 'editor', AdminUser> = {
-  admin: { email: 'admin@example.com', role: 'admin', admins: ['admin@example.com'], editors: ['editor@example.com'], localMode: false, branch: 'main' },
-  editor: { email: 'editor@example.com', role: 'editor', admins: ['admin@example.com'], editors: ['editor@example.com'], localMode: false, branch: 'main' },
+  admin: { username: 'admin', role: 'admin', admins: ['admin'], editors: ['william'], localMode: false, branch: 'main' },
+  editor: { username: 'william', role: 'editor', admins: ['admin'], editors: ['william'], localMode: false, branch: 'main' },
 };
 
 interface Captured {
@@ -128,18 +128,18 @@ async function mockApi(page: Page, opts: MockOptions) {
 
     // Sesión (ADR-024): login, logout y cambio de contraseña; sin sesión todo lo demás es 401
     if (path === '/auth/login' && method === 'POST') {
-      const b = body as { email?: string; password?: string };
-      if (b.email === users[opts.role].email && b.password === MOCK_PASSWORD) {
+      const b = body as { username?: string; password?: string };
+      if (b.username === users[opts.role].username && b.password === MOCK_PASSWORD) {
         session = true;
         return json(route, 200, { ...users[opts.role], ...(mustChange ? { mustChangePassword: true } : {}) });
       }
-      return json(route, 401, { code: 'unauthorized', error: 'Email o contraseña incorrectos' });
+      return json(route, 401, { code: 'unauthorized', error: 'Usuario o contraseña incorrectos' });
     }
     if (path === '/auth/logout' && method === 'POST') {
       session = false;
       return json(route, 200, { ok: true });
     }
-    if (!session) return json(route, 401, { code: 'unauthorized', error: 'Inicia sesión con tu email y contraseña' });
+    if (!session) return json(route, 401, { code: 'unauthorized', error: 'Inicia sesión con tu usuario y contraseña' });
     if (path === '/auth/password' && method === 'POST') {
       const b = body as { currentPassword?: string; newPassword?: string };
       if (b.currentPassword !== MOCK_PASSWORD) return json(route, 401, { code: 'unauthorized', error: 'La contraseña actual no es correcta' });
@@ -148,6 +148,13 @@ async function mockApi(page: Page, opts: MockOptions) {
       return json(route, 200, users[opts.role]);
     }
     if (mustChange && path !== '/me') return json(route, 403, { code: 'forbidden', error: 'Debes cambiar tu contraseña temporal antes de usar el panel' });
+
+    // Restablecer la contraseña de otro usuario (ADR-025): solo admin y nunca la propia
+    if (path === '/users/reset' && method === 'POST') {
+      const b = body as { username?: string };
+      if (opts.role !== 'admin' || b.username === users[opts.role].username) return json(route, 403, { code: 'forbidden', error: 'Tu rol no permite esta operación' });
+      return json(route, 200, { username: b.username, temporaryPassword: 'Abcd-Efgh-Jkmn-Pqrs' });
+    }
 
     // Blog y subidas (ADR-023): solo admin, como el servidor
     if (path === '/blog' || path.startsWith('/blog/') || path === '/uploads') {
@@ -187,7 +194,7 @@ async function mockApi(page: Page, opts: MockOptions) {
       if (mustChange) return json(route, 200, { ...users[opts.role], mustChangePassword: true });
       if (!opts.localMode) return json(route, 200, users[opts.role]);
       const sim = headers['x-admin-local-user'];
-      const role = sim === users.editor.email ? 'editor' : sim === users.admin.email ? 'admin' : opts.role;
+      const role = sim === users.editor.username ? 'editor' : sim === users.admin.username ? 'admin' : opts.role;
       return json(route, 200, { ...users[role], localMode: true });
     }
     if (method === 'GET' && path === '/catalog') {
@@ -289,7 +296,7 @@ test.describe('Panel de administración', () => {
     await mockApi(page, { role: 'editor' });
     await openAdmin(page);
     await expect(page.locator('[data-admin-app]')).toHaveAttribute('data-role', 'editor');
-    await expect(page.locator('.adm-who')).toContainText('editor@example.com · Editor');
+    await expect(page.locator('.adm-who')).toContainText('william · Editor');
     expect(await page.locator('[data-price-input]').count()).toBe(3); // 2 variantes + 1 variante
     expect(await page.locator('[data-hidden-toggle]').count()).toBe(2);
     await expect(page.getByRole('button', { name: 'Nuevo producto' })).toHaveCount(0);
@@ -326,8 +333,8 @@ test.describe('Panel de administración', () => {
     await page.getByRole('tab', { name: /Repuestos/ }).click();
     await expect(page.getByRole('button', { name: 'Nuevo repuesto' })).toBeVisible();
     await expect(page.locator('[data-admin-row]')).toHaveCount(2);
-    await expect(page.locator('[data-admin-access]')).toContainText('admin@example.com');
-    await expect(page.locator('[data-admin-access]')).toContainText('editor@example.com');
+    await expect(page.locator('[data-admin-access]')).toContainText('admin');
+    await expect(page.locator('[data-admin-access]')).toContainText('william');
     // Fuera del modo local no hay selector "Simular como…" y la cabecera de simulación no viaja nunca
     await expect(page.locator('[data-admin-simulate]')).toHaveCount(0);
     expect(calls.every((c) => c.headers['x-admin-local-user'] === undefined)).toBe(true);
@@ -478,24 +485,24 @@ test.describe('Panel de administración', () => {
     await expect(page.locator('[data-deploy-banner]')).toHaveCount(0);
   });
 
-  test('un error de configuración (500, code "config") se muestra como tal, dirigido a Diego', async ({ page }) => {
+  test('un error de configuración (500, code "config") se muestra como tal, dirigido al administrador', async ({ page }) => {
     await page.route('**/api/admin/**', (route) => json(route, 500, { code: 'config', error: 'Configuración incompleta del panel: falta GITHUB_TOKEN' }));
     await page.goto('/admin');
     const err = page.locator('[data-admin-error="config"]');
     await expect(err).toBeVisible();
     await expect(err).toContainText('Configuración incompleta del panel');
     await expect(err).toContainText('falta GITHUB_TOKEN');
-    await expect(err).toContainText('Diego');
+    await expect(err).toContainText('administrador');
   });
 
   test('sin acceso (403) muestra la pantalla "Sin acceso" con a quién pedirlo', async ({ page }) => {
-    await page.route('**/api/admin/**', (route) => json(route, 403, { code: 'forbidden', error: 'Email sin rol' }));
+    await page.route('**/api/admin/**', (route) => json(route, 403, { code: 'forbidden', error: 'Usuario sin rol' }));
     await page.goto('/admin');
     const denied = page.locator('[data-admin-denied]');
     await expect(denied).toBeVisible();
     await expect(denied).toContainText('Sin acceso');
-    await expect(denied).toContainText('ADMIN_EMAILS');
-    await expect(denied).toContainText('Diego');
+    await expect(denied).toContainText('ADMIN_USERS');
+    await expect(denied).toContainText('administrador');
   });
 
   test('sin sesión muestra "Iniciar sesión"; credenciales incorrectas avisan sin salir; las correctas abren el panel con su rol', async ({ page }) => {
@@ -504,24 +511,24 @@ test.describe('Panel de administración', () => {
     const login = page.locator('[data-admin-login]');
     await expect(login).toBeVisible();
     await expect(page.locator('[data-admin-app]')).toHaveCount(0);
-    await expect(login.getByLabel('Email')).toBeFocused();
+    await expect(login.getByLabel('Usuario')).toBeFocused();
     // Validación local: sin petición
     await login.getByRole('button', { name: 'Entrar' }).click();
-    await expect(login.getByRole('alert')).toContainText('email válido');
+    await expect(login.getByRole('alert')).toContainText('Escribe tu usuario');
     expect(calls.filter((c) => c.path === '/auth/login')).toHaveLength(0);
     // Contraseña incorrecta: 401 del servidor, se vacía el campo y el foco va al aviso
-    await login.getByLabel('Email').fill('Editor@Example.com ');
+    await login.getByLabel('Usuario').fill('William ');
     await login.getByLabel('Contraseña').fill('no-es-esta');
     await login.getByRole('button', { name: 'Entrar' }).click();
     await expect(login.getByRole('alert')).toContainText('incorrectos');
     await expect(login.getByRole('alert')).toBeFocused();
     await expect(login.getByLabel('Contraseña')).toHaveValue('');
-    expect(calls.find((c) => c.path === '/auth/login')!.body).toEqual({ email: 'editor@example.com', password: 'no-es-esta' });
+    expect(calls.find((c) => c.path === '/auth/login')!.body).toEqual({ username: 'william', password: 'no-es-esta' });
     // Correcta: panel con el rol que devuelve el servidor
     await login.getByLabel('Contraseña').fill(MOCK_PASSWORD);
     await login.getByRole('button', { name: 'Entrar' }).click();
     await expect(page.locator('[data-admin-app]')).toHaveAttribute('data-role', 'editor');
-    await expect(page.locator('.adm-who')).toContainText('editor@example.com · Editor');
+    await expect(page.locator('.adm-who')).toContainText('william · Editor');
     await expect(page.locator('[data-admin-logout]')).toBeVisible();
 
     // Un perímetro externo que redirige (302) se muestra como sesión caducada sobre el propio login, no como caída
@@ -589,6 +596,30 @@ test.describe('Panel de administración', () => {
     expect(calls.some((c) => c.path === '/auth/logout' && c.method === 'POST')).toBe(true);
     // Tras cerrar, el API responde 401 y el panel no se muestra
     await expect(page.locator('[data-admin-app]')).toHaveCount(0);
+  });
+
+  test('admin: "Restablecer contraseña" junto a otro usuario muestra la temporal una vez; nunca junto a sí mismo ni para el editor', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'admin' });
+    await openAdmin(page);
+    const access = page.locator('[data-admin-access]');
+    await expect(access.locator('[data-admin-reset-open="admin"]')).toHaveCount(0);
+    await access.locator('[data-admin-reset-open="william"]').click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Restablecer contraseña de william');
+    await dialog.getByRole('button', { name: 'Restablecer contraseña' }).click();
+    await expect(dialog.locator('[data-admin-reset-temp]')).toHaveText('Abcd-Efgh-Jkmn-Pqrs');
+    await expect(dialog).toContainText('no se volverá a mostrar');
+    expect(calls.find((c) => c.path === '/users/reset')!.body).toEqual({ username: 'william' });
+    await dialog.getByRole('button', { name: 'Hecho' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('[data-admin-reset-temp]')).toHaveCount(0);
+  });
+
+  test('editor: la sección Accesos no ofrece restablecer contraseñas', async ({ page }) => {
+    await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await expect(page.locator('[data-admin-access]')).toBeVisible();
+    await expect(page.locator('[data-admin-reset-open]')).toHaveCount(0);
   });
 
   test('un 422 lista los details del servidor junto al precio y en el editor, sin banner de publicación', async ({ page }) => {
@@ -704,13 +735,13 @@ test.describe('Panel de administración', () => {
     await expect(sim).toBeVisible();
     expect(calls.find((c) => c.path === '/me')!.headers['x-admin-local-user']).toBeUndefined();
 
-    await sim.selectOption('editor@example.com');
+    await sim.selectOption('william');
     await expect(page.locator('[data-admin-app]')).toHaveAttribute('data-role', 'editor');
-    await expect(page.locator('.adm-who')).toContainText('editor@example.com · Editor');
+    await expect(page.locator('.adm-who')).toContainText('william · Editor');
     await expect(page.getByRole('button', { name: 'Nuevo producto' })).toHaveCount(0);
     const afterSim = calls.filter((c) => c.path === '/me' || c.path === '/catalog').slice(-2);
     expect(afterSim).toHaveLength(2);
-    for (const c of afterSim) expect(c.headers['x-admin-local-user']).toBe('editor@example.com');
+    for (const c of afterSim) expect(c.headers['x-admin-local-user']).toBe('william');
 
     await page.locator('[data-admin-simulate]').selectOption('');
     await expect(page.locator('[data-admin-app]')).toHaveAttribute('data-role', 'admin');

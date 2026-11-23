@@ -116,7 +116,7 @@ export async function putPost(ctx: HandlerContext, slug: string, body: unknown):
   if (!creating && existing && existing.sha !== sha) throw staleSha(path);
 
   const content = serializePost(parsed.value.frontmatter, parsed.value.body);
-  const message = commitMessage(creating ? 'crear' : 'actualizar', slug, ctx.user.email, { reason }, 'blog');
+  const message = commitMessage(creating ? 'crear' : 'actualizar', slug, ctx.user.username, { reason }, 'blog');
   const written = await ctx.store.write(path, content, message, sha);
   return { slug, frontmatter: parsed.value.frontmatter, body: parsed.value.body, sha: written.sha, path, commit: written.commit };
 }
@@ -131,6 +131,6 @@ export async function deletePost(ctx: HandlerContext, slug: string, body: unknow
   if (!existing) throw notFound(`No existe ${path} en el repositorio`);
   if (existing.sha !== body.sha) throw staleSha(path);
   // Nadie referencia a un artículo (es una hoja): no hay comprobación de referencias como en el catálogo.
-  const { commit } = await ctx.store.remove(path, commitMessage('borrar', slug, ctx.user.email, { reason }, 'blog'), body.sha);
+  const { commit } = await ctx.store.remove(path, commitMessage('borrar', slug, ctx.user.username, { reason }, 'blog'), body.sha);
   return { path, commit };
 }

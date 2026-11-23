@@ -1,7 +1,7 @@
 import { LOCAL_USER_HEADER } from '../../../../src/domain/admin';
 import { passwordAuthConfigured, sessionIdentity } from './auth';
 import type { Env } from './env';
-import { configError, forbidden, unauthorized } from './http';
+import { configError, unauthorized } from './http';
 
 /**
  * Autenticación del panel (ADR-018, ADR-024). Orden:
@@ -10,7 +10,8 @@ import { configError, forbidden, unauthorized } from './http';
  *  2. Sesión por contraseña: cookie firmada emitida por POST /auth/login (auth.ts). Es la vía normal.
  *  3. Cloudflare Access (opcional, segunda barrera): si CF_ACCESS_TEAM_DOMAIN y CF_ACCESS_AUD están
  *     definidos se exige además el JWT (`Cf-Access-Jwt-Assertion` o cookie `CF_Authorization`),
- *     verificado RS256 con WebCrypto contra el JWKS del equipo, y su email debe ser el de la sesión.
+ *     verificado RS256 con WebCrypto contra el JWKS del equipo. Quién pasa Access lo decide la política de
+ *     la aplicación en Zero Trust; el panel ya no guarda emails (ADR-025), así que no se cruza con el usuario.
  * Nunca se registra el JWT, la cookie ni el token completo.
  */
 
@@ -26,7 +27,7 @@ export interface AccessConfig {
 }
 
 export interface Identity {
-  email: string;
+  username: string;
   localMode: boolean;
   /** true mientras la contraseña siga siendo la temporal (ADR-024) */
   mustChange: boolean;
@@ -68,7 +69,7 @@ export function isLocalHost(hostname: string): boolean {
   return LOCAL_HOSTS.has(hostname.toLowerCase());
 }
 
-/** Email simulado si (y solo si) se cumplen las tres condiciones del modo local; si no, null. */
+/** Usuario simulado si (y solo si) se cumplen las tres condiciones del modo local; si no, null. */
 export function localIdentity(request: Request, env: Env): string | null {
   const configured = env.ADMIN_LOCAL_USER?.trim();
   if (!configured) return null;
@@ -223,28 +224,26 @@ export async function verifyAccessJwt(token: string, cfg: AccessConfig, opts: Ve
 
 /**
  * Identidad de la petición: modo local, o sesión por contraseña (+ Access si está configurado). Lanza HttpError:
- * 500 si faltan ADMIN_KV / SESSION_SECRET, 401 sin sesión válida (o sin JWT válido cuando Access está activo),
- * 403 si el JWT de Access pertenece a otro email que la sesión.
+ * 500 si faltan ADMIN_KV / SESSION_SECRET, 401 sin sesión válida (o sin JWT válido cuando Access está activo).
  */
 export async function authenticate(request: Request, env: Env, opts: VerifyOptions = {}): Promise<Identity> {
   const local = localIdentity(request, env);
-  if (local) return { email: local.toLowerCase(), localMode: true, mustChange: false };
+  if (local) return { username: local.toLowerCase(), localMode: true, mustChange: false };
 
   if (!passwordAuthConfigured(env)) throw configError('faltan ADMIN_KV (binding KV) y/o SESSION_SECRET (ADR-024)');
   const session = await sessionIdentity(env, request, opts.now);
-  if (!session) throw unauthorized('Inicia sesión con tu email y contraseña');
+  if (!session) throw unauthorized('Inicia sesión con tu usuario y contraseña');
 
   const cfg = accessConfig(env);
   if (cfg) {
     const token = extractToken(request);
     if (!token) throw unauthorized('Falta el JWT de Cloudflare Access');
     try {
-      const { email } = await verifyAccessJwt(token, cfg, opts);
-      if (email !== session.email) throw forbidden('La sesión de Cloudflare Access pertenece a otro usuario');
+      await verifyAccessJwt(token, cfg, opts);
     } catch (e) {
       if (e instanceof AccessError) throw unauthorized(`JWT de Access rechazado: ${e.message}`);
       throw e;
     }
   }
-  return { email: session.email, localMode: false, mustChange: session.mustChange };
+  return { username: session.username, localMode: false, mustChange: session.mustChange };
 }

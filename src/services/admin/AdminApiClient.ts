@@ -16,6 +16,8 @@ import type {
   PartPatch,
   ProductPatch,
   PutBody,
+  ResetPasswordBody,
+  ResetPasswordResult,
   UploadBody,
   UploadResult,
   WriteResult,
@@ -63,7 +65,7 @@ const CODE_BY_STATUS: Record<number, AdminErrorCode> = {
 /** Solo se acepta un `code` del contrato; cualquier otro valor del cuerpo se ignora y se deduce del estado HTTP */
 const KNOWN_CODES: ReadonlySet<string> = new Set<AdminErrorCode>(['unauthorized', 'forbidden', 'not_found', 'conflict', 'validation', 'bad_request', 'upstream', 'config']);
 
-export const SESSION_EXPIRED_MESSAGE = 'La sesión ha caducado: vuelve a iniciar sesión con tu email y contraseña';
+export const SESSION_EXPIRED_MESSAGE = 'La sesión ha caducado: vuelve a iniciar sesión con tu usuario y contraseña';
 
 export class AdminApiClient {
   private localUser: string | null = null;
@@ -73,9 +75,9 @@ export class AdminApiClient {
     private readonly fetcher: Fetcher = (...args) => fetch(...args),
   ) {}
 
-  /** Modo local (wrangler pages dev): simula otro email con la cabecera x-admin-local-user. null = sin simulación. */
-  setLocalUser(email: string | null): void {
-    this.localUser = email;
+  /** Modo local (wrangler pages dev): simula otro usuario con la cabecera x-admin-local-user. null = sin simulación. */
+  setLocalUser(username: string | null): void {
+    this.localUser = username;
   }
 
   getLocalUser(): string | null {
@@ -98,6 +100,11 @@ export class AdminApiClient {
 
   changePassword(body: ChangePasswordBody): Promise<AdminUser> {
     return this.request<AdminUser>('POST', '/auth/password', body);
+  }
+
+  /** Solo admin (ADR-025): contraseña temporal nueva para otro usuario. */
+  resetPassword(body: ResetPasswordBody): Promise<ResetPasswordResult> {
+    return this.request<ResetPasswordResult>('POST', '/users/reset', body);
   }
 
   catalog(): Promise<AdminCatalog> {

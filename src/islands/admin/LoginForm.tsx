@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import type { AdminUser } from '../../domain/admin';
-import { isEmail, normalizeEmail } from '../../domain/adminAuth';
+import { isUsername, normalizeUsername } from '../../domain/adminAuth';
 import { adminApi, AdminApiError } from '../../services/admin/AdminApiClient';
 
 interface Props {
@@ -10,22 +10,22 @@ interface Props {
 }
 
 /**
- * Pantalla de inicio de sesión del panel (ADR-024): email + contraseña → POST /auth/login.
+ * Pantalla de inicio de sesión del panel (ADR-024, ADR-025): usuario + contraseña → POST /auth/login.
  * La cookie la pone el servidor; aquí solo se muestra el resultado. Un 423 (bloqueo temporal) y un 401 se
  * anuncian en la región de alerta y el foco vuelve al campo correspondiente.
  */
 export default function LoginForm({ notice, onLoggedIn }: Props) {
   const id = useId();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const emailRef = useRef<HTMLInputElement>(null);
+  const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const alertRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    emailRef.current?.focus();
+    usernameRef.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -35,10 +35,10 @@ export default function LoginForm({ notice, onLoggedIn }: Props) {
   const submit = async (e: Event) => {
     e.preventDefault();
     if (busy) return;
-    const normalized = normalizeEmail(email);
-    if (!isEmail(normalized)) {
-      setError('Escribe un email válido');
-      emailRef.current?.focus();
+    const normalized = normalizeUsername(username);
+    if (!isUsername(normalized)) {
+      setError('Escribe tu usuario');
+      usernameRef.current?.focus();
       return;
     }
     if (!password) {
@@ -49,7 +49,7 @@ export default function LoginForm({ notice, onLoggedIn }: Props) {
     setBusy(true);
     setError(null);
     try {
-      const user = await adminApi.login({ email: normalized, password });
+      const user = await adminApi.login({ username: normalized, password });
       setPassword('');
       onLoggedIn(user);
     } catch (err) {
@@ -73,20 +73,21 @@ export default function LoginForm({ notice, onLoggedIn }: Props) {
             {notice}
           </p>
         )}
-        <label class="field" for={`${id}-email`}>
-          <span class="label">Email</span>
+        <label class="field" for={`${id}-username`}>
+          <span class="label">Usuario</span>
           <input
-            id={`${id}-email`}
-            ref={emailRef}
+            id={`${id}-username`}
+            ref={usernameRef}
             class="input"
-            type="email"
-            name="email"
+            type="text"
+            name="username"
             autocomplete="username"
-            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
             spellcheck={false}
             required
-            value={email}
-            onInput={(e) => setEmail((e.target as HTMLInputElement).value)}
+            value={username}
+            onInput={(e) => setUsername((e.target as HTMLInputElement).value)}
             disabled={busy}
           />
         </label>
@@ -113,7 +114,7 @@ export default function LoginForm({ notice, onLoggedIn }: Props) {
             {busy ? 'Entrando…' : 'Entrar'}
           </button>
         </div>
-        <p class="hint">¿Olvidaste la contraseña? Pide al administrador (Diego) una contraseña temporal nueva; al entrar tendrás que cambiarla.</p>
+        <p class="hint">¿Olvidaste la contraseña? Pide al administrador una contraseña temporal nueva; al entrar tendrás que cambiarla.</p>
       </form>
     </div>
   );

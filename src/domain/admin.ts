@@ -5,10 +5,11 @@ import type { Part, Product } from './types';
  * (functions/api/admin/*) y las islas Preact (src/islands/admin/*).
  * Solo tipos: sin lógica ni dependencias. La política de roles está en adminPolicy.ts.
  *
- * Rutas (mismo origen; sesión por cookie tras login con contraseña, ADR-024):
+ * Rutas (mismo origen; sesión por cookie tras login con usuario y contraseña, ADR-024, ADR-025):
  *   POST   /api/admin/auth/login             LoginBody          → AdminUser (+ cookie de sesión)
  *   POST   /api/admin/auth/logout            —                  → { ok: true } (borra la cookie)
  *   POST   /api/admin/auth/password          ChangePasswordBody → AdminUser (nueva cookie; invalida las demás sesiones)
+ *   POST   /api/admin/users/reset            ResetPasswordBody  → ResetPasswordResult (solo admin; otro usuario, ADR-025)
  *   GET    /api/admin/me                     → AdminUser
  *   GET    /api/admin/catalog                → AdminCatalog
  *   PATCH  /api/admin/products/:slug         ProductPatch  → WriteResult<Product>   (admin y editor)
@@ -39,9 +40,10 @@ export type AdminRole = 'admin' | 'editor';
 export type AdminKind = 'products' | 'repuestos';
 
 export interface AdminUser {
-  email: string;
+  /** Usuario con el que entra (ADR-025) */
+  username: string;
   role: AdminRole;
-  /** Listas de ADMIN_EMAILS / EDITOR_EMAILS (solo lectura: se cambian en Cloudflare) */
+  /** Listas de ADMIN_USERS / EDITOR_USERS (solo lectura: se cambian en Cloudflare) */
   admins: string[];
   editors: string[];
   /** true cuando la identidad viene de ADMIN_LOCAL_USER (wrangler pages dev), nunca en producción */
@@ -204,6 +206,19 @@ export interface UploadResult {
   /** true si sustituyó un fichero que ya existía */
   replaced: boolean;
   commit: CommitInfo;
+}
+
+/* ---------- Usuarios (ADR-025) ---------- */
+
+/** El admin restablece la contraseña de otro usuario del panel. */
+export interface ResetPasswordBody {
+  username: string;
+}
+
+/** Contraseña temporal en claro: se muestra UNA vez al admin; el usuario deberá cambiarla al entrar. */
+export interface ResetPasswordResult {
+  username: string;
+  temporaryPassword: string;
 }
 
 /** Cabecera del modo local (solo wrangler pages dev; ver docs/19-deployment.md) */

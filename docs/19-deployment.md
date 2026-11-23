@@ -44,7 +44,7 @@ Flujo resultante: `push` a rama → Cloudflare construye preview y comenta la UR
 | `PUBLIC_CONTACT_EMAIL` | Email de contacto real | El mismo o uno de pruebas | Pie y JSON-LD `Organization` |
 | `PUBLIC_ANALYTICS` | vacío (noop) o `datalayer` | `console` | Adaptador de `AnalyticsService` ([18-analytics](./18-analytics.md)) |
 | `PUBLIC_CF_BEACON_TOKEN` | Token de Web Analytics o vacío | vacío | Carga el beacon de Cloudflare ([13-cloudflare](./13-cloudflare.md) §6) |
-| Panel de administración (`ADMIN_EMAILS`, `EDITOR_EMAILS`, `SESSION_SECRET`, `ADMIN_INITIAL_PASSWORDS`, `GITHUB_*`, binding `ADMIN_KV`…) | Ver §12 | Normalmente vacías (sin panel en previews) | Pages Functions `functions/api/admin` (ADR-018, ADR-024) |
+| Panel de administración (`ADMIN_USERS`, `EDITOR_USERS`, `SESSION_SECRET`, `ADMIN_INITIAL_PASSWORDS`, `GITHUB_*`, binding `ADMIN_KV`…) | Ver §12 | Normalmente vacías (sin panel en previews) | Pages Functions `functions/api/admin` (ADR-018, ADR-024) |
 
 No hay `noindex` por entorno: `robots.txt` (`src/pages/robots.txt.ts`) siempre permite indexar salvo `/carrito`, `/comparar`, `/admin` y `/api/`, y las canónicas apuntan a `PUBLIC_SITE_URL`. Las previews se controlan desactivándolas o protegiéndolas (§5).
 
@@ -128,20 +128,22 @@ Responsable operativo: DevOps. Aprobación de cambios en este documento: DevOps 
 
 ## 12. Panel de administración `/admin` (ADR-018): alta en Cloudflare y GitHub
 
-El panel necesita Pages Functions, un KV y las variables de abajo (ADR-024: login por email y contraseña; Cloudflare Access es opcional). Se da de alta **después** del primer despliegue (§2) y antes de entregar el acceso a Wiliam. Nada de esto toca el sitio público: si una variable falta, `/api/admin/*` responde 500 con un mensaje de configuración y el resto de la web sigue igual. Qué hace el panel: [17-admin-panel](./17-admin-panel.md); cómo se usa: [23-catalog-editing](./23-catalog-editing.md).
+El panel necesita Pages Functions, un KV y las variables de abajo (ADR-024/025: login por usuario y contraseña, sin emails; Cloudflare Access es opcional). Se da de alta **después** del primer despliegue (§2) y antes de entregar el acceso a Wiliam. Nada de esto toca el sitio público: si una variable falta, `/api/admin/*` responde 500 con un mensaje de configuración y el resto de la web sigue igual. Qué hace el panel: [17-admin-panel](./17-admin-panel.md); cómo se usa: [23-catalog-editing](./23-catalog-editing.md).
 
 ### 12.1 Token de GitHub (bot de contenido)
 
 1. GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token.
 2. Nombre `raiden-admin-panel`; *Resource owner* el propietario del repo; *Repository access*: **Only select repositories → `diego-1795/motos-electricas`**; *Permissions → Repository → Contents: Read and write* (nada más; *Metadata* se marca sola). Caducidad: 1 año (anotar en el calendario; al renovar, basta cambiar la variable y relanzar el build).
-3. Si `main` está protegida con "require pull request", el token del usuario que la administra debe poder saltarse la protección o hay que permitir pushes directos al bot; si no, los commits del panel fallarán con 409/422 de GitHub. Recomendación: crear el token con la cuenta de Diego (los commits aparecerán como suyos, con el email del editor en el mensaje).
+3. Si `main` está protegida con "require pull request", el token del usuario que la administra debe poder saltarse la protección o hay que permitir pushes directos al bot; si no, los commits del panel fallarán con 409/422 de GitHub. Recomendación: crear el token con la cuenta de Diego (los commits aparecerán como suyos, con el usuario del panel en el mensaje: `… por william`).
 
-### 12.2 KV, secreto de sesión y contraseñas temporales (ADR-024)
+### 12.2 KV, secreto de sesión y contraseñas temporales (ADR-024, ADR-025)
 
 1. **KV:** Workers & Pages → KV → *Create namespace* → `raiden-admin`. En el proyecto de Pages: Settings → **Bindings** → Add → KV namespace (en la interfaz antigua, Settings → Functions → KV namespace bindings) → variable `ADMIN_KV` → ese namespace (Production; en Preview, otro namespace o ninguno).
 2. **Secreto de sesión:** en el portátil, `npm run admin:password -- --secret` → copiar el valor a la variable `SESSION_SECRET` (marcar *Encrypt*). Distinto del de `.dev.vars`.
-3. **Contraseñas temporales:** por cada persona, `npm run admin:password -- <email>`. Imprime la contraseña en claro **una sola vez** (entregarla en mano o por un canal distinto del email) y la línea `email:pbkdf2-sha256:…` para la variable `ADMIN_INITIAL_PASSWORDS` (varias separadas por coma). Al entrar por primera vez el panel obliga a cambiarla; después la variable deja de consultarse para ese email.
-4. **Resetear una contraseña:** generar otra entrada para ese email, sustituirla en la variable, borrar la clave `user:<email>` del KV (Workers & Pages → KV → raiden-admin → *View*) y *Retry deployment*.
+3. **Contraseñas temporales:** por cada usuario (`admin`, `william`), `npm run admin:password -- <usuario>`. Imprime la contraseña en claro **una sola vez** (entregarla en mano o por un canal privado) y la línea `usuario:pbkdf2-sha256:…` para la variable `ADMIN_INITIAL_PASSWORDS` (varias separadas por coma). Al entrar por primera vez el panel obliga a cambiarla; mientras esa entrada no cambie, no vuelve a valer.
+4. **Restablecer una contraseña (sin email):**
+   - **De otro usuario:** el admin, en el panel → sección *Accesos* → **Restablecer contraseña** junto a ese usuario. Se muestra una temporal una sola vez; el usuario debe cambiarla al entrar y sus sesiones abiertas se cierran.
+   - **La del propio admin:** `npm run admin:password -- admin`, sustituir la entrada `admin:…` en `ADMIN_INITIAL_PASSWORDS` y *Retry deployment*. El registro del KV recuerda qué entrada aplicó (`seed`): una entrada distinta restablece la contraseña y, hasta usarla, la anterior deja de valer. No hace falta tocar el KV.
 
 **Cloudflare Access (opcional, segunda barrera).** Ver [13-cloudflare](./13-cloudflare.md) §11: aplicación *self-hosted* sobre `/admin` y `/api/admin`, política *Allow* con los emails, método *One-time PIN*. Si se configura, anotar el **team domain** y el **AUD tag**; las Functions exigirán el JWT además de la contraseña.
 
@@ -149,11 +151,11 @@ El panel necesita Pages Functions, un KV y las variables de abajo (ADR-024: logi
 
 | Variable | Valor | Secreto |
 |---|---|---|
-| `ADMIN_EMAILS` | `diegoo.1795@gmail.com` (varios separados por coma) | No |
-| `EDITOR_EMAILS` | email de Wiliam | No |
+| `ADMIN_USERS` | `admin` (varios separados por coma) | No |
+| `EDITOR_USERS` | `william` | No |
 | `ADMIN_KV` (binding KV, no variable) | namespace `raiden-admin` (§12.2) | — |
 | `SESSION_SECRET` | ≥ 32 caracteres aleatorios (`npm run admin:password -- --secret`) | **Sí** |
-| `ADMIN_INITIAL_PASSWORDS` | `email:pbkdf2-sha256:…` por persona, separadas por coma (§12.2) | **Sí** (son hashes, pero no hace falta exponerlos) |
+| `ADMIN_INITIAL_PASSWORDS` | `usuario:pbkdf2-sha256:…` por persona, separadas por coma (§12.2) | **Sí** (son hashes, pero no hace falta exponerlos) |
 | `CF_ACCESS_TEAM_DOMAIN` (opcional) | `<equipo>.cloudflareaccess.com` (vale también solo `<equipo>`) | No |
 | `CF_ACCESS_AUD` (opcional) | AUD tag de la aplicación de Access (64 hex) | No |
 | `GITHUB_TOKEN` | token fine-grained de §12.1 | **Sí** (Encrypt) |
@@ -169,12 +171,13 @@ Las tres opcionales permiten que el panel muestre el estado real del último bui
 
 | # | Comprobación | Resultado esperado |
 |---|---|---|
-| 1 | `https://raiden.com.pe/admin` sin sesión | Pantalla "Iniciar sesión" (email + contraseña); con Access activado, antes el 302 a `<equipo>.cloudflareaccess.com` |
+| 1 | `https://raiden.com.pe/admin` sin sesión | Pantalla "Iniciar sesión" (usuario + contraseña); con Access activado, antes el 302 a `<equipo>.cloudflareaccess.com` |
 | 2 | `curl -i https://raiden.com.pe/api/admin/me` sin sesión | 401 JSON `{ code: "unauthorized" }` con `Cache-Control: no-store`, nunca datos |
 | 2b | `curl -i -X POST https://raiden.com.pe/api/admin/auth/login -d '{}'` | 415 (sin `Content-Type: application/json`); con la cabecera y credenciales falsas, 401; a la sexta vez, 423 |
-| 3 | Entrar con el email de Diego y su contraseña temporal | Pide elegir una contraseña nueva; después panel con rol **admin**, botones Nuevo/Editar ficha/Borrar visibles |
-| 4 | Entrar con el email de Wiliam (otra ventana privada) | Mismo cambio obligatorio; rol **editor**: solo precios y ocultar/mostrar, sin lista de administradores en Accesos |
+| 3 | Entrar como `admin` con su contraseña temporal | Pide elegir una contraseña nueva; después panel con rol **admin**, botones Nuevo/Editar ficha/Borrar visibles |
+| 4 | Entrar como `william` (otra ventana privada) | Mismo cambio obligatorio; rol **editor**: solo precios y ocultar/mostrar, sin lista de administradores en Accesos |
 | 4b | "Cambiar contraseña" y recargar en la otra ventana | La otra sesión queda cerrada (vuelve al inicio de sesión) |
+| 4c | Como `admin`, Accesos → "Restablecer contraseña" de `william` | Se muestra una temporal; la sesión de `william` se cierra y al entrar con la temporal debe cambiarla |
 | 5 | Cambiar un precio de prueba y revertirlo | Dos commits `chore(catalog): actualizar … por …` en GitHub y dos builds en Pages |
 | 6 | `curl -I https://raiden.com.pe/admin` con sesión | `Cache-Control: no-store`, `X-Robots-Tag: noindex`, CSP con `connect-src 'self'` |
 | 7 | `https://raiden.com.pe/sitemap-0.xml` y `/robots.txt` | Sin `/admin` ni `/legal/*`; `Disallow: /admin` |
@@ -189,16 +192,16 @@ npm run build && npm run admin:dev   # http://localhost:8788/admin
 
 `wrangler pages dev dist --kv ADMIN_KV` sirve el build estático, las Functions de `functions/` y un KV local (persistido en `.wrangler/state`, ignorado por git): el login por contraseña funciona igual que en producción. Para desarrollar la interfaz sin contraseña, descomentar `ADMIN_LOCAL_USER` (solo cuenta en `localhost`; cabecera `x-admin-local-user` para probar el rol editor desde el propio panel). Las escrituras van a la rama `GITHUB_BRANCH` indicada: crear antes `admin-sandbox` desde `main` para no lanzar builds de producción desde el portátil. Sin `GITHUB_TOKEN` el login funciona pero el catálogo devuelve 500 de configuración.
 
-Para volver a probar la contraseña temporal en local (o "resetear" un usuario), con el servidor parado:
+Para volver a probar la contraseña temporal en local, cambia su entrada en `.dev.vars` (otra `npm run admin:password -- <usuario>`) y reinicia el servidor, o borra el registro con el servidor parado:
 
 ```bash
-npx wrangler kv key delete "user:<email>" --namespace-id ADMIN_KV --local
+npx wrangler kv key delete "user:<usuario>" --namespace-id ADMIN_KV --local
 ```
 
 ### 12.6 Operación
 
 - **Los commits del panel nacen en GitHub.** Antes de seguir desarrollando: `git pull`. Si se desarrolla sobre un `main` desactualizado, el push fallará (no es destructivo).
 - **Rotar el token** (caducidad o filtración): revocar en GitHub, crear otro, actualizar `GITHUB_TOKEN`, *Retry deployment*.
-- **Quitar o añadir un editor:** editar `EDITOR_EMAILS`/`ADMIN_EMAILS` (y la política de Access si está activado), añadir su contraseña temporal a `ADMIN_INITIAL_PASSWORDS` (§12.2) y relanzar el build. Quitar a alguien de las listas basta para que no pueda entrar (sin rol no se emite sesión); para limpiar, borrar también su `user:<email>` del KV.
+- **Quitar o añadir un editor:** editar `EDITOR_USERS`/`ADMIN_USERS` (y la política de Access si está activado), añadir su contraseña temporal a `ADMIN_INITIAL_PASSWORDS` (§12.2) y relanzar el build. Quitar a alguien de las listas basta para que no pueda entrar (sin rol no se emite sesión); para limpiar, borrar también su `user:<usuario>` del KV.
 - **Rotar `SESSION_SECRET`:** cambiar la variable y relanzar el build cierra todas las sesiones abiertas.
 - **Build fallido tras un cambio del panel:** el JSON pasó los validadores, así que la causa suele ser una imagen inexistente referenciada en el "JSON avanzado". Abrir el log de Pages, corregir desde el panel (o por git) y volverá a construir. Mientras tanto el sitio sirve el último deploy correcto (Pages no publica builds fallidos).

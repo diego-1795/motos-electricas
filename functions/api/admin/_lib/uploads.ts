@@ -50,7 +50,7 @@ export async function uploadFile(ctx: HandlerContext, body: unknown): Promise<Up
 
   const dir = target.path.slice(0, target.path.lastIndexOf('/'));
   const existing = (await listOrEmpty(ctx.store, dir)).find((f) => f.path === target.path);
-  const message = commitMessage('subir', target.path, ctx.user.email, { changes: [`${bytes.length} bytes${existing ? ' (sustituye al anterior)' : ''}`], reason: body.reason as string | undefined }, 'assets');
+  const message = commitMessage('subir', target.path, ctx.user.username, { changes: [`${bytes.length} bytes${existing ? ' (sustituye al anterior)' : ''}`], reason: body.reason as string | undefined }, 'assets');
   const written = await ctx.store.write(target.path, body.contentBase64.replace(/\s+/g, ''), message, existing?.sha, 'base64');
   return { path: target.path, ref: target.ref, bytes: bytes.length, sha: written.sha, replaced: Boolean(existing), commit: written.commit };
 }

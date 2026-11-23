@@ -3,8 +3,8 @@ import {
   LOGIN_MAX_ATTEMPTS_PER_ACCOUNT,
   LOGIN_MAX_ATTEMPTS_PER_IP,
   SESSION_TTL_S,
-  isEmail,
-  normalizeEmail,
+  isUsername,
+  normalizeUsername,
   passwordErrors,
   type SessionClaims,
 } from '../../../../src/domain/adminAuth';
@@ -12,12 +12,15 @@ import type { Env } from './env';
 import { HttpError, configError, unauthorized, validation } from './http';
 
 /**
- * Acceso por contraseña al panel (ADR-024). Todo con WebCrypto (Workers y Node ≥ 20):
+ * Acceso por usuario y contraseña al panel (ADR-024, ADR-025). Todo con WebCrypto (Workers y Node ≥ 20):
  *  - Contraseñas: PBKDF2-SHA256 (100 000 iteraciones, el máximo que admite Workers), sal de 16 bytes,
  *    serializadas como `pbkdf2-sha256:<iteraciones>:<sal b64url>:<hash b64url>`.
- *  - Usuarios: KV `ADMIN_KV`, clave `user:<email>` → UserRecord. La primera vez que alguien entra con
+ *  - Usuarios: KV `ADMIN_KV`, clave `user:<usuario>` → UserRecord. La primera vez que alguien entra con
  *    su contraseña temporal (`ADMIN_INITIAL_PASSWORDS`, ya en hash) se crea su registro con
  *    `mustChange: true`; el panel le obliga a cambiarla antes de hacer nada más.
+ *  - Restablecer (ADR-025), sin email: el admin genera desde el panel una temporal para otro usuario
+ *    (`resetPassword`), o se pone una entrada NUEVA en `ADMIN_INITIAL_PASSWORDS` (el registro recuerda en
+ *    `seed` la entrada con la que se creó; si la del entorno cambia, solo vale la nueva temporal).
  *  - Sesión: cookie HttpOnly con `base64url(claims).base64url(HMAC-SHA256)` firmada con SESSION_SECRET.
  *    `v` (versión de la contraseña) va dentro: cambiarla invalida todas las sesiones anteriores.
  *  - Fuerza bruta: contadores en KV por cuenta y por IP con TTL; al agotarlos, bloqueo temporal (423).
@@ -46,6 +49,8 @@ export interface UserRecord {
   /** true hasta que el usuario sustituye la contraseña temporal. */
   mustChange: boolean;
   updatedAt: string;
+  /** Entrada de ADMIN_INITIAL_PASSWORDS ya aplicada (ADR-025): otra distinta en el entorno restablece la contraseña. */
+  seed?: string;
 }
 
 /* ---------- Codificación ---------- */
@@ -120,8 +125,9 @@ export async function verifyPassword(password: string, serialized: string): Prom
 /* ---------- Contraseñas iniciales (variable de entorno) ---------- */
 
 /**
- * `ADMIN_INITIAL_PASSWORDS`: `email:pbkdf2-sha256:<iter>:<sal>:<hash>` separados por coma, punto y coma,
- * salto de línea o espacio. Solo se consultan cuando el email aún no tiene registro en KV.
+ * `ADMIN_INITIAL_PASSWORDS`: `usuario:pbkdf2-sha256:<iter>:<sal>:<hash>` separados por coma, punto y coma,
+ * salto de línea o espacio. Valen cuando el usuario aún no tiene registro en KV o cuando la entrada es
+ * distinta de la que creó su registro (restablecimiento por entorno, ADR-025).
  * Entradas malformadas se ignoran (y se avisa por consola sin reproducir el valor).
  */
 export function parseInitialPasswords(raw: string | undefined): Map<string, string> {
@@ -129,13 +135,13 @@ export function parseInitialPasswords(raw: string | undefined): Map<string, stri
   for (const item of (raw ?? '').split(/[\s,;]+/)) {
     if (!item) continue;
     const i = item.indexOf(':');
-    const email = normalizeEmail(i > 0 ? item.slice(0, i) : '');
+    const username = normalizeUsername(i > 0 ? item.slice(0, i) : '');
     const hash = i > 0 ? item.slice(i + 1) : '';
-    if (!isEmail(email) || !parseHash(hash)) {
-      console.warn('[admin] entrada de ADMIN_INITIAL_PASSWORDS ignorada (formato email:pbkdf2-sha256:iter:sal:hash)');
+    if (!isUsername(username) || !parseHash(hash)) {
+      console.warn('[admin] entrada de ADMIN_INITIAL_PASSWORDS ignorada (formato usuario:pbkdf2-sha256:iter:sal:hash)');
       continue;
     }
-    out.set(email, hash);
+    out.set(username, hash);
   }
   return out;
 }
@@ -174,9 +180,9 @@ export async function verifySession(token: string, secret: string, now = nowSeco
   }
   if (typeof claims !== 'object' || claims === null) return null;
   const c = claims as Record<string, unknown>;
-  if (typeof c.email !== 'string' || typeof c.v !== 'number' || typeof c.iat !== 'number' || typeof c.exp !== 'number') return null;
+  if (typeof c.sub !== 'string' || typeof c.v !== 'number' || typeof c.iat !== 'number' || typeof c.exp !== 'number') return null;
   if (c.exp <= now || c.iat > now + 60) return null;
-  return { email: c.email, v: c.v, iat: c.iat, exp: c.exp };
+  return { sub: c.sub, v: c.v, iat: c.iat, exp: c.exp };
 }
 
 export const nowSeconds = (): number => Math.floor(Date.now() / 1000);
@@ -219,22 +225,24 @@ export const passwordAuthConfigured = (env: Env): boolean => Boolean(env.ADMIN_K
 
 /* ---------- Usuarios en KV ---------- */
 
-const userKey = (email: string) => `user:${email}`;
+const userKey = (username: string) => `user:${username}`;
 
-export async function readUser(kv: KvLike, email: string): Promise<UserRecord | null> {
-  const raw = await kv.get(userKey(email), 'text');
+export async function readUser(kv: KvLike, username: string): Promise<UserRecord | null> {
+  const raw = await kv.get(userKey(username), 'text');
   if (!raw) return null;
   try {
     const u = JSON.parse(raw) as Partial<UserRecord>;
     if (typeof u.hash !== 'string' || typeof u.version !== 'number') return null;
-    return { hash: u.hash, version: u.version, mustChange: Boolean(u.mustChange), updatedAt: typeof u.updatedAt === 'string' ? u.updatedAt : '' };
+    const record: UserRecord = { hash: u.hash, version: u.version, mustChange: Boolean(u.mustChange), updatedAt: typeof u.updatedAt === 'string' ? u.updatedAt : '' };
+    if (typeof u.seed === 'string') record.seed = u.seed;
+    return record;
   } catch {
     return null;
   }
 }
 
-export async function writeUser(kv: KvLike, email: string, record: UserRecord): Promise<void> {
-  await kv.put(userKey(email), JSON.stringify(record));
+export async function writeUser(kv: KvLike, username: string, record: UserRecord): Promise<void> {
+  await kv.put(userKey(username), JSON.stringify(record));
 }
 
 /* ---------- Fuerza bruta ---------- */
@@ -254,85 +262,94 @@ export class LockedError extends HttpError {
   }
 }
 
-async function assertNotLocked(kv: KvLike, email: string, ip: string): Promise<void> {
-  const [byAccount, byIp] = await Promise.all([readCount(kv, failKey('account', email)), readCount(kv, failKey('ip', ip))]);
+async function assertNotLocked(kv: KvLike, username: string, ip: string): Promise<void> {
+  const [byAccount, byIp] = await Promise.all([readCount(kv, failKey('account', username)), readCount(kv, failKey('ip', ip))]);
   if (byAccount >= LOGIN_MAX_ATTEMPTS_PER_ACCOUNT || byIp >= LOGIN_MAX_ATTEMPTS_PER_IP) throw new LockedError();
 }
 
-async function recordFailure(kv: KvLike, email: string, ip: string): Promise<void> {
-  for (const key of [failKey('account', email), failKey('ip', ip)]) {
+async function recordFailure(kv: KvLike, username: string, ip: string): Promise<void> {
+  for (const key of [failKey('account', username), failKey('ip', ip)]) {
     const n = (await readCount(kv, key)) + 1;
     await kv.put(key, String(n), { expirationTtl: LOGIN_LOCKOUT_S });
   }
 }
 
-async function clearFailures(kv: KvLike, email: string, ip: string): Promise<void> {
-  await Promise.all([kv.delete(failKey('account', email)), kv.delete(failKey('ip', ip))]);
+async function clearFailures(kv: KvLike, username: string, ip: string): Promise<void> {
+  await Promise.all([kv.delete(failKey('account', username)), kv.delete(failKey('ip', ip))]);
 }
 
 /* ---------- Casos de uso ---------- */
 
 export interface PasswordIdentity {
-  email: string;
+  username: string;
   mustChange: boolean;
   version: number;
 }
 
+const INVALID_CREDENTIALS = 'Usuario o contraseña incorrectos';
+
 /**
- * Login: comprueba bloqueo, busca el usuario en KV (o su contraseña temporal en el entorno), verifica la
- * contraseña y devuelve la identidad. Lanza 401 (credenciales), 423 (bloqueo) o 500 (configuración).
- * El mismo mensaje para "email desconocido" y "contraseña incorrecta": no revela qué cuentas existen.
+ * Login: comprueba bloqueo, busca el usuario en KV y su entrada en el entorno, verifica la contraseña y
+ * devuelve la identidad. Lanza 401 (credenciales), 423 (bloqueo) o 500 (configuración).
+ * El mismo mensaje para "usuario desconocido" y "contraseña incorrecta": no revela qué cuentas existen.
+ *
+ * Si `ADMIN_INITIAL_PASSWORDS` trae para el usuario una entrada que su registro aún no ha aplicado (primera
+ * entrada o restablecimiento por entorno), SOLO vale esa contraseña temporal: la anterior queda anulada.
  */
-export async function loginWithPassword(env: Env, request: Request, rawEmail: unknown, password: unknown): Promise<PasswordIdentity> {
+export async function loginWithPassword(env: Env, request: Request, rawUsername: unknown, password: unknown): Promise<PasswordIdentity> {
   const kv = requireKv(env);
   requireSecret(env);
-  const email = normalizeEmail(rawEmail);
-  if (!isEmail(email) || typeof password !== 'string' || !password) throw unauthorized('Email o contraseña incorrectos');
+  const username = normalizeUsername(rawUsername);
+  if (!isUsername(username) || typeof password !== 'string' || !password) throw unauthorized(INVALID_CREDENTIALS);
   const ip = ipOf(request);
-  await assertNotLocked(kv, email, ip);
+  await assertNotLocked(kv, username, ip);
 
-  let user = await readUser(kv, email);
-  if (!user) {
-    // Primera entrada: contraseña temporal del entorno → se crea el registro con mustChange
-    const initial = parseInitialPasswords(env.ADMIN_INITIAL_PASSWORDS).get(email);
-    if (initial && (await verifyPassword(password, initial))) {
-      user = { hash: initial, version: 1, mustChange: true, updatedAt: new Date().toISOString() };
-      await writeUser(kv, email, user);
-      await clearFailures(kv, email, ip);
-      return { email, mustChange: true, version: user.version };
+  const user = await readUser(kv, username);
+  const initial = parseInitialPasswords(env.ADMIN_INITIAL_PASSWORDS).get(username);
+  const pendingSeed = initial !== undefined && (!user || user.seed !== initial) ? initial : undefined;
+
+  let ok: boolean;
+  if (pendingSeed) {
+    ok = await verifyPassword(password, pendingSeed);
+    if (ok) {
+      const next: UserRecord = { hash: pendingSeed, version: (user?.version ?? 0) + 1, mustChange: true, updatedAt: new Date().toISOString(), seed: pendingSeed };
+      await writeUser(kv, username, next);
+      await clearFailures(kv, username, ip);
+      return { username, mustChange: true, version: next.version };
     }
+  } else if (user) {
+    ok = await verifyPassword(password, user.hash);
+  } else {
     // Coste parecido al de una verificación real para no distinguir cuentas por tiempo de respuesta
     await pbkdf2(password, new Uint8Array(16), PBKDF2_ITERATIONS);
-    await recordFailure(kv, email, ip);
-    throw unauthorized('Email o contraseña incorrectos');
+    ok = false;
   }
-
-  if (!(await verifyPassword(password, user.hash))) {
-    await recordFailure(kv, email, ip);
-    throw unauthorized('Email o contraseña incorrectos');
+  if (!ok || !user) {
+    await recordFailure(kv, username, ip);
+    throw unauthorized(INVALID_CREDENTIALS);
   }
-  await clearFailures(kv, email, ip);
-  return { email, mustChange: user.mustChange, version: user.version };
+  await clearFailures(kv, username, ip);
+  return { username, mustChange: user.mustChange, version: user.version };
 }
 
 /** Emite la cookie de sesión para una identidad ya verificada. */
 export async function issueSession(env: Env, request: Request, identity: PasswordIdentity, now = nowSeconds()): Promise<string> {
-  const token = await signSession({ email: identity.email, v: identity.version, iat: now, exp: now + SESSION_TTL_S }, requireSecret(env));
+  const token = await signSession({ sub: identity.username, v: identity.version, iat: now, exp: now + SESSION_TTL_S }, requireSecret(env));
   return sessionCookie(token, request);
 }
 
 /**
  * Identidad a partir de la cookie: firma, caducidad y que la versión coincida con la del usuario en KV
- * (una contraseña cambiada deja fuera a las sesiones antiguas). null si no hay sesión válida.
+ * (una contraseña cambiada o restablecida deja fuera a las sesiones antiguas). null si no hay sesión válida.
  */
 export async function sessionIdentity(env: Env, request: Request, now = nowSeconds()): Promise<PasswordIdentity | null> {
   const token = readSessionCookie(request);
   if (!token) return null;
   const claims = await verifySession(token, requireSecret(env), now);
   if (!claims) return null;
-  const user = await readUser(requireKv(env), claims.email);
+  const user = await readUser(requireKv(env), claims.sub);
   if (!user || user.version !== claims.v) return null;
-  return { email: claims.email, mustChange: user.mustChange, version: user.version };
+  return { username: claims.sub, mustChange: user.mustChange, version: user.version };
 }
 
 /**
@@ -340,17 +357,52 @@ export async function sessionIdentity(env: Env, request: Request, now = nowSecon
  * sesiones) y devuelve la nueva identidad para reemitir la cookie. 401 si la actual no es correcta, 422 si
  * la nueva no cumple la política.
  */
-export async function changePassword(env: Env, email: string, currentPassword: unknown, newPassword: unknown): Promise<PasswordIdentity> {
+export async function changePassword(env: Env, username: string, currentPassword: unknown, newPassword: unknown): Promise<PasswordIdentity> {
   const kv = requireKv(env);
-  const user = await readUser(kv, email);
+  const user = await readUser(kv, username);
   if (!user || typeof currentPassword !== 'string' || !(await verifyPassword(currentPassword, user.hash))) {
     throw unauthorized('La contraseña actual no es correcta');
   }
-  const errors = passwordErrors(newPassword, { email, current: currentPassword });
+  const errors = passwordErrors(newPassword, { username, current: currentPassword });
   if (errors.length) throw validation('La contraseña nueva no es válida', errors);
   const next: UserRecord = { hash: await hashPassword(newPassword as string), version: user.version + 1, mustChange: false, updatedAt: new Date().toISOString() };
-  await writeUser(kv, email, next);
-  return { email, mustChange: false, version: next.version };
+  if (user.seed !== undefined) next.seed = user.seed;
+  await writeUser(kv, username, next);
+  return { username, mustChange: false, version: next.version };
+}
+
+/* ---------- Restablecer (ADR-025) ---------- */
+
+const TEMP_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+
+/** Contraseña temporal aleatoria: 16 caracteres sin ambiguos (0/O, 1/l/I) en grupos de 4 (~93 bits). */
+export function generateTempPassword(): string {
+  const chars: string[] = [];
+  while (chars.length < 16) {
+    for (const b of crypto.getRandomValues(new Uint8Array(32))) {
+      // Rechazo de módulo para no sesgar la distribución
+      if (chars.length < 16 && b < 256 - (256 % TEMP_ALPHABET.length)) chars.push(TEMP_ALPHABET[b % TEMP_ALPHABET.length]!);
+    }
+  }
+  return chars.join('').replace(/(.{4})(?=.)/g, '$1-');
+}
+
+/**
+ * El admin restablece la contraseña de OTRO usuario: genera una temporal, la guarda en hash con
+ * `mustChange: true` y sube la versión (cierra sus sesiones). Devuelve la temporal en claro, que se muestra
+ * una sola vez al admin. Conserva `seed` (o adopta la entrada actual del entorno) para que una entrada ya
+ * aplicada de ADMIN_INITIAL_PASSWORDS no vuelva a valer.
+ */
+export async function resetPassword(env: Env, username: string): Promise<{ username: string; temporaryPassword: string }> {
+  const kv = requireKv(env);
+  const user = await readUser(kv, username);
+  const temporaryPassword = generateTempPassword();
+  const next: UserRecord = { hash: await hashPassword(temporaryPassword), version: (user?.version ?? 0) + 1, mustChange: true, updatedAt: new Date().toISOString() };
+  const seed = user ? user.seed : parseInitialPasswords(env.ADMIN_INITIAL_PASSWORDS).get(username);
+  if (seed !== undefined) next.seed = seed;
+  await writeUser(kv, username, next);
+  await kv.delete(failKey('account', username));
+  return { username, temporaryPassword };
 }
 
 /**

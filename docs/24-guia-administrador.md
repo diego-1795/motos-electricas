@@ -9,16 +9,17 @@ Una regla importante desde el principio: **las fotos no se suben desde el panel*
 ## 1. Entrar al panel
 
 1. Abre en el navegador `https://<dominio de la web>/admin` (guárdalo en favoritos: el enlace no aparece en la web pública).
-2. Escribe tu **correo electrónico** y tu **contraseña** y pulsa **Entrar**.
-3. **La primera vez** entrarás con la contraseña temporal que te dio Diego. El panel te pedirá elegir una nueva antes de seguir: escribe la temporal en "Contraseña actual", y tu contraseña nueva dos veces. Debe tener al menos 10 caracteres (una frase con espacios vale) y no puede ser tu correo ni una secuencia tipo `1234567890`. Solo tú la conocerás.
-4. Ya dentro, arriba verás "Conectado como <tu correo> · Administrador" (o "· Editor"), los botones **Cambiar contraseña** y **Cerrar sesión**, y las pestañas del panel. La sesión dura 12 horas; después vuelve a pedirte la contraseña.
+2. Escribe tu **usuario** (`admin` o `william`, en minúsculas) y tu **contraseña** y pulsa **Entrar**.
+3. **La primera vez** entrarás con la contraseña temporal que te dio Diego. El panel te pedirá elegir una nueva antes de seguir: escribe la temporal en "Contraseña actual", y tu contraseña nueva dos veces. Debe tener al menos 10 caracteres (una frase con espacios vale) y no puede ser tu usuario ni una secuencia tipo `1234567890`. Solo tú la conocerás.
+4. Ya dentro, arriba verás "Conectado como <tu usuario> · Administrador" (o "· Editor"), los botones **Cambiar contraseña** y **Cerrar sesión**, y las pestañas del panel. La sesión dura 12 horas; después vuelve a pedirte la contraseña.
 
 *[Captura: pantalla de inicio de sesión]* · *[Captura: panel abierto con las pestañas Productos, Repuestos y Blog]*
 
 - **Cambiar la contraseña cuando quieras:** botón **Cambiar contraseña** (arriba). Al cambiarla se cierran las demás sesiones que tuvieras abiertas en otros dispositivos.
-- **Si la olvidas:** pide a Diego una contraseña temporal nueva; al entrar con ella tendrás que elegir otra.
+- **Si la olvidas (editor):** pide al administrador una contraseña temporal nueva. Él la genera en la sección **Accesos** del panel con **Restablecer contraseña** junto a tu usuario; la temporal se ve una sola vez y al entrar con ella tendrás que elegir otra. Tus sesiones abiertas se cierran.
+- **Si la olvida el administrador:** no hay correo de recuperación (el panel no guarda emails). Diego genera una temporal nueva con `npm run admin:password -- admin`, sustituye la entrada `admin:…` en la variable `ADMIN_INITIAL_PASSWORDS` de Cloudflare Pages y vuelve a desplegar; desde ese momento solo vale la temporal nueva.
 - Si te equivocas 5 veces seguidas, el acceso de tu cuenta queda bloqueado 15 minutos.
-- Si ves **"Sin acceso"**: tu correo y contraseña son correctos pero ese correo no está autorizado en el panel. Pide al administrador (Diego) que lo añada.
+- Si ves **"Sin acceso"**: tu usuario y contraseña son correctos pero ese usuario no está autorizado en el panel. Pide al administrador que lo añada.
 
 En la esquina superior derecha del panel hay un enlace **Ayuda** que abre esta guía.
 
@@ -195,7 +196,7 @@ No hace falta esperar a que termine para seguir editando otras cosas; cada guard
 
 | Mensaje | Qué significa | Qué hacer |
 |---|---|---|
-| "Sin acceso" | Tu correo no está autorizado en el panel | Pedir a Diego que lo añada |
+| "Sin acceso" | Tu usuario no está autorizado en el panel | Pedir al administrador que lo añada |
 | "La sesión de Cloudflare Access ha caducado" | Pasaron 24 horas desde el código | Recargar la página y pedir un código nuevo |
 | "Importe no válido" | El precio tiene letras o un formato raro | Escribir solo números: `1250` o `1250.50` |
 | "La versión Premium no puede ser más barata que la Estándar" | Regla de la tienda | Cambiar primero la otra versión |

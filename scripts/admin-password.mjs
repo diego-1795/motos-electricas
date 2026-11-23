@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /**
- * Genera la entrada de ADMIN_INITIAL_PASSWORDS para un usuario del panel (ADR-024) y, si no se indica
+ * Genera la entrada de ADMIN_INITIAL_PASSWORDS para un usuario del panel (ADR-024, ADR-025) y, si no se indica
  * contraseña, una temporal aleatoria. También puede generar un SESSION_SECRET.
  *
- *   node scripts/admin-password.mjs <email> [contraseña]   → imprime la contraseña (si es nueva) y la línea con el hash
+ *   node scripts/admin-password.mjs <usuario> [contraseña] → imprime la contraseña (si es nueva) y la línea con el hash
+ *
+ * Una entrada NUEVA para un usuario que ya existe restablece su contraseña (al desplegar, solo vale la temporal).
  *   node scripts/admin-password.mjs --secret                → imprime un SESSION_SECRET aleatorio (48 caracteres)
  *
  * Mismo algoritmo que functions/api/admin/_lib/auth.ts: PBKDF2-SHA256, 100 000 iteraciones, sal de 16 bytes,
@@ -38,7 +40,7 @@ async function hashPassword(password) {
 const [arg1, arg2] = process.argv.slice(2);
 
 if (!arg1 || arg1 === '-h' || arg1 === '--help') {
-  console.log('Uso:\n  node scripts/admin-password.mjs <email> [contraseña]\n  node scripts/admin-password.mjs --secret');
+  console.log('Uso:\n  node scripts/admin-password.mjs <usuario> [contraseña]\n  node scripts/admin-password.mjs --secret');
   process.exit(arg1 ? 0 : 1);
 }
 
@@ -47,9 +49,10 @@ if (arg1 === '--secret') {
   process.exit(0);
 }
 
-const email = arg1.trim().toLowerCase();
-if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-  console.error(`Email no válido: ${arg1}`);
+const username = arg1.trim().toLowerCase();
+// Misma regla que src/domain/adminAuth.ts (isUsername)
+if (!/^[a-z0-9][a-z0-9._-]{1,31}$/.test(username)) {
+  console.error(`Usuario no válido: ${arg1} (2–32 caracteres: a-z, 0-9, punto, guion y guion bajo)`);
   process.exit(1);
 }
 const generated = !arg2;
@@ -59,5 +62,5 @@ if (password.length < 10) {
   process.exit(1);
 }
 const hash = await hashPassword(password);
-if (generated) console.log(`Contraseña temporal para ${email} (entrégala en mano; al entrar deberá cambiarla):\n  ${password}\n`);
-console.log(`Entrada para ADMIN_INITIAL_PASSWORDS (varias se separan con coma):\n  ${email}:${hash}`);
+if (generated) console.log(`Contraseña temporal para ${username} (entrégala en mano; al entrar deberá cambiarla):\n  ${password}\n`);
+console.log(`Entrada para ADMIN_INITIAL_PASSWORDS (varias se separan con coma):\n  ${username}:${hash}`);

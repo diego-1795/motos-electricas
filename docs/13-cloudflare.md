@@ -148,7 +148,7 @@ Regla: si una funcionalidad no se puede reproducir con un fichero del repositori
 
 ## 11. Cloudflare Access para el panel `/admin` (ADR-018; opcional desde ADR-024)
 
-Desde ADR-024 el panel se protege con su propio login por email y contraseña ([19-deployment](./19-deployment.md) §12). Access es una **segunda barrera opcional**: si se configura, las Functions exigen además el JWT. Configuración en Zero Trust (gratuito hasta 50 usuarios):
+Desde ADR-024 el panel se protege con su propio login por usuario y contraseña (ADR-024, ADR-025; [19-deployment](./19-deployment.md) §12). Access es una **segunda barrera opcional**: si se configura, las Functions exigen además el JWT. Configuración en Zero Trust (gratuito hasta 50 usuarios):
 
 1. **Zero Trust → Settings → Custom Pages**: anotar el *team domain* (`<equipo>.cloudflareaccess.com`) → variable `CF_ACCESS_TEAM_DOMAIN`.
 2. **Access → Applications → Add → Self-hosted**: dominio `raiden.com.pe` (y `www`), rutas `/admin` y `/api/admin` (una aplicación con dos rutas, o dos aplicaciones con la misma política). Duración de sesión: 24 h. Método: *One-time PIN* (código al email); no hace falta proveedor de identidad.

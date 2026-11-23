@@ -7,7 +7,7 @@ import { buildAdminUser } from './_lib/user';
 /**
  * Middleware de /api/admin/* (ADR-018, ADR-024): origen propio en toda petición con efectos (CSRF),
  * identidad (sesión por contraseña, modo local o Cloudflare Access opcional), rol en el servidor
- * (ADMIN_EMAILS / EDITOR_EMAILS) y `Cache-Control: no-store` en todo. Deja `context.data.user` a las rutas.
+ * (ADMIN_USERS / EDITOR_USERS) y `Cache-Control: no-store` en todo. Deja `context.data.user` a las rutas.
  * 401 sin identidad, 403 sin rol o con contraseña temporal pendiente, 500 sin configuración.
  * `/auth/login` y `/auth/logout` no exigen sesión (son quienes la crean o la destruyen).
  */

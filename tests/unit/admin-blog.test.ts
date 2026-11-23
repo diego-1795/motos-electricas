@@ -13,8 +13,8 @@ import { memoryStore, type MemoryStore } from './memoryStore';
 
 /** Blog en el panel (ADR-023): solo admin, concurrencia por sha, validación con blogSchema y frontmatter determinista. */
 
-const admin: AdminUser = { email: 'diego@example.com', role: 'admin', admins: ['diego@example.com'], editors: ['wiliam@example.com'], localMode: true, branch: 'main' };
-const editor: AdminUser = { ...admin, email: 'wiliam@example.com', role: 'editor' };
+const admin: AdminUser = { username: 'admin', role: 'admin', admins: ['admin'], editors: ['william'], localMode: true, branch: 'main' };
+const editor: AdminUser = { ...admin, username: 'william', role: 'editor' };
 
 const fm = (over: Partial<BlogFrontmatter> = {}): BlogFrontmatter => ({
   title: 'Cómo cuidar la batería',
@@ -99,7 +99,7 @@ describe('PUT', () => {
   it('crear sin sha escribe un frontmatter determinista y hace commit chore(blog): crear', async () => {
     const body = 'Texto nuevo.\r\n\r\n## Sección\r\n';
     const res = await putPost(asAdmin(), 'articulo-nuevo', { frontmatter: fm({ title: 'Nuevo', relatedProducts: ['aguila-test'] }), body, reason: 'Primer artículo' });
-    expect(res.commit.message).toBe('chore(blog): crear articulo-nuevo por diego@example.com\n\nMotivo: Primer artículo');
+    expect(res.commit.message).toBe('chore(blog): crear articulo-nuevo por admin\n\nMotivo: Primer artículo');
     expect(res.path).toBe(blogPath('articulo-nuevo'));
     expect(res.slug).toBe('articulo-nuevo');
     expect(store.writes[0]?.sha).toBeUndefined();
@@ -119,7 +119,7 @@ describe('PUT', () => {
       frontmatter: fm({ updatedAt: '2026-11-04', image: { width: 1600, height: 900, alt: 'Batería', src: '~/assets/blog/como-cuidar-la-bateria.webp' } }),
       body: 'Actualizado.',
     });
-    expect(res.commit.message).toBe('chore(blog): actualizar como-cuidar-la-bateria por diego@example.com');
+    expect(res.commit.message).toBe('chore(blog): actualizar como-cuidar-la-bateria por admin');
     expect(store.writes[0]?.content).toBe(
       '---\ntitle: "Cómo cuidar la batería"\ndescription: "Guía práctica."\ncategory: "baterias"\npublishedAt: "2026-10-27T08:00:00.000Z"\nupdatedAt: "2026-11-04"\nauthor: "Equipo Raiden"\nimage:\n  src: "~/assets/blog/como-cuidar-la-bateria.webp"\n  alt: "Batería"\n  width: 1600\n  height: 900\nrelatedProducts: ["aguila-test"]\n---\n\nActualizado.\n',
     );
@@ -153,7 +153,7 @@ describe('PUT', () => {
 describe('DELETE', () => {
   it('borra con sha correcto y commit chore(blog): borrar; sha desfasado → 409; inexistente → 404', async () => {
     const res = await deletePost(asAdmin(), 'necesito-licencia', { sha: 'sha-2', reason: 'Obsoleto' });
-    expect(res.commit.message).toBe('chore(blog): borrar necesito-licencia por diego@example.com\n\nMotivo: Obsoleto');
+    expect(res.commit.message).toBe('chore(blog): borrar necesito-licencia por admin\n\nMotivo: Obsoleto');
     expect(store.files.has(blogPath('necesito-licencia'))).toBe(false);
     expect((await fails(deletePost(asAdmin(), 'como-cuidar-la-bateria', { sha: 'otro' }))).status).toBe(409);
     expect((await fails(deletePost(asAdmin(), 'no-existe', { sha: 'x' }))).status).toBe(404);

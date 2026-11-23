@@ -205,8 +205,8 @@ export default function AdminApp() {
   );
 
   const simulate = useCallback(
-    (email: string | null) => {
-      api.setLocalUser(email);
+    (username: string | null) => {
+      api.setLocalUser(username);
       setDialog(null);
       setTab('products');
       void load();
@@ -248,7 +248,7 @@ export default function AdminApp() {
         <div class="card adm-login__card">
           <h2>Elige tu contraseña</h2>
           <p class="muted">
-            Conectado como <strong>{phase.user.email}</strong>
+            Conectado como <strong>{phase.user.username}</strong>
           </p>
           <PasswordForm user={phase.user} forced onChanged={(user) => void enter(user)} />
           <p class="hint">
@@ -266,8 +266,8 @@ export default function AdminApp() {
       <div class="adm__panel card adm-denied" data-admin-denied>
         <h2>Sin acceso</h2>
         <p>
-          Tu email está identificado pero no está autorizado en el panel (no figura en <code>ADMIN_EMAILS</code> ni en <code>EDITOR_EMAILS</code>). Pide al administrador de
-          la tienda (Diego) que lo añada.
+          Tu usuario está identificado pero no está autorizado en el panel (no figura en <code>ADMIN_USERS</code> ni en <code>EDITOR_USERS</code>). Pide al administrador de
+          la tienda que lo añada.
         </p>
         <p class="hint">Detalle del servidor: {phase.message}</p>
         <div class="adm-who__actions">
@@ -289,8 +289,8 @@ export default function AdminApp() {
         <p>{phase.kind === 'error' ? phase.message : 'Estado desconocido'}</p>
         {phase.kind === 'error' && phase.config && (
           <p class="hint">
-            Faltan variables o bindings del proyecto de Cloudflare Pages (<code>ADMIN_KV</code>, <code>SESSION_SECRET</code>, <code>ADMIN_EMAILS</code>, <code>GITHUB_TOKEN</code>…).
-            Esto lo corrige Diego (administrador); ver docs/19-deployment.md §12.
+            Faltan variables o bindings del proyecto de Cloudflare Pages (<code>ADMIN_KV</code>, <code>SESSION_SECRET</code>, <code>ADMIN_USERS</code>, <code>GITHUB_TOKEN</code>…).
+            Esto lo corrige el administrador; ver docs/19-deployment.md §12.
           </p>
         )}
         <button type="button" class="btn btn--secondary" onClick={() => void load()}>
@@ -330,7 +330,7 @@ export default function AdminApp() {
       <div class="adm__panel" data-admin-app data-role={user.role}>
         <div class="adm-who">
           <span>
-            Conectado como <strong>{user.email}</strong> · {roleLabel[user.role]}
+            Conectado como <strong>{user.username}</strong> · {roleLabel[user.role]}
           </span>
           <span class="adm-chips">
             <span class="badge" title="Rama de GitHub sobre la que se escribe">

@@ -20,7 +20,8 @@ Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018 y ADR-023, [1
 | Subir PDF de manual/ficha a `public/docs` (ADR-023) | ✓ | ✗ (403) |
 | Ver la guía `/admin/ayuda` | ✓ | ✓ |
 | Cambiar su propia contraseña (ADR-024) | ✓ | ✓ |
-| Gestionar quién es admin/editor y asignar contraseñas temporales | En Cloudflare (variables `ADMIN_EMAILS`/`EDITOR_EMAILS`, `ADMIN_INITIAL_PASSWORDS`); el panel lo muestra | Solo ve su propio email |
+| Gestionar quién es admin/editor y asignar contraseñas temporales | En Cloudflare (variables `ADMIN_USERS`/`EDITOR_USERS`, `ADMIN_INITIAL_PASSWORDS`); el panel lo muestra | Solo ve su propio usuario |
+| Restablecer la contraseña de otro usuario (ADR-025) | ✓ desde Accesos (temporal que se muestra una vez); la suya, con una entrada nueva en `ADMIN_INITIAL_PASSWORDS` | ✗ (403) |
 
 Fuera del panel (siguen por git): **todas las imágenes** (productos, repuestos, blog: se convierten a webp y se colocan en `src/assets/`; el panel solo escribe su ruta), FAQ, testimonios, categorías y textos de `src/config/site.ts`.
 
@@ -28,12 +29,12 @@ Fuera del panel (siguen por git): **todas las imágenes** (productos, repuestos,
 
 ```
 Navegador ─────────────────────────────────────────▶ /admin  (HTML estático + isla Preact, noindex)
-   │  POST /api/admin/auth/login (email + contraseña) → cookie de sesión HttpOnly (ADR-024)
+   │  POST /api/admin/auth/login (usuario + contraseña) → cookie de sesión HttpOnly (ADR-024)
    └──────────────────────────────────────────────────▶ /api/admin/*  (Pages Functions, functions/api/admin)
                                                           │ 0. Origin propio + Content-Type JSON (CSRF)
                                                           │ 1. sesión: cookie firmada + usuario en KV (ADMIN_KV)
                                                           │    [opcional: además JWT de Cloudflare Access]
-                                                          │ 2. rol = ADMIN_EMAILS / EDITOR_EMAILS (servidor)
+                                                          │ 2. rol = ADMIN_USERS / EDITOR_USERS (servidor)  
                                                           │ 3. valida con src/content/schemas.ts + catalogRules
                                                           │ 4. aplica adminPolicy (editor: solo precio/hidden)
                                                           ▼
@@ -97,7 +98,7 @@ Commits: `chore(catalog): …` (productos y repuestos), `chore(blog): <crear|act
 
 ### Flujo de un cambio de precio
 
-1. Wiliam entra en `https://<dominio>/admin` con su email y su contraseña (la primera vez, la temporal que le dio Diego, que el panel le obliga a cambiar).
+1. William entra en `https://<dominio>/admin` con su usuario (`william`) y su contraseña (la primera vez, la temporal que le dio Diego, que el panel le obliga a cambiar).
 2. El panel carga `me` y `catalog`. Cambia el precio Estándar a 1,250 y pulsa Guardar.
 3. `PATCH /api/admin/products/royal-tiger` con `{ sha, prices: { estandar: 125000 } }`.
 4. La Function comprueba la cookie de sesión (y el JWT de Access si está activado), resuelve `editor`, lee el JSON actual de GitHub, compara el `sha`, aplica el patch (rechaza cualquier otra clave), valida (Premium ≥ Estándar) y hace el commit `chore(catalog): actualizar royal-tiger por wiliam@…`.

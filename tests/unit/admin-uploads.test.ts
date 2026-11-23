@@ -9,8 +9,8 @@ import { memoryStore } from './memoryStore';
 
 /** Subida de PDF al repositorio desde el panel (ADR-023): solo public/docs, cabecera %PDF-, tamaño y rol. Las imágenes nunca se suben. */
 
-const admin: AdminUser = { email: 'diego@example.com', role: 'admin', admins: ['diego@example.com'], editors: ['wiliam@example.com'], localMode: true, branch: 'main' };
-const editor: AdminUser = { ...admin, email: 'wiliam@example.com', role: 'editor' };
+const admin: AdminUser = { username: 'admin', role: 'admin', admins: ['admin'], editors: ['william'], localMode: true, branch: 'main' };
+const editor: AdminUser = { ...admin, username: 'william', role: 'editor' };
 
 const ascii = (s: string): Uint8Array => Uint8Array.from(s, (c) => c.charCodeAt(0));
 /** Cabecera (`head`) + relleno hasta `size` bytes */
@@ -104,7 +104,7 @@ describe('uploadFile (handler)', () => {
     const data = pdf(100);
     const res = await uploadFile({ store, user: admin }, { path: 'public/docs/golden-eagle-manual.pdf', contentBase64: b64(data), reason: 'Manual 2026' });
     expect(res).toMatchObject({ path: 'public/docs/golden-eagle-manual.pdf', ref: '/docs/golden-eagle-manual.pdf', bytes: 100, replaced: false });
-    expect(res.commit.message).toBe('chore(assets): subir public/docs/golden-eagle-manual.pdf por diego@example.com\n\n100 bytes\n\nMotivo: Manual 2026');
+    expect(res.commit.message).toBe('chore(assets): subir public/docs/golden-eagle-manual.pdf por admin\n\n100 bytes\n\nMotivo: Manual 2026');
     expect(store.writes[0]).toMatchObject({ path: 'public/docs/golden-eagle-manual.pdf', encoding: 'base64', sha: undefined, content: b64(data) });
   });
 

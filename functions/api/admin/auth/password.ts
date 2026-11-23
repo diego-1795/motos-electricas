@@ -13,7 +13,7 @@ export const onRequestPost: PagesFunction<Env, any, Data> = async (context) => {
     const current = context.data.user;
     if (current.localMode) throw forbidden('En modo local no hay contraseña que cambiar');
     const body = await readJsonBody(context.request, 4 * 1024);
-    const identity = await changePassword(context.env, current.email, body.currentPassword, body.newPassword);
+    const identity = await changePassword(context.env, current.username, body.currentPassword, body.newPassword);
     const user = buildAdminUser(context.env, { ...identity, localMode: false });
     const cookie = await issueSession(context.env, context.request, identity);
     return json(publicUser(user), 200, { 'Set-Cookie': cookie });

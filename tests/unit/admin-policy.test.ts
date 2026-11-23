@@ -1,21 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { applyPartPatch, applyProductPatch, canPerform, commitMessage, parseEmailList, resolveRole } from '../../src/domain/adminPolicy';
+import { applyPartPatch, applyProductPatch, canPerform, commitMessage, parseUserList, resolveRole } from '../../src/domain/adminPolicy';
 import { isVisible, visibleOnly } from '../../src/domain/catalog';
 import { makePart, makeProduct, premiumVariant, variant } from './fixtures';
 
 /** Política del panel de administración (ADR-018): puro, lo aplica el servidor. */
 describe('roles', () => {
-  it('parseEmailList normaliza comas, espacios, punto y coma y mayúsculas', () => {
-    expect(parseEmailList(' Diego@Example.com, wiliam@example.com;otro@x.pe \n')).toEqual(['diego@example.com', 'wiliam@example.com', 'otro@x.pe']);
-    expect(parseEmailList(undefined)).toEqual([]);
-    expect(parseEmailList('sin-arroba')).toEqual([]);
+  it('parseUserList normaliza comas, espacios, punto y coma y mayúsculas; descarta lo que no es un usuario', () => {
+    expect(parseUserList(' Admin, william;otro.user \n')).toEqual(['admin', 'william', 'otro.user']);
+    expect(parseUserList(undefined)).toEqual([]);
+    expect(parseUserList('viejo@example.com, x, -raro')).toEqual([]);
   });
 
   it('resolveRole: admin prevalece, editor en su lista, desconocido sin acceso', () => {
-    const lists = { admins: ['diego@example.com'], editors: ['wiliam@example.com', 'diego@example.com'] };
-    expect(resolveRole('Diego@example.com', lists)).toBe('admin');
-    expect(resolveRole('wiliam@example.com', lists)).toBe('editor');
-    expect(resolveRole('intruso@example.com', lists)).toBeNull();
+    const lists = { admins: ['admin'], editors: ['william', 'admin'] };
+    expect(resolveRole('Admin', lists)).toBe('admin');
+    expect(resolveRole('william', lists)).toBe('editor');
+    expect(resolveRole('intruso', lists)).toBeNull();
     expect(resolveRole(undefined, lists)).toBeNull();
   });
 
@@ -96,9 +96,9 @@ describe('applyPartPatch', () => {
 
 describe('commitMessage', () => {
   it('chore(catalog): <acción> <slug> por <email> + cuerpo con cambios y motivo', () => {
-    expect(commitMessage('actualizar', 'golden-eagle', 'wiliam@example.com')).toBe('chore(catalog): actualizar golden-eagle por wiliam@example.com');
-    const m = commitMessage('borrar', 'motor-350w', 'diego@example.com', { changes: ['a → b'], reason: ' descatalogado ' });
-    expect(m.split('\n')[0]).toBe('chore(catalog): borrar motor-350w por diego@example.com');
+    expect(commitMessage('actualizar', 'golden-eagle', 'william')).toBe('chore(catalog): actualizar golden-eagle por william');
+    const m = commitMessage('borrar', 'motor-350w', 'admin', { changes: ['a → b'], reason: ' descatalogado ' });
+    expect(m.split('\n')[0]).toBe('chore(catalog): borrar motor-350w por admin');
     expect(m).toContain('a → b');
     expect(m).toContain('Motivo: descatalogado');
   });

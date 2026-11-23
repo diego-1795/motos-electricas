@@ -15,12 +15,12 @@ import { baseSpecs, makeProduct, premiumVariant, variant } from './fixtures';
 
 describe('mensaje de commit: nada de lo que escribe el panel puede añadir líneas ni trailers', () => {
   it('un nombre de variante con saltos de línea queda en una sola línea de cambios', () => {
-    const m = commitMessage('actualizar', 'golden-eagle', 'wiliam@example.com', {
+    const m = commitMessage('actualizar', 'golden-eagle', 'william', {
       changes: ['Premium\n\nSigned-off-by: Intruso <x@evil.example>: 150000 → 160000', 'ocultar'],
       reason: 'ajuste',
     });
     const lines = m.split('\n');
-    expect(lines[0]).toBe('chore(catalog): actualizar golden-eagle por wiliam@example.com');
+    expect(lines[0]).toBe('chore(catalog): actualizar golden-eagle por william');
     // Ninguna línea del cuerpo empieza por un trailer de git
     expect(lines.filter((l) => /^(Signed-off-by|Co-authored-by|Reviewed-by):/i.test(l))).toEqual([]);
     expect(m).toContain('Premium Signed-off-by: Intruso <x@evil.example>: 150000 → 160000\nocultar');
