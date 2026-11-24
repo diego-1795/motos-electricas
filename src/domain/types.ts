@@ -289,4 +289,6 @@ export interface BlogPost {
   image?: ImageRef;
   /** Slugs de productos que el artículo recomienda */
   relatedProducts: string[];
+  /** Borrador (ADR-029): no se genera su página ni aparece en listas, buscador ni sitemap */
+  draft?: boolean;
 }

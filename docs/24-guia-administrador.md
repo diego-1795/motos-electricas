@@ -138,7 +138,7 @@ Si el campo queda vacío, la pestaña Video muestra el aviso de lanzamiento en e
 
 El editor puede hacer todo lo de esta sección **salvo poner, cambiar o quitar la foto** de un artículo (9.2): en su lugar, el bloque de la foto le recuerda que la pone el administrador. Si quieres una foto en un artículo, envíasela con el título del artículo.
 
-La pestaña **Blog** muestra la lista de artículos con su título, categoría, fecha y si tienen foto, y los botones **Editar**, **Ver** (abre el artículo en la web) y **Borrar**.
+La pestaña **Blog** muestra la lista de artículos con su título, categoría, fecha y si tienen foto, y los botones **Editar**, **Ver** (abre el artículo en la web) y **Borrar**. Los artículos sin publicar llevan la insignia **Borrador** y no tienen botón **Ver**, porque todavía no están en la web.
 
 ### 9.1 Editar un artículo
 
@@ -158,7 +158,11 @@ La pestaña **Blog** muestra la lista de artículos con su título, categoría, 
      - Deja una línea en blanco entre párrafos.
      - Debajo del cuadro se ve el número de palabras y los minutos de lectura (se calculan solos; no hay que escribirlos).
      - Por dentro el texto se guarda con unas marcas sencillas (`**negrita**`, `## Título`…). No hace falta conocerlas, pero si las ves en el cuadro es normal: los botones las ponen por ti.
-3. Pulsa **Guardar**. Aparece el aviso de publicación; en unos 3 minutos el artículo actualizado está en la web.
+3. Pulsa **Guardar cambios**. Aparece el aviso de publicación; en unos 3 minutos el artículo actualizado está en la web. Si quieres retirarlo de la web sin borrarlo, pulsa **Pasar a borrador**.
+
+**Deshacer:** si un botón de la barra hace algo que no querías, pulsa Ctrl+Z (Cmd+Z en Mac) como en cualquier texto.
+
+**No se pierde lo escrito:** mientras escribes, el panel guarda una copia en este navegador. Si cierras el editor sin guardar, recargas la página o se cierra la sesión, al volver a abrir ese artículo (o **Nuevo artículo**) aparece "Tienes un texto sin guardar…" con **Recuperar** y **Descartar**. La copia solo está en ese navegador y ese ordenador, y se borra al guardar.
 
 Reglas que el panel comprueba antes de guardar: título, descripción y autor no pueden estar vacíos; la fecha debe ser válida; el texto no puede estar vacío; y el blog no debe mencionar euros (€, EUR), "carnet" ni "IVA" (en el Perú: S/, licencia, IGV).
 
@@ -179,7 +183,11 @@ Como en los productos, la foto **no se sube desde el panel** (sección 6): se la
 1. Pulsa **Nuevo artículo**.
 2. Escribe el **Título**: la dirección del artículo sale sola (por ejemplo "¿Cómo elegir una bicimoto eléctrica?" → `como-elegir-una-bicimoto-electrica`; si ya existe, se le añade `-2`). El administrador puede cambiarla antes de guardar; después ya no.
 3. Rellena descripción, categoría, fechas, modelos relacionados, la foto (opcional) y el texto.
-4. Pulsa **Publicar artículo**. En unos minutos estará en `https://raiden.com.pe/blog/<dirección>` y en la lista del blog.
+4. Elige:
+   - **Guardar borrador**: lo guarda **sin publicarlo**, aunque esté a medias (solo hace falta el título). Aparece en la lista del panel con la insignia **Borrador** y puedes seguir otro día, o pedir que lo revisen antes de publicar.
+   - **Publicar artículo**: en unos minutos estará en `https://raiden.com.pe/blog/<dirección>` y en la lista del blog. Para publicar hacen falta título, descripción, autor y texto.
+
+   Al publicar un borrador, si no cambiaste la fecha de publicación, pasa a ser la de hoy. Pulsar Enter en un campo no publica nada: solo los botones guardan.
 
 ### 9.4 Borrar un artículo
 

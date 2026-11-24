@@ -18,13 +18,14 @@ export const BLOG_DIR = 'src/content/blog';
 export const blogPath = (slug: string): string => `${BLOG_DIR}/${slug}.md`;
 
 /** Orden fijo de claves en el frontmatter escrito (diffs mínimos; mismo orden que los ficheros actuales). */
-const FRONTMATTER_KEYS: (keyof BlogFrontmatter)[] = ['title', 'description', 'category', 'publishedAt', 'updatedAt', 'author', 'image', 'relatedProducts'];
+const FRONTMATTER_KEYS: (keyof BlogFrontmatter)[] = ['title', 'description', 'category', 'publishedAt', 'updatedAt', 'author', 'image', 'relatedProducts', 'draft'];
 
 export function serializePost(frontmatter: BlogFrontmatter, body: string): string {
   const ordered: Record<string, unknown> = {};
   for (const k of FRONTMATTER_KEYS) {
     const v = frontmatter[k];
-    if (v === undefined) continue;
+    // draft solo se escribe cuando es true: un artículo publicado no lleva la clave (ADR-029)
+    if (v === undefined || (k === 'draft' && v !== true)) continue;
     // La imagen también con orden fijo de claves (src, alt, width, height)
     ordered[k] = k === 'image' && frontmatter.image ? { src: frontmatter.image.src, alt: frontmatter.image.alt, width: frontmatter.image.width, height: frontmatter.image.height } : v;
   }
@@ -75,6 +76,7 @@ export async function listPosts(ctx: HandlerContext): Promise<BlogList> {
     ...(e.frontmatter.updatedAt ? { updatedAt: e.frontmatter.updatedAt } : {}),
     author: e.frontmatter.author,
     hasImage: Boolean(e.frontmatter.image),
+    ...(e.frontmatter.draft === true ? { draft: true } : {}),
     sha: e.sha,
     path: e.path,
   }));

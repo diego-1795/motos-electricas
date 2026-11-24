@@ -35,6 +35,7 @@ const products = load('products');
 const accessories = load('repuestos');
 const categories = load('categories');
 const blogFiles = readdirSync(join(ROOT, 'blog')).filter((f) => f.endsWith('.md'));
+const draftCount = blogFiles.filter((f) => /^draft:\s*true\s*$/m.test(readFileSync(join(ROOT, 'blog', f), 'utf8').split(/^---\s*$/m)[1] ?? '')).length;
 
 const productSlugs = new Set(products.map((p) => p.data.slug));
 const accessorySlugs = new Set(accessories.map((a) => a.data.slug));
@@ -103,7 +104,8 @@ for (const f of blogFiles) {
   const src = readFileSync(file, 'utf8');
   const m = src.match(/relatedProducts:\s*\[([^\]]*)\]|relatedProducts:\n((?:\s+-\s+.+\n)+)/);
   const slugs = m
-    ? (m[1] ? m[1].split(',') : m[2].split('\n').map((l) => l.replace(/^\s*-\s*/, '')))
+    ? // m[1] === '' es "relatedProducts: []" (lo que escribe el panel sin modelos marcados): lista vacía, no la forma en bloque
+      (m[1] !== undefined ? m[1].split(',') : m[2].split('\n').map((l) => l.replace(/^\s*-\s*/, '')))
         .map((s) => s.replace(/['"\s]/g, ''))
         .filter(Boolean)
     : [];
@@ -119,4 +121,4 @@ if (errors.length) {
   console.error(`✘ ${errors.length} error(es) de contenido:\n` + errors.map((e) => `  - ${e}`).join('\n'));
   process.exit(1);
 }
-console.log(`✓ Contenido válido: ${products.length} productos, ${accessories.length} accesorios, ${categories.length} categorías, ${blogFiles.length} artículos${hiddenCount ? ` (${hiddenCount} oculto(s) desde el panel)` : ''}`);
+console.log(`✓ Contenido válido: ${products.length} productos, ${accessories.length} accesorios, ${categories.length} categorías, ${blogFiles.length} artículos${draftCount ? ` (${draftCount} borrador(es))` : ''}${hiddenCount ? ` (${hiddenCount} oculto(s) desde el panel)` : ''}`);

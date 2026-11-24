@@ -446,3 +446,26 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 
 **Consecuencias.** Abre la app, WhatsApp Desktop o WhatsApp Web igual que antes. ADR-007 sigue vigente; solo cambia el formato del enlace. Un test unitario impide volver a `wa.me` y comprueba que 🏍️ viaja intacto. Los e2e usan el nuevo prefijo (`tests/e2e/helpers.ts`). La CSP no cambia: los enlaces son `<a href>`, no formularios.
 
+## ADR-029 — Borradores del blog, autoguardado local y deshacer en el editor
+
+**Fecha:** 2026-11-24 · **Estado:** aceptada
+
+**Contexto.** Revisando la experiencia de crear un artículo para quien no sabe de código salieron tres carencias:
+- Un artículo solo podía publicarse; no se podía dejar a medias ni pasarlo a revisión.
+- Cerrar el diálogo, recargar o que caducara la sesión (12 h) perdía el texto sin avisar.
+- Tras usar un botón de la barra (ADR-027), Ctrl+Z no lo deshacía: el texto se cambiaba por estado y el navegador vaciaba su historial de deshacer.
+
+**Decisión.**
+- **Borrador.** `draft: true` opcional en el frontmatter (`blogSchema`, `BlogPost.draft`). La web lo ignora en sus dos únicas lecturas del blog (`getCollection('blog', …)` en `src/data/json.ts` y `getStaticPaths` de `/blog/[slug]`): sin página, ni listas, ni buscador (Pagefind indexa lo construido), ni sitemap. Comprobado con un build que incluía un borrador.
+- El serializador solo escribe la clave cuando es `true`, al final del frontmatter.
+- `blogRules` relaja las reglas de un borrador: solo exige título. Las de seguridad (HTML crudo, enlaces, foreign market) y formato siguen.
+- **Panel.** Insignia "Borrador" y sin "Ver" en la lista. Un artículo nuevo o en borrador ofrece "Guardar borrador" y "Publicar artículo"; uno publicado, "Pasar a borrador" y "Guardar cambios".
+- Guardar un borrador que nunca se publicó solo anuncia "Borrador guardado", sin aviso de publicación. "Pasar a borrador" sí muestra el aviso, porque retira la página.
+- Al publicar un borrador con la fecha sin tocar, `publishedAt` pasa a hoy. Enter en un campo ya no envía el formulario: solo los botones guardan.
+- **Autoguardado.** Copia del formulario en `localStorage` (`raiden:admin:blog-borrador:v1:<usuario>:<slug|nuevo>`) medio segundo después de cada cambio. Al abrir el artículo, si hay una copia distinta, aparece "Recuperar / Descartar", con aviso si el artículo cambió en el repositorio desde entonces. La copia se borra al guardar o descartar. Todo va en try/catch: sin almacenamiento, el editor funciona igual.
+- **Deshacer.** `MarkdownEditor` aplica cada botón con `document.execCommand('insertText' | 'delete')` sobre el tramo mínimo que cambia (`diffRange`), así el navegador lo apunta en su historial y Ctrl+Z / Ctrl+Shift+Z funcionan. `execCommand` está marcado como obsoleto (aviso de `astro check`), pero es la única vía estándar para conservar el historial nativo de un `<textarea>` y lo soportan todos los navegadores actuales. Si fallara, se aplica por estado, como antes.
+
+**Arreglo relacionado.** `scripts/validate-content.mjs` (prebuild) fallaba con `relatedProducts: []`, que es lo que escribe el panel en un artículo sin modelos relacionados: el build de Cloudflare habría fallado y el artículo no se habría publicado. Ahora una lista vacía es válida.
+
+**Consecuencias.** Un borrador es un commit y un build como cualquier guardado, pero la web no cambia. Un borrador ocupa su dirección: otro artículo nuevo con el mismo título recibe `-2`. La copia local vive solo en ese navegador; en un ordenador compartido, "Descartar" o guardar la elimina.
+

@@ -113,6 +113,26 @@ describe('lectura', () => {
   });
 });
 
+describe('borradores (ADR-029)', () => {
+  it('draft: true se escribe al final del frontmatter; publicado no lleva la clave; la lista lo marca', async () => {
+    const created = await putPost(asEditor(), 'a-medias', { frontmatter: fm({ title: 'A medias', description: '', draft: true }), body: '' });
+    expect(created.frontmatter.draft).toBe(true);
+    const written = store.files.get(blogPath('a-medias'))!.content;
+    expect(written).toMatch(/relatedProducts:[^\n]*\ndraft: true\n---/);
+    const listed = (await listPosts(asAdmin())).posts.find((p) => p.slug === 'a-medias')!;
+    expect(listed.draft).toBe(true);
+    expect((await listPosts(asAdmin())).posts.find((p) => p.slug === 'necesito-licencia')).not.toHaveProperty('draft');
+    // Publicarlo exige ya descripción y texto; con ellos, el fichero queda sin la clave draft
+    const err = await fails(putPost(asEditor(), 'a-medias', { sha: created.sha, frontmatter: fm({ title: 'A medias', description: '' }), body: '' }));
+    expect(err.status).toBe(422);
+    const pub = await putPost(asEditor(), 'a-medias', { sha: created.sha, frontmatter: fm({ title: 'A medias', description: 'Ya completo.' }), body: 'Texto.' });
+    expect(pub.frontmatter.draft).toBeUndefined();
+    expect(store.files.get(blogPath('a-medias'))!.content).not.toContain('draft');
+    // draft: false explícito tampoco se escribe
+    expect(serializePost(fm({ draft: false }), 'x')).not.toContain('draft');
+  });
+});
+
 describe('PUT', () => {
   it('crear sin sha escribe un frontmatter determinista y hace commit chore(blog): crear', async () => {
     const body = 'Texto nuevo.\r\n\r\n## Sección\r\n';

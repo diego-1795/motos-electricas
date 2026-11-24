@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyFormat, insertLink, isSafeHref, normalizeHref, parseBlocks, parseInline } from '../../src/domain/markdownLite';
-import { uniqueSlug } from '../../src/domain/blogRules';
+import { applyFormat, diffRange, insertLink, isSafeHref, normalizeHref, parseBlocks, parseInline } from '../../src/domain/markdownLite';
+import { blogRules, uniqueSlug } from '../../src/domain/blogRules';
 
 /** Barra de formato y vista previa del editor del blog (ADR-027). */
 describe('applyFormat', () => {
@@ -97,6 +97,33 @@ describe('vista previa', () => {
   it('precios con asterisco suelto o guiones bajos dentro de palabras no se convierten', () => {
     expect(parseInline('S/ 1,200 * 2 = S/ 2,400')).toEqual([{ t: 'text', v: 'S/ 1,200 * 2 = S/ 2,400' }]);
     expect(parseInline('motor_350w')).toEqual([{ t: 'text', v: 'motor_350w' }]);
+  });
+});
+
+describe('diffRange (deshacer, ADR-029)', () => {
+  it('devuelve el tramo mínimo a sustituir para pasar de un texto al otro', () => {
+    const apply = (a: string, b: string) => {
+      const d = diffRange(a, b);
+      return a.slice(0, d.from) + d.insert + a.slice(d.to);
+    };
+    for (const [a, b] of [['Carga la batería', 'Carga **la batería**'], ['uno\ndos', '- uno\n- dos'], ['**dos**', 'dos'], ['', 'hola'], ['igual', 'igual'], ['aaa', 'aaaa']] as const) {
+      expect(apply(a, b), `${a} → ${b}`).toBe(b);
+    }
+    // Prefijo y sufijo comunes quedan fuera: solo se reescribe lo que cambia
+    expect(diffRange('Carga la batería', 'Carga **la batería**')).toEqual({ from: 6, to: 16, insert: '**la batería**' });
+    expect(diffRange('uno dos', 'uno **dos** tres')).toEqual({ from: 4, to: 6, insert: '**dos** tre' }); // la «s» final es común
+    expect(diffRange('igual', 'igual')).toEqual({ from: 5, to: 5, insert: '' });
+  });
+});
+
+describe('blogRules con borrador (ADR-029)', () => {
+  const fm = { title: 'A medias', description: '', category: 'guias' as const, publishedAt: '2026-11-24T08:00:00.000Z', author: '', relatedProducts: [] };
+  it('un borrador solo exige título; publicado exige descripción, autor y texto', () => {
+    expect(blogRules('a-medias', { ...fm, draft: true }, '')).toEqual([]);
+    expect(blogRules('a-medias', { ...fm, title: '', draft: true }, '')).toEqual(['El título es obligatorio']);
+    expect(blogRules('a-medias', fm, '')).toEqual(['La descripción es obligatoria', 'El autor es obligatorio', 'El texto del artículo está vacío']);
+    // Las reglas de seguridad siguen en el borrador
+    expect(blogRules('a-medias', { ...fm, draft: true }, '<script>x</script>')).toHaveLength(1);
   });
 });
 

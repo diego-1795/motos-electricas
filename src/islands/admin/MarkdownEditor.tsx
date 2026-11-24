@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
-import { applyFormat, insertLink, isSafeHref, normalizeHref, parseBlocks, type Block, type FormatKind, type Inline, type TextEdit } from '../../domain/markdownLite';
+import { applyFormat, diffRange, insertLink, isSafeHref, normalizeHref, parseBlocks, type Block, type FormatKind, type Inline, type TextEdit } from '../../domain/markdownLite';
 
 interface Props {
   id: string;
@@ -66,7 +66,26 @@ export default function MarkdownEditor({ id, label, value, onChange, describedBy
 
   const commit = (edit: TextEdit) => {
     pendingSel.current = { start: edit.start, end: edit.end };
-    onChange(edit.text);
+    if (!typeLike(edit.text)) onChange(edit.text);
+  };
+
+  /**
+   * Aplica el cambio como si se hubiera tecleado (execCommand insertText/delete): el navegador lo
+   * apunta en su historial y Ctrl+Z lo deshace (ADR-029). El evento input resultante llega a onChange.
+   * Si el navegador no lo admite, devuelve false y el cambio se aplica por estado (sin deshacer).
+   */
+  const typeLike = (next: string): boolean => {
+    const ta = ref.current;
+    if (!ta || typeof document.execCommand !== 'function') return false;
+    const { from, to, insert } = diffRange(ta.value, next);
+    try {
+      ta.focus();
+      ta.setSelectionRange(from, to);
+      const ok = insert ? document.execCommand('insertText', false, insert) : from === to || document.execCommand('delete');
+      return ok && ta.value === next;
+    } catch {
+      return false;
+    }
   };
 
   const format = (kind: FormatKind) => {

@@ -591,6 +591,24 @@
   tab-size: 2;
 }
 
+/* Copia local sin guardar del artículo (ADR-029) */
+.adm-recover {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--accent-text);
+  border-radius: var(--r-md);
+  background: var(--raiden-blue-100);
+}
+.adm-recover p {
+  margin: 0;
+}
+.adm-recover__actions {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
 /* Texto del artículo: barra de formato, enlace y vista previa (ADR-027) */
 .adm-md {
   display: grid;

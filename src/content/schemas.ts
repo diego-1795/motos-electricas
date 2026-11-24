@@ -160,6 +160,8 @@ export const blogSchema = z.object({
   author: z.string(),
   image: image.optional(),
   relatedProducts: z.array(z.string()).default([]),
+  /** Borrador (ADR-029): se guarda en el repositorio pero no se publica en la web */
+  draft: z.boolean().optional(),
 });
 
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; errors: string[] };

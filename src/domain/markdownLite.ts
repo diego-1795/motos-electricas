@@ -121,6 +121,19 @@ export function insertLink(text: string, start: number, end: number, label: stri
   return { text: text.slice(0, a) + piece + text.slice(b), start: a + 1, end: a + 1 + shown.length };
 }
 
+/**
+ * Tramo mínimo que cambia entre `before` y `after`: se sustituye [from, to) de `before` por `insert`.
+ * Sirve para aplicar un botón como si se hubiera tecleado (y así Ctrl+Z lo deshace, ADR-029).
+ */
+export function diffRange(before: string, after: string): { from: number; to: number; insert: string } {
+  let p = 0;
+  const max = Math.min(before.length, after.length);
+  while (p < max && before[p] === after[p]) p += 1;
+  let q = 0;
+  while (q < max - p && before[before.length - 1 - q] === after[after.length - 1 - q]) q += 1;
+  return { from: p, to: before.length - q, insert: after.slice(p, after.length - q) };
+}
+
 /* ---------- Vista previa ---------- */
 
 export type Inline = { t: 'text'; v: string } | { t: 'b' | 'i'; c: Inline[] } | { t: 'a'; href: string; c: Inline[] };

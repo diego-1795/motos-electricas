@@ -46,6 +46,7 @@ const summary = (p: BlogEntry): BlogSummary => ({
   ...(p.frontmatter.updatedAt ? { updatedAt: p.frontmatter.updatedAt } : {}),
   author: p.frontmatter.author,
   hasImage: Boolean(p.frontmatter.image),
+  ...(p.frontmatter.draft ? { draft: true as const } : {}),
   sha: p.sha,
   path: p.path,
 });
@@ -1125,6 +1126,107 @@ test.describe('Panel de administración', () => {
     const put = calls.find((c) => c.method === 'PUT')!;
     expect(put.path).toBe('/blog/como-cuidar-la-bateria-2');
     expect(put.body).not.toHaveProperty('reason');
+  });
+
+  test('borrador: se guarda sin publicar, se marca en la lista y luego se publica; un publicado puede pasar a borrador (ADR-029)', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await page.getByRole('button', { name: 'Nuevo artículo' }).click();
+    let dialog = page.getByRole('dialog');
+    await dialog.getByLabel('Título', { exact: true }).fill('Ideas para el verano');
+    // Enter en el título no publica nada
+    await dialog.getByLabel('Título', { exact: true }).press('Enter');
+    expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(0);
+    // A medias (sin descripción ni texto) se puede guardar como borrador
+    await dialog.getByRole('button', { name: 'Guardar borrador' }).click();
+    await expect(dialog).toBeHidden();
+    const draftPut = calls.find((c) => c.method === 'PUT')!;
+    expect(draftPut.path).toBe('/blog/ideas-para-el-verano');
+    expect((draftPut.body as { frontmatter: BlogEntry['frontmatter'] }).frontmatter.draft).toBe(true);
+    await expect(page.locator('[data-admin-status]')).toContainText('Borrador guardado');
+    await expect(page.locator('[data-deploy-banner]')).toHaveCount(0);
+    const row = page.locator('[data-admin-post="ideas-para-el-verano"]');
+    await expect(row.locator('[data-admin-post-draft]')).toHaveText('Borrador');
+    await expect(row.getByRole('link', { name: /Ver/ })).toHaveCount(0);
+    // Publicar el borrador: ahora sí exige descripción y texto
+    await row.getByRole('button', { name: /Editar artículo/ }).click();
+    dialog = page.getByRole('dialog');
+    await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
+    await expect(dialog.getByRole('alert')).toContainText('La descripción es obligatoria');
+    await dialog.getByLabel(/Descripción/).fill('Consejos para el calor.');
+    await dialog.getByLabel('Texto del artículo').fill('Aparca a la sombra.');
+    await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
+    await expect(dialog).toBeHidden();
+    const pubPut = calls.filter((c) => c.method === 'PUT').at(-1)!;
+    expect((pubPut.body as { frontmatter: BlogEntry['frontmatter'] }).frontmatter).not.toHaveProperty('draft');
+    await expect(page.locator('[data-deploy-banner]')).toBeVisible();
+    await expect(row.locator('[data-admin-post-draft]')).toHaveCount(0);
+    // Un artículo publicado: "Pasar a borrador" lo retira de la web
+    await page.getByRole('button', { name: 'Editar artículo Cómo cuidar la batería' }).click();
+    dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('button', { name: 'Guardar cambios' })).toBeVisible();
+    await dialog.getByRole('button', { name: 'Pasar a borrador' }).click();
+    await expect(dialog).toBeHidden();
+    expect((calls.filter((c) => c.method === 'PUT').at(-1)!.body as { frontmatter: BlogEntry['frontmatter'] }).frontmatter.draft).toBe(true);
+    await expect(page.locator('[data-admin-status]')).toContainText('Pasado a borrador');
+  });
+
+  test('autoguardado: lo escrito sobrevive a cerrar el diálogo y se puede recuperar o descartar (ADR-029)', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await page.getByRole('button', { name: 'Nuevo artículo' }).click();
+    let dialog = page.getByRole('dialog');
+    await expect(dialog.locator('[data-admin-recover]')).toHaveCount(0);
+    await dialog.getByLabel('Título', { exact: true }).fill('Texto que no quiero perder');
+    await dialog.getByLabel('Texto del artículo').fill('Primer párrafo escrito con calma.');
+    await page.waitForTimeout(700); // autoguardado a los 500 ms
+    await dialog.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(dialog).toBeHidden();
+    // Incluso tras recargar la página
+    await page.reload();
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await page.getByRole('button', { name: 'Nuevo artículo' }).click();
+    dialog = page.getByRole('dialog');
+    await expect(dialog.locator('[data-admin-recover]')).toContainText('Tienes un texto sin guardar');
+    await dialog.locator('[data-admin-recover-yes]').click();
+    await expect(dialog.getByLabel('Título', { exact: true })).toHaveValue('Texto que no quiero perder');
+    await expect(dialog.getByLabel('Texto del artículo')).toHaveValue('Primer párrafo escrito con calma.');
+    // Guardar borra la copia local
+    await dialog.getByRole('button', { name: 'Guardar borrador' }).click();
+    await expect(dialog).toBeHidden();
+    expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(1);
+    await page.getByRole('button', { name: 'Nuevo artículo' }).click();
+    dialog = page.getByRole('dialog');
+    await expect(dialog.locator('[data-admin-recover]')).toHaveCount(0);
+    // Descartar también
+    await dialog.getByLabel('Título', { exact: true }).fill('Otro');
+    await page.waitForTimeout(700);
+    await dialog.getByRole('button', { name: 'Cancelar' }).click();
+    await page.getByRole('button', { name: 'Nuevo artículo' }).click();
+    dialog = page.getByRole('dialog');
+    await dialog.locator('[data-admin-recover-no]').click();
+    await expect(dialog.locator('[data-admin-recover]')).toHaveCount(0);
+    await expect(dialog.getByLabel('Título', { exact: true })).toHaveValue('');
+    expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('raiden:admin:blog-borrador')))).toEqual([]);
+  });
+
+  test('Ctrl+Z deshace lo que hizo un botón de la barra de formato (ADR-029)', async ({ page }) => {
+    await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await page.getByRole('button', { name: 'Nuevo artículo' }).click();
+    const dialog = page.getByRole('dialog');
+    const body = dialog.getByLabel('Texto del artículo');
+    await body.fill('uno\ndos');
+    await body.evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(0, 7));
+    await dialog.locator('[data-admin-md-btn="bullets"]').click();
+    await expect(body).toHaveValue('- uno\n- dos');
+    await body.press('ControlOrMeta+z');
+    await expect(body).toHaveValue('uno\ndos');
+    await body.press('ControlOrMeta+Shift+z');
+    await expect(body).toHaveValue('- uno\n- dos');
   });
 
   test('editor: gestiona el blog en llano; la foto no se puede tocar y al guardar viaja tal cual (ADR-026)', async ({ page }) => {

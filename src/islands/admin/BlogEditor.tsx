@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'preact/hooks';
+import { useEffect, useId, useMemo, useRef, useState } from 'preact/hooks';
 import type { BlogEntry, BlogFrontmatter, BlogWriteResult } from '../../domain/admin';
 import type { BlogPost, ImageRef } from '../../domain/types';
 import { blogRules, slugify, uniqueSlug } from '../../domain/blogRules';
@@ -17,8 +17,42 @@ interface Props {
   /** Direcciones ya usadas por otros artículos: la de uno nuevo se elige libre a partir del título */
   takenSlugs?: string[];
   onClose: () => void;
-  onSaved: (result: BlogWriteResult) => void;
+  /** outcome: 'draft' (borrador que no estaba publicado), 'unpublished' (publicado → borrador) o 'published' */
+  onSaved: (result: BlogWriteResult, outcome: SaveOutcome) => void;
 }
+
+export type SaveOutcome = 'draft' | 'unpublished' | 'published';
+
+/** Copia local del formulario sin guardar (ADR-029): sobrevive a cerrar el diálogo, recargar o que caduque la sesión. */
+interface LocalCopy {
+  form: Form;
+  savedAt: string;
+  /** sha del artículo cuando se empezó a editar (null = artículo nuevo) */
+  baseSha: string | null;
+}
+
+const LOCAL_PREFIX = 'raiden:admin:blog-borrador:v1';
+const localKey = (username: string, slug: string | undefined) => `${LOCAL_PREFIX}:${username}:${slug ?? 'nuevo'}`;
+
+function readLocal(key: string): LocalCopy | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const v = JSON.parse(raw) as LocalCopy;
+    return v && typeof v === 'object' && v.form && typeof v.form.body === 'string' ? v : null;
+  } catch {
+    return null;
+  }
+}
+function writeLocal(key: string, copy: LocalCopy | null): void {
+  try {
+    if (copy) localStorage.setItem(key, JSON.stringify(copy));
+    else localStorage.removeItem(key);
+  } catch {
+    /* almacenamiento lleno o bloqueado: el autoguardado es una ayuda, no imprescindible */
+  }
+}
+const sameForm = (a: Form, b: Form): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 type Category = BlogPost['category'];
 const CATEGORIES = Object.keys(blogCategoryLabel) as Category[];
@@ -65,7 +99,7 @@ function toForm(entry: BlogEntry | undefined): Form {
   };
 }
 
-function fromForm(f: Form, entry: BlogEntry | undefined): { frontmatter: BlogFrontmatter; body: string } {
+function fromForm(f: Form, entry: BlogEntry | undefined, draft: boolean): { frontmatter: BlogFrontmatter; body: string } {
   const updatedAt = toIsoDate(f.updatedAt, entry?.frontmatter.updatedAt);
   const frontmatter: BlogFrontmatter = {
     title: f.title.trim(),
@@ -76,6 +110,7 @@ function fromForm(f: Form, entry: BlogEntry | undefined): { frontmatter: BlogFro
     author: f.author.trim(),
     ...(f.image ? { image: { ...f.image, alt: f.image.alt.trim() } } : {}),
     relatedProducts: f.relatedProducts,
+    ...(draft ? { draft: true } : {}),
   };
   return { frontmatter, body: f.body.replace(/\r\n?/g, '\n') };
 }
@@ -93,7 +128,16 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
   /** ADR-027: la dirección del artículo (slug) es un detalle técnico; el editor no la ve */
   const showSlug = user.role === 'admin';
   const creating = !entry;
-  const [form, setForm] = useState<Form>(() => toForm(entry));
+  /** Borrador o nuevo: botones "Guardar borrador" / "Publicar artículo". Publicado: "Pasar a borrador" / "Guardar cambios" (ADR-029) */
+  const wasDraft = creating || entry.frontmatter.draft === true;
+  const initial = useMemo(() => toForm(entry), [entry]);
+  const key = localKey(user.username, entry?.slug);
+  const [form, setForm] = useState<Form>(initial);
+  // Copia local pendiente de decidir (Recuperar / Descartar): mientras tanto no se sobrescribe
+  const [recover, setRecover] = useState<LocalCopy | null>(() => {
+    const c = readLocal(key);
+    return c && !sameForm(c.form, initial) ? c : null;
+  });
   const [errors, setErrors] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [stale, setStale] = useState(false);
@@ -104,6 +148,24 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
     if (errors.length) errorsRef.current?.focus();
   }, [errors]);
 
+  // Autoguardado local (ADR-029): medio segundo después de cada cambio
+  useEffect(() => {
+    if (recover) return;
+    const t = setTimeout(() => writeLocal(key, sameForm(form, initial) ? null : { form, savedAt: new Date().toISOString(), baseSha: entry?.sha ?? null }), 500);
+    return () => clearTimeout(t);
+  }, [form, recover, key, initial, entry]);
+
+  const restore = () => {
+    if (!recover) return;
+    // La dirección de un artículo existente no cambia aunque la copia sea antigua
+    setForm(entry ? { ...recover.form, slug: entry.slug, slugTouched: true } : recover.form);
+    setRecover(null);
+  };
+  const discard = () => {
+    writeLocal(key, null);
+    setRecover(null);
+  };
+
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
   const setTitle = (title: string) => setForm((f) => ({ ...f, title, slug: f.slugTouched ? f.slug : uniqueSlug(slugify(title), takenSlugs) }));
   const toggleRelated = (slug: string, on: boolean) =>
@@ -112,14 +174,19 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
   const minutes = readingMinutes(form.body);
   const words = form.body.trim() ? form.body.trim().split(/\s+/).length : 0;
 
-  const submit = async (e: Event) => {
-    e.preventDefault();
+  // Enter en un campo no publica nada: solo los botones guardan (un borrador no debe publicarse por accidente)
+  const submit = (e: Event) => e.preventDefault();
+
+  const save = async (asDraft: boolean) => {
     if (saving || stale) return;
     const slug = form.slug.trim();
+    // Al publicar un borrador cuya fecha nadie tocó, la fecha de publicación pasa a ser hoy
+    const today = dateOnly(todayIso());
+    const f = !asDraft && entry && wasDraft && form.publishedAt === dateOnly(entry.frontmatter.publishedAt) && form.publishedAt < today ? { ...form, publishedAt: today } : form;
     const local: string[] = [];
     if (creating && !isValidSlug(slug)) local.push('La dirección solo puede llevar minúsculas sin tildes, números y guiones (p. ej. como-elegir-una-bicimoto)');
     if (creating && showSlug && takenSlugs.includes(slug)) local.push(`Ya hay un artículo con la dirección /blog/${slug}: elige otra`);
-    const built = fromForm(form, entry);
+    const built = fromForm(f, entry, asDraft);
     local.push(...blogRules(slug, built.frontmatter, built.body, { productSlugs: catalog.products.map((p) => p.data.slug) }));
     // Sin campo de dirección a la vista, sus errores se explican por el título
     if (!showSlug) {
@@ -136,7 +203,8 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
         frontmatter: built.frontmatter,
         body: built.body,
       });
-      onSaved(result);
+      writeLocal(key, null);
+      onSaved(result, asDraft ? (wasDraft ? 'draft' : 'unpublished') : 'published');
       onClose();
     } catch (err) {
       const msg = handleError(err);
@@ -154,6 +222,22 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
   return (
     <Modal title={creating ? 'Nuevo artículo' : `Editar artículo: ${entry.frontmatter.title}`} onClose={onClose} wide>
       <form class="adm-form" onSubmit={submit} data-admin-editor="blog" noValidate>
+        {recover && (
+          <div class="adm-recover" role="status" data-admin-recover>
+            <p>
+              <strong>Tienes un texto sin guardar de este artículo</strong> (del {new Date(recover.savedAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}).
+              {entry && recover.baseSha !== entry.sha && ' Ojo: el artículo ha cambiado desde entonces; revisa antes de guardar.'}
+            </p>
+            <div class="adm-recover__actions">
+              <button type="button" class="btn btn--primary btn--sm" onClick={restore} data-admin-recover-yes>
+                Recuperar
+              </button>
+              <button type="button" class="btn btn--ghost btn--sm" onClick={discard} data-admin-recover-no>
+                Descartar
+              </button>
+            </div>
+          </div>
+        )}
         <div class="adm-form__grid">
           <label class="field adm-form__full">
             <span class="label">Título</span>
@@ -268,12 +352,21 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
           </div>
         )}
 
+        <p class="hint">
+          {wasDraft
+            ? '"Guardar borrador" lo guarda sin que se vea en la web; "Publicar artículo" lo publica en unos 3 minutos.'
+            : 'Este artículo está publicado. "Pasar a borrador" lo retira de la web sin borrarlo.'}{' '}
+          Mientras escribes, el texto se guarda solo en este navegador por si cierras sin querer.
+        </p>
         <div class="adm-form__actions">
           <button type="button" class="btn btn--ghost" onClick={onClose} disabled={saving}>
             Cancelar
           </button>
-          <button type="submit" class="btn btn--primary" disabled={saving} aria-disabled={stale || undefined}>
-            {saving ? 'Guardando…' : creating ? 'Publicar artículo' : 'Guardar'}
+          <button type="button" class="btn btn--secondary" onClick={() => void save(true)} disabled={saving} aria-disabled={stale || undefined} data-admin-save-draft>
+            {wasDraft ? 'Guardar borrador' : 'Pasar a borrador'}
+          </button>
+          <button type="button" class="btn btn--primary" onClick={() => void save(false)} disabled={saving} aria-disabled={stale || undefined} data-admin-publish>
+            {saving ? 'Guardando…' : wasDraft ? 'Publicar artículo' : 'Guardar cambios'}
           </button>
         </div>
       </form>

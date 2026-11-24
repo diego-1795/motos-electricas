@@ -20,7 +20,7 @@ const formatDate = (iso: string): string => {
  * editar y borrar. Carga su propia lista (GET /api/admin/blog) al abrirse y tras cada escritura.
  */
 export default function BlogPanel() {
-  const { api, announce, handleError, user } = useAdmin();
+  const { api, announce, notify, handleError, user } = useAdmin();
   const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
   const [dialog, setDialog] = useState<Dialog>(null);
   const [opening, setOpening] = useState<string | null>(null);
@@ -100,6 +100,7 @@ export default function BlogPanel() {
                   <td role="cell" data-label="Título">
                     <div class="adm-name">
                       <strong>{p.title}</strong>
+                      {p.draft && <span class="badge adm-badge-hidden" data-admin-post-draft>Borrador</span>}
                     </div>
                     {user.role === 'admin' && <code class="adm-slug">{p.slug}</code>}
                   </td>
@@ -115,9 +116,11 @@ export default function BlogPanel() {
                     <button type="button" class="btn btn--secondary btn--sm" onClick={() => void openEdit(p.slug)} aria-label={`Editar artículo ${p.title}`} disabled={opening === p.slug}>
                       {opening === p.slug ? 'Abriendo…' : 'Editar'}
                     </button>
-                    <a href={`/blog/${p.slug}`} class="btn btn--ghost btn--sm" target="_blank" rel="noopener noreferrer" aria-label={`Ver ${p.title} en la web`}>
-                      Ver
-                    </a>
+                    {!p.draft && (
+                      <a href={`/blog/${p.slug}`} class="btn btn--ghost btn--sm" target="_blank" rel="noopener noreferrer" aria-label={`Ver ${p.title} en la web`}>
+                        Ver
+                      </a>
+                    )}
                     <button type="button" class="btn btn--ghost btn--sm adm-btn-danger" onClick={() => setDialog({ type: 'delete', post: p })} aria-label={`Borrar artículo ${p.title}`}>
                       Borrar
                     </button>
@@ -134,8 +137,12 @@ export default function BlogPanel() {
           entry={dialog.type === 'edit' ? dialog.entry : undefined}
           takenSlugs={phase.posts.map((p) => p.slug)}
           onClose={() => setDialog(null)}
-          onSaved={(result) => {
-            announce(result.commit, `Guardado: ${result.frontmatter.title}. Publicando los cambios…`);
+          onSaved={(result, outcome) => {
+            const title = result.frontmatter.title;
+            // Un borrador que nunca se publicó no cambia la web: sin aviso de publicación (ADR-029)
+            if (outcome === 'draft') notify(`Borrador guardado: ${title}. No se verá en la web hasta que lo publiques.`);
+            else if (outcome === 'unpublished') announce(result.commit, `Pasado a borrador: ${title}. Dejará de verse en la web en unos minutos.`);
+            else announce(result.commit, `Guardado: ${title}. Publicando los cambios…`);
             void load();
           }}
         />

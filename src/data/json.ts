@@ -70,12 +70,13 @@ const toPost = (e: { id: string; data: unknown; body?: string }): BlogPost & { b
 
 const blog = {
   async all() {
-    const entries = await getCollection('blog');
+    // Los borradores (ADR-029) no existen para la web pública
+    const entries = await getCollection('blog', (e) => e.data.draft !== true);
     return entries.map(toPost).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
   },
   async bySlug(slug: string) {
     const e = await getEntry('blog', slug);
-    return e ? toPost(e) : undefined;
+    return e && e.data.draft !== true ? toPost(e) : undefined;
   },
 };
 

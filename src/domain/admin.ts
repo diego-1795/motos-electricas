@@ -157,6 +157,8 @@ export interface BlogSummary {
   updatedAt?: string;
   author: string;
   hasImage: boolean;
+  /** Borrador (ADR-029): guardado pero no publicado */
+  draft?: true;
   sha: string;
   /** src/content/blog/<slug>.md */
   path: string;

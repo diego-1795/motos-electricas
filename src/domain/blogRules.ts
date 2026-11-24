@@ -59,7 +59,9 @@ const REQUIRED = { title: 'El título es obligatorio', description: 'La descripc
 export function blogRules(slug: string, fm: BlogFrontmatter, body: string, ctx: BlogContext = {}): string[] {
   const errs: string[] = [];
   if (!isValidSlug(slug)) errs.push(`La dirección "${slug}" solo puede llevar minúsculas sin tildes, números y guiones (kebab-case)`);
-  for (const k of ['title', 'description', 'author'] as const) if (!fm[k].trim()) errs.push(REQUIRED[k]);
+  // Un borrador (ADR-029) puede quedar a medias: solo exige título; las reglas de seguridad y formato siguen
+  const draft = fm.draft === true;
+  for (const k of ['title', 'description', 'author'] as const) if (!fm[k].trim() && (k === 'title' || !draft)) errs.push(REQUIRED[k]);
   if (!isIsoDate(fm.publishedAt)) errs.push(`La fecha de publicación "${fm.publishedAt}" no es válida`);
   if (fm.updatedAt !== undefined && !isIsoDate(fm.updatedAt)) errs.push(`La fecha de actualización "${fm.updatedAt}" no es válida`);
   if (fm.image) {
@@ -72,7 +74,7 @@ export function blogRules(slug: string, fm: BlogFrontmatter, body: string, ctx: 
     seen.add(r);
     if (ctx.productSlugs && !ctx.productSlugs.includes(r)) errs.push(`El modelo relacionado ${r} ya no está en el catálogo`);
   }
-  if (!body.trim()) errs.push('El texto del artículo está vacío');
+  if (!body.trim() && !draft) errs.push('El texto del artículo está vacío');
   if (body.length > MAX_BODY_CHARS) errs.push(`El texto supera los ${MAX_BODY_CHARS} caracteres`);
   if (RAW_HTML_RE.test(body)) errs.push('El texto no puede llevar código HTML (<script>, <iframe>, <style>…): usa solo el formato indicado (## títulos, **negrita**, listas, enlaces)');
   if (/\]\(\s*(javascript|data|vbscript):/i.test(body)) errs.push('Los enlaces solo pueden ir a una web (https://…), a una página de la tienda (/repuestos…) o a un email (mailto:)');
