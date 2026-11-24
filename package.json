@@ -35,7 +35,7 @@
     "@tiptap/extension-table": "3.32.3",
     "@tiptap/pm": "3.32.3",
     "@tiptap/starter-kit": "3.32.3",
-    "astro": "^7.4.2",
+    "astro": "^7.4.8",
     "nanostores": "^1.5.2",
     "preact": "^10.29.8"
   },
