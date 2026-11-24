@@ -111,7 +111,7 @@ Commits: `chore(catalog): …` (productos y repuestos), `chore(blog): <crear|act
 - La sesión por contraseña es la puerta (ADR-024): sin cookie válida no hay respuesta útil (401). Contraseñas en PBKDF2 (KV), temporal obligatoria de cambiar, bloqueo tras 5 intentos, cookie `HttpOnly`/`SameSite=Strict`, `Origin` y `Content-Type` comprobados. Cloudflare Access, si se configura, es una segunda barrera. El rol se decide en el servidor con `ADMIN_EMAILS`/`EDITOR_EMAILS`; la interfaz solo oculta lo que el rol no puede hacer.
 - El token de GitHub es *fine-grained*, limitado al repositorio y al permiso *Contents*; vive en las variables de Pages (secreto), nunca en `src/` ni en `PUBLIC_*`.
 - Todo lo que se escribe pasa por los esquemas del build: un JSON inválido no llega al repo (y si llegara, CI y el build lo detendrían).
-- Auditoría = historial de git: cada commit lleva autor (email), acción, slug, cambios y motivo.
+- Auditoría = historial de git: cada commit lleva autor (usuario), acción, slug, cambios y, si lo hay, motivo (solo en el editor de ficha y el borrado del catálogo; ADR-027).
 - El modo local (`ADMIN_LOCAL_USER`) solo actúa en `localhost`; no se define en Pages.
 
 ### Límites

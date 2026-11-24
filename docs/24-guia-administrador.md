@@ -43,7 +43,7 @@ El editor no ve los botones de las acciones que no puede hacer, ni los datos té
 
 1. En la pestaña **Productos** (o **Repuestos**) busca la fila del modelo. Puedes escribir en el cuadro "Buscar por nombre".
 2. Cada producto tiene un campo de precio por versión: **Estándar** y **Premium** (la Titan Rhino solo una). Escribe el nuevo importe **en soles**, por ejemplo `1250`, `1,250` o `1250.50`.
-3. Al cambiar el número aparecen "Motivo (opcional)", **Guardar** y **Cancelar**. El motivo (por ejemplo "nueva lista del proveedor") queda en el historial.
+3. Al cambiar el número aparecen **Guardar** y **Cancelar**. El historial de cambios ya guarda quién cambió el precio y de cuánto a cuánto.
 4. Pulsa **Guardar**. Aparece el aviso "Publicando… los cambios tardan unos 3 minutos en verse en la web". No hay que hacer nada más.
 
 Reglas que el panel aplica solo:

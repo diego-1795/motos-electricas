@@ -20,7 +20,7 @@ Si aparece "Sin acceso": el usuario y la contraseña son correctos pero el usuar
 ### 0.2 Cambiar un precio (Diego y Wiliam)
 
 1. Localizar la ficha. En productos hay un campo de precio por versión (**Estándar** y **Premium**; Titan Rhino solo una); en repuestos, uno.
-2. Escribir el nuevo importe **en soles** en el campo (`1250`, `1,250` o `1250.50`). Al cambiarlo aparecen "Motivo (opcional)", **Guardar** y **Cancelar**. El motivo ("nueva lista del proveedor") queda en el historial.
+2. Escribir el nuevo importe **en soles** en el campo (`1250`, `1,250` o `1250.50`). Al cambiarlo aparecen **Guardar** y **Cancelar** (sin motivo desde ADR-027: el commit ya registra quién y el cambio).
 3. Reglas que el panel y el servidor imponen: importe mayor que 0 ("El importe debe ser mayor que 0"); la **Premium nunca más barata que la Estándar** ("La versión Premium no puede ser más barata que la Estándar (cambia primero la otra versión)"). Si otra persona modificó la misma ficha, aparece "Alguien modificó esta ficha; se ha recargado": repetir el cambio. Si el importe es el mismo que ya había, el panel dice "Sin cambios" y no publica nada.
 4. Aparece el aviso **"Publicando… los cambios tardan unos 3 minutos en verse en la web"** con un contador (o, si está conectada la API de Pages, "En cola" → "Construyendo el sitio" → "Publicado"). Pasado ese tiempo el precio nuevo está en la ficha, en el precio "Desde", en el configurador, en el comparador y en el mensaje de WhatsApp. No hay que hacer nada más.
 
@@ -46,7 +46,7 @@ Si se oculta el modelo de la portada (hero), la portada usa el siguiente modelo 
 
 ### 0.7 Qué deja rastro
 
-Cada guardado es un commit en GitHub con el mensaje `chore(catalog): actualizar <slug> por <email>` (o `crear`/`borrar`), el detalle del cambio y el motivo. Para ver el historial: GitHub → repositorio → *Commits*, o `git log -- src/content`.
+Cada guardado es un commit en GitHub con el mensaje `chore(catalog): actualizar <slug> por <usuario>` (o `crear`/`borrar`), el detalle del cambio y, si se escribió (editor de ficha o borrado), el motivo. Para ver el historial: GitHub → repositorio → *Commits*, o `git log -- src/content`.
 
 ### 0.8 Accesos
 

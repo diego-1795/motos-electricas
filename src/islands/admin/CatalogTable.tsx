@@ -32,7 +32,7 @@ export default function CatalogTable({ kind, entries, total, admin, onEdit, onDe
   // espera a la primera y usa el sha que esta devolvió; sin esto el servidor respondería 409 a un cambio propio.
   const queues = useRef(new Map<string, Promise<void>>());
 
-  const patch = (slug: string, body: { prices?: Record<string, number>; price?: number; hidden?: boolean }, reason?: string): Promise<void> => {
+  const patch = (slug: string, body: { prices?: Record<string, number>; price?: number; hidden?: boolean }): Promise<void> => {
     const key = `${kind}/${slug}`;
     const prev = queues.current.get(key) ?? Promise.resolve();
     const run = prev
@@ -40,8 +40,8 @@ export default function CatalogTable({ kind, entries, total, admin, onEdit, onDe
       .then(async () => {
         const sha = latestSha(kind, slug);
         if (!sha) throw new Error('La ficha ya no está en el catálogo; recarga la página');
-        // Exactamente { sha, prices | price | hidden, reason? }: el servidor rechaza (422) cualquier otra clave
-        const payload = reason ? { sha, ...body, reason } : { sha, ...body };
+        // Exactamente { sha, prices | price | hidden }: el servidor rechaza (422) cualquier otra clave (acepta también reason, ya sin uso en el panel)
+        const payload = { sha, ...body };
         const result = kind === 'products' ? await api.patch('products', slug, payload) : await api.patch('repuestos', slug, payload);
         applyWrite(kind, result);
       });
@@ -104,7 +104,7 @@ export default function CatalogTable({ kind, entries, total, admin, onEdit, onDe
                           if (r.ok) return null;
                           return r.errors.some((m) => m.includes('Premium')) ? PREMIUM_RULE : r.errors.join('; ');
                         }}
-                        onSave={(cents, reason) => patch(p.slug, { prices: { [v.id]: cents } }, reason)}
+                        onSave={(cents) => patch(p.slug, { prices: { [v.id]: cents } })}
                       />
                     ))}
                   {part && (
@@ -112,7 +112,7 @@ export default function CatalogTable({ kind, entries, total, admin, onEdit, onDe
                       name={`Precio de ${part.name}`}
                       amount={part.price.amount}
                       testId={part.slug}
-                      onSave={(cents, reason) => patch(part.slug, { price: cents }, reason)}
+                      onSave={(cents) => patch(part.slug, { price: cents })}
                     />
                   )}
                 </td>

@@ -709,19 +709,21 @@ test.describe('Panel de administración', () => {
     await expect(page.locator('[data-deploy-banner]')).toBeVisible();
   });
 
-  test('repuestos: el precio envía PATCH {sha, price, reason} y el foco vuelve al importe tras guardar', async ({ page }) => {
+  test('repuestos: el precio envía PATCH {sha, price} sin motivo y el foco vuelve al importe tras guardar', async ({ page }) => {
     const { calls } = await mockApi(page, { role: 'editor' });
     await openAdmin(page);
     await page.getByRole('tab', { name: /Repuestos/ }).click();
     const input = page.locator('[data-price-input="motor-test"]');
     await expect(input).toHaveValue('350');
     await input.fill('S/ 400');
-    await page.getByLabel('Motivo del cambio de Precio de Motor de prueba').fill('nueva lista del proveedor');
+    // Sin campo de motivo junto al precio (ADR-027)
+    await expect(page.getByLabel('Motivo del cambio de Precio de Motor de prueba')).toHaveCount(0);
+    await expect(page.getByPlaceholder('Motivo (opcional)')).toHaveCount(0);
     await page.locator('[data-price-save="motor-test"]').click();
     await expect.poll(() => calls.filter((c) => c.method === 'PATCH').length).toBe(1);
     const patch = calls.find((c) => c.method === 'PATCH')!;
     expect(patch.path).toBe('/repuestos/motor-test');
-    expect(patch.body).toEqual({ sha: 'sha-motor-1', price: 40000, reason: 'nueva lista del proveedor' });
+    expect(patch.body).toEqual({ sha: 'sha-motor-1', price: 40000 });
     await expect(page.locator('[data-price-cell="motor-test"]')).toContainText('S/ 400');
     await expect(input).toHaveValue('400');
     await expect(input).toBeFocused();

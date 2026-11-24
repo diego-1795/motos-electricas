@@ -243,12 +243,6 @@
   flex-wrap: wrap;
   align-items: center;
 }
-.adm-price__reason {
-  flex: 1 1 10rem;
-  min-height: 2.25rem;
-  padding: 0.3rem 0.6rem;
-  font-size: var(--fs-sm);
-}
 .adm-error {
   font-size: var(--fs-xs);
   color: var(--danger);

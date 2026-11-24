@@ -11,20 +11,19 @@ interface Props {
   amount: number;
   /** Comprobación previa al guardado (Premium ≥ Estándar); devuelve el error o null */
   validate?: (cents: number) => string | null;
-  onSave: (cents: number, reason?: string) => Promise<void>;
+  onSave: (cents: number) => Promise<void>;
   testId?: string;
 }
 
 /**
  * Precio editable en línea: input en soles ("1200", "1,200", "1200.50") → céntimos.
- * Al cambiar el valor aparecen "Motivo (opcional)", Guardar y Cancelar.
+ * Al cambiar el valor aparecen Guardar y Cancelar (sin motivo, ADR-027: el historial ya dice quién y qué).
  */
 export default function PriceCell({ label, name, amount, validate, onSave, testId }: Props) {
   const { handleError, reloadSeq } = useAdmin();
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState(() => centsToInput(amount));
-  const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   // Guardia síncrona contra el doble envío (Enter + clic) mientras el estado `saving` aún no se ha pintado
@@ -40,7 +39,6 @@ export default function PriceCell({ label, name, amount, validate, onSave, testI
     if (synced.current.amount === amount && synced.current.reloadSeq === reloadSeq) return;
     synced.current = { amount, reloadSeq };
     setText(centsToInput(amount));
-    setReason('');
     setError(null);
   }, [amount, reloadSeq]);
 
@@ -57,7 +55,6 @@ export default function PriceCell({ label, name, amount, validate, onSave, testI
   const cancel = () => {
     if (savingRef.current) return;
     setText(centsToInput(amount));
-    setReason('');
     setError(null);
     inputRef.current?.focus();
   };
@@ -73,7 +70,7 @@ export default function PriceCell({ label, name, amount, validate, onSave, testI
     setSaving(true);
     setError(null);
     try {
-      await onSave(parsed, reason.trim() || undefined);
+      await onSave(parsed);
       refocus.current = true;
     } catch (err) {
       setError(handleError(err));
@@ -111,16 +108,6 @@ export default function PriceCell({ label, name, amount, validate, onSave, testI
       </label>
       {dirty && (
         <div class="adm-price__actions">
-          <input
-            class="input adm-price__reason"
-            type="text"
-            maxLength={120}
-            placeholder="Motivo (opcional)"
-            aria-label={`Motivo del cambio de ${name}`}
-            value={reason}
-            readOnly={saving}
-            onInput={(e) => setReason((e.target as HTMLInputElement).value)}
-          />
           <button type="submit" class="btn btn--primary btn--sm" aria-disabled={saving || undefined} data-price-save={testId}>
             {saving ? 'Guardando…' : 'Guardar'}
           </button>
