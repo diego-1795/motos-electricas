@@ -151,19 +151,23 @@ La pestaña **Blog** muestra la lista de artículos con su título, categoría, 
    - **Categoría**, **Autor**, **Fecha de publicación** y **Fecha de actualización (opcional)**: si retocas un artículo antiguo, pon la fecha de hoy en "actualización".
    - **Modelos relacionados**: marca los productos que se mostrarán al final del artículo.
    - **Foto del artículo (opcional)**: ver 9.2.
-   - **Texto del artículo**: el cuerpo. Encima del cuadro hay una barra de botones para darle formato sin escribir símbolos:
-     - Selecciona una parte del texto y pulsa **Negrita** o **Cursiva** (o Ctrl+B / Ctrl+I; en Mac, Cmd). Pulsar otra vez quita el formato.
-     - **Título**: convierte la línea en un título de sección. En una línea vacía escribe un ejemplo que puedes sustituir.
-     - **• Lista** y **1. Lista**: convierten las líneas seleccionadas en una lista con viñetas o numerada.
-     - **Enlace** (Ctrl+K): selecciona el texto que se verá, pulsa el botón y escribe la dirección: una página de la tienda (`/repuestos`, `/bicimotos/golden-eagle`) o una web (`https://…`). Pulsa **Insertar enlace**.
-     - **Pegar desde Word o Google Docs**: puedes escribir el artículo en Word o Google Docs, copiarlo y pegarlo en el cuadro. Se conservan los títulos, las listas, las negritas, las cursivas y los enlaces a webs (`https://…`). Lo demás (colores, tipos de letra, tablas) se pega como texto normal, y las imágenes no se pegan: si el artículo necesita una foto, envíasela al administrador. Si el resultado no te gusta, Ctrl+Z lo deshace.
-     - **Vista previa**: muestra el texto tal como se verá en la web, con negritas, títulos y listas. **Seguir escribiendo** vuelve al cuadro.
-     - Deja una línea en blanco entre párrafos.
-     - Debajo del cuadro se ve el número de palabras y los minutos de lectura (se calculan solos; no hay que escribirlos).
-     - Por dentro el texto se guarda con unas marcas sencillas (`**negrita**`, `## Título`…). No hace falta conocerlas, pero si las ves en el cuadro es normal: los botones las ponen por ti.
+   - **Texto del artículo**: se escribe **como en Word**: lo que ves es lo que saldrá en la web, sin símbolos. Encima hay una barra con:
+     - **Tipo de texto**: *Texto normal*, *Título* o *Subtítulo* para la línea donde está el cursor.
+     - **N**, **K**, **S**, **T**: negrita, cursiva, subrayado y tachado (también Ctrl+B, Ctrl+I, Ctrl+U; en Mac, Cmd). Pulsar otra vez lo quita.
+     - **Color**: azul RAIDEN, rojo, verde o gris para el texto seleccionado (solo colores de la marca, para que todo se lea bien). **Resaltar** lo marca en amarillo.
+     - **• Lista** y **1. Lista**: al pulsar Enter, la lista sigue sola (2., 3.…). Dos Enter seguidos salen de la lista. Tab dentro de una lista crea una sublista.
+     - **Centrar**: centra el párrafo o el título.
+     - **Enlace** (Ctrl+K): selecciona el texto, pulsa **Enlace** y escribe la dirección: una página de la tienda (`/repuestos`, `/bicimotos/golden-eagle`) o una web (`https://…`). Con el cursor sobre un enlace puedes cambiarlo o quitarlo.
+     - **Tabla**: inserta una tabla de 3×3 con la primera fila de títulos. Con el cursor dentro aparece una segunda barra: **+ Fila**, **+ Columna**, **− Fila**, **− Columna**, **Fila de títulos** y **Quitar tabla**. Tab pasa a la celda siguiente.
+     - **Cita**: un texto destacado en cursiva con una línea a la izquierda.
+     - **Aviso**: una caja de color con el título *Consejo* (azul) o *Importante* (ámbar) sobre el párrafo donde está el cursor. *Aviso: ninguno* la quita.
+     - **Vídeo**: pega el enlace de YouTube (`https://www.youtube.com/watch?v=…` o `https://youtu.be/…`). En la web se ve un botón **Ver el vídeo** y el reproductor se carga al pulsarlo.
+     - **Línea**: una línea separadora.
+     - **Deshacer** y **Rehacer** (también Ctrl+Z y Ctrl+Shift+Z).
+     - **Pegar desde Word o Google Docs**: escribe donde quieras, copia y pega. Se conservan títulos, listas (también las numeradas de Word), negritas, cursivas, tablas y enlaces. Los colores y tipos de letra de Word no se pegan (la web usa los suyos) y las imágenes tampoco: si el artículo necesita una foto, envíasela al administrador.
+     - Debajo del editor se ven las palabras y los minutos de lectura (se calculan solos).
+     - Los artículos antiguos se abren igual en el editor, ya con su formato; al guardarlos pasan al formato nuevo sin que cambie cómo se ven.
 3. Pulsa **Guardar cambios**. Aparece el aviso de publicación; en unos 3 minutos el artículo actualizado está en la web. Si quieres retirarlo de la web sin borrarlo, pulsa **Pasar a borrador**.
-
-**Deshacer:** si un botón de la barra hace algo que no querías, pulsa Ctrl+Z (Cmd+Z en Mac) como en cualquier texto.
 
 **No se pierde lo escrito:** mientras escribes, el panel guarda una copia en este navegador. Si cierras el editor sin guardar, recargas la página o se cierra la sesión, al volver a abrir ese artículo (o **Nuevo artículo**) aparece "Tienes un texto sin guardar…" con **Recuperar** y **Descartar**. La copia solo está en ese navegador y ese ordenador, y se borra al guardar.
 

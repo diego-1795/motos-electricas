@@ -1,5 +1,6 @@
-import { test, expect, type Page, type Route } from '@playwright/test';
+import { test, expect, type Locator, type Page, type Route } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { validateBlogHtml } from '../../src/domain/blogHtml';
 import type { AdminCatalog, AdminError, AdminUser, BlogEntry, BlogSummary, CatalogEntry, DeployStatus, UploadResult, WriteResult } from '../../src/domain/admin';
 import type { Part, Product } from '../../src/domain/types';
 import { makePart, makeProduct, premiumVariant, variant } from '../unit/fixtures';
@@ -282,6 +283,33 @@ function applyPatch(data: Product | Part, patch: Record<string, unknown>): Produ
 async function openAdmin(page: Page) {
   await page.goto('/admin');
   await expect(page.locator('[data-admin-app]')).toBeVisible();
+}
+
+/**
+ * Selecciona `text` dentro del editor visual (o deja el cursor tras él con 'end'). Se hace con la API de
+ * selección del navegador porque Inicio/Fin no mueven el cursor en macOS; ProseMirror lee el cambio.
+ */
+async function selectText(editor: Locator, text: string, mode: 'select' | 'end' = 'select'): Promise<void> {
+  await editor.evaluate(
+    (el, [t, m]) => {
+      (el as HTMLElement).focus();
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        const i = n.textContent!.indexOf(t!);
+        if (i < 0) continue;
+        const r = document.createRange();
+        r.setStart(n, m === 'end' ? i + t!.length : i);
+        r.setEnd(n, i + t!.length);
+        const sel = window.getSelection()!;
+        sel.removeAllRanges();
+        sel.addRange(r);
+        return;
+      }
+      throw new Error(`No está el texto "${t}"`);
+    },
+    [text, mode],
+  );
+  await expect.poll(() => editor.evaluate((_, [t, m]) => (m === 'end' ? window.getSelection()!.isCollapsed : String(window.getSelection()) === t), [text, mode])).toBe(true);
 }
 
 test.describe('Panel de administración', () => {
@@ -868,12 +896,15 @@ test.describe('Panel de administración', () => {
     await expect(dialog).toContainText('Editar artículo: Cómo cuidar la batería');
     await expect(dialog.getByLabel('Dirección del artículo')).toHaveValue('como-cuidar-la-bateria');
     await expect(dialog.getByLabel('Dirección del artículo')).toHaveAttribute('readonly', '');
-    await expect(dialog.getByLabel('Texto del artículo')).toHaveValue(/Carga después de cada uso/);
+    // El artículo en Markdown se abre en el editor visual, ya con su formato (ADR-031)
+    const ve = dialog.getByLabel('Texto del artículo');
+    await expect(ve).toContainText('Carga después de cada uso');
+    await expect(ve.locator('h2')).toHaveText('Resumen');
     await expect(dialog).toContainText('min de lectura');
     await dialog.getByLabel('Título', { exact: true }).fill('Cómo cuidar la batería (2026)');
     await dialog.getByLabel('Fecha de actualización (opcional)').fill('2026-11-04');
     await dialog.getByRole('checkbox', { name: /Tigre Test/ }).check();
-    await dialog.getByLabel('Texto del artículo').fill('Texto nuevo con **negrita**.\n\n## Sección\n\n- uno');
+    await dialog.getByLabel('Texto del artículo').fill('Texto nuevo.');
     // Sin campo "Motivo" en el blog (ADR-027)
     await expect(dialog.getByLabel('Motivo (opcional)')).toHaveCount(0);
     await dialog.getByRole('button', { name: 'Guardar' }).click();
@@ -890,8 +921,9 @@ test.describe('Panel de administración', () => {
         updatedAt: '2026-11-04T08:00:00.000Z',
         author: 'Equipo Raiden',
         relatedProducts: ['aguila-test', 'tigre-test'],
+        format: 'html',
       },
-      body: 'Texto nuevo con **negrita**.\n\n## Sección\n\n- uno',
+      body: '<p>Texto nuevo.</p>',
     });
     await expect(page.locator('[data-deploy-banner]')).toBeVisible();
     await expect(page.locator('[data-admin-post="como-cuidar-la-bateria"]')).toContainText('Cómo cuidar la batería (2026)');
@@ -947,7 +979,8 @@ test.describe('Panel de administración', () => {
     expect(body.frontmatter.publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}T08:00:00\.000Z$/);
     expect(body.frontmatter.image).toEqual({ src: '~/assets/blog/como-elegir-una-bicimoto-electrica.webp', alt: 'Persona comparando bicimotos', width: 1600, height: 800 });
     expect(body.frontmatter.relatedProducts).toEqual([]);
-    expect(body.body).toBe('Mira la batería y el motor.');
+    expect(body.frontmatter.format).toBe('html');
+    expect(body.body).toBe('<p>Mira la batería y el motor.</p>');
     expect(calls.filter((c) => c.path === '/uploads')).toHaveLength(0);
     await expect(page.locator('[data-admin-post]')).toHaveCount(3);
   });
@@ -1077,57 +1110,88 @@ test.describe('Panel de administración', () => {
     expect(calls.filter((c) => c.path === '/uploads')).toHaveLength(0);
   });
 
-  test('editor: escribe con la barra de formato y la vista previa, sin ver la dirección del artículo (ADR-027)', async ({ page }) => {
+  test('editor visual: formato como en Word, listas que siguen solas, tabla, color, aviso, enlace y vídeo; sin dirección (ADR-031)', async ({ page }) => {
     const { calls } = await mockApi(page, { role: 'editor' });
     await openAdmin(page);
     await page.getByRole('tab', { name: 'Blog' }).click();
     await page.getByRole('button', { name: 'Nuevo artículo' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByLabel('Dirección del artículo')).toHaveCount(0);
-    await expect(dialog).not.toContainText('Markdown');
     await dialog.getByLabel('Título', { exact: true }).fill('Cómo cuidar la batería');
     await dialog.getByLabel(/Descripción/).fill('Consejos rápidos.');
-    const body = dialog.getByLabel('Texto del artículo');
-    await body.fill('Carga la batería cada noche');
-    // Seleccionar "cada noche" y pulsar Negrita
-    await body.evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(17, 27));
-    await dialog.locator('[data-admin-md-btn="bold"]').click();
-    await expect(body).toHaveValue('Carga la batería **cada noche**');
-    // Nueva línea vacía → Título inserta un ejemplo seleccionado; se escribe encima
-    await body.evaluate((el: HTMLTextAreaElement) => {
-      el.value += '\n\n';
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-      el.setSelectionRange(el.value.length, el.value.length);
-    });
-    await dialog.locator('[data-admin-md-btn="heading"]').click();
-    await page.keyboard.type('Consejos');
-    await expect(body).toHaveValue('Carga la batería **cada noche**\n\n## Consejos');
-    // Enlace con el mini formulario: una dirección no válida se avisa; "/repuestos" se inserta
-    await body.evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(0, 5));
-    await dialog.locator('[data-admin-md-btn="link"]').click();
-    const link = dialog.locator('[data-admin-md-link]');
-    await link.getByLabel('Dirección').fill('javascript:alert(1)');
-    await link.getByRole('button', { name: 'Insertar enlace' }).click();
-    await expect(link.getByRole('alert')).toContainText('https://');
-    await link.getByLabel('Dirección').fill('/repuestos');
-    await link.getByLabel('Dirección').press('Enter');
-    await expect(link).toHaveCount(0);
-    await expect(body).toHaveValue('[Carga](/repuestos) la batería **cada noche**\n\n## Consejos');
-    // Vista previa: se ve con formato y sin símbolos
-    await dialog.locator('[data-admin-md-preview]').click();
-    const render = dialog.locator('[data-admin-md-render]');
-    await expect(render.locator('strong')).toHaveText('cada noche');
-    await expect(render.locator('h3')).toHaveText('Consejos');
-    await expect(render.getByRole('link', { name: 'Carga' })).toHaveAttribute('href', '/repuestos');
-    await expect(render).not.toContainText('**');
-    await dialog.locator('[data-admin-md-preview]').click();
-    await expect(body).toBeVisible();
-    // La dirección sale sola del título y no choca con la que ya existe
+    const ve = dialog.getByLabel('Texto del artículo');
+    const bar = dialog.locator('[data-admin-ve-root]');
+    await ve.click();
+    // Negrita con el botón: se escribe ya en negrita, sin símbolos
+    await bar.locator('[data-ve="bold"]').click();
+    await page.keyboard.type('Importante');
+    await bar.locator('[data-ve="bold"]').click();
+    await page.keyboard.type(': carga cada noche.');
+    await expect(ve.locator('strong')).toHaveText('Importante');
+    await expect(ve).not.toContainText('**');
+    // Lista numerada: Enter continúa con el 2 automáticamente
+    await page.keyboard.press('Enter');
+    await bar.locator('[data-ve="numbers"]').click();
+    await page.keyboard.type('Uno');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('Dos');
+    await expect(ve.locator('ol > li')).toHaveText(['Uno', 'Dos']);
+    // Dos Enter salen de la lista; título de sección desde el desplegable, centrado
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('Datos técnicos');
+    await bar.locator('select[data-ve="block"]').selectOption('h2');
+    await bar.locator('[data-ve="center"]').click();
+    await expect(ve.locator('h2.al-centro')).toHaveText('Datos técnicos');
+    // Color de la marca sobre la palabra seleccionada
+    await selectText(ve, 'técnicos');
+    await bar.locator('select[data-ve="color"]').selectOption('rojo');
+    await expect(ve.locator('h2 span.tc-rojo')).toHaveText('técnicos');
+    // Tabla: aparece la barra de tabla y se añade una fila
+    await selectText(ve, 'técnicos', 'end');
+    await page.keyboard.press('Enter');
+    await bar.locator('[data-ve="table"]').click();
+    await expect(dialog.locator('[data-ve-table]')).toBeVisible();
+    await page.keyboard.type('Modelo');
+    await dialog.locator('[data-ve-table] [data-ve="row-add"]').click();
+    await expect(ve.locator('table tr')).toHaveCount(4);
+    // Salir de la tabla y poner una caja de aviso "Importante" sobre el primer párrafo
+    await selectText(ve, 'cada noche', 'end');
+    await bar.locator('select[data-ve="callout"]').selectOption('importante');
+    await expect(ve.locator('aside.aviso--importante')).toContainText('carga cada noche');
+    // Enlace: dirección no válida avisa; /repuestos se pone sobre la selección
+    await selectText(ve, 'Importante');
+    await bar.locator('[data-ve="link"]').click();
+    const linkPanel = dialog.locator('[data-ve-panel="link"]');
+    await linkPanel.getByLabel('Dirección del enlace').fill('javascript:alert(1)');
+    await linkPanel.getByRole('button', { name: 'Poner enlace' }).click();
+    await expect(linkPanel.getByRole('alert')).toContainText('https://');
+    await linkPanel.getByLabel('Dirección del enlace').fill('/repuestos');
+    await linkPanel.getByLabel('Dirección del enlace').press('Enter');
+    await expect(ve.locator('a[href="/repuestos"]')).toHaveText('Importante');
+    // Vídeo de YouTube por enlace
+    await bar.locator('[data-ve="video"]').click();
+    const videoPanel = dialog.locator('[data-ve-panel="video"]');
+    await videoPanel.getByLabel('Enlace del vídeo de YouTube').fill('https://www.google.com');
+    await videoPanel.getByRole('button', { name: 'Insertar vídeo' }).click();
+    await expect(videoPanel.getByRole('alert')).toContainText('YouTube');
+    await videoPanel.getByLabel('Enlace del vídeo de YouTube').fill('https://youtu.be/dQw4w9WgXcQ');
+    await videoPanel.getByRole('button', { name: 'Insertar vídeo' }).click();
+    await expect(ve.locator('figure.blog-video[data-youtube="dQw4w9WgXcQ"]')).toBeVisible();
+
     await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
     await expect(dialog).toBeHidden();
     const put = calls.find((c) => c.method === 'PUT')!;
+    // La dirección sale sola del título y no choca con la que ya existe
     expect(put.path).toBe('/blog/como-cuidar-la-bateria-2');
-    expect(put.body).not.toHaveProperty('reason');
+    const sent = put.body as { frontmatter: BlogEntry['frontmatter']; body: string };
+    expect(sent).not.toHaveProperty('reason');
+    expect(sent.frontmatter.format).toBe('html');
+    // Lo enviado es exactamente lo que acepta el servidor: lista blanca y un bloque por línea
+    expect(validateBlogHtml(sent.body)).toEqual([]);
+    expect(sent.body).toMatch(/<ol><li><p>/);
+    expect(sent.body).toMatch(/<table><tbody><tr><th><p>Modelo<\/p><\/th>/);
+    expect(sent.body).not.toMatch(/style=|colgroup/);
   });
 
   test('borrador: se guarda sin publicar, se marca en la lista y luego se publica; un publicado puede pasar a borrador (ADR-029)', async ({ page }) => {
@@ -1194,7 +1258,7 @@ test.describe('Panel de administración', () => {
     await expect(dialog.locator('[data-admin-recover]')).toContainText('Tienes un texto sin guardar');
     await dialog.locator('[data-admin-recover-yes]').click();
     await expect(dialog.getByLabel('Título', { exact: true })).toHaveValue('Texto que no quiero perder');
-    await expect(dialog.getByLabel('Texto del artículo')).toHaveValue('Primer párrafo escrito con calma.');
+    await expect(dialog.getByLabel('Texto del artículo')).toHaveText('Primer párrafo escrito con calma.');
     // Guardar borra la copia local
     await dialog.getByRole('button', { name: 'Guardar borrador' }).click();
     await expect(dialog).toBeHidden();
@@ -1214,64 +1278,66 @@ test.describe('Panel de administración', () => {
     expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('raiden:admin:blog-borrador')))).toEqual([]);
   });
 
-  test('pegar desde Google Docs o Word conserva títulos, listas, negritas y enlaces; avisa de las imágenes (ADR-030)', async ({ page }) => {
-    await mockApi(page, { role: 'editor' });
+  test('pegar desde Google Docs y Word conserva títulos, listas, negritas, tablas y enlaces; nada ejecutable (ADR-031)', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor' });
     await openAdmin(page);
     await page.getByRole('tab', { name: 'Blog' }).click();
     await page.getByRole('button', { name: 'Nuevo artículo' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toContainText('Puedes pegar desde Word o Google Docs');
-    const body = dialog.getByLabel('Texto del artículo');
-    await body.fill('Intro');
-    const paste = (html: string, plain: string) =>
-      body.evaluate(
-        (el: HTMLTextAreaElement, [h, p]) => {
-          el.focus();
-          el.setSelectionRange(el.value.length, el.value.length);
-          const dt = new DataTransfer();
-          dt.setData('text/html', h!);
-          dt.setData('text/plain', p!);
-          el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
-        },
-        [html, plain],
-      );
-    // Lo que copia Google Docs: todo dentro de <b style="font-weight:normal" id="docs-internal-guid…">
+    const ve = dialog.getByLabel('Texto del artículo');
+    await ve.click();
+    const paste = (html: string) =>
+      ve.evaluate((el, h) => {
+        const dt = new DataTransfer();
+        dt.setData('text/html', h);
+        dt.setData('text/plain', 'texto');
+        el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+      }, html);
+    // Google Docs: todo dentro de <b style="font-weight:normal" id="docs-internal-guid…">
     await paste(
-      '<meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-1"><h2><span>Consejos</span></h2><p><span>Carga </span><span style="font-weight:700">cada noche</span><span> y lee </span><a href="https://raiden.com.pe/repuestos"><span>los repuestos</span></a></p><ul><li><p><span>Frenos</span></p></li><li><p><span>Luces</span></p></li></ul><p><img src="https://x.test/a.png"></p><script>window.__pwned = 1</script></b>',
-      'Consejos Carga cada noche…',
+      '<meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-1"><h2><span>Consejos</span></h2><p><span>Carga </span><span style="font-weight:700">cada noche</span><span style="color:#ff0000"> y lee </span><a href="https://raiden.com.pe/repuestos"><span>los repuestos</span></a></p><ul><li><p><span>Frenos</span></p></li></ul><table><tr><td>Km</td><td>60</td></tr></table><p><img src="https://x.test/a.png" onerror="window.__pwned=1"></p><script>window.__pwned = 1</script></b>',
     );
-    await expect(body).toHaveValue('Intro\n\n## Consejos\n\nCarga **cada noche** y lee [los repuestos](https://raiden.com.pe/repuestos)\n\n- Frenos\n- Luces');
-    await expect(dialog.locator('[data-admin-md-notice]')).toContainText('Las imágenes no se pegan');
+    await expect(ve.locator('h2')).toHaveText('Consejos');
+    await expect(ve.locator('strong')).toHaveText('cada noche');
+    await expect(ve.locator('a[href="https://raiden.com.pe/repuestos"]')).toHaveText('los repuestos');
+    await expect(ve.locator('ul li')).toHaveText(['Frenos']);
+    await expect(ve.locator('table td')).toHaveText(['Km', '60']);
+    await expect(ve.locator('img')).toHaveCount(0);
+    // Word: listas como párrafos mso-list con la viñeta como texto
+    await page.keyboard.press('ControlOrMeta+End');
+    await paste(
+      '<html><body><p class=MsoNormal>Pasos:</p><p class=MsoListParagraph style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.<span>&nbsp;&nbsp;</span></span>Revisar frenos<o:p></o:p></p><p class=MsoListParagraph style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">2.<span>&nbsp;</span></span>Cargar batería<o:p></o:p></p></body></html>',
+    );
+    await expect(ve.locator('ol li')).toHaveText(['Revisar frenos', 'Cargar batería']);
     expect(await page.evaluate(() => (window as unknown as { __pwned?: number }).__pwned)).toBeUndefined();
-    // Ctrl+Z deshace el pegado entero
-    await body.press('ControlOrMeta+z');
-    await expect(body).toHaveValue('Intro');
-    // Texto sin formato (sin text/html): se pega tal cual, por el navegador
-    await body.evaluate((el: HTMLTextAreaElement) => {
-      el.focus();
-      el.setSelectionRange(el.value.length, el.value.length);
-      const dt = new DataTransfer();
-      dt.setData('text/plain', ' y más');
-      el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
-    });
-    await expect(body).toHaveValue('Intro');
+    // Ctrl+Z deshace el último pegado
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(ve.locator('ol')).toHaveCount(0);
+    await dialog.getByLabel('Título', { exact: true }).fill('Pegado');
+    await dialog.getByRole('button', { name: 'Guardar borrador' }).click();
+    await expect(dialog).toBeHidden();
+    const sent = calls.find((c) => c.method === 'PUT')!.body as { body: string };
+    expect(validateBlogHtml(sent.body)).toEqual([]);
+    expect(sent.body).not.toMatch(/style=|<img|<script|<b |<span>/);
   });
 
-  test('Ctrl+Z deshace lo que hizo un botón de la barra de formato (ADR-029)', async ({ page }) => {
+  test('Ctrl+Z deshace lo que hizo un botón de la barra (ADR-031)', async ({ page }) => {
     await mockApi(page, { role: 'editor' });
     await openAdmin(page);
     await page.getByRole('tab', { name: 'Blog' }).click();
     await page.getByRole('button', { name: 'Nuevo artículo' }).click();
     const dialog = page.getByRole('dialog');
-    const body = dialog.getByLabel('Texto del artículo');
-    await body.fill('uno\ndos');
-    await body.evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(0, 7));
-    await dialog.locator('[data-admin-md-btn="bullets"]').click();
-    await expect(body).toHaveValue('- uno\n- dos');
-    await body.press('ControlOrMeta+z');
-    await expect(body).toHaveValue('uno\ndos');
-    await body.press('ControlOrMeta+Shift+z');
-    await expect(body).toHaveValue('- uno\n- dos');
+    const ve = dialog.getByLabel('Texto del artículo');
+    await ve.click();
+    await page.keyboard.type('uno');
+    await dialog.locator('[data-ve="bullets"]').click();
+    await expect(ve.locator('ul li')).toHaveText(['uno']);
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(ve.locator('ul')).toHaveCount(0);
+    await expect(ve).toHaveText('uno');
+    await dialog.locator('[data-ve="redo"]').click();
+    await expect(ve.locator('ul li')).toHaveText(['uno']);
   });
 
   test('editor: gestiona el blog en llano; la foto no se puede tocar y al guardar viaja tal cual (ADR-026)', async ({ page }) => {
@@ -1331,6 +1397,16 @@ test.describe('Panel de administración', () => {
     await audit('blog');
     await page.getByRole('button', { name: 'Editar artículo Cómo cuidar la batería' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
+    // El editor visual se carga aparte: se audita ya montado, con una tabla y el panel de enlace abiertos (ADR-031)
+    const ve = page.getByRole('dialog').getByLabel('Texto del artículo');
+    await expect(ve).toBeVisible();
     await audit('editor de artículo');
+    await selectText(ve, 'Nunca la dejes vacía', 'end');
+    await page.keyboard.press('Enter');
+    await page.locator('[data-ve="table"]').click();
+    await expect(page.locator('[data-ve-table]')).toBeVisible();
+    await page.locator('[data-ve="link"]').click();
+    await expect(page.locator('[data-ve-panel="link"]')).toBeVisible();
+    await audit('editor visual con tabla y enlace');
   });
 });

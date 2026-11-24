@@ -8,6 +8,7 @@ import WhatsAppLink from '../../components/ui/WhatsAppLink.astro';
 import { repos } from '../../data';
 import type { BlogPost } from '../../domain/types';
 import { readingMinutes } from '../../domain/reading';
+import { blogHtmlToText } from '../../domain/blogHtml';
 import { site } from '../../config/site';
 import { publicSrc } from '../../lib/images';
 import { articleSchema, breadcrumbSchema } from '../../lib/seo/jsonld';
@@ -24,7 +25,8 @@ export async function getStaticPaths() {
 const { entry } = Astro.props as { entry: CollectionEntry<'blog'> };
 const { Content } = await render(entry);
 // Tiempo de lectura real, calculado del cuerpo (mismo criterio que repos.blog)
-const post: BlogPost = { slug: entry.id, ...entry.data, readingMinutes: readingMinutes(entry.body ?? '') };
+const body = entry.body ?? '';
+const post: BlogPost = { slug: entry.id, ...entry.data, readingMinutes: readingMinutes(entry.data.format === 'html' ? blogHtmlToText(body) : body) };
 const related = await repos.products.bySlugs(post.relatedProducts);
 const categoryNames = Object.fromEntries((await repos.categories.all()).map((c) => [c.slug, c.name]));
 const fmtDate = new Intl.DateTimeFormat(site.locale, { day: 'numeric', month: 'long', year: 'numeric' });
@@ -90,6 +92,28 @@ const crumbs = [
     </aside>
   </article>
 </BaseLayout>
+
+<script>
+  // Vídeos del editor visual (ADR-031): en el HTML son un enlace a YouTube (funciona sin JS); aquí se
+  // convierten en un botón que carga el reproductor de youtube-nocookie.com solo al pulsarlo.
+  document.querySelectorAll<HTMLElement>('.prose .blog-video[data-youtube]').forEach((box) => {
+    const id = box.dataset.youtube ?? '';
+    if (!/^[\w-]{11}$/.test(id)) return;
+    const play = document.createElement('button');
+    play.type = 'button';
+    play.className = 'blog-video__play';
+    play.textContent = '▶ Ver el vídeo';
+    play.addEventListener('click', () => {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+      iframe.title = 'Vídeo del artículo';
+      iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+      iframe.setAttribute('allowfullscreen', '');
+      box.replaceChildren(iframe);
+    });
+    box.replaceChildren(play);
+  });
+</script>
 
 <style>
   .post__head {

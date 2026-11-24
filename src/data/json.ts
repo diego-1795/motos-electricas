@@ -2,6 +2,7 @@ import { getCollection, getEntry } from 'astro:content';
 import type { BlogPost, Category, CategorySlug, Part, Product, Review } from '../domain/types';
 import type { Testimonial } from '../domain/testimonials';
 import { readingMinutes } from '../domain/reading';
+import { blogHtmlToText } from '../domain/blogHtml';
 import { visibleOnly } from '../domain/catalog';
 import type { Repositories } from './repositories';
 
@@ -65,7 +66,9 @@ const categories = {
 /** Artículo con slug, cuerpo y tiempo de lectura real calculado del cuerpo. */
 const toPost = (e: { id: string; data: unknown; body?: string }): BlogPost & { body: string } => {
   const body = e.body ?? '';
-  return { ...(e.data as Omit<BlogPost, 'slug' | 'readingMinutes'>), slug: e.id, body, readingMinutes: readingMinutes(body) };
+  const data = e.data as Omit<BlogPost, 'slug' | 'readingMinutes'>;
+  // Cuerpo HTML del editor visual (ADR-031): se cuentan las palabras del texto, no de las etiquetas
+  return { ...data, slug: e.id, body, readingMinutes: readingMinutes(data.format === 'html' ? blogHtmlToText(body) : body) };
 };
 
 const blog = {

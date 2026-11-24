@@ -3,12 +3,13 @@ import type { BlogEntry, BlogFrontmatter, BlogWriteResult } from '../../domain/a
 import type { BlogPost, ImageRef } from '../../domain/types';
 import { blogRules, slugify, uniqueSlug } from '../../domain/blogRules';
 import { isValidSlug } from '../../domain/catalogRules';
-import { readingMinutes } from '../../domain/reading';
+import { countWords, readingMinutes } from '../../domain/reading';
+import { blogHtmlToText } from '../../domain/blogHtml';
+import { markdownToHtml } from '../../domain/markdownLite';
 import { blogCategoryLabel } from '../../lib/labels';
 import { AdminApiError } from '../../services/admin/AdminApiClient';
 import { STALE_EDITOR_MESSAGE, useAdmin } from './context';
 import ImageFields from './ImageFields';
-import MarkdownEditor from './MarkdownEditor';
 import Modal from './Modal';
 
 interface Props {
@@ -95,7 +96,8 @@ function toForm(entry: BlogEntry | undefined): Form {
     author: fm?.author ?? DEFAULT_AUTHOR,
     relatedProducts: fm?.relatedProducts ?? [],
     image: fm?.image,
-    body: entry?.body ?? '',
+    // Los artículos en Markdown (anteriores al editor visual) se abren convertidos a HTML (ADR-031)
+    body: !entry ? '' : fm?.format === 'html' ? entry.body.trim() : markdownToHtml(entry.body),
   };
 }
 
@@ -112,7 +114,7 @@ function fromForm(f: Form, entry: BlogEntry | undefined, draft: boolean): { fron
     relatedProducts: f.relatedProducts,
     ...(draft ? { draft: true } : {}),
   };
-  return { frontmatter, body: f.body.replace(/\r\n?/g, '\n') };
+  return { frontmatter: { ...frontmatter, format: 'html' }, body: f.body.replace(/\r\n?/g, '\n').trim() };
 }
 
 /**
@@ -128,6 +130,18 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
   /** ADR-027: la dirección del artículo (slug) es un detalle técnico; el editor no la ve */
   const showSlug = user.role === 'admin';
   const creating = !entry;
+  // El editor visual (Tiptap, ~100 KB) se carga solo al abrir un artículo: el resto del panel no lo paga
+  const [editorKey, setEditorKey] = useState(0);
+  const [Visual, setVisual] = useState<typeof import('./editor/VisualEditor').default | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void import('./editor/VisualEditor').then((m) => {
+      if (alive) setVisual(() => m.default);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
   /** Borrador o nuevo: botones "Guardar borrador" / "Publicar artículo". Publicado: "Pasar a borrador" / "Guardar cambios" (ADR-029) */
   const wasDraft = creating || entry.frontmatter.draft === true;
   const initial = useMemo(() => toForm(entry), [entry]);
@@ -157,6 +171,8 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
 
   const restore = () => {
     if (!recover) return;
+    // El editor visual solo lee su valor al montarse: se vuelve a montar con el texto recuperado
+    setEditorKey((k) => k + 1);
     // La dirección de un artículo existente no cambia aunque la copia sea antigua
     setForm(entry ? { ...recover.form, slug: entry.slug, slugTouched: true } : recover.form);
     setRecover(null);
@@ -171,8 +187,9 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
   const toggleRelated = (slug: string, on: boolean) =>
     setForm((f) => ({ ...f, relatedProducts: on ? [...f.relatedProducts.filter((s) => s !== slug), slug] : f.relatedProducts.filter((s) => s !== slug) }));
 
-  const minutes = readingMinutes(form.body);
-  const words = form.body.trim() ? form.body.trim().split(/\s+/).length : 0;
+  const plainText = blogHtmlToText(form.body);
+  const minutes = readingMinutes(plainText);
+  const words = countWords(plainText);
 
   // Enter en un campo no publica nada: solo los botones guardan (un borrador no debe publicarse por accidente)
   const submit = (e: Event) => e.preventDefault();
@@ -331,9 +348,15 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
         </fieldset>
 
         <div class="field">
-          <MarkdownEditor id={`${uid}-body`} label="Texto del artículo" value={form.body} onChange={(body) => set('body', body)} describedBy={`${uid}-md`} />
+          {Visual ? (
+            <Visual key={editorKey} id={`${uid}-body`} label="Texto del artículo" value={form.body} onChange={(body: string) => set('body', body)} describedBy={`${uid}-md`} />
+          ) : (
+            <p class="muted" data-admin-ve-loading>
+              Cargando el editor…
+            </p>
+          )}
           <span class="hint" id={`${uid}-md`}>
-            Selecciona una parte del texto y pulsa un botón para darle formato; "Vista previa" enseña cómo quedará. Puedes pegar desde Word o Google Docs y se conservan títulos, listas, negritas y enlaces. Deja una línea en blanco entre párrafos. Precios en soles (S/).
+            Escribe como en Word: la barra de arriba pone títulos, negrita, colores, listas, tablas, avisos, enlaces y vídeos. Puedes pegar desde Word o Google Docs. Ctrl+Z deshace. Precios en soles (S/).
           </span>
           <span class="hint">
             {words} palabras · {minutes} min de lectura (se calcula solo)

@@ -291,4 +291,6 @@ export interface BlogPost {
   relatedProducts: string[];
   /** Borrador (ADR-029): no se genera su página ni aparece en listas, buscador ni sitemap */
   draft?: boolean;
+  /** "html": cuerpo escrito con el editor visual (ADR-031); sin la clave, Markdown */
+  format?: 'html';
 }

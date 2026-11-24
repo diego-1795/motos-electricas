@@ -1,5 +1,6 @@
 import type { BlogPost } from './types';
 import { isValidSlug } from './catalogRules';
+import { blogHtmlToText, validateBlogHtml } from './blogHtml';
 
 /**
  * Reglas de integridad de un artículo del blog que el esquema (tipos) no expresa. Puras:
@@ -21,6 +22,8 @@ export const BLOG_IMAGE_RE = /^~\/assets\/blog\/[a-z0-9]+(?:-[a-z0-9]+)*\.webp$/
 export const FOREIGN_MARKET_RE = /€|EUR|carnet|\bIVA\b/;
 
 export const MAX_BODY_CHARS = 60_000;
+/** El HTML del editor visual ocupa más que el mismo texto en Markdown (etiquetas, tablas) */
+export const MAX_HTML_BODY_CHARS = 150_000;
 
 /**
  * Astro renderiza el Markdown con HTML crudo permitido. La CSP frena <script>, javascript: e <iframe> ajenos,
@@ -74,11 +77,18 @@ export function blogRules(slug: string, fm: BlogFrontmatter, body: string, ctx: 
     seen.add(r);
     if (ctx.productSlugs && !ctx.productSlugs.includes(r)) errs.push(`El modelo relacionado ${r} ya no está en el catálogo`);
   }
-  if (!body.trim() && !draft) errs.push('El texto del artículo está vacío');
-  if (body.length > MAX_BODY_CHARS) errs.push(`El texto supera los ${MAX_BODY_CHARS} caracteres`);
-  if (RAW_HTML_RE.test(body)) errs.push('El texto no puede llevar código HTML (<script>, <iframe>, <style>…): usa solo el formato indicado (## títulos, **negrita**, listas, enlaces)');
-  if (/\]\(\s*(javascript|data|vbscript):/i.test(body)) errs.push('Los enlaces solo pueden ir a una web (https://…), a una página de la tienda (/repuestos…) o a un email (mailto:)');
-  const text = `${fm.title}\n${fm.description}\n${body}`;
+  // Editor visual (ADR-031): el cuerpo es HTML de una lista blanca estricta; si no, Markdown como siempre
+  const html = fm.format === 'html';
+  const plain = html ? blogHtmlToText(body) : body;
+  if (!plain.trim() && !draft) errs.push('El texto del artículo está vacío');
+  const max = html ? MAX_HTML_BODY_CHARS : MAX_BODY_CHARS;
+  if (body.length > max) errs.push(`El texto supera los ${max} caracteres`);
+  if (html) errs.push(...validateBlogHtml(body));
+  else {
+    if (RAW_HTML_RE.test(body)) errs.push('El texto no puede llevar código HTML (<script>, <iframe>, <style>…): usa solo el formato indicado (## títulos, **negrita**, listas, enlaces)');
+    if (/\]\(\s*(javascript|data|vbscript):/i.test(body)) errs.push('Los enlaces solo pueden ir a una web (https://…), a una página de la tienda (/repuestos…) o a un email (mailto:)');
+  }
+  const text = `${fm.title}\n${fm.description}\n${plain}`;
   if (FOREIGN_MARKET_RE.test(text)) errs.push('Habla de España o del euro (€, EUR, carnet, IVA): para Perú usa S/, IGV y licencia');
   return errs;
 }

@@ -20,6 +20,7 @@ Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018 y ADR-023, [1
 | Blog: poner, cambiar o quitar la foto de un artículo (ADR-026) | ✓ | ✗ (403; el bloque de la foto es solo informativo) |
 | Blog: ver y elegir la dirección (slug) de un artículo nuevo (ADR-027) | ✓ | — (sale sola del título; `-2`, `-3`… si ya existe) |
 | Blog: guardar como borrador, pasar a borrador y publicar (ADR-029) | ✓ | ✓ |
+| Blog: editor visual (títulos, colores de la marca, listas, tablas, avisos, enlaces, vídeo de YouTube; ADR-031) | ✓ | ✓ |
 | Subir PDF de manual/ficha a `public/docs` (ADR-023) | ✓ | ✗ (403) |
 | Ver la guía `/admin/ayuda` | ✓ | ✓ |
 | Cambiar su propia contraseña (ADR-024) | ✓ | ✓ |

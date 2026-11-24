@@ -421,7 +421,7 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 
 ## ADR-027 — Editor del texto del blog con barra de formato y vista previa; sin dirección ni motivo para el editor
 
-**Fecha:** 2026-11-24 · **Estado:** aceptada
+**Fecha:** 2026-11-24 · **Estado:** aceptada; la barra de formato sobre Markdown y la vista previa las sustituye el editor visual de ADR-031 (lo de la dirección y el motivo sigue)
 
 **Contexto.** William escribe ya en el blog (ADR-026), pero el cuerpo del artículo era un cuadro de Markdown con una chuleta de símbolos (`## `, `**`, `[texto](/ruta)`): poco amigable para quien no sabe de código. Además veía el campo "Dirección del artículo" (el slug) y "Motivo (opcional)", que no le sirven.
 
@@ -448,7 +448,7 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 
 ## ADR-029 — Borradores del blog, autoguardado local y deshacer en el editor
 
-**Fecha:** 2026-11-24 · **Estado:** aceptada
+**Fecha:** 2026-11-24 · **Estado:** aceptada; el deshacer con execCommand lo sustituye el historial propio del editor visual (ADR-031); borradores y autoguardado siguen
 
 **Contexto.** Revisando la experiencia de crear un artículo para quien no sabe de código salieron tres carencias:
 - Un artículo solo podía publicarse; no se podía dejar a medias ni pasarlo a revisión.
@@ -471,7 +471,7 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 
 ## ADR-030 — Pegar desde Word / Google Docs en el editor del blog; el panel pasa a llamarse "Administración de la web"
 
-**Fecha:** 2026-11-24 · **Estado:** aceptada
+**Fecha:** 2026-11-24 · **Estado:** aceptada; el conversor de lo pegado lo sustituye el editor visual (ADR-031), que entiende Word y Google Docs; el nombre del panel sigue
 
 **Contexto.** Quien no sabe de código suele escribir en Word o Google Docs y pegar. Hasta ahora el `<textarea>` recibía solo el texto plano y se perdían los títulos, las listas, las negritas y los enlaces. Además, el panel se titulaba "Administración de la tienda", y desde ADR-023/026 también gestiona el blog: "tienda" suena a productos y pedidos y resultaba ambiguo.
 
@@ -488,4 +488,50 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 - El panel se titula **"Administración de la web"**, con el subtítulo "Productos, repuestos y blog". Se descartó "Panel de la tienda", ambiguo por lo mismo, y "CMS", demasiado técnico. La marca del `<title>` sale de `site.name`.
 
 **Consecuencias.** El formato que no está en el subconjunto (colores, fuentes, tamaños) se pierde a propósito: la web tiene su propio estilo. Tests: `tests/unit/paste-html.test.ts` (Google Docs, Word, enlaces, imágenes, tablas, HTML peligroso) y un e2e que pega HTML real de Google Docs con un `<script>` que no llega a ejecutarse.
+
+## ADR-031 — Editor visual del blog con Tiptap; cuerpo en HTML de lista blanca; tablas, colores de la marca, avisos y vídeo
+
+**Fecha:** 2026-11-24 · **Estado:** aceptada
+
+**Contexto.** Con la barra sobre Markdown (ADR-027), William seguía viendo símbolos (`**`, `##`, `|`) y le faltaba lo habitual de un editor de texto. Al pulsar Enter tras "1." no salía "2.", y no había tablas, colores, subrayado, avisos ni vídeos. Diego eligió el 2026-11-24:
+- un editor visual "tipo Word";
+- colores limitados a la paleta de la marca;
+- subrayado y tachado, citas y cajas de aviso, centrado y vídeo de YouTube;
+- adaptar el blog público para mostrarlo.
+
+**Decisión.**
+- **Editor.** Tiptap 3 (ProseMirror): `@tiptap/core`, `@tiptap/pm`, `@tiptap/starter-kit` y `@tiptap/extension-table`, versiones fijadas a 3.32.3 (publicada el 2026-11-05).
+  - Es una excepción explícita a "sin librerías de UI". Un editor de texto enriquecido correcto (selección, deshacer, listas, tablas, pegado) no es razonable a mano.
+  - Se carga solo al abrir un artículo en `/admin`, con `import()` dinámico en `BlogEditor`. La web pública no lo descarga.
+  - Extensiones propias en `src/islands/admin/editor/extensions.ts`: color (`<span class="tc-azul|rojo|verde|gris">`), resaltado (`<mark>`), centrado (`class="al-centro"`), aviso (`<aside class="aviso aviso--consejo|importante">`) y vídeo (`<figure class="blog-video" data-youtube="ID"><a href="https://www.youtube.com/watch?v=ID">…</a></figure>`).
+  - Nunca `style=`: todo va por clases definidas en `base.css` (`.prose`), así el panel y la web se ven igual.
+- **Formato.** El fichero sigue siendo `src/content/blog/<slug>.md`, con `format: "html"` en el frontmatter y el cuerpo en HTML: un bloque de primer nivel por línea, separados por una línea en blanco. Astro publica cada línea como bloque HTML sin reinterpretarla (comprobado con un build).
+  - `cleanEditorHtml` quita `style`, `colgroup`, `colspan/rowspan="1"` y el párrafo vacío final, y aplica esa forma antes de enviar.
+- **Seguridad.** `validateBlogHtml` (`src/domain/blogHtml.ts`, puro) es una lista blanca de etiquetas, atributos y valores, con anidamiento y forma fija. Se rechazan:
+  - `<script>`, `<img>` e `<iframe>`;
+  - `style=`, `on*=` y `javascript:` (también con entidades);
+  - clases fuera de la paleta;
+  - un vídeo cuyo enlace no coincide con su id;
+  - texto suelto y saltos de línea dentro de un bloque.
+
+  `blogRules` lo aplica cuando `format === 'html'`, en el panel y en el servidor antes de escribir. Las reglas de contenido (vacío, España/EUR) se aplican al texto (`blogHtmlToText`). El límite del cuerpo HTML es de 150 000 caracteres.
+- **Pegar.** Tiptap entiende el HTML de Google Docs y de las webs. `normalizePastedHtml` convierte antes las listas de Word (`mso-list`, con la viñeta como texto) en `<ul>/<ol>`. Lo que no está en el esquema (imágenes, colores en línea, fuentes) se descarta.
+- **Artículos anteriores.** Al abrirlos, `markdownToHtml` (`markdownLite.ts`, ahora con tablas GFM, citas, separadores y tachado) los convierte a HTML válido. Un test comprueba que los 7 artículos actuales pasan el validador. Al guardar pasan a `format: "html"`, y los que no se tocan siguen en Markdown.
+- **Blog público.** `.prose` gana estilos de tablas (con desplazamiento horizontal en móvil), colores, resaltado, citas, avisos, separador y vídeo. Las tablas Markdown actuales también salen con borde y cabecera.
+  - El vídeo es un enlace a YouTube que funciona sin JS. Un script de `/blog/[slug]` lo cambia por un botón que crea el iframe de `youtube-nocookie.com` al pulsar, igual que las fichas. Su hash está en `public/_headers` y `vercel.json`.
+  - El tiempo de lectura de un artículo HTML se calcula sobre el texto, no sobre las etiquetas.
+- Se retiran `MarkdownEditor.tsx` y `pasteHtml.ts` (ADR-027 y ADR-030), y con ellos el deshacer por `execCommand` (ADR-029): el editor tiene su propio historial.
+
+**Alternativas consideradas.**
+- *Ampliar el editor de Markdown:* sin dependencias, pero William seguiría viendo símbolos.
+- *Guardar Markdown desde Tiptap:* las tablas con formato, los colores, los avisos y el vídeo necesitan HTML igualmente.
+- *Selector de color libre:* descartado por legibilidad y por coherencia con la marca.
+
+**Consecuencias.**
+- Los artículos editados en el panel son HTML en git: menos legibles en un diff, pero ya no se editan a mano. Si Diego edita uno por git, debe respetar la forma (un bloque por línea) y la lista blanca, que solo comprueba el servidor al escribir desde el panel.
+- `blogSchema` gana `format`, y `BlogPost` `format?`.
+- Tests:
+  - `tests/unit/blog-html.test.ts`: lista blanca, ataques y conversión de los artículos reales.
+  - e2e del editor: formato, listas que continúan, tabla, color, aviso, enlace, vídeo, pegado de Word y Docs, y deshacer.
+  - axe con el editor, la tabla y el panel de enlace abiertos.
 

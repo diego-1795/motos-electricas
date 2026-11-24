@@ -34,6 +34,9 @@
   --success: #15704a;
   --warning: #8a5a10;
   --danger: #c42b2b;
+  /* Artículos del blog (ADR-031): resaltado y fondos de las cajas de aviso */
+  --highlight: #fff1a8;
+  --warning-tint: #fdf3e1;
 
   /* Semánticos (tema claro por defecto) */
   --bg: var(--n-50);

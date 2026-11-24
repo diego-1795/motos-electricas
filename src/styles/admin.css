@@ -621,36 +621,65 @@
   flex-wrap: wrap;
 }
 
-/* Texto del artículo: barra de formato, enlace y vista previa (ADR-027) */
-.adm-md {
+/* Editor visual del texto del artículo (ADR-031). El contenido usa .prose: se ve como en la web. */
+.adm-ve {
   display: grid;
   gap: var(--s-2);
 }
-.adm-md__bar {
+.adm-ve__bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s-1);
-  padding: var(--s-1);
+  gap: var(--s-1) var(--s-3);
+  padding: var(--s-2);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   background: var(--bg-sunken);
 }
-.adm-md__bar .btn {
-  min-height: 2.75rem;
+.adm-ve__bar--table {
+  position: static;
+  background: var(--raiden-blue-100);
 }
-.adm-md__b {
+.adm-ve__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1);
+}
+.adm-ve__btn {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+}
+.adm-ve__btn[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.adm-ve__b {
   font-weight: var(--fw-extrabold);
 }
-.adm-md__i {
+.adm-ve__i {
   font-style: italic;
 }
-.adm-md__spacer {
-  flex: 1 1 auto;
+.adm-ve__u {
+  text-decoration: underline;
 }
-.adm-md__link {
+.adm-ve__s {
+  text-decoration: line-through;
+}
+.adm-ve__mark:not([aria-pressed='true']) {
+  background: var(--highlight);
+}
+.adm-ve__select .select {
+  min-height: 2.75rem;
+  padding-block: 0.3rem;
+  font-size: var(--fs-sm);
+}
+.adm-ve__panel {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: var(--s-2);
   align-items: end;
   padding: var(--s-3);
@@ -658,47 +687,79 @@
   border-radius: var(--r-md);
   background: var(--bg-elev);
 }
-.adm-md__link-actions {
+.adm-ve__panel-actions {
   display: flex;
   gap: var(--s-2);
   flex-wrap: wrap;
 }
-.adm-md__link .adm-status {
+.adm-ve__panel .adm-status {
   grid-column: 1 / -1;
 }
-.adm-md__preview {
-  min-height: 28rem;
-  padding: var(--s-4);
-  border: 1px solid var(--border);
+.adm-ve__content {
+  min-height: 24rem;
+  max-width: none;
+  padding: var(--s-4) var(--s-5);
+  border: 1px solid var(--border-strong);
   border-radius: var(--r-md);
   background: var(--bg-elev);
   line-height: 1.65;
   overflow-wrap: anywhere;
 }
-.adm-md__preview > :first-child {
+.adm-ve__content:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.adm-ve__content > :first-child {
   margin-top: 0;
 }
-.adm-md__preview h3 {
-  font-size: var(--fs-xl);
-  margin: var(--s-5) 0 var(--s-2);
+.adm-ve__content p {
+  max-width: none;
 }
-.adm-md__preview h4 {
-  font-size: var(--fs-lg);
-  margin: var(--s-4) 0 var(--s-2);
+/* Tablas en edición: se desplazan en horizontal si no caben (las palabras no se parten) */
+.adm-ve__content .tableWrapper {
+  overflow-x: auto;
 }
-.adm-md__preview p,
-.adm-md__preview ul,
-.adm-md__preview ol {
-  margin: 0 0 var(--s-3);
+.adm-ve__content table {
+  display: table;
+  table-layout: auto;
 }
-.adm-md__preview ul,
-.adm-md__preview ol {
-  padding-left: 1.4em;
+.adm-ve__content th,
+.adm-ve__content td {
+  min-width: 6rem;
+  overflow-wrap: normal;
 }
-.adm-md__preview a {
-  color: var(--accent-text);
-  text-decoration: underline;
+.adm-ve__content .selectedCell {
+  background: var(--raiden-blue-100);
 }
+.adm-ve__content .blog-video {
+  max-width: 28rem;
+  aspect-ratio: auto;
+  padding: var(--s-6) var(--s-4);
+}
+.adm-ve__content .blog-video > a::before {
+  content: '▶ ';
+}
+/* Móvil: la barra en una sola fila que se desliza en horizontal, para no tapar el texto */
+@media (max-width: 40rem) {
+  .adm-ve__bar:not(.adm-ve__bar--table) {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+  .adm-ve__group {
+    flex-wrap: nowrap;
+    flex: none;
+  }
+  .adm-ve__content {
+    padding: var(--s-3);
+  }
+}
+.adm-ve__content .ProseMirror-selectednode,
+.adm-ve__content .blog-video.ProseMirror-selectednode {
+  outline: 3px solid var(--focus);
+}
+
 
 /* Imágenes por ruta (galería, foto por color, foto del artículo) */
 .adm-image {

@@ -162,6 +162,8 @@ export const blogSchema = z.object({
   relatedProducts: z.array(z.string()).default([]),
   /** Borrador (ADR-029): se guarda en el repositorio pero no se publica en la web */
   draft: z.boolean().optional(),
+  /** Cuerpo en HTML del editor visual (ADR-031); sin la clave, el cuerpo es Markdown */
+  format: z.literal('html').optional(),
 });
 
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; errors: string[] };

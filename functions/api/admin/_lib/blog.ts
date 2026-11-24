@@ -18,7 +18,7 @@ export const BLOG_DIR = 'src/content/blog';
 export const blogPath = (slug: string): string => `${BLOG_DIR}/${slug}.md`;
 
 /** Orden fijo de claves en el frontmatter escrito (diffs mínimos; mismo orden que los ficheros actuales). */
-const FRONTMATTER_KEYS: (keyof BlogFrontmatter)[] = ['title', 'description', 'category', 'publishedAt', 'updatedAt', 'author', 'image', 'relatedProducts', 'draft'];
+const FRONTMATTER_KEYS: (keyof BlogFrontmatter)[] = ['title', 'description', 'category', 'publishedAt', 'updatedAt', 'author', 'image', 'relatedProducts', 'format', 'draft'];
 
 export function serializePost(frontmatter: BlogFrontmatter, body: string): string {
   const ordered: Record<string, unknown> = {};
