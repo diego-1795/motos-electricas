@@ -7,9 +7,10 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import Logo from '../../components/ui/Logo.astro';
 import { Content as Guide } from '../../../docs/24-guia-administrador.md';
+import { site } from '../../config/site';
 ---
 
-<AdminLayout title="Ayuda · Administración de la tienda · RAIDEN">
+<AdminLayout title={`Ayuda · Administración de la web · ${site.name.toUpperCase()}`}>
   <div class="adm">
     <header class="adm__header">
       <a href="/" class="adm__logo" aria-label="Ir a la web de la tienda">

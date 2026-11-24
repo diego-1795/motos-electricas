@@ -34,6 +34,18 @@
   font-weight: var(--fw-bold);
   font-size: var(--fs-lg);
 }
+.adm__heading {
+  display: grid;
+  gap: 0.1rem;
+}
+.adm__heading .adm__title {
+  margin: 0;
+}
+.adm__subtitle {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}
 .adm__panel {
   display: flex;
   flex-direction: column;

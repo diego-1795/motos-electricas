@@ -333,7 +333,7 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
         <div class="field">
           <MarkdownEditor id={`${uid}-body`} label="Texto del artículo" value={form.body} onChange={(body) => set('body', body)} describedBy={`${uid}-md`} />
           <span class="hint" id={`${uid}-md`}>
-            Selecciona una parte del texto y pulsa un botón para darle formato; "Vista previa" enseña cómo quedará. Deja una línea en blanco entre párrafos. Precios en soles (S/).
+            Selecciona una parte del texto y pulsa un botón para darle formato; "Vista previa" enseña cómo quedará. Puedes pegar desde Word o Google Docs y se conservan títulos, listas, negritas y enlaces. Deja una línea en blanco entre párrafos. Precios en soles (S/).
           </span>
           <span class="hint">
             {words} palabras · {minutes} min de lectura (se calcula solo)

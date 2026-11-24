@@ -292,7 +292,9 @@ test.describe('Panel de administración', () => {
     await mockApi(page, { role: 'admin' });
     await openAdmin(page);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow');
-    await expect(page).toHaveTitle('Administración de la tienda · RAIDEN');
+    await expect(page).toHaveTitle('Administración de la web · RAIDEN');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Administración de la web');
+    await expect(page.locator('.adm__subtitle')).toHaveText('Productos, repuestos y blog');
     expect(await page.locator('header.header, [data-cart-drawer], [data-wa-source="floating"]').count()).toBe(0);
     await expect(page.locator('main[data-pagefind-body]')).toHaveCount(0);
   });
@@ -1210,6 +1212,49 @@ test.describe('Panel de administración', () => {
     await expect(dialog.locator('[data-admin-recover]')).toHaveCount(0);
     await expect(dialog.getByLabel('Título', { exact: true })).toHaveValue('');
     expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('raiden:admin:blog-borrador')))).toEqual([]);
+  });
+
+  test('pegar desde Google Docs o Word conserva títulos, listas, negritas y enlaces; avisa de las imágenes (ADR-030)', async ({ page }) => {
+    await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await page.getByRole('button', { name: 'Nuevo artículo' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Puedes pegar desde Word o Google Docs');
+    const body = dialog.getByLabel('Texto del artículo');
+    await body.fill('Intro');
+    const paste = (html: string, plain: string) =>
+      body.evaluate(
+        (el: HTMLTextAreaElement, [h, p]) => {
+          el.focus();
+          el.setSelectionRange(el.value.length, el.value.length);
+          const dt = new DataTransfer();
+          dt.setData('text/html', h!);
+          dt.setData('text/plain', p!);
+          el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+        },
+        [html, plain],
+      );
+    // Lo que copia Google Docs: todo dentro de <b style="font-weight:normal" id="docs-internal-guid…">
+    await paste(
+      '<meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-1"><h2><span>Consejos</span></h2><p><span>Carga </span><span style="font-weight:700">cada noche</span><span> y lee </span><a href="https://raiden.com.pe/repuestos"><span>los repuestos</span></a></p><ul><li><p><span>Frenos</span></p></li><li><p><span>Luces</span></p></li></ul><p><img src="https://x.test/a.png"></p><script>window.__pwned = 1</script></b>',
+      'Consejos Carga cada noche…',
+    );
+    await expect(body).toHaveValue('Intro\n\n## Consejos\n\nCarga **cada noche** y lee [los repuestos](https://raiden.com.pe/repuestos)\n\n- Frenos\n- Luces');
+    await expect(dialog.locator('[data-admin-md-notice]')).toContainText('Las imágenes no se pegan');
+    expect(await page.evaluate(() => (window as unknown as { __pwned?: number }).__pwned)).toBeUndefined();
+    // Ctrl+Z deshace el pegado entero
+    await body.press('ControlOrMeta+z');
+    await expect(body).toHaveValue('Intro');
+    // Texto sin formato (sin text/html): se pega tal cual, por el navegador
+    await body.evaluate((el: HTMLTextAreaElement) => {
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+      const dt = new DataTransfer();
+      dt.setData('text/plain', ' y más');
+      el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+    });
+    await expect(body).toHaveValue('Intro');
   });
 
   test('Ctrl+Z deshace lo que hizo un botón de la barra de formato (ADR-029)', async ({ page }) => {

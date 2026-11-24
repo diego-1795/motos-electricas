@@ -1,20 +1,27 @@
 ---
 /**
- * /admin — panel de administración del catálogo (ADR-018). HTML estático + isla Preact;
+ * /admin — panel de administración de la web: catálogo (ADR-018) y blog (ADR-023); nombre en ADR-030. HTML estático + isla Preact;
  * la autenticación (usuario + contraseña, cookie de sesión; ADR-024, ADR-025) la hacen las Pages Functions de /api/admin/*.
  */
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import Logo from '../../components/ui/Logo.astro';
 import AdminApp from '../../islands/admin/AdminApp';
+import { site } from '../../config/site';
+
+// "de la web" y no "de la tienda": el panel gestiona productos, repuestos y blog (ADR-030)
+const PANEL_NAME = 'Administración de la web';
 ---
 
-<AdminLayout title="Administración de la tienda · RAIDEN">
+<AdminLayout title={`${PANEL_NAME} · ${site.name.toUpperCase()}`}>
   <div class="adm">
     <header class="adm__header">
       <a href="/" class="adm__logo" aria-label="Ir a la web de la tienda">
         <Logo variant="wordmark" height={28} />
       </a>
-      <h1 class="adm__title">Administración de la tienda</h1>
+      <div class="adm__heading">
+        <h1 class="adm__title">{PANEL_NAME}</h1>
+        <p class="adm__subtitle">Productos, repuestos y blog</p>
+      </div>
       <a href="/admin/ayuda" class="adm__header-link" data-admin-help>Ayuda</a>
     </header>
     <AdminApp client:load />

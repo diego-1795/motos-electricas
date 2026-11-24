@@ -469,3 +469,23 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 
 **Consecuencias.** Un borrador es un commit y un build como cualquier guardado, pero la web no cambia. Un borrador ocupa su dirección: otro artículo nuevo con el mismo título recibe `-2`. La copia local vive solo en ese navegador; en un ordenador compartido, "Descartar" o guardar la elimina.
 
+## ADR-030 — Pegar desde Word / Google Docs en el editor del blog; el panel pasa a llamarse "Administración de la web"
+
+**Fecha:** 2026-11-24 · **Estado:** aceptada
+
+**Contexto.** Quien no sabe de código suele escribir en Word o Google Docs y pegar. Hasta ahora el `<textarea>` recibía solo el texto plano y se perdían los títulos, las listas, las negritas y los enlaces. Además, el panel se titulaba "Administración de la tienda", y desde ADR-023/026 también gestiona el blog: "tienda" suena a productos y pedidos y resultaba ambiguo.
+
+**Decisión.**
+- `src/domain/pasteHtml.ts` (puro): `htmlToMarkdown` recorre nodos con forma de DOM y devuelve el subconjunto del blog. Lo que convierte:
+  - `h1`/`h2` → `##`, `h3`–`h6` → `###`.
+  - Párrafos y `<br>` → párrafos.
+  - Listas `ul`/`ol` y las de Word (`mso-list`, ignorando la viñeta `mso-list:Ignore`).
+  - Negrita y cursiva por etiqueta o por estilo (`font-weight:700`, `font-style:italic`), reconociendo el envoltorio `<b style="font-weight:normal" id="docs-internal-guid…">` de Google Docs como no-negrita.
+  - Enlaces solo absolutos (`https`, `mailto`): un enlace relativo de otra web no existe aquí.
+  - Tablas → un párrafo por celda.
+  - `script`, `style`, `iframe`, `<o:p>` y comentarios se descartan. Las imágenes no se pegan y se avisa.
+- `MarkdownEditor` lo usa en `onPaste` cuando el portapapeles trae `text/html`. Si solo trae texto, pega el navegador como siempre. `DOMParser` crea un documento inerte: no ejecuta scripts ni carga imágenes, y de él solo sale texto. Lo pegado se inserta con el mismo mecanismo que los botones (ADR-029), así que Ctrl+Z lo deshace de una vez. Si se pegan varios bloques en mitad de una línea, se separan con una línea en blanco.
+- El panel se titula **"Administración de la web"**, con el subtítulo "Productos, repuestos y blog". Se descartó "Panel de la tienda", ambiguo por lo mismo, y "CMS", demasiado técnico. La marca del `<title>` sale de `site.name`.
+
+**Consecuencias.** El formato que no está en el subconjunto (colores, fuentes, tamaños) se pierde a propósito: la web tiene su propio estilo. Tests: `tests/unit/paste-html.test.ts` (Google Docs, Word, enlaces, imágenes, tablas, HTML peligroso) y un e2e que pega HTML real de Google Docs con un `<script>` que no llega a ejecutarse.
+

@@ -8,6 +8,8 @@ Una regla importante desde el principio: **las fotos no se suben desde el panel*
 
 ## 1. Entrar al panel
 
+El panel se llama **Administración de la web** (productos, repuestos y blog).
+
 1. Abre en el navegador `https://<dominio de la web>/admin` (guárdalo en favoritos: el enlace no aparece en la web pública).
 2. Escribe tu **usuario** (`admin` o `william`, en minúsculas) y tu **contraseña** y pulsa **Entrar**.
 3. **La primera vez** entrarás con la contraseña temporal que te dio Diego. El panel te pedirá elegir una nueva antes de seguir: escribe la temporal en "Contraseña actual", y tu contraseña nueva dos veces. Debe tener al menos 10 caracteres (una frase con espacios vale) y no puede ser tu usuario ni una secuencia tipo `1234567890`. Solo tú la conocerás.
@@ -154,6 +156,7 @@ La pestaña **Blog** muestra la lista de artículos con su título, categoría, 
      - **Título**: convierte la línea en un título de sección. En una línea vacía escribe un ejemplo que puedes sustituir.
      - **• Lista** y **1. Lista**: convierten las líneas seleccionadas en una lista con viñetas o numerada.
      - **Enlace** (Ctrl+K): selecciona el texto que se verá, pulsa el botón y escribe la dirección: una página de la tienda (`/repuestos`, `/bicimotos/golden-eagle`) o una web (`https://…`). Pulsa **Insertar enlace**.
+     - **Pegar desde Word o Google Docs**: puedes escribir el artículo en Word o Google Docs, copiarlo y pegarlo en el cuadro. Se conservan los títulos, las listas, las negritas, las cursivas y los enlaces a webs (`https://…`). Lo demás (colores, tipos de letra, tablas) se pega como texto normal, y las imágenes no se pegan: si el artículo necesita una foto, envíasela al administrador. Si el resultado no te gusta, Ctrl+Z lo deshace.
      - **Vista previa**: muestra el texto tal como se verá en la web, con negritas, títulos y listas. **Seguir escribiendo** vuelve al cuadro.
      - Deja una línea en blanco entre párrafos.
      - Debajo del cuadro se ve el número de palabras y los minutos de lectura (se calculan solos; no hay que escribirlos).

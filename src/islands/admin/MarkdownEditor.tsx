@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
+import { htmlToMarkdown } from '../../domain/pasteHtml';
 import { applyFormat, diffRange, insertLink, isSafeHref, normalizeHref, parseBlocks, type Block, type FormatKind, type Inline, type TextEdit } from '../../domain/markdownLite';
 
 interface Props {
@@ -52,6 +53,7 @@ export default function MarkdownEditor({ id, label, value, onChange, describedBy
   const ref = useRef<HTMLTextAreaElement>(null);
   const pendingSel = useRef<{ start: number; end: number } | null>(null);
   const [preview, setPreview] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [link, setLink] = useState<{ start: number; end: number; label: string; href: string; error: string } | null>(null);
 
   // Tras aplicar un formato, recolocar la selección y el foco en el cuadro
@@ -122,6 +124,31 @@ export default function MarkdownEditor({ id, label, value, onChange, describedBy
       if (k === 'k') openLink();
       else format(k === 'b' ? 'bold' : 'italic');
     }
+  };
+
+  /**
+   * Pegar desde Word, Google Docs o una web (ADR-030): si lo copiado trae formato (text/html), se
+   * convierte a títulos, listas, negrita, cursiva y enlaces del blog en vez de pegarse como texto plano.
+   * DOMParser crea un documento inerte (no ejecuta scripts ni carga imágenes) y de él solo sale texto.
+   */
+  const onPaste = (e: ClipboardEvent) => {
+    const html = e.clipboardData?.getData('text/html');
+    const ta = ref.current;
+    if (!html || !ta || typeof DOMParser === 'undefined') return;
+    const { text, hadImages } = htmlToMarkdown(new DOMParser().parseFromString(html, 'text/html').body);
+    setNotice(hadImages ? 'Las imágenes no se pegan: si el artículo necesita una foto, envíasela al administrador.' : null);
+    if (!text) return;
+    e.preventDefault();
+    const start = ta.selectionStart;
+    const before = value.slice(0, start);
+    const after = value.slice(ta.selectionEnd);
+    // Varios bloques pegados en mitad de una línea: se separan con una línea en blanco
+    const blocky = /\n|^(#{2,3} |- |\d+\. )/.test(text);
+    const pre = blocky && before && !before.endsWith('\n\n') ? (before.endsWith('\n') ? '\n' : '\n\n') : '';
+    const post = blocky && after && !after.startsWith('\n') ? '\n\n' : '';
+    const piece = pre + text + post;
+    const caret = start + pre.length + text.length;
+    commit({ text: before + piece + after, start: caret, end: caret });
   };
 
   // Enter en los campos del enlace inserta el enlace (y no envía el formulario del artículo)
@@ -209,11 +236,17 @@ export default function MarkdownEditor({ id, label, value, onChange, describedBy
         value={value}
         onInput={(e) => onChange((e.target as HTMLTextAreaElement).value)}
         onKeyDown={onKeyDown}
+        onPaste={onPaste}
         aria-describedby={describedBy}
         hidden={preview}
         spellcheck
         required
       />
+      {notice && !preview && (
+        <p class="hint adm-md__notice" role="status" data-admin-md-notice>
+          {notice}
+        </p>
+      )}
       {preview && (
         <div class="adm-md__preview" aria-label="Vista previa del texto" role="region" data-admin-md-render>
           {blocks.length ? blocks.map(renderBlock) : <p class="muted">Todavía no hay texto.</p>}
