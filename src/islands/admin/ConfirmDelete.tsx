@@ -22,7 +22,11 @@ interface Props {
 
 const singular: Record<AdminTab, string> = { products: kindLabel.products.singular, repuestos: kindLabel.repuestos.singular, blog: 'artículo' };
 
-/** Borrado (solo admin): escribir el slug para confirmar + motivo opcional. Sirve para catálogo (ADR-018) y blog (ADR-023). */
+/**
+ * Borrado. Catálogo (solo admin, ADR-018): escribir el slug para confirmar + motivo opcional.
+ * Blog (admin y editor, ADR-023/026/027): basta con confirmar en el diálogo; sin slug ni motivo
+ * (un artículo borrado se recupera del historial).
+ */
 export default function ConfirmDelete({ kind, entry, onClose, onDeleted }: Props) {
   const { api, applyDelete, handleError, reload } = useAdmin();
   const [typed, setTyped] = useState('');
@@ -30,7 +34,8 @@ export default function ConfirmDelete({ kind, entry, onClose, onDeleted }: Props
   const [error, setError] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const slug = entry.slug;
-  const match = typed.trim() === slug;
+  const isBlog = kind === 'blog';
+  const match = isBlog || typed.trim() === slug;
 
   const submit = async (e: Event) => {
     e.preventDefault();
@@ -74,16 +79,20 @@ export default function ConfirmDelete({ kind, entry, onClose, onDeleted }: Props
             referencia, el servidor rechazará el borrado.
           </p>
         )}
-        <label class="field">
-          <span class="label">
-            Escribe <code>{slug}</code> para confirmar{kind === 'blog' ? ' (es la dirección del artículo)' : ''}
-          </span>
-          <input class="input" value={typed} onInput={(e) => setTyped((e.target as HTMLInputElement).value)} autoComplete="off" spellcheck={false} />
-        </label>
-        <label class="field">
-          <span class="label">Motivo (opcional)</span>
-          <input class="input" maxLength={120} value={reason} onInput={(e) => setReason((e.target as HTMLInputElement).value)} />
-        </label>
+        {!isBlog && (
+          <>
+            <label class="field">
+              <span class="label">
+                Escribe <code>{slug}</code> para confirmar
+              </span>
+              <input class="input" value={typed} onInput={(e) => setTyped((e.target as HTMLInputElement).value)} autoComplete="off" spellcheck={false} />
+            </label>
+            <label class="field">
+              <span class="label">Motivo (opcional)</span>
+              <input class="input" maxLength={120} value={reason} onInput={(e) => setReason((e.target as HTMLInputElement).value)} />
+            </label>
+          </>
+        )}
         {error.length > 0 && (
           <div class="adm-errors" role="alert">
             <ul>
@@ -98,7 +107,7 @@ export default function ConfirmDelete({ kind, entry, onClose, onDeleted }: Props
             Cancelar
           </button>
           <button type="submit" class="btn btn--primary adm-btn-danger-solid" disabled={!match || busy}>
-            {busy ? 'Borrando…' : 'Borrar'}
+            {busy ? 'Borrando…' : isBlog ? 'Borrar artículo' : 'Borrar'}
           </button>
         </div>
       </form>

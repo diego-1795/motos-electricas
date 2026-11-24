@@ -126,7 +126,7 @@ Estados posibles: Propuesta, Aceptada, Provisional, Sustituida por ADR-nnn, Reve
 
 **Consecuencias.** Cero backend; el usuario envía el mensaje desde su propio WhatsApp (consentimiento implícito y sin tratamiento de datos por nuestra parte). Sin registro automático de pedidos hasta la ruta d de migración.
 
-**Estado.** Aceptada.
+**Estado.** Aceptada; el formato del enlace (`api.whatsapp.com/send` en vez de `wa.me`) lo cambia ADR-028.
 
 ## ADR-008 — Sin pagos online
 
@@ -418,4 +418,31 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 - En modo local (solo desarrollo) Accesos sigue visible al simular el editor, porque ahí está el selector para volver.
 
 **Consecuencias.** Un artículo escrito por William es un commit `chore(blog): … por william`. El riesgo de que el editor escriba Markdown malicioso se cubre igual que con el admin: `blogRules` rechaza HTML crudo y enlaces `javascript:`/`data:` en el servidor, y la CSP sigue activa. La guía (`docs/24`, `/admin/ayuda`) explica el flujo de fotos para el editor: se envían al administrador con el título del artículo.
+
+## ADR-027 — Editor del texto del blog con barra de formato y vista previa; sin dirección ni motivo para el editor
+
+**Fecha:** 2026-11-24 · **Estado:** aceptada
+
+**Contexto.** William escribe ya en el blog (ADR-026), pero el cuerpo del artículo era un cuadro de Markdown con una chuleta de símbolos (`## `, `**`, `[texto](/ruta)`): poco amigable para quien no sabe de código. Además veía el campo "Dirección del artículo" (el slug) y "Motivo (opcional)", que no le sirven.
+
+**Decisión.**
+- `src/domain/markdownLite.ts` (puro): `applyFormat` (Título, Negrita, Cursiva, Lista, Lista numerada; cada botón funciona como interruptor), `insertLink` con `isSafeHref`/`normalizeHref` (solo https, rutas del sitio, `mailto:` y `#`), y `parseBlocks`/`parseInline` para la vista previa.
+- `MarkdownEditor.tsx`: barra de botones encima del `<textarea>`, con atajos Ctrl/Cmd+B, +I y +K, y un mini formulario para el enlace. El botón "Vista previa" pinta el texto con elementos de Preact, nunca con innerHTML, y un enlace no permitido se queda como texto. El repositorio sigue guardando Markdown: el formato no cambia para el build ni para quien edita por git.
+- Se descartó un editor WYSIWYG (contenteditable o una librería): añade dependencia o mucho código frágil, y el HTML que genera habría que sanear. La barra con vista previa cubre el subconjunto que usa el blog.
+- La dirección (slug) solo la ve el admin. Para el editor sale del título con `uniqueSlug` (`-2`, `-3`… si ya existe), y sus errores se explican por el título.
+- Sin "Motivo" en el editor de artículos ni al borrar un artículo. El commit ya dice qué artículo y quién (`chore(blog): actualizar <slug> por william`), y el servidor sigue aceptando `reason` por compatibilidad. Borrar un artículo ya no exige escribir su dirección: basta con confirmar en el diálogo, porque se recupera del historial de git. El borrado del catálogo (solo admin) mantiene el slug escrito y el motivo, y el motivo de los cambios de precio sigue siendo opcional.
+
+**Consecuencias.** La vista previa es una aproximación fiel al subconjunto del blog; casos raros (marcas `***` ambiguas, HTML) pueden verse distintos en la web, donde manda el Markdown de Astro y `blogRules` sigue rechazando HTML crudo. Tests: `tests/unit/markdown-lite.test.ts` y un e2e del editor que usa la barra, el enlace y la vista previa.
+
+## ADR-028 — Enlaces de WhatsApp con `api.whatsapp.com/send` en vez de `wa.me`
+
+**Fecha:** 2026-11-24 · **Estado:** aceptada
+
+**Contexto.** El mensaje del carrito, del contacto y de las fichas lleva emojis (👋 🏍️ 🔋 💰 📝). Diego vio que en WhatsApp llegaban como "�". Con `curl -D -` se comprobó que `https://wa.me/<n>?text=…` responde con una redirección a `api.whatsapp.com/send/?phone=…&text=…` en la que cada emoji fuera del plano básico de Unicode se ha cambiado por `%EF%BF%BD` (U+FFFD, "�"). El fallo está en el servidor de WhatsApp, no en nuestro `encodeURIComponent`. `https://api.whatsapp.com/send?phone=…&text=…` responde 200 y conserva los emojis.
+
+**Decisión.** `WhatsAppMessageBuilder.buildUrl` genera `https://api.whatsapp.com/send?phone=<dígitos>&text=<encodeURIComponent(mensaje)>` (`WHATSAPP_SEND_URL`). Sigue siendo el único punto que construye el enlace, y el número sigue saliendo de `src/config/site.ts`. El mensaje y sus emojis no cambian.
+
+**Alternativas consideradas.** *Quitar los emojis:* evita el síntoma, pero empobrece el mensaje que ventas quiere recibir. *Mantener `wa.me`:* es el dominio corto oficial, pero hoy rompe el texto.
+
+**Consecuencias.** Abre la app, WhatsApp Desktop o WhatsApp Web igual que antes. ADR-007 sigue vigente; solo cambia el formato del enlace. Un test unitario impide volver a `wa.me` y comprueba que 🏍️ viaja intacto. Los e2e usan el nuevo prefijo (`tests/e2e/helpers.ts`). La CSP no cambia: los enlaces son `<a href>`, no formularios.
 

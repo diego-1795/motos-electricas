@@ -108,13 +108,21 @@ describe('sanitizeNotes', () => {
 describe('buildUrl', () => {
   it('elimina no dígitos del teléfono y codifica el mensaje', () => {
     const url = buildUrl('+51 900-000.000', 'Hola 👋 ¿qué tal?');
-    expect(url.startsWith('https://wa.me/51900000000?text=Hola%20%F0%9F%91%8B')).toBe(true);
+    expect(url.startsWith('https://api.whatsapp.com/send?phone=51900000000&text=Hola%20%F0%9F%91%8B')).toBe(true);
     expect(url).not.toContain(' ');
     expect(decodeURIComponent(url.split('text=')[1]!)).toBe('Hola 👋 ¿qué tal?');
   });
   it('codifica saltos de línea y & correctamente', () => {
     const url = buildUrl('51900000000', 'a\nb&c');
-    expect(url.endsWith('?text=a%0Ab%26c')).toBe(true);
+    expect(url.endsWith('&text=a%0Ab%26c')).toBe(true);
+  });
+  it('no usa wa.me: su redirección cambia los emojis por "�" (ADR-028); los emojis viajan en UTF-8 intactos', () => {
+    const msg = 'Hola 👋\n🏍️ Golden Eagle\n💰 Total estimado: S/ 1,500';
+    const url = buildUrl('51900000000', msg);
+    expect(url).not.toContain('wa.me');
+    expect(url).not.toContain('%EF%BF%BD');
+    expect(url).toContain('%F0%9F%8F%8D%EF%B8%8F'); // 🏍️ con su selector de variación
+    expect(decodeURIComponent(url.split('text=')[1]!)).toBe(msg);
   });
 });
 
@@ -192,10 +200,10 @@ describe('buildContactMessage', () => {
     expect(CONTACT_SUBJECTS).toEqual(['Compra', 'Servicio técnico', 'Repuestos', 'Otro']);
   });
 
-  it('genera un enlace wa.me válido con el mensaje codificado y decodificable', () => {
+  it('genera un enlace de WhatsApp válido con el mensaje codificado y decodificable', () => {
     const msg = buildContactMessage(form({ message: 'Hola & adiós, ¿precio?' }));
     const url = buildUrl('51900000000', msg);
-    expect(url.startsWith('https://wa.me/51900000000?text=')).toBe(true);
+    expect(url.startsWith('https://api.whatsapp.com/send?phone=51900000000&text=')).toBe(true);
     expect(url).not.toContain(' ');
     expect(url).not.toContain('\n');
     expect(url).toContain('Ana%20Prueba');

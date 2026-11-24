@@ -4,7 +4,8 @@ export const CART_KEY = 'raiden:cart:v1';
 export const COMPARE_KEY = 'raiden:compare:v1';
 /** Número de WhatsApp del build bajo prueba (playwright.config.ts → PUBLIC_WHATSAPP_NUMBER). */
 export const WA_NUMBER = process.env.PUBLIC_WHATSAPP_NUMBER ?? '51989853431';
-export const WA_PREFIX = `https://wa.me/${WA_NUMBER}?text=`;
+/** Enlace directo a api.whatsapp.com (ADR-028: wa.me estropea los emojis al redirigir) */
+export const WA_PREFIX = `https://api.whatsapp.com/send?phone=${WA_NUMBER}&text=`;
 
 /** Rutas del catálogo real (ADR-015) */
 export const GE = '/bicimotos/golden-eagle';
@@ -41,7 +42,7 @@ export async function hydrated(el: Locator): Promise<void> {
 
 /**
  * Sustituye window.open por un registro en `window.__opened` para capturar el enlace
- * wa.me que abre el formulario de contacto sin crear pestañas reales.
+ * de WhatsApp que abre el formulario de contacto sin crear pestañas reales.
  */
 export async function stubWindowOpen(page: Page): Promise<void> {
   await page.addInitScript(() => {

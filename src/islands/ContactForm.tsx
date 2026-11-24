@@ -5,7 +5,7 @@ import { track } from '../services/analytics/AnalyticsService';
 
 /**
  * Formulario de /contacto SIN backend: valida en cliente, compone el mensaje con
- * WhatsAppMessageBuilder y abre wa.me en una pestaña nueva (o mailto como alternativa).
+ * WhatsAppMessageBuilder y abre WhatsApp (api.whatsapp.com, ADR-028) en una pestaña nueva (o mailto como alternativa).
  * No almacena ni envía datos a ningún servidor propio.
  */
 interface Errors {

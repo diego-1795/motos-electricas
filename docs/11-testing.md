@@ -49,9 +49,9 @@ describe('WhatsAppMessageBuilder', () => {
     expect(msg).not.toContain('Notas:');
   });
 
-  it('genera una URL wa.me codificada y limitada', () => {
+  it('genera una URL de WhatsApp codificada y limitada', () => {
     const url = buildWhatsAppUrl(cartGoldenEaglePremiumWithBattery, 'a'.repeat(5000));
-    expect(url.startsWith('https://wa.me/51989853431?text=')).toBe(true);
+    expect(url.startsWith('https://api.whatsapp.com/send?phone=51989853431&text=')).toBe(true);
     expect(url).not.toContain(' ');
     expect(decodeURIComponent(url.split('text=')[1]).length).toBeLessThanOrEqual(1800);
   });

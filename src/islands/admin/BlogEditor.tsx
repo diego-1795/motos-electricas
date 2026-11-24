@@ -1,18 +1,21 @@
 import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import type { BlogEntry, BlogFrontmatter, BlogWriteResult } from '../../domain/admin';
 import type { BlogPost, ImageRef } from '../../domain/types';
-import { blogRules, slugify } from '../../domain/blogRules';
+import { blogRules, slugify, uniqueSlug } from '../../domain/blogRules';
 import { isValidSlug } from '../../domain/catalogRules';
 import { readingMinutes } from '../../domain/reading';
 import { blogCategoryLabel } from '../../lib/labels';
 import { AdminApiError } from '../../services/admin/AdminApiClient';
 import { STALE_EDITOR_MESSAGE, useAdmin } from './context';
 import ImageFields from './ImageFields';
+import MarkdownEditor from './MarkdownEditor';
 import Modal from './Modal';
 
 interface Props {
   /** Edición: artículo cargado del repositorio (PUT con sha). Sin él: artículo nuevo (PUT sin sha). */
   entry?: BlogEntry;
+  /** Direcciones ya usadas por otros artículos: la de uno nuevo se elige libre a partir del título */
+  takenSlugs?: string[];
   onClose: () => void;
   onSaved: (result: BlogWriteResult) => void;
 }
@@ -78,17 +81,19 @@ function fromForm(f: Form, entry: BlogEntry | undefined): { frontmatter: BlogFro
 }
 
 /**
- * Editor de un artículo del blog (solo admin, ADR-023): frontmatter como campos, foto por ruta
- * (`~/assets/blog/<nombre>.webp`, subida antes por git) y cuerpo Markdown. Las mismas reglas que el
- * servidor (blogRules) se comprueban antes de enviar.
+ * Editor de un artículo del blog (ADR-023, ADR-026, ADR-027): frontmatter como campos, foto por ruta
+ * (`~/assets/blog/<nombre>.webp`, subida antes por git; solo el admin) y cuerpo con barra de formato y
+ * vista previa. La dirección (slug) solo la ve el admin; para el editor sale sola del título. Las
+ * mismas reglas que el servidor (blogRules) se comprueban antes de enviar.
  */
-export default function BlogEditor({ entry, onClose, onSaved }: Props) {
+export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }: Props) {
   const { api, catalog, handleError, user } = useAdmin();
   /** ADR-026: el editor escribe artículos, pero las fotos las pone el administrador */
   const canEditImage = user.role === 'admin';
+  /** ADR-027: la dirección del artículo (slug) es un detalle técnico; el editor no la ve */
+  const showSlug = user.role === 'admin';
   const creating = !entry;
   const [form, setForm] = useState<Form>(() => toForm(entry));
-  const [reason, setReason] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [stale, setStale] = useState(false);
@@ -100,7 +105,7 @@ export default function BlogEditor({ entry, onClose, onSaved }: Props) {
   }, [errors]);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
-  const setTitle = (title: string) => setForm((f) => ({ ...f, title, slug: f.slugTouched ? f.slug : slugify(title) }));
+  const setTitle = (title: string) => setForm((f) => ({ ...f, title, slug: f.slugTouched ? f.slug : uniqueSlug(slugify(title), takenSlugs) }));
   const toggleRelated = (slug: string, on: boolean) =>
     setForm((f) => ({ ...f, relatedProducts: on ? [...f.relatedProducts.filter((s) => s !== slug), slug] : f.relatedProducts.filter((s) => s !== slug) }));
 
@@ -113,15 +118,21 @@ export default function BlogEditor({ entry, onClose, onSaved }: Props) {
     const slug = form.slug.trim();
     const local: string[] = [];
     if (creating && !isValidSlug(slug)) local.push('La dirección solo puede llevar minúsculas sin tildes, números y guiones (p. ej. como-elegir-una-bicimoto)');
+    if (creating && showSlug && takenSlugs.includes(slug)) local.push(`Ya hay un artículo con la dirección /blog/${slug}: elige otra`);
     const built = fromForm(form, entry);
     local.push(...blogRules(slug, built.frontmatter, built.body, { productSlugs: catalog.products.map((p) => p.data.slug) }));
+    // Sin campo de dirección a la vista, sus errores se explican por el título
+    if (!showSlug) {
+      const rest = local.filter((m) => !m.startsWith('La dirección'));
+      if (rest.length !== local.length && built.frontmatter.title) rest.unshift('El título necesita al menos una letra o un número');
+      local.splice(0, local.length, ...rest);
+    }
     if (local.length) return setErrors(local);
     setSaving(true);
     setErrors([]);
     try {
       const result = await api.blogPut(slug, {
         ...(entry ? { sha: entry.sha } : {}),
-        ...(reason.trim() ? { reason: reason.trim() } : {}),
         frontmatter: built.frontmatter,
         body: built.body,
       });
@@ -148,22 +159,24 @@ export default function BlogEditor({ entry, onClose, onSaved }: Props) {
             <span class="label">Título</span>
             <input class="input" value={form.title} onInput={(e) => setTitle((e.target as HTMLInputElement).value)} required />
           </label>
-          <label class="field adm-form__full">
-            <span class="label">Dirección del artículo</span>
-            <input
-              class="input"
-              value={form.slug}
-              readOnly={!creating}
-              onInput={(e) => setForm((f) => ({ ...f, slug: (e.target as HTMLInputElement).value, slugTouched: true }))}
-              aria-describedby={`${uid}-slug`}
-              autoComplete="off"
-              spellcheck={false}
-            />
-            <span id={`${uid}-slug`} class="hint">
-              /blog/{form.slug || '…'}
-              {creating ? ' · se propone a partir del título; minúsculas, números y guiones. Después no se puede cambiar.' : ''}
-            </span>
-          </label>
+          {showSlug && (
+            <label class="field adm-form__full">
+              <span class="label">Dirección del artículo</span>
+              <input
+                class="input"
+                value={form.slug}
+                readOnly={!creating}
+                onInput={(e) => setForm((f) => ({ ...f, slug: (e.target as HTMLInputElement).value, slugTouched: true }))}
+                aria-describedby={`${uid}-slug`}
+                autoComplete="off"
+                spellcheck={false}
+              />
+              <span id={`${uid}-slug`} class="hint">
+                /blog/{form.slug || '…'}
+                {creating ? ' · se propone a partir del título; minúsculas, números y guiones. Después no se puede cambiar.' : ''}
+              </span>
+            </label>
+          )}
           <label class="field adm-form__full">
             <span class="label">Descripción (resumen para Google y la lista del blog)</span>
             <textarea class="textarea adm-textarea--short" value={form.description} onInput={(e) => set('description', (e.target as HTMLTextAreaElement).value)} required />
@@ -233,22 +246,16 @@ export default function BlogEditor({ entry, onClose, onSaved }: Props) {
           )}
         </fieldset>
 
-        <label class="field">
-          <span class="label">Texto del artículo</span>
+        <div class="field">
+          <MarkdownEditor id={`${uid}-body`} label="Texto del artículo" value={form.body} onChange={(body) => set('body', body)} describedBy={`${uid}-md`} />
           <span class="hint" id={`${uid}-md`}>
-            Formato: <code>## Título de sección</code> · <code>**negrita**</code> · <code>*cursiva*</code> · listas con <code>- </code> o <code>1. </code> · enlaces <code>[texto](/repuestos)</code> · línea en blanco entre párrafos.
-            Precios en soles (S/), nunca € ni IVA.
+            Selecciona una parte del texto y pulsa un botón para darle formato; "Vista previa" enseña cómo quedará. Deja una línea en blanco entre párrafos. Precios en soles (S/).
           </span>
-          <textarea class="textarea adm-body" value={form.body} onInput={(e) => set('body', (e.target as HTMLTextAreaElement).value)} aria-describedby={`${uid}-md`} spellcheck required />
           <span class="hint">
             {words} palabras · {minutes} min de lectura (se calcula solo)
           </span>
-        </label>
+        </div>
 
-        <label class="field">
-          <span class="label">Motivo (opcional)</span>
-          <input class="input" maxLength={120} value={reason} onInput={(e) => setReason((e.target as HTMLInputElement).value)} placeholder="Queda en el historial de cambios" />
-        </label>
 
         {errors.length > 0 && (
           <div class="adm-errors" role="alert" tabIndex={-1} ref={errorsRef}>

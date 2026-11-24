@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { WA_PREFIX, hydrated, openedUrls, stubWindowOpen } from './helpers';
+import { WA_NUMBER, WA_PREFIX, hydrated, openedUrls, stubWindowOpen } from './helpers';
 
 const NAME = 'Diego Prueba';
 const PHONE = '+51 900 000 000';
@@ -13,7 +13,7 @@ test.describe('Formulario de contacto → WhatsApp', () => {
     await hydrated(page.locator('[data-contact-form]'));
   });
 
-  test('rellenar nombre, teléfono, asunto y mensaje abre wa.me con el texto codificado', async ({ page }) => {
+  test('rellenar nombre, teléfono, asunto y mensaje abre WhatsApp con el texto codificado', async ({ page }) => {
     await page.locator('#cf-name').fill(NAME);
     await page.locator('#cf-phone').fill(PHONE);
     await page.locator('select[name="asunto"]').selectOption('Repuestos');
@@ -79,6 +79,6 @@ test.describe('Formulario de contacto → WhatsApp', () => {
     const wa = page.locator('[data-wa-source="contact"]');
     await expect(wa).toHaveCount(1);
     expect((await wa.getAttribute('href'))!.startsWith(WA_PREFIX)).toBe(true);
-    await expect(page.locator('.contact__big a')).toHaveAttribute('href', `tel:+${WA_PREFIX.match(/wa\.me\/(\d+)/)![1]}`);
+    await expect(page.locator('.contact__big a')).toHaveAttribute('href', `tel:+${WA_NUMBER}`);
   });
 });

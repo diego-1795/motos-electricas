@@ -132,6 +132,7 @@ export default function BlogPanel() {
       {(dialog?.type === 'create' || dialog?.type === 'edit') && (
         <BlogEditor
           entry={dialog.type === 'edit' ? dialog.entry : undefined}
+          takenSlugs={phase.posts.map((p) => p.slug)}
           onClose={() => setDialog(null)}
           onSaved={(result) => {
             announce(result.commit, `Guardado: ${result.frontmatter.title}. Publicando los cambios…`);

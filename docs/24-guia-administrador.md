@@ -145,17 +145,19 @@ La pestaña **Blog** muestra la lista de artículos con su título, categoría, 
 1. Pulsa **Editar** en la fila del artículo. Se abre "Editar artículo: <título>".
 2. Campos:
    - **Título** y **Descripción** (el resumen que sale en Google y en la lista del blog).
-   - **Dirección del artículo**: la parte final de su dirección web (`/blog/…`); no se puede cambiar en un artículo existente.
+   - **Dirección del artículo** (solo la ve el administrador): la parte final de su dirección web (`/blog/…`); no se puede cambiar en un artículo existente. El editor no la ve: sale sola del título.
    - **Categoría**, **Autor**, **Fecha de publicación** y **Fecha de actualización (opcional)**: si retocas un artículo antiguo, pon la fecha de hoy en "actualización".
    - **Modelos relacionados**: marca los productos que se mostrarán al final del artículo.
    - **Foto del artículo (opcional)**: ver 9.2.
-   - **Texto del artículo**: el cuerpo. Es texto normal con unas marcas sencillas:
-     - Título de sección: una línea que empiece por `## ` (por ejemplo `## Cuándo cargar la batería`).
-     - **Negrita**: `**texto**`. *Cursiva*: `*texto*`.
-     - Lista con viñetas: líneas que empiecen por `- `. Lista numerada: `1. `, `2. `…
-     - Enlace: `[texto que se ve](/repuestos)` o `[texto](https://…)`.
+   - **Texto del artículo**: el cuerpo. Encima del cuadro hay una barra de botones para darle formato sin escribir símbolos:
+     - Selecciona una parte del texto y pulsa **Negrita** o **Cursiva** (o Ctrl+B / Ctrl+I; en Mac, Cmd). Pulsar otra vez quita el formato.
+     - **Título**: convierte la línea en un título de sección. En una línea vacía escribe un ejemplo que puedes sustituir.
+     - **• Lista** y **1. Lista**: convierten las líneas seleccionadas en una lista con viñetas o numerada.
+     - **Enlace** (Ctrl+K): selecciona el texto que se verá, pulsa el botón y escribe la dirección: una página de la tienda (`/repuestos`, `/bicimotos/golden-eagle`) o una web (`https://…`). Pulsa **Insertar enlace**.
+     - **Vista previa**: muestra el texto tal como se verá en la web, con negritas, títulos y listas. **Seguir escribiendo** vuelve al cuadro.
      - Deja una línea en blanco entre párrafos.
      - Debajo del cuadro se ve el número de palabras y los minutos de lectura (se calculan solos; no hay que escribirlos).
+     - Por dentro el texto se guarda con unas marcas sencillas (`**negrita**`, `## Título`…). No hace falta conocerlas, pero si las ves en el cuadro es normal: los botones las ponen por ti.
 3. Pulsa **Guardar**. Aparece el aviso de publicación; en unos 3 minutos el artículo actualizado está en la web.
 
 Reglas que el panel comprueba antes de guardar: título, descripción y autor no pueden estar vacíos; la fecha debe ser válida; el texto no puede estar vacío; y el blog no debe mencionar euros (€, EUR), "carnet" ni "IVA" (en el Perú: S/, licencia, IGV).
@@ -175,13 +177,13 @@ Como en los productos, la foto **no se sube desde el panel** (sección 6): se la
 ### 9.3 Crear un artículo nuevo
 
 1. Pulsa **Nuevo artículo**.
-2. Escribe el **Título**: la **Dirección del artículo** se propone sola (por ejemplo "¿Cómo elegir una bicimoto eléctrica?" → `como-elegir-una-bicimoto-electrica`). Puedes cambiarlo antes de guardar; después ya no.
+2. Escribe el **Título**: la dirección del artículo sale sola (por ejemplo "¿Cómo elegir una bicimoto eléctrica?" → `como-elegir-una-bicimoto-electrica`; si ya existe, se le añade `-2`). El administrador puede cambiarla antes de guardar; después ya no.
 3. Rellena descripción, categoría, fechas, modelos relacionados, la foto (opcional) y el texto.
 4. Pulsa **Publicar artículo**. En unos minutos estará en `https://raiden.com.pe/blog/<dirección>` y en la lista del blog.
 
 ### 9.4 Borrar un artículo
 
-**Borrar** → escribe la dirección del artículo para confirmar → **Borrar**. El artículo desaparece de la web en la siguiente publicación. El historial de cambios permite recuperarlo si fue un error (pídeselo a Diego).
+**Borrar** → **Borrar artículo** para confirmar. El artículo desaparece de la web en la siguiente publicación. El historial de cambios permite recuperarlo si fue un error (pídeselo a Diego).
 
 ## 10. Qué pasa cuando guardas
 

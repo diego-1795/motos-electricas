@@ -49,7 +49,7 @@ export interface CartService {
 // src/services/whatsapp-message-builder.ts
 export interface WhatsAppMessageBuilder {
   build(req: OrderRequest): string;            // texto plano, sin codificar
-  buildUrl(req: OrderRequest): string;          // https://wa.me/<num>?text=<encodeURIComponent(texto)>
+  buildUrl(req: OrderRequest): string;          // https://api.whatsapp.com/send?phone=<num>&text=<encodeURIComponent(texto)>
 }
 
 // src/services/recommendation.service.ts

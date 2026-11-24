@@ -62,7 +62,7 @@ Validadores manuales en `src/domain/validation.ts`, funciones puras con tests en
 
 Los precios nunca se leen del estado persistido: el total se recalcula con `pricing.ts` a partir del catálogo en cada render.
 
-## 5. Construcción segura del enlace wa.me
+## 5. Construcción segura del enlace de WhatsApp
 
 ```ts
 // src/services/WhatsAppMessageBuilder.ts (extracto)
@@ -70,7 +70,8 @@ const MAX_MESSAGE = 1800; // margen bajo el límite práctico de ~2000 car. en U
 export function buildWhatsAppUrl(cart: Cart, notes: string): string {
   const phone = SITE.whatsappNumber; // validado en site.ts, nunca del usuario
   const text = truncate(buildMessage(cart, sanitizeNotes(notes)), MAX_MESSAGE);
-  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  // api.whatsapp.com y no wa.me: la redirección de wa.me cambia los emojis por "�" (ADR-028)
+  return `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
 }
 export function sanitizeNotes(raw: string): string {
   return raw.replace(/[\x00-\x1F\x7F]/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);

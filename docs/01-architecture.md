@@ -118,7 +118,7 @@ src/
 1. La página se pinta sin JS. Las islas se hidratan según su directiva.
 2. `cartStore` (`@nanostores/persistent`, clave `raiden:cart:v1`) se rehidrata desde `localStorage`.
 3. `AddToCart` → `CartService.add()` → store → `CartDrawer` se actualiza y `AnalyticsService.track('add_to_cart')`.
-4. `CartPage` → `WhatsAppMessageBuilder.build(orderRequest)` → `whatsappUrl()` → `wa.me` con `encodeURIComponent`.
+4. `CartPage` → `WhatsAppMessageBuilder.build(orderRequest)` → `whatsappUrl()` → `api.whatsapp.com/send` con `encodeURIComponent` (ADR-028).
 5. El comparador usa `compareStore` (sesión, no persistente) con los productos pasados por props o leídos de un JSON estático por categoría generado en build (`/data/compare/<category>.json`).
 
 ## 6. Islas y criterios de hidratación
@@ -178,7 +178,7 @@ export const productRepository: ProductRepository = new JsonProductRepository();
 | Variable | Obligatoria | Ejemplo | Uso |
 |---|---|---|---|
 | `PUBLIC_SITE_URL` | Sí en producción | `https://raiden.com.pe` | `site` en `astro.config.mjs`, canónicas, sitemap |
-| `PUBLIC_WHATSAPP_NUMBER` | Sí | `51989853431` (sin `+`) | Enlace `wa.me` |
+| `PUBLIC_WHATSAPP_NUMBER` | Sí | `51989853431` (sin `+`) | Enlace de WhatsApp |
 | `PUBLIC_ANALYTICS` | No | vacío (noop) \| `console` \| `datalayer` | Selección del adaptador (Cloudflare Web Analytics va aparte, con `PUBLIC_CF_BEACON_TOKEN`) |
 | `PUBLIC_CF_ANALYTICS_TOKEN` | No | token del beacon | Solo si adapter = `cloudflare` |
 | `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` | No (futuro) | — | `SupabaseProductRepository` |

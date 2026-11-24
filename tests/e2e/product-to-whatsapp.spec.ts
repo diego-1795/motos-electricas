@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { GE, WA_PREFIX, decodeWaHref, hydrated, parsePrice } from './helpers';
 
 test.describe('Ficha de producto → carrito → WhatsApp', () => {
-  test('Golden Eagle: Premium S/ 1,500, color cambia la imagen, 2 unidades, drawer, /carrito y wa.me', async ({ page }) => {
+  test('Golden Eagle: Premium S/ 1,500, color cambia la imagen, 2 unidades, drawer, /carrito y WhatsApp', async ({ page }) => {
     await page.goto(GE);
     await expect(page.locator('h1')).toHaveText('Golden Eagle');
 
@@ -83,7 +83,9 @@ test.describe('Ficha de producto → carrito → WhatsApp', () => {
     // Enlace WhatsApp
     const link = cartPage.locator('[data-cart-request]');
     const href = await link.getAttribute('href');
-    expect(href).toMatch(/^https:\/\/wa\.me\/\d+\?text=/);
+    // api.whatsapp.com y no wa.me: la redirección de wa.me cambia los emojis por "�" (ADR-028)
+    expect(href).toMatch(/^https:\/\/api\.whatsapp\.com\/send\?phone=\d+&text=/);
+    expect(href).not.toContain('%EF%BF%BD');
     expect(href!.startsWith(WA_PREFIX)).toBe(true);
     expect(href).not.toContain(' ');
     const decoded = decodeWaHref(href!);

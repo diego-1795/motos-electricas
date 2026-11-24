@@ -19,12 +19,12 @@ Decisión: `wa.me` hasta que el volumen (> 150 solicitudes/mes) o la necesidad d
 ## 2. Anatomía del enlace
 
 ```
-https://wa.me/<número E.164 sin +>?text=<encodeURIComponent(mensaje)>
+https://api.whatsapp.com/send?phone=<número E.164 sin +>&text=<encodeURIComponent(mensaje)>
 ```
 
 - Número: solo dígitos, con prefijo de país y sin `+`, espacios ni guiones. Perú: `51` + 9 dígitos (móviles empiezan por 9). Ejemplo: `51989853431` (+51 989 853 431, EG Motors SAC).
 - `text`: mensaje completo codificado con `encodeURIComponent`. Los saltos de línea se codifican como `%0A`; los emojis quedan como secuencias UTF-8 percent-encoded.
-- Se usa `wa.me` y no `api.whatsapp.com/send`: es el dominio oficial corto y redirige correctamente a app, escritorio o web según el dispositivo.
+- Se usa `api.whatsapp.com/send` y **no** `wa.me` (ADR-028). `wa.me` es el dominio corto, pero redirige a `api.whatsapp.com/send/` y en esa redirección vuelve a codificar el texto: cada emoji fuera del plano básico (👋 🏍️ 💰 📝) se convierte en `%EF%BF%BD` ("�"). Comprobado con `curl -D -` el 2026-11-24. `api.whatsapp.com/send` responde 200, conserva los emojis y abre la app, WhatsApp Desktop o WhatsApp Web igual que `wa.me`.
 - Longitud: los navegadores aceptan URLs de más de 8.000 caracteres, pero WhatsApp recorta textos pre-rellenados largos en algunas versiones. Se limita el mensaje a **1.500 caracteres** antes de codificar.
 
 ## 3. `WhatsAppMessageBuilder` (`src/services/whatsapp/`)
@@ -43,7 +43,7 @@ export interface WhatsAppMessageInput {
 
 export interface WhatsAppMessageResult {
   text: string;               // mensaje en claro
-  url: string;                // https://wa.me/<n>?text=...
+  url: string;                // https://api.whatsapp.com/send?phone=<n>&text=...
   truncated: boolean;
   length: number;             // caracteres del texto en claro
 }
@@ -122,21 +122,21 @@ Si el texto supera 1.500 caracteres: se recortan primero las notas, después se 
 
 ## 5. Móvil frente a escritorio
 
-| Dispositivo | Comportamiento del enlace `wa.me` |
+| Dispositivo | Comportamiento del enlace `api.whatsapp.com/send` |
 |---|---|
 | Android con app | Abre WhatsApp con el chat del número y el texto pre-rellenado |
-| iOS con app | Igual; si la app no está instalada, Safari muestra la página de `wa.me` con enlace a App Store |
-| Escritorio con WhatsApp Desktop | `wa.me` ofrece "Abrir WhatsApp" o "Usar WhatsApp Web" |
+| iOS con app | Igual; si la app no está instalada, Safari muestra la página de WhatsApp con enlace a App Store |
+| Escritorio con WhatsApp Desktop | La página ofrece "Abrir WhatsApp" o "Usar WhatsApp Web" |
 | Escritorio sin app | Redirige a WhatsApp Web; requiere sesión vinculada con el móvil |
 
-No se detecta el user agent ni se construyen enlaces distintos: `wa.me` resuelve el destino. Se mantiene `target="_blank"` en todos los casos para no perder el estado del carrito.
+No se detecta el user agent ni se construyen enlaces distintos: WhatsApp resuelve el destino. Se mantiene `target="_blank"` en todos los casos para no perder el estado del carrito.
 
 ## 6. `PUBLIC_WHATSAPP_NUMBER`
 
 - Única fuente: `src/config/site.ts`, que lee `import.meta.env.PUBLIC_WHATSAPP_NUMBER` y la valida en build (`/^\d{8,15}$/`). Ningún componente accede a la variable directamente.
 - Valor en producción: número real de ventas. En preview y local: número de pruebas del equipo ([14-devops](./14-devops.md)).
 - Cambio de número: runbook en [14-devops](./14-devops.md); no requiere tocar código.
-- El número se muestra también en `/contacto` y en el footer como enlace `wa.me` sin texto, con el mismo origen.
+- El número se muestra también en `/contacto` y en el footer como enlace de WhatsApp sin texto, con el mismo origen.
 
 ### Fallback sin número configurado
 

@@ -42,6 +42,16 @@ export function slugify(text: string): string {
     .replace(/-+$/, '');
 }
 
+/** "precios" ocupado → "precios-2" (o -3…): el editor no elige la dirección, así que nunca choca (ADR-027). */
+export function uniqueSlug(base: string, taken: readonly string[]): string {
+  if (!base || !taken.includes(base)) return base;
+  for (let n = 2; ; n += 1) {
+    const suffix = `-${n}`;
+    const candidate = `${base.slice(0, 80 - suffix.length).replace(/-+$/, '')}${suffix}`;
+    if (!taken.includes(candidate)) return candidate;
+  }
+}
+
 const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})?)?$/.test(s) && !Number.isNaN(Date.parse(s));
 
 const REQUIRED = { title: 'El título es obligatorio', description: 'La descripción es obligatoria', author: 'El autor es obligatorio' } as const;

@@ -72,7 +72,7 @@ Dominio: `raiden.com.pe` (comprado el 2026-11-22 en un registrador peruano). Pas
 | 1 | Cabeceras de seguridad | `curl -I https://raiden.com.pe` | CSP, HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` presentes |
 | 2 | Sitemap | `curl https://raiden.com.pe/sitemap-index.xml` | 200, URLs con el dominio canónico, sin `/carrito` ni `/comparar` |
 | 3 | robots | `curl https://raiden.com.pe/robots.txt` | `Allow: /`, `Disallow: /admin` y `/api/`, `Sitemap:` con el dominio de `PUBLIC_SITE_URL` |
-| 4 | Enlace WhatsApp | Añadir un producto, abrir carrito, pulsar "Solicitar pedido" | URL `https://wa.me/<número>?text=...` con el número de producción y mensaje decodificado correcto |
+| 4 | Enlace WhatsApp | Añadir un producto, abrir carrito, pulsar "Solicitar pedido" | URL `https://api.whatsapp.com/send?phone=<número>&text=...` con el número de producción y mensaje decodificado correcto |
 | 5 | Lighthouse móvil en `/`, un listado y una ficha | `npx lhci autorun` o PageSpeed Insights | Performance ≥ 90, LCP < 2,0 s, INP < 200 ms, CLS < 0,1 |
 | 6 | Imágenes | DevTools → Network | AVIF/WebP servidos, `width`/`height` presentes, sin CLS |
 | 7 | 404 | `curl -I https://raiden.com.pe/no-existe` | 404 con página propia |

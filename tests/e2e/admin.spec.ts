@@ -869,14 +869,14 @@ test.describe('Panel de administración', () => {
     await dialog.getByLabel('Fecha de actualización (opcional)').fill('2026-11-04');
     await dialog.getByRole('checkbox', { name: /Tigre Test/ }).check();
     await dialog.getByLabel('Texto del artículo').fill('Texto nuevo con **negrita**.\n\n## Sección\n\n- uno');
-    await dialog.getByLabel('Motivo (opcional)').fill('revisión e2e');
+    // Sin campo "Motivo" en el blog (ADR-027)
+    await expect(dialog.getByLabel('Motivo (opcional)')).toHaveCount(0);
     await dialog.getByRole('button', { name: 'Guardar' }).click();
     await expect(dialog).toBeHidden();
     const put = calls.find((c) => c.method === 'PUT')!;
     expect(put.path).toBe('/blog/como-cuidar-la-bateria');
     expect(put.body).toEqual({
       sha: 'sha-bateria-1',
-      reason: 'revisión e2e',
       frontmatter: {
         title: 'Cómo cuidar la batería (2026)',
         description: 'Guía práctica.',
@@ -891,12 +891,12 @@ test.describe('Panel de administración', () => {
     await expect(page.locator('[data-deploy-banner]')).toBeVisible();
     await expect(page.locator('[data-admin-post="como-cuidar-la-bateria"]')).toContainText('Cómo cuidar la batería (2026)');
 
-    // Borrar exige el slug y envía DELETE {sha}
+    // Borrar un artículo: basta con confirmar en el diálogo (sin escribir la dirección ni motivo, ADR-027) y envía DELETE {sha}
     await page.getByRole('button', { name: 'Borrar artículo ¿Necesito licencia?' }).click();
     const del = page.getByRole('dialog');
-    await expect(del.getByRole('button', { name: 'Borrar', exact: true })).toBeDisabled();
-    await del.getByLabel(/para confirmar/).fill('necesito-licencia');
-    await del.getByRole('button', { name: 'Borrar', exact: true }).click();
+    await expect(del.getByLabel(/para confirmar/)).toHaveCount(0);
+    await expect(del.getByLabel('Motivo (opcional)')).toHaveCount(0);
+    await del.getByRole('button', { name: 'Borrar artículo', exact: true }).click();
     await expect(del).toBeHidden();
     expect(calls.find((c) => c.method === 'DELETE')).toMatchObject({ path: '/blog/necesito-licencia', body: { sha: 'sha-licencia-1' } });
     await expect(page.locator('[data-admin-post]')).toHaveCount(1);
@@ -1070,6 +1070,59 @@ test.describe('Panel de administración', () => {
     expect(body.data.specs).toEqual(products[0]!.data.specs);
     expect(body.data.variants.find((v) => v.isDefault)?.id).toBe('estandar');
     expect(calls.filter((c) => c.path === '/uploads')).toHaveLength(0);
+  });
+
+  test('editor: escribe con la barra de formato y la vista previa, sin ver la dirección del artículo (ADR-027)', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await page.getByRole('button', { name: 'Nuevo artículo' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByLabel('Dirección del artículo')).toHaveCount(0);
+    await expect(dialog).not.toContainText('Markdown');
+    await dialog.getByLabel('Título', { exact: true }).fill('Cómo cuidar la batería');
+    await dialog.getByLabel(/Descripción/).fill('Consejos rápidos.');
+    const body = dialog.getByLabel('Texto del artículo');
+    await body.fill('Carga la batería cada noche');
+    // Seleccionar "cada noche" y pulsar Negrita
+    await body.evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(17, 27));
+    await dialog.locator('[data-admin-md-btn="bold"]').click();
+    await expect(body).toHaveValue('Carga la batería **cada noche**');
+    // Nueva línea vacía → Título inserta un ejemplo seleccionado; se escribe encima
+    await body.evaluate((el: HTMLTextAreaElement) => {
+      el.value += '\n\n';
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.setSelectionRange(el.value.length, el.value.length);
+    });
+    await dialog.locator('[data-admin-md-btn="heading"]').click();
+    await page.keyboard.type('Consejos');
+    await expect(body).toHaveValue('Carga la batería **cada noche**\n\n## Consejos');
+    // Enlace con el mini formulario: una dirección no válida se avisa; "/repuestos" se inserta
+    await body.evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(0, 5));
+    await dialog.locator('[data-admin-md-btn="link"]').click();
+    const link = dialog.locator('[data-admin-md-link]');
+    await link.getByLabel('Dirección').fill('javascript:alert(1)');
+    await link.getByRole('button', { name: 'Insertar enlace' }).click();
+    await expect(link.getByRole('alert')).toContainText('https://');
+    await link.getByLabel('Dirección').fill('/repuestos');
+    await link.getByLabel('Dirección').press('Enter');
+    await expect(link).toHaveCount(0);
+    await expect(body).toHaveValue('[Carga](/repuestos) la batería **cada noche**\n\n## Consejos');
+    // Vista previa: se ve con formato y sin símbolos
+    await dialog.locator('[data-admin-md-preview]').click();
+    const render = dialog.locator('[data-admin-md-render]');
+    await expect(render.locator('strong')).toHaveText('cada noche');
+    await expect(render.locator('h3')).toHaveText('Consejos');
+    await expect(render.getByRole('link', { name: 'Carga' })).toHaveAttribute('href', '/repuestos');
+    await expect(render).not.toContainText('**');
+    await dialog.locator('[data-admin-md-preview]').click();
+    await expect(body).toBeVisible();
+    // La dirección sale sola del título y no choca con la que ya existe
+    await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
+    await expect(dialog).toBeHidden();
+    const put = calls.find((c) => c.method === 'PUT')!;
+    expect(put.path).toBe('/blog/como-cuidar-la-bateria-2');
+    expect(put.body).not.toHaveProperty('reason');
   });
 
   test('editor: gestiona el blog en llano; la foto no se puede tocar y al guardar viaja tal cual (ADR-026)', async ({ page }) => {

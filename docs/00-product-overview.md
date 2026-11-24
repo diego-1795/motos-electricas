@@ -42,7 +42,7 @@ Las bicimotos de 25 km/h en general no requieren licencia (confirmar con el MTC)
 | 4. Configurar | Isla configurador en la ficha | Elección de variante, color y cantidad; precio recalculado al instante | — |
 | 5. Carrito | Drawer + `/carrito` | Lista de líneas (vehículos y repuestos), cantidades, total estimado, notas libres | `add_to_cart`, `cart_open` |
 | 6. Solicitud de pedido | `/carrito` | Se genera un `OrderRequest` con líneas, total y notas; validación manual de cantidades y texto | `purchase_request` |
-| 7. WhatsApp | Botón "Enviar pedido por WhatsApp" | Abre `https://wa.me/<número>?text=<mensaje URL-encoded>` con el mensaje autogenerado | `whatsapp_click` |
+| 7. WhatsApp | Botón "Enviar pedido por WhatsApp" | Abre `https://api.whatsapp.com/send?phone=<número>&text=<mensaje URL-encoded>` (ADR-028) con el mensaje autogenerado | `whatsapp_click` |
 | 8. Ventas | Fuera de la web | El equipo confirma disponibilidad, condiciones, entrega y cobro por sus canales | — |
 
 Alternativa al paso 1–2: el buscador **"Encuentra tu moto"** (`/encuentra-tu-moto`) hace 4–5 preguntas (uso, distancia diaria, presupuesto, licencia, necesidad de carga) y ordena el catálogo por puntuación de compatibilidad (`finder_complete`). El detalle del mensaje y del enlace está en [16-whatsapp-commerce](./16-whatsapp-commerce.md); la UX paso a paso en [03-ux](./03-ux.md).

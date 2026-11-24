@@ -107,9 +107,17 @@ export function buildMailto(email: string, subject: string, body: string): strin
   return `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
+/**
+ * Enlace directo a api.whatsapp.com/send (ADR-028). No se usa wa.me: su redirección a
+ * api.whatsapp.com vuelve a codificar el texto y cambia cada emoji fuera del plano básico
+ * (👋 🏍️ 💰 …) por "�" (U+FFFD); comprobado el 2026-11-24. api.whatsapp.com abre igual la app,
+ * WhatsApp Desktop o WhatsApp Web según el dispositivo.
+ */
+export const WHATSAPP_SEND_URL = 'https://api.whatsapp.com/send';
+
 export function buildUrl(phone: string, message: string): string {
   const digits = phone.replace(/\D/g, '');
-  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+  return `${WHATSAPP_SEND_URL}?phone=${digits}&text=${encodeURIComponent(message)}`;
 }
 
 export function buildRequest(cart: Cart, opts: WhatsAppBuilderOptions): WhatsAppRequest {
