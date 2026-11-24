@@ -11,12 +11,13 @@ const POLL_MS = 15_000;
 const POLL_MAX_MS = 10 * 60_000;
 const COUNTDOWN_S = 4 * 60;
 
-const stateLabel: Record<DeployState, string> = {
-  queued: 'En cola',
-  building: 'Construyendo el sitio',
-  success: 'Publicado',
-  failure: 'El build ha fallado',
-  unknown: 'Estado desconocido',
+/** Texto tras "Publicando…" mientras no hay resultado (lenguaje de tienda, sin "build" ni "commit") */
+const pendingLabel: Record<DeployState, string> = {
+  queued: 'En cola: empezará en unos segundos.',
+  building: 'Preparando la web: tarda unos 3 minutos.',
+  success: '',
+  failure: '',
+  unknown: 'Comprobando el estado…',
 };
 
 type Mode = { kind: 'idle' } | { kind: 'polling'; status: DeployStatus | null; timedOut: boolean } | { kind: 'countdown'; left: number };
@@ -26,7 +27,9 @@ type Mode = { kind: 'idle' } | { kind: 'polling'; status: DeployStatus | null; t
  * cada 15 s (máx. 10 min); si no, muestra "Publicando… ~3 min" con contador y se retira a los 4 min.
  */
 export default function DeployBanner({ commit }: Props) {
-  const { api } = useAdmin();
+  const { api, user } = useAdmin();
+  /** Enlaces a GitHub / Cloudflare y menciones técnicas: solo para el administrador */
+  const technical = user.role === 'admin';
   const [mode, setMode] = useState<Mode>({ kind: 'idle' });
 
   useEffect(() => {
@@ -95,7 +98,7 @@ export default function DeployBanner({ commit }: Props) {
         <p>
           <strong>Publicando…</strong> los cambios tardan unos 3 minutos en verse en la web.{' '}
           <span class="muted">
-            ({mm}:{ss}) · {commitLink}
+            ({mm}:{ss}){technical && <> · {commitLink}</>}
           </span>
         </p>
         <button type="button" class="btn btn--ghost btn--sm" onClick={close} aria-label="Cerrar aviso de publicación">
@@ -112,21 +115,27 @@ export default function DeployBanner({ commit }: Props) {
   return (
     <div class={`adm-deploy adm-deploy--${tone}`} role="status" data-deploy-banner={state}>
       <p>
-        <strong>{state === 'success' ? 'Publicado.' : state === 'failure' ? 'Error al publicar.' : 'Publicando…'}</strong> {stateLabel[state]}
-        {state === 'success' && ': los cambios ya están en la web.'}
-        {state === 'failure' && ': la web sigue con la versión anterior; revisa el build en Cloudflare Pages.'}
-        {mode.timedOut && ' Sin respuesta definitiva en 10 minutos; comprueba Cloudflare Pages.'}{' '}
-        <span class="muted">
-          {deployUrl && (
-            <>
-              <a href={deployUrl} target="_blank" rel="noopener noreferrer">
-                ver despliegue
-              </a>
-              {' · '}
-            </>
-          )}
-          {commitLink}
-        </span>
+        <strong>{state === 'success' ? 'Publicado.' : state === 'failure' ? 'No se ha podido publicar.' : 'Publicando…'}</strong>{' '}
+        {state === 'success' && 'Los cambios ya están en la web.'}
+        {state === 'failure' && (technical ? 'La web sigue con la versión anterior; revisa el build en Cloudflare Pages.' : 'La web sigue como estaba. Avisa al administrador.')}
+        {pendingLabel[state]}
+        {mode.timedOut &&
+          (technical
+            ? ' Sin respuesta definitiva en 10 minutos; comprueba Cloudflare Pages.'
+            : ' Está tardando más de lo normal: si en unos minutos no ves el cambio en la web, avisa al administrador.')}{' '}
+        {technical && (
+          <span class="muted">
+            {deployUrl && (
+              <>
+                <a href={deployUrl} target="_blank" rel="noopener noreferrer">
+                  ver despliegue
+                </a>
+                {' · '}
+              </>
+            )}
+            {commitLink}
+          </span>
+        )}
       </p>
       <button type="button" class="btn btn--ghost btn--sm" onClick={close} aria-label="Cerrar aviso de publicación">
         ✕

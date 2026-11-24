@@ -175,7 +175,7 @@ Las tres opcionales permiten que el panel muestre el estado real del último bui
 | 2 | `curl -i https://raiden.com.pe/api/admin/me` sin sesión | 401 JSON `{ code: "unauthorized" }` con `Cache-Control: no-store`, nunca datos |
 | 2b | `curl -i -X POST https://raiden.com.pe/api/admin/auth/login -d '{}'` | 415 (sin `Content-Type: application/json`); con la cabecera y credenciales falsas, 401; a la sexta vez, 423 |
 | 3 | Entrar como `admin` con su contraseña temporal | Pide elegir una contraseña nueva; después panel con rol **admin**, botones Nuevo/Editar ficha/Borrar visibles |
-| 4 | Entrar como `william` (otra ventana privada) | Mismo cambio obligatorio; rol **editor**: solo precios y ocultar/mostrar, sin lista de administradores en Accesos |
+| 4 | Entrar como `william` (otra ventana privada) | Mismo cambio obligatorio; rol **editor**: precios, ocultar/mostrar y blog (sin tocar fotos); sin sección Accesos ni textos técnicos (rama, slugs, commits) |
 | 4b | "Cambiar contraseña" y recargar en la otra ventana | La otra sesión queda cerrada (vuelve al inicio de sesión) |
 | 4c | Como `admin`, Accesos → "Restablecer contraseña" de `william` | Se muestra una temporal; la sesión de `william` se cierra y al entrar con la temporal debe cambiarla |
 | 5 | Cambiar un precio de prueba y revertirlo | Dos commits `chore(catalog): actualizar … por …` en GitHub y dos builds en Pages |

@@ -3,20 +3,21 @@ import { isUsername, normalizeUsername } from './adminAuth';
 import type { Part, Product } from './types';
 
 /**
- * Política de roles del panel (ADR-018, ADR-025). Pura: la aplican las Pages Functions
- * (nunca solo la interfaz). El editor (`william`) únicamente puede cambiar precios y
- * ocultar/mostrar; el admin (`admin`) puede todo, incluido restablecer la contraseña de otros.
+ * Política de roles del panel (ADR-018, ADR-025, ADR-026). Pura: la aplican las Pages Functions
+ * (nunca solo la interfaz). El editor (`william`) cambia precios, oculta/muestra y gestiona el
+ * blog sin tocar sus fotos; el admin (`admin`) puede todo, incluido restablecer la contraseña de otros.
  */
 
 /**
- * `blog` (leer y escribir artículos) y `upload` (subir PDF) son de administrador (ADR-023);
- * `users` (restablecer la contraseña de otro usuario) también (ADR-025).
+ * `blog` (leer, crear, editar y borrar artículos) es de los dos roles (ADR-026); `blogImage`
+ * (poner, cambiar o quitar la foto de un artículo) y `upload` (subir PDF) son de administrador
+ * (ADR-023), igual que `users` (restablecer la contraseña de otro usuario, ADR-025).
  */
-export type Operation = 'read' | 'patch' | 'put' | 'delete' | 'blog' | 'upload' | 'users';
+export type Operation = 'read' | 'patch' | 'put' | 'delete' | 'blog' | 'blogImage' | 'upload' | 'users';
 
 const PERMISSIONS: Record<AdminRole, readonly Operation[]> = {
-  admin: ['read', 'patch', 'put', 'delete', 'blog', 'upload', 'users'],
-  editor: ['read', 'patch'],
+  admin: ['read', 'patch', 'put', 'delete', 'blog', 'blogImage', 'upload', 'users'],
+  editor: ['read', 'patch', 'blog'],
 };
 
 export function canPerform(role: AdminRole, op: Operation): boolean {

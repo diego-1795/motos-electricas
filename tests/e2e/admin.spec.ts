@@ -9,7 +9,8 @@ import { makePart, makeProduct, premiumVariant, variant } from '../unit/fixtures
  * Pages Functions no corren en `astro preview`. Catálogo sintético: 2 productos (uno oculto)
  * y 2 repuestos. El mock guarda estado por test (sha y datos avanzan con cada escritura) y
  * aplica el contrato del PATCH como el servidor (422 ante claves extra o tipos incorrectos).
- * Blog y subidas (ADR-023): 2 artículos; el mock de /blog y /uploads responde 403 al editor.
+ * Blog y subidas (ADR-023, ADR-026): 2 artículos; el editor gestiona el blog pero el mock le responde 403
+ * si cambia la foto de un artículo, y siempre en /uploads.
  */
 
 const posts: BlogEntry[] = [
@@ -156,9 +157,9 @@ async function mockApi(page: Page, opts: MockOptions) {
       return json(route, 200, { username: b.username, temporaryPassword: 'Abcd-Efgh-Jkmn-Pqrs' });
     }
 
-    // Blog y subidas (ADR-023): solo admin, como el servidor
+    // Blog (ADR-026: los dos roles; el editor sin tocar fotos) y subidas (ADR-023: solo admin), como el servidor
     if (path === '/blog' || path.startsWith('/blog/') || path === '/uploads') {
-      if (opts.role !== 'admin') return json(route, 403, { code: 'forbidden', error: 'Solo el administrador puede gestionar el blog' });
+      if (opts.role !== 'admin' && path === '/uploads') return json(route, 403, { code: 'forbidden', error: 'Tu rol no permite esta operación' });
       if (method === 'GET' && path === '/blog') return json(route, 200, { posts: blog.map(summary), branch: 'main' });
       if (method === 'POST' && path === '/uploads') {
         const b = body as { path: string; contentBase64: string };
@@ -180,6 +181,9 @@ async function mockApi(page: Page, opts: MockOptions) {
         return json(route, 200, { path: entry.path, commit: commitOf('borrar') });
       }
       if (method === 'PUT') {
+        const fmIn = b.frontmatter as BlogEntry['frontmatter'];
+        if (opts.role !== 'admin' && JSON.stringify(fmIn.image ?? null) !== JSON.stringify(entry?.frontmatter.image ?? null))
+          return json(route, 403, { code: 'forbidden', error: 'Las fotos del blog las pone el administrador: guarda el artículo sin cambiar la foto' });
         if (b.sha === undefined && entry) return json(route, 409, { code: 'conflict', error: 'Ya existe' });
         if (b.sha !== undefined && (!entry || b.sha !== entry.sha)) return json(route, entry ? 409 : 404, { code: entry ? 'conflict' : 'not_found', error: entry ? 'El artículo cambió' : 'No existe' });
         const saved: BlogEntry = { slug: bm[1]!, frontmatter: b.frontmatter as BlogEntry['frontmatter'], body: b.body as string, sha: `${entry?.sha ?? 'sha-nuevo'}-new`, path: `src/content/blog/${bm[1]}.md` };
@@ -305,9 +309,9 @@ test.describe('Panel de administración', () => {
     // Ni siquiera en el DOM: sin botón "Nuevo", sin columna "Acciones", sin diálogos de administrador ni selector de modo local
     await expect(page.locator('[data-admin-new], .adm-td-actions, [data-admin-editor], [data-admin-delete], [data-admin-duplicate], [data-admin-simulate]')).toHaveCount(0);
     await expect(page.locator('[data-admin-table="products"] thead th')).toHaveCount(5);
-    // Sin pestaña Blog (ADR-023): solo Productos y Repuestos
-    await expect(page.getByRole('tab')).toHaveCount(2);
-    await expect(page.getByRole('tab', { name: 'Blog' })).toHaveCount(0);
+    // Con pestaña Blog (ADR-026): Productos, Repuestos y Blog
+    await expect(page.getByRole('tab')).toHaveCount(3);
+    await expect(page.getByRole('tab', { name: 'Blog' })).toHaveCount(1);
     // La ficha oculta lleva la insignia y el interruptor marcado
     const hiddenRow = page.locator('[data-admin-row="tigre-test"]');
     await expect(hiddenRow.getByText('Oculto', { exact: true })).toBeVisible();
@@ -325,10 +329,10 @@ test.describe('Panel de administración', () => {
     await expect(page.getByRole('button', { name: 'Nuevo producto' })).toBeVisible();
     expect(await page.getByRole('button', { name: /Editar ficha/ }).count()).toBe(2);
     expect(await page.getByRole('button', { name: /^Borrar/ }).count()).toBe(2);
-    await page.getByRole('searchbox', { name: 'Buscar por nombre o slug' }).fill('tigre');
+    await page.getByRole('searchbox', { name: 'Buscar por nombre' }).fill('tigre');
     await expect(page.locator('[data-admin-row]')).toHaveCount(1);
     await expect(page.locator('[data-admin-row="tigre-test"]')).toBeVisible();
-    await page.getByRole('searchbox', { name: 'Buscar por nombre o slug' }).fill('aguila'); // sin tilde
+    await page.getByRole('searchbox', { name: 'Buscar por nombre' }).fill('aguila'); // sin tilde
     await expect(page.locator('[data-admin-row="aguila-test"]')).toBeVisible();
     await page.getByRole('tab', { name: /Repuestos/ }).click();
     await expect(page.getByRole('button', { name: 'Nuevo repuesto' })).toBeVisible();
@@ -401,14 +405,24 @@ test.describe('Panel de administración', () => {
     await expect(page.locator('[data-price-input="aguila-test:estandar"]')).toHaveValue('1200');
   });
 
-  test('con la API de Pages disponible el banner muestra el estado del despliegue y el enlace', async ({ page }) => {
-    await mockApi(page, { role: 'editor', deploy: { available: true, state: 'building', url: 'https://dash.cloudflare.com/deploy/1', commitSha: 'c0ffee' } });
+  test('con la API de Pages disponible el banner muestra el estado del despliegue; el enlace técnico solo al admin', async ({ page }) => {
+    await mockApi(page, { role: 'admin', deploy: { available: true, state: 'building', url: 'https://dash.cloudflare.com/deploy/1', commitSha: 'c0ffee' } });
     await openAdmin(page);
     await page.locator('[data-hidden-toggle="aguila-test"]').click();
     const banner = page.locator('[data-deploy-banner="building"]');
     await expect(banner).toBeVisible();
-    await expect(banner).toContainText('Construyendo el sitio');
+    await expect(banner).toContainText('Preparando la web');
     await expect(banner.getByRole('link', { name: 'ver despliegue' })).toHaveAttribute('href', 'https://dash.cloudflare.com/deploy/1');
+  });
+
+  test('editor: el banner de publicación habla en llano, sin commit, build ni enlaces a Cloudflare', async ({ page }) => {
+    await mockApi(page, { role: 'editor', deploy: { available: true, state: 'building', url: 'https://dash.cloudflare.com/deploy/1', commitSha: 'c0ffee' } });
+    await openAdmin(page);
+    await page.locator('[data-hidden-toggle="aguila-test"]').click();
+    const banner = page.locator('[data-deploy-banner="building"]');
+    await expect(banner).toContainText('Publicando… Preparando la web');
+    await expect(banner.getByRole('link')).toHaveCount(0);
+    await expect(banner).not.toContainText(/commit|build|Cloudflare/i);
   });
 
   test('admin: "Editar ficha" abre el editor y guardar envía PUT con sha y la ficha fusionada; "Borrar" exige el slug', async ({ page }) => {
@@ -485,14 +499,17 @@ test.describe('Panel de administración', () => {
     await expect(page.locator('[data-deploy-banner]')).toHaveCount(0);
   });
 
-  test('un error de configuración (500, code "config") se muestra como tal, dirigido al administrador', async ({ page }) => {
+  test('un error de configuración (500, code "config") se explica en llano; el detalle técnico va plegado', async ({ page }) => {
     await page.route('**/api/admin/**', (route) => json(route, 500, { code: 'config', error: 'Configuración incompleta del panel: falta GITHUB_TOKEN' }));
     await page.goto('/admin');
     const err = page.locator('[data-admin-error="config"]');
     await expect(err).toBeVisible();
-    await expect(err).toContainText('Configuración incompleta del panel');
-    await expect(err).toContainText('falta GITHUB_TOKEN');
-    await expect(err).toContainText('administrador');
+    await expect(err).toContainText('Avisa al administrador');
+    const tech = err.locator('[data-admin-tech]');
+    await expect(tech).not.toHaveAttribute('open', /.*/);
+    await expect(tech.getByText('falta GITHUB_TOKEN')).toBeHidden();
+    await tech.locator('summary').click();
+    await expect(tech.getByText('falta GITHUB_TOKEN')).toBeVisible();
   });
 
   test('sin acceso (403) muestra la pantalla "Sin acceso" con a quién pedirlo', async ({ page }) => {
@@ -501,7 +518,7 @@ test.describe('Panel de administración', () => {
     const denied = page.locator('[data-admin-denied]');
     await expect(denied).toBeVisible();
     await expect(denied).toContainText('Sin acceso');
-    await expect(denied).toContainText('ADMIN_USERS');
+    await expect(denied).not.toContainText('ADMIN_USERS');
     await expect(denied).toContainText('administrador');
   });
 
@@ -615,11 +632,14 @@ test.describe('Panel de administración', () => {
     await expect(page.locator('[data-admin-reset-temp]')).toHaveCount(0);
   });
 
-  test('editor: la sección Accesos no ofrece restablecer contraseñas', async ({ page }) => {
+  test('editor: sin textos técnicos (Accesos, rama, slugs) ni botones de restablecer', async ({ page }) => {
     await mockApi(page, { role: 'editor' });
     await openAdmin(page);
-    await expect(page.locator('[data-admin-access]')).toBeVisible();
+    await expect(page.locator('[data-admin-row="aguila-test"]')).toBeVisible();
+    await expect(page.locator('[data-admin-access]')).toHaveCount(0);
     await expect(page.locator('[data-admin-reset-open]')).toHaveCount(0);
+    await expect(page.locator('.adm-slug')).toHaveCount(0);
+    await expect(page.locator('[data-admin-app]')).not.toContainText(/ADMIN_USERS|EDITOR_USERS|rama main|slug/);
   });
 
   test('un 422 lista los details del servidor junto al precio y en el editor, sin banner de publicación', async ({ page }) => {
@@ -653,13 +673,19 @@ test.describe('Panel de administración', () => {
     await expect(page.locator('[data-deploy-banner]')).toHaveCount(0);
   });
 
-  test('un 502 (upstream) en una escritura se anuncia como fallo de GitHub/Cloudflare y la fila no cambia', async ({ page }) => {
+  test('admin: un 502 (upstream) añade el detalle técnico al aviso', async ({ page }) => {
+    await mockApi(page, { role: 'admin', writeError: { status: 502, body: { code: 'upstream', error: 'GitHub respondió 503' } } });
+    await openAdmin(page);
+    await page.locator('[data-hidden-toggle="aguila-test"]').click();
+    await expect(page.locator('[data-admin-alert]')).toHaveText('No se pudo guardar ahora mismo: reintenta en unos minutos. Detalle: GitHub respondió 503');
+  });
+
+  test('un 502 (upstream) en una escritura se anuncia en llano al editor y la fila no cambia', async ({ page }) => {
     await mockApi(page, { role: 'editor', writeError: { status: 502, body: { code: 'upstream', error: 'GitHub respondió 503' } } });
     await openAdmin(page);
     const toggle = page.locator('[data-hidden-toggle="aguila-test"]');
     await toggle.click();
-    await expect(page.locator('[data-admin-alert]')).toContainText('Fallo de GitHub o Cloudflare');
-    await expect(page.locator('[data-admin-alert]')).toContainText('GitHub respondió 503');
+    await expect(page.locator('[data-admin-alert]')).toHaveText('No se pudo guardar ahora mismo: reintenta en unos minutos.');
     await expect(toggle).toHaveAttribute('aria-checked', 'false');
     await expect(toggle).not.toHaveAttribute('aria-disabled', 'true');
     await expect(page.locator('[data-deploy-banner]')).toHaveCount(0);
@@ -835,14 +861,14 @@ test.describe('Panel de administración', () => {
     await page.getByRole('button', { name: 'Editar artículo Cómo cuidar la batería' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toContainText('Editar artículo: Cómo cuidar la batería');
-    await expect(dialog.getByLabel('Slug (URL)')).toHaveValue('como-cuidar-la-bateria');
-    await expect(dialog.getByLabel('Slug (URL)')).toHaveAttribute('readonly', '');
-    await expect(dialog.getByLabel('Texto del artículo (Markdown)')).toHaveValue(/Carga después de cada uso/);
+    await expect(dialog.getByLabel('Dirección del artículo')).toHaveValue('como-cuidar-la-bateria');
+    await expect(dialog.getByLabel('Dirección del artículo')).toHaveAttribute('readonly', '');
+    await expect(dialog.getByLabel('Texto del artículo')).toHaveValue(/Carga después de cada uso/);
     await expect(dialog).toContainText('min de lectura');
     await dialog.getByLabel('Título', { exact: true }).fill('Cómo cuidar la batería (2026)');
     await dialog.getByLabel('Fecha de actualización (opcional)').fill('2026-11-04');
     await dialog.getByRole('checkbox', { name: /Tigre Test/ }).check();
-    await dialog.getByLabel('Texto del artículo (Markdown)').fill('Texto nuevo con **negrita**.\n\n## Sección\n\n- uno');
+    await dialog.getByLabel('Texto del artículo').fill('Texto nuevo con **negrita**.\n\n## Sección\n\n- uno');
     await dialog.getByLabel('Motivo (opcional)').fill('revisión e2e');
     await dialog.getByRole('button', { name: 'Guardar' }).click();
     await expect(dialog).toBeHidden();
@@ -886,10 +912,10 @@ test.describe('Panel de administración', () => {
     // Ningún control de subida de imágenes en el panel (ADR-023: las fotos van por git)
     await expect(dialog.locator('input[type="file"]')).toHaveCount(0);
     await dialog.getByLabel('Título', { exact: true }).fill('¿Cómo elegir una bicimoto eléctrica?');
-    await expect(dialog.getByLabel('Slug (URL)')).toHaveValue('como-elegir-una-bicimoto-electrica');
+    await expect(dialog.getByLabel('Dirección del artículo')).toHaveValue('como-elegir-una-bicimoto-electrica');
     await dialog.getByLabel(/Descripción/).fill('Factores a considerar.');
     await dialog.getByLabel('Categoría').selectOption('compra');
-    await dialog.getByLabel('Texto del artículo (Markdown)').fill('Mira la batería y el motor.');
+    await dialog.getByLabel('Texto del artículo').fill('Mira la batería y el motor.');
 
     // Foto por ruta: se propone ~/assets/blog/<slug>.webp; una ruta fuera de src/assets/blog se rechaza en local
     await dialog.getByRole('button', { name: 'Añadir foto (por ruta)' }).click();
@@ -922,26 +948,26 @@ test.describe('Panel de administración', () => {
   });
 
   test('admin: el editor de artículo valida en local (sin petición) y muestra los details de un 422 del servidor', async ({ page }) => {
-    const { calls } = await mockApi(page, { role: 'admin', writeError: { status: 422, body: { code: 'validation', error: 'El artículo no es válido', details: ['relatedProducts desconocido: zz'] } } });
+    const { calls } = await mockApi(page, { role: 'admin', writeError: { status: 422, body: { code: 'validation', error: 'El artículo no es válido', details: ['El modelo relacionado zz ya no está en el catálogo'] } } });
     await openAdmin(page);
     await page.getByRole('tab', { name: 'Blog' }).click();
     await page.getByRole('button', { name: 'Nuevo artículo' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
     await expect(dialog.getByRole('alert')).toContainText('No se ha guardado');
-    await expect(dialog.getByRole('alert')).toContainText('slug');
-    await expect(dialog.getByRole('alert')).toContainText('title es obligatorio');
+    await expect(dialog.getByRole('alert')).toContainText('La dirección');
+    await expect(dialog.getByRole('alert')).toContainText('El título es obligatorio');
     await expect(dialog.getByRole('alert')).toBeFocused();
     expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(0);
     await dialog.getByLabel('Título', { exact: true }).fill('Precios en euros');
     await dialog.getByLabel(/Descripción/).fill('d');
-    await dialog.getByLabel('Texto del artículo (Markdown)').fill('Cuesta 300 € con IVA');
+    await dialog.getByLabel('Texto del artículo').fill('Cuesta 300 € con IVA');
     await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
-    await expect(dialog.getByRole('alert')).toContainText('España/EUR');
+    await expect(dialog.getByRole('alert')).toContainText('España o del euro');
     expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(0);
-    await dialog.getByLabel('Texto del artículo (Markdown)').fill('Cuesta S/ 1,200 con IGV');
+    await dialog.getByLabel('Texto del artículo').fill('Cuesta S/ 1,200 con IGV');
     await dialog.getByRole('button', { name: 'Publicar artículo' }).click();
-    await expect(dialog.getByRole('alert')).toContainText('relatedProducts desconocido: zz');
+    await expect(dialog.getByRole('alert')).toContainText('El modelo relacionado zz ya no está en el catálogo');
     expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(1);
     await expect(page.locator('[data-deploy-banner]')).toHaveCount(0);
   });
@@ -1046,16 +1072,30 @@ test.describe('Panel de administración', () => {
     expect(calls.filter((c) => c.path === '/uploads')).toHaveLength(0);
   });
 
-  test('editor: el API de blog y subidas responde 403 (el mock replica al servidor) y el panel no lo llama', async ({ page }) => {
+  test('editor: gestiona el blog en llano; la foto no se puede tocar y al guardar viaja tal cual (ADR-026)', async ({ page }) => {
     const { calls } = await mockApi(page, { role: 'editor' });
     await openAdmin(page);
-    expect(calls.some((c) => c.path.startsWith('/blog') || c.path === '/uploads')).toBe(false);
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await expect(page.locator('[data-admin-post]')).toHaveCount(2);
+    await expect(page.locator('[data-admin-blog]')).not.toContainText(/src\/content|slug/);
+    await expect(page.locator('[data-admin-blog] .adm-slug')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Editar artículo ¿Necesito licencia?' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.locator('[data-admin-image-locked]')).toContainText('las pone el administrador');
+    await expect(dialog.locator('[data-admin-image-src], [data-admin-add-image]')).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: 'Quitar foto' })).toHaveCount(0);
+    await expect(dialog).not.toContainText('~/assets');
+    await dialog.getByLabel('Texto del artículo').fill('En general no, pero depende del modelo.');
+    await dialog.getByRole('button', { name: 'Guardar' }).click();
+    await expect(dialog).toBeHidden();
+    const put = calls.find((c) => c.method === 'PUT')!;
+    expect((put.body as { frontmatter: BlogEntry['frontmatter'] }).frontmatter.image).toEqual(posts[1]!.frontmatter.image);
+    // Subir PDF sigue siendo solo del administrador
     const res = await page.evaluate(async () => {
-      const r = await fetch('/api/admin/blog', { credentials: 'same-origin' });
-      return { status: r.status, body: (await r.json()) as { code: string } };
+      const r = await fetch('/api/admin/uploads', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      return r.status;
     });
-    expect(res.status).toBe(403);
-    expect(res.body.code).toBe('forbidden');
+    expect(res).toBe(403);
   });
 
   test('axe sin violaciones serious/critical en login, cambio de contraseña, vista admin (tabla, accesos) y con el editor abierto', async ({ page }) => {

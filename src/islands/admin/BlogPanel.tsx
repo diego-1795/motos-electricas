@@ -20,7 +20,7 @@ const formatDate = (iso: string): string => {
  * editar y borrar. Carga su propia lista (GET /api/admin/blog) al abrirse y tras cada escritura.
  */
 export default function BlogPanel() {
-  const { api, announce, handleError } = useAdmin();
+  const { api, announce, handleError, user } = useAdmin();
   const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
   const [dialog, setDialog] = useState<Dialog>(null);
   const [opening, setOpening] = useState<string | null>(null);
@@ -73,7 +73,7 @@ export default function BlogPanel() {
     <div class="adm-blog" data-admin-blog>
       <div class="adm-blog__bar">
         <p class="hint">
-          {phase.posts.length} artículos en <code>src/content/blog</code>. Cada guardado publica la web en unos 3 minutos.
+          {phase.posts.length} artículos. Cada guardado publica la web en unos 3 minutos.
         </p>
         <button type="button" class="btn btn--primary" onClick={() => setDialog({ type: 'create' })} data-admin-new-post>
           Nuevo artículo
@@ -101,7 +101,7 @@ export default function BlogPanel() {
                     <div class="adm-name">
                       <strong>{p.title}</strong>
                     </div>
-                    <code class="adm-slug">{p.slug}</code>
+                    {user.role === 'admin' && <code class="adm-slug">{p.slug}</code>}
                   </td>
                   <td role="cell" data-label="Categoría">
                     {blogCategoryLabel[p.category]}

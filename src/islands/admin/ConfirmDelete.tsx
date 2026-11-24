@@ -66,8 +66,7 @@ export default function ConfirmDelete({ kind, entry, onClose, onDeleted }: Props
       <form class="adm-form" onSubmit={submit} data-admin-delete noValidate>
         {kind === 'blog' ? (
           <p>
-            Se eliminará el artículo <code>{entry.path}</code> del repositorio y dejará de existir <code>/blog/{slug}</code>. Su foto queda en <code>src/assets/blog</code> y el historial de
-            git permite recuperarlo.
+            Se borrará el artículo «{entry.name}» y dejará de verse en la web. Si fue un error, el administrador puede recuperarlo, con su foto.
           </p>
         ) : (
           <p>
@@ -77,7 +76,7 @@ export default function ConfirmDelete({ kind, entry, onClose, onDeleted }: Props
         )}
         <label class="field">
           <span class="label">
-            Escribe <code>{slug}</code> para confirmar
+            Escribe <code>{slug}</code> para confirmar{kind === 'blog' ? ' (es la dirección del artículo)' : ''}
           </span>
           <input class="input" value={typed} onInput={(e) => setTyped((e.target as HTMLInputElement).value)} autoComplete="off" spellcheck={false} />
         </label>

@@ -39,12 +39,12 @@ describe('blogRules', () => {
   it('slug kebab-case, campos obligatorios, fechas y cuerpo', () => {
     expect(blogRules('Mal Slug', fm(), 'x')[0]).toMatch(/kebab-case/);
     const e = blogRules('ok', fm({ title: ' ', description: '', author: '', publishedAt: '27/10/2026', updatedAt: 'ayer' }), '   ');
-    expect(e).toEqual(expect.arrayContaining([expect.stringMatching(/^title es obligatorio/), expect.stringMatching(/^description/), expect.stringMatching(/^author/), expect.stringMatching(/publishedAt/), expect.stringMatching(/updatedAt/), expect.stringMatching(/cuerpo.*vacío/)]));
+    expect(e).toEqual(expect.arrayContaining(['El título es obligatorio', 'La descripción es obligatoria', 'El autor es obligatorio', expect.stringMatching(/fecha de publicación/), expect.stringMatching(/fecha de actualización/), 'El texto del artículo está vacío']));
     expect(blogRules('ok', fm(), 'x'.repeat(60_001))).toEqual([expect.stringMatching(/supera/)]);
   });
 
   it('relatedProducts existentes y sin repetir', () => {
-    expect(blogRules('ok', fm({ relatedProducts: ['golden-eagle', 'golden-eagle', 'nope'] }), 'x', ctx)).toEqual(['relatedProducts repetido: golden-eagle', 'relatedProducts desconocido: nope']);
+    expect(blogRules('ok', fm({ relatedProducts: ['golden-eagle', 'golden-eagle', 'nope'] }), 'x', ctx)).toEqual(['Modelo relacionado repetido: golden-eagle', 'El modelo relacionado nope ya no está en el catálogo']);
     // Sin contexto no se comprueba la existencia (el panel lo pasa siempre; el build lo valida aparte)
     expect(blogRules('ok', fm({ relatedProducts: ['nope'] }), 'x')).toEqual([]);
   });
@@ -52,7 +52,7 @@ describe('blogRules', () => {
   it('la foto debe ser un webp de src/assets/blog con alt', () => {
     expect(blogRules('ok', fm({ image: { src: '~/assets/products/x.webp', alt: 'a', width: 1, height: 1 } }), 'x')[0]).toMatch(/~\/assets\/blog/);
     expect(blogRules('ok', fm({ image: { src: '~/assets/blog/x.jpg', alt: 'a', width: 1, height: 1 } }), 'x')[0]).toMatch(/webp/);
-    expect(blogRules('ok', fm({ image: { src: '~/assets/blog/x.webp', alt: ' ', width: 1, height: 1 } }), 'x')).toEqual(['image.alt es obligatorio (texto alternativo de la foto)']);
+    expect(blogRules('ok', fm({ image: { src: '~/assets/blog/x.webp', alt: ' ', width: 1, height: 1 } }), 'x')).toEqual(['La foto necesita un texto alternativo (describe lo que se ve)']);
   });
 
   it('el cuerpo no admite HTML crudo peligroso ni enlaces javascript:/data: (solo Markdown)', () => {
@@ -67,7 +67,7 @@ describe('blogRules', () => {
 
   it('sin referencias a España/EUR (misma regla que validate:content)', () => {
     for (const bad of ['Cuesta 300 €', 'precio en EUR', 'necesitas carnet', 'incluye IVA']) {
-      expect(blogRules('ok', fm(), bad), bad).toEqual([expect.stringMatching(/España\/EUR/)]);
+      expect(blogRules('ok', fm(), bad), bad).toEqual([expect.stringMatching(/España o del euro/)]);
     }
     expect(blogRules('ok', fm({ title: 'Precio con IVA' }), 'ok')).toHaveLength(1);
     expect(blogRules('ok', fm(), 'Cuesta S/ 1,200 con IGV y licencia; privada no es IVA')).toHaveLength(1);
@@ -84,7 +84,7 @@ describe('parsePost', () => {
     expect(bad.ok).toBe(false);
     if (!bad.ok) expect(bad.errors.some((e) => e.startsWith('category'))).toBe(true);
     const rules = parsePost('x', fm({ relatedProducts: ['nope'] }), '', ctx);
-    expect(!rules.ok && rules.errors).toEqual(['relatedProducts desconocido: nope', 'el cuerpo del artículo está vacío']);
+    expect(!rules.ok && rules.errors).toEqual(['El modelo relacionado nope ya no está en el catálogo', 'El texto del artículo está vacío']);
     expect(parsePost('x', fm(), 42 as never).ok).toBe(false);
   });
 });

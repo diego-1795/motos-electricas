@@ -33,15 +33,18 @@ export function serializePost(frontmatter: BlogFrontmatter, body: string): strin
 
 const slugOf = (f: ListedFile): string => f.name.replace(/\.md$/, '');
 
-function requireAdmin(ctx: Pick<HandlerContext, 'user'>): void {
-  if (!canPerform(ctx.user.role, 'blog')) throw forbidden('Solo el administrador puede gestionar el blog');
+function requireBlog(ctx: Pick<HandlerContext, 'user'>): void {
+  if (!canPerform(ctx.user.role, 'blog')) throw forbidden('No tienes permiso para gestionar el blog');
 }
+
+const sameImage = (a: BlogFrontmatter['image'], b: BlogFrontmatter['image']): boolean =>
+  a === b || (!!a && !!b && a.src === b.src && a.alt === b.alt && a.width === b.width && a.height === b.height);
 
 /** Lee y valida un artículo del repositorio; un fichero que no pasa el esquema del build se señala como 502 (se corrige por git). */
 async function readPost(store: ContentStore, slug: string): Promise<BlogEntry> {
   const path = blogPath(slug);
   const file = await store.read(path);
-  if (!file) throw notFound(`No existe ${path} en el repositorio`);
+  if (!file) throw notFound(`No existe el artículo ${slug}`);
   let parsed: { data: Record<string, unknown>; body: string };
   try {
     parsed = parseFrontmatter(file.content);
@@ -61,7 +64,7 @@ async function listPostFiles(store: ContentStore): Promise<ListedFile[]> {
 
 /** Lista de artículos (1 + N subpeticiones a GitHub: el frontmatter obliga a leer cada fichero). Más reciente primero. */
 export async function listPosts(ctx: HandlerContext): Promise<BlogList> {
-  requireAdmin(ctx);
+  requireBlog(ctx);
   const files = await listPostFiles(ctx.store);
   const entries = await Promise.all(files.map((f) => readPost(ctx.store, slugOf(f))));
   const posts: BlogSummary[] = entries.map((e) => ({
@@ -80,7 +83,7 @@ export async function listPosts(ctx: HandlerContext): Promise<BlogList> {
 }
 
 export async function getPost(ctx: HandlerContext, slug: string): Promise<BlogEntry> {
-  requireAdmin(ctx);
+  requireBlog(ctx);
   return readPost(ctx.store, slug);
 }
 
@@ -92,10 +95,10 @@ function optionalReason(body: Record<string, unknown>): string | undefined {
   return body.reason;
 }
 
-const staleSha = (path: string) => conflict(`El artículo ${path} cambió desde que lo cargaste: recarga e inténtalo de nuevo`);
+const staleSha = (slug: string) => conflict(`El artículo ${slug} cambió desde que lo abriste: recarga e inténtalo de nuevo`);
 
 export async function putPost(ctx: HandlerContext, slug: string, body: unknown): Promise<BlogWriteResult> {
-  requireAdmin(ctx);
+  requireBlog(ctx);
   if (!isPlainObject(body)) throw badRequest('El cuerpo debe ser un objeto');
   if (body.sha !== undefined && (typeof body.sha !== 'string' || !body.sha.trim())) throw badRequest('sha debe ser texto si se envía');
   const sha = body.sha as string | undefined;
@@ -111,9 +114,15 @@ export async function putPost(ctx: HandlerContext, slug: string, body: unknown):
   const parsed = parsePost(slug, body.frontmatter, body.body, { productSlugs: products.filter((f) => f.name.endsWith('.json')).map((f) => f.name.replace(/\.json$/, '')) });
   if (!parsed.ok) throw validation(`El artículo ${slug} no es válido`, parsed.errors);
 
-  if (creating && existing) throw conflict(`Ya existe ${path}: carga el artículo y guárdalo con su sha para actualizarlo`);
-  if (!creating && !existing) throw notFound(`No existe ${path} en el repositorio`);
-  if (!creating && existing && existing.sha !== sha) throw staleSha(path);
+  if (creating && existing) throw conflict(`Ya existe un artículo con la dirección /blog/${slug}: elige otra`);
+  if (!creating && !existing) throw notFound(`No existe el artículo ${slug}`);
+  if (!creating && existing && existing.sha !== sha) throw staleSha(slug);
+
+  // ADR-026: el editor escribe artículos pero no toca la foto (ni ponerla, ni cambiarla, ni quitarla)
+  if (!canPerform(ctx.user.role, 'blogImage')) {
+    const before = creating ? undefined : (await readPost(ctx.store, slug)).frontmatter.image;
+    if (!sameImage(before, parsed.value.frontmatter.image)) throw forbidden('Las fotos del blog las pone el administrador: guarda el artículo sin cambiar la foto');
+  }
 
   const content = serializePost(parsed.value.frontmatter, parsed.value.body);
   const message = commitMessage(creating ? 'crear' : 'actualizar', slug, ctx.user.username, { reason }, 'blog');
@@ -122,14 +131,14 @@ export async function putPost(ctx: HandlerContext, slug: string, body: unknown):
 }
 
 export async function deletePost(ctx: HandlerContext, slug: string, body: unknown): Promise<DeleteResult> {
-  requireAdmin(ctx);
+  requireBlog(ctx);
   if (!isPlainObject(body)) throw badRequest('El cuerpo debe ser un objeto');
   if (typeof body.sha !== 'string' || !body.sha.trim()) throw badRequest('Falta el sha actual del fichero en el cuerpo');
   const reason = optionalReason(body);
   const path = blogPath(slug);
   const existing = (await listPostFiles(ctx.store)).find((f) => f.path === path);
-  if (!existing) throw notFound(`No existe ${path} en el repositorio`);
-  if (existing.sha !== body.sha) throw staleSha(path);
+  if (!existing) throw notFound(`No existe el artículo ${slug}`);
+  if (existing.sha !== body.sha) throw staleSha(slug);
   // Nadie referencia a un artículo (es una hoja): no hay comprobación de referencias como en el catálogo.
   const { commit } = await ctx.store.remove(path, commitMessage('borrar', slug, ctx.user.username, { reason }, 'blog'), body.sha);
   return { path, commit };

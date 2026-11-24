@@ -86,7 +86,7 @@ export default function CatalogTable({ kind, entries, total, admin, onEdit, onDe
                     <strong>{d.name}</strong>
                     {hidden && <span class="badge adm-badge-hidden">Oculto</span>}
                   </div>
-                  <code class="adm-slug">{d.slug}</code>
+                  {admin && <code class="adm-slug">{d.slug}</code>}
                 </td>
                 <td role="cell" data-label={isProduct ? 'Categoría' : 'Tipo'}>{p ? categoryLabel[p.category] : partKindSingular[part!.kind]}</td>
                 <td role="cell" data-label={isProduct ? 'Precios' : 'Precio'} class="adm-td-prices">

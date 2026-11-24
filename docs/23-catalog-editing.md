@@ -50,7 +50,7 @@ Cada guardado es un commit en GitHub con el mensaje `chore(catalog): actualizar 
 
 ### 0.8 Accesos
 
-La sección **Accesos** del panel muestra "Administradores", "Editores" y la "Rama de escritura" (normalmente `main`); en desarrollo aparece además la insignia "Modo local" y el selector "Simular como…" para probar la vista de cada rol. Para cambiar los accesos, Diego edita las variables `ADMIN_EMAILS` / `EDITOR_EMAILS` y `ADMIN_INITIAL_PASSWORDS` del proyecto de Pages (y la política de Access, si está activado) y relanza el build ([19-deployment](./19-deployment.md) §12.2 y §12.6). El editor solo ve su propio email en esta sección.
+La sección **Accesos** del panel (solo la ve el administrador, ADR-026) muestra "Administradores", "Editores" y la "Rama de escritura" (normalmente `main`); en desarrollo aparece además la insignia "Modo local" y el selector "Simular como…" para probar la vista de cada rol. Para cambiar los accesos, Diego edita las variables `ADMIN_EMAILS` / `EDITOR_EMAILS` y `ADMIN_INITIAL_PASSWORDS` del proyecto de Pages (y la política de Access, si está activado) y relanza el build ([19-deployment](./19-deployment.md) §12.2 y §12.6). El editor solo ve su propio email en esta sección.
 
 ---
 

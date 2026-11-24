@@ -11,7 +11,7 @@ import { onRequestDelete, onRequestGet, onRequestPut } from '../../functions/api
 import { makeProduct, variant } from './fixtures';
 import { memoryStore, type MemoryStore } from './memoryStore';
 
-/** Blog en el panel (ADR-023): solo admin, concurrencia por sha, validación con blogSchema y frontmatter determinista. */
+/** Blog en el panel (ADR-023, ADR-026): admin y editor (el editor sin tocar fotos), concurrencia por sha, validación con blogSchema y frontmatter determinista. */
 
 const admin: AdminUser = { username: 'admin', role: 'admin', admins: ['admin'], editors: ['william'], localMode: true, branch: 'main' };
 const editor: AdminUser = { ...admin, username: 'william', role: 'editor' };
@@ -49,21 +49,39 @@ beforeEach(() => {
 });
 
 describe('política', () => {
-  it('blog y upload son operaciones de administrador', () => {
+  it('blog es de los dos roles; fotos del blog y subir PDF, solo del administrador (ADR-026)', () => {
     expect(canPerform('admin', 'blog')).toBe(true);
+    expect(canPerform('admin', 'blogImage')).toBe(true);
     expect(canPerform('admin', 'upload')).toBe(true);
-    expect(canPerform('editor', 'blog')).toBe(false);
+    expect(canPerform('editor', 'blog')).toBe(true);
+    expect(canPerform('editor', 'blogImage')).toBe(false);
     expect(canPerform('editor', 'upload')).toBe(false);
   });
 
-  it('el editor recibe 403 en listar, leer, guardar y borrar, sin tocar el almacén', async () => {
-    const reads = vi.spyOn(store, 'read');
-    for (const p of [listPosts(asEditor()), getPost(asEditor(), 'como-cuidar-la-bateria'), putPost(asEditor(), 'nuevo', { frontmatter: fm(), body: 'x' }), deletePost(asEditor(), 'como-cuidar-la-bateria', { sha: 'sha-1' })]) {
-      expect(await fails(p)).toMatchObject({ status: 403, code: 'forbidden' });
-    }
-    expect(reads).not.toHaveBeenCalled();
+  it('el editor lista, lee, crea sin foto, edita el texto conservando la foto y borra', async () => {
+    expect((await listPosts(asEditor())).posts).toHaveLength(2);
+    const lic = await getPost(asEditor(), 'necesito-licencia');
+    const created = await putPost(asEditor(), 'nuevo', { frontmatter: fm({ title: 'Nuevo' }), body: 'Texto.' });
+    expect(created.frontmatter.image).toBeUndefined();
+    const edited = await putPost(asEditor(), 'necesito-licencia', { sha: lic.sha, frontmatter: { ...lic.frontmatter, title: 'Otro título' }, body: 'Texto nuevo.' });
+    expect(edited.frontmatter.image).toEqual(lic.frontmatter.image);
+    await deletePost(asEditor(), 'como-cuidar-la-bateria', { sha: 'sha-1' });
+    expect(store.writes.map((w) => w.message.split('\n')[0])).toEqual(['chore(blog): crear nuevo por william', 'chore(blog): actualizar necesito-licencia por william']);
+    expect(store.removals).toHaveLength(1);
+  });
+
+  it('el editor no puede poner, cambiar ni quitar la foto de un artículo (403, sin escribir)', async () => {
+    const lic = await getPost(asEditor(), 'necesito-licencia');
+    const img = lic.frontmatter.image!;
+    const attempts = [
+      putPost(asEditor(), 'nuevo', { frontmatter: fm({ image: { ...img } }), body: 'x' }),
+      putPost(asEditor(), 'necesito-licencia', { sha: lic.sha, frontmatter: { ...lic.frontmatter, image: { ...img, src: '~/assets/blog/otra.webp' } }, body: 'x' }),
+      putPost(asEditor(), 'necesito-licencia', { sha: lic.sha, frontmatter: { ...lic.frontmatter, image: { ...img, alt: 'Otro texto' } }, body: 'x' }),
+      putPost(asEditor(), 'necesito-licencia', { sha: lic.sha, frontmatter: { ...lic.frontmatter, image: undefined }, body: 'x' }),
+      putPost(asEditor(), 'como-cuidar-la-bateria', { sha: 'sha-1', frontmatter: fm({ image: { ...img } }), body: 'x' }),
+    ];
+    for (const p of attempts) expect(await fails(p)).toMatchObject({ status: 403, code: 'forbidden', message: expect.stringMatching(/fotos del blog las pone el administrador/) });
     expect(store.writes).toHaveLength(0);
-    expect(store.removals).toHaveLength(0);
   });
 });
 
@@ -138,7 +156,7 @@ describe('PUT', () => {
     expect(err).toMatchObject({ status: 422, code: 'validation' });
     expect(err.details).toEqual(expect.arrayContaining([expect.stringMatching(/^category/), expect.stringMatching(/readingMinutes/)]));
     const err2 = await fails(putPost(asAdmin(), 'nuevo', { frontmatter: fm({ relatedProducts: ['no-existe'] }), body: 'Precio en €' }));
-    expect(err2.details).toEqual(['relatedProducts desconocido: no-existe', 'contiene referencias a España/EUR (€, EUR, carnet, IVA): usar S/, IGV, licencia']);
+    expect(err2.details).toEqual(['El modelo relacionado no-existe ya no está en el catálogo', 'Habla de España o del euro (€, EUR, carnet, IVA): para Perú usa S/, IGV y licencia']);
     expect(store.writes).toHaveLength(0);
   });
 
@@ -166,17 +184,14 @@ describe('rutas: orden de comprobaciones', () => {
   const ctx = (request: Request, user: AdminUser, slug: unknown, env: Env = {}) =>
     ({ request, env, data: { user }, params: { slug }, functionPath: '', waitUntil: () => {}, passThroughOnException: () => {}, next: async () => new Response() }) as unknown as Ctx;
 
-  it('editor → 403 en las cuatro rutas antes de leer el cuerpo y sin GITHUB_TOKEN', async () => {
+  it('editor: las cuatro rutas pasan el permiso del blog (sin GITHUB_TOKEN llegan a 500 config, no a 403)', async () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
     for (const handler of [onRequestGet, onRequestPut, onRequestDelete, listRoute as unknown as typeof onRequestPut]) {
       const request = new Request('https://x.test/api/admin/blog/como-cuidar-la-bateria', { method: 'PUT', body: '{"sha":"a"}', headers: { 'Content-Type': 'application/json' } });
-      const text = vi.spyOn(request, 'text');
       const res = await handler(ctx(request, editor, 'como-cuidar-la-bateria', {}));
-      expect(res.status).toBe(403);
-      expect(res.headers.get('Cache-Control')).toBe('no-store');
-      await expect(res.json()).resolves.toMatchObject({ code: 'forbidden' });
-      expect(text).not.toHaveBeenCalled();
+      expect(res.status).toBe(500);
+      await expect(res.json()).resolves.toMatchObject({ code: 'config' });
     }
     expect(fetchSpy).not.toHaveBeenCalled();
     vi.unstubAllGlobals();

@@ -45,6 +45,9 @@ const tabTitle: Record<AdminTab, string> = { products: kindLabel.products.plural
 export default function AdminApp() {
   const api = adminApi;
   const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
+  /** Solo el administrador ve detalles técnicos en los avisos de error */
+  const technicalRef = useRef(false);
+  technicalRef.current = phase.kind === 'ready' && phase.user.role === 'admin';
   const [tab, setTab] = useState<AdminTab>('products');
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<{ text: string; tone: Tone; seq: number }>({ text: '', tone: 'info', seq: 0 });
@@ -141,8 +144,10 @@ export default function AdminApp() {
           void reload();
           return CONFLICT_MESSAGE;
         }
-        const prefix = err.code === 'config' ? 'Error de configuración del panel (avisar a Diego): ' : err.code === 'upstream' ? 'Fallo de GitHub o Cloudflare (reintenta en unos minutos): ' : '';
-        const text = `${prefix}${err.details.length ? `${err.message}: ${err.details.join('; ')}` : err.message}`;
+        // El editor ve un aviso llano; el detalle técnico (GitHub, variables…) solo lo ve el administrador
+        const prefix = err.code === 'config' ? 'Error de configuración del panel: avisa al administrador' : err.code === 'upstream' ? 'No se pudo guardar ahora mismo: reintenta en unos minutos' : '';
+        const detail = err.details.length ? `${err.message}: ${err.details.join('; ')}` : err.message;
+        const text = prefix ? (technicalRef.current ? `${prefix}. Detalle: ${detail}` : `${prefix}.`) : detail;
         notify(text, 'error');
         return text;
       }
@@ -265,11 +270,7 @@ export default function AdminApp() {
     return (
       <div class="adm__panel card adm-denied" data-admin-denied>
         <h2>Sin acceso</h2>
-        <p>
-          Tu usuario está identificado pero no está autorizado en el panel (no figura en <code>ADMIN_USERS</code> ni en <code>EDITOR_USERS</code>). Pide al administrador de
-          la tienda que lo añada.
-        </p>
-        <p class="hint">Detalle del servidor: {phase.message}</p>
+        <p>Tu usuario no tiene acceso al panel. Pide al administrador de la tienda que te lo dé.</p>
         <div class="adm-who__actions">
           <button type="button" class="btn btn--secondary" onClick={() => void load()}>
             Reintentar
@@ -285,13 +286,22 @@ export default function AdminApp() {
   if (phase.kind === 'error' || !ctx) {
     return (
       <div class="adm__panel card adm-denied" role="alert" data-admin-error={phase.kind === 'error' && phase.config ? 'config' : 'error'}>
-        <h2>{phase.kind === 'error' && phase.config ? 'Configuración incompleta del panel' : 'No se pudo cargar el panel'}</h2>
-        <p>{phase.kind === 'error' ? phase.message : 'Estado desconocido'}</p>
-        {phase.kind === 'error' && phase.config && (
-          <p class="hint">
-            Faltan variables o bindings del proyecto de Cloudflare Pages (<code>ADMIN_KV</code>, <code>SESSION_SECRET</code>, <code>ADMIN_USERS</code>, <code>GITHUB_TOKEN</code>…).
-            Esto lo corrige el administrador; ver docs/19-deployment.md §12.
-          </p>
+        {phase.kind === 'error' && phase.config ? (
+          <>
+            <h2>El panel no está disponible</h2>
+            <p>Falta parte de la configuración del panel. Avisa al administrador.</p>
+            {/* Plegado: quien lleva la tienda no necesita leerlo; el administrador lo abre */}
+            <details class="hint" data-admin-tech>
+              <summary>Detalle técnico (para el administrador)</summary>
+              <p>{phase.message}</p>
+              <p>Revisa las variables del proyecto en Cloudflare Pages (docs/19-deployment.md §12).</p>
+            </details>
+          </>
+        ) : (
+          <>
+            <h2>No se pudo cargar el panel</h2>
+            <p>{phase.kind === 'error' ? phase.message : 'Estado desconocido'}</p>
+          </>
         )}
         <button type="button" class="btn btn--secondary" onClick={() => void load()}>
           Reintentar
@@ -302,8 +312,8 @@ export default function AdminApp() {
 
   const { user, catalog } = ctx;
   const isAdmin = user.role === 'admin';
-  // La pestaña Blog solo existe para el administrador (el servidor responde 403 al editor de todos modos)
-  const tabs: AdminTab[] = isAdmin ? [...CATALOG_TABS, 'blog'] : CATALOG_TABS;
+  // El blog es de los dos roles (ADR-026); al editor solo se le bloquean las fotos
+  const tabs: AdminTab[] = [...CATALOG_TABS, 'blog'];
   const catalogTab: AdminKind = tab === 'blog' ? 'products' : tab;
   const q = normalize(search.trim());
   const entries: CatalogEntry<Product | Part>[] = catalogTab === 'products' ? catalog.products : catalog.repuestos;
@@ -333,9 +343,11 @@ export default function AdminApp() {
             Conectado como <strong>{user.username}</strong> · {roleLabel[user.role]}
           </span>
           <span class="adm-chips">
-            <span class="badge" title="Rama de GitHub sobre la que se escribe">
-              rama {user.branch}
-            </span>
+            {isAdmin && (
+              <span class="badge" title="Rama de GitHub sobre la que se escribe">
+                rama {user.branch}
+              </span>
+            )}
             {user.localMode && <span class="badge badge--new">Modo local</span>}
           </span>
           <span class="adm-who__actions">
@@ -380,8 +392,8 @@ export default function AdminApp() {
               <input
                 type="search"
                 class="input adm-search"
-                placeholder="Buscar por nombre o slug"
-                aria-label="Buscar por nombre o slug"
+                placeholder="Buscar por nombre"
+                aria-label="Buscar por nombre"
                 value={search}
                 onInput={(e) => setSearch((e.target as HTMLInputElement).value)}
               />
@@ -395,7 +407,7 @@ export default function AdminApp() {
         </div>
 
         <section id={`adm-panel-${tab}`} role="tabpanel" aria-labelledby={`adm-tab-${tab}`} tabIndex={0} class="adm-tabpanel">
-          {tab === 'blog' && isAdmin ? (
+          {tab === 'blog' ? (
             <BlogPanel />
           ) : (
             <CatalogTable
@@ -409,7 +421,9 @@ export default function AdminApp() {
           )}
         </section>
 
-        <AccessPanel onSimulate={simulate} />
+        {/* Accesos habla de variables y ramas: solo para el administrador. En modo local (desarrollo) sigue visible
+            al simular el editor, porque ahí está el selector para volver. */}
+        {(isAdmin || user.localMode) && <AccessPanel onSimulate={simulate} />}
 
         {dialog?.type === 'password' && (
           <Modal title="Cambiar contraseña" onClose={() => setDialog(null)}>

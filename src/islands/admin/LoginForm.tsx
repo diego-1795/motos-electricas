@@ -53,7 +53,9 @@ export default function LoginForm({ notice, onLoggedIn }: Props) {
       setPassword('');
       onLoggedIn(user);
     } catch (err) {
-      const text = err instanceof AdminApiError ? (err.code === 'config' ? `Error de configuración del panel (avisar a Diego): ${err.message}` : err.message) : 'No se pudo iniciar sesión';
+      // Antes de entrar no se sabe quién es: un fallo de configuración se explica en llano y el detalle va a la consola
+      if (err instanceof AdminApiError && err.code === 'config') console.warn('[admin]', err.message);
+      const text = err instanceof AdminApiError ? (err.code === 'config' ? 'El panel no está disponible ahora mismo. Avisa al administrador.' : err.message) : 'No se pudo iniciar sesión';
       setError(text);
       setPassword('');
     } finally {

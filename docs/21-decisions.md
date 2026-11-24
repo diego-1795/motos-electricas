@@ -349,7 +349,7 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 
 ## ADR-023 — Blog editable desde el panel (solo admin), subida solo de PDF, imágenes siempre por git en webp, campos manual/ficha/video en el editor
 
-**Fecha:** 2026-11-04 · **Estado:** aceptada
+**Fecha:** 2026-11-04 · **Estado:** aceptada; el "solo admin" del blog lo sustituye ADR-026 (el editor también gestiona el blog, sin fotos)
 
 **Contexto.** EG Motors pidió poder editar los textos y fotos del blog y saber cómo enlazar el manual en PDF y el video de YouTube de cada producto. El panel de ADR-018 cubría solo precios, visibilidad y fichas; blog e imágenes seguían por git. ADR-020 fija que toda imagen del repo es webp. Diego decidió que las imágenes no se suban desde el panel en ningún caso: el cliente se las envía, él las convierte (`cwebp -q 90`) y las coloca por git.
 
@@ -399,3 +399,23 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 **Consecuencias.** **Migración en producción** (una vez): crear `ADMIN_USERS=admin` y `EDITOR_USERS=william`, borrar `ADMIN_EMAILS`/`EDITOR_EMAILS`, sustituir `ADMIN_INITIAL_PASSWORDS` por entradas `admin:…` (y `william:…`) generadas con el script, y *Retry deployment*. Los registros `user:<email>` del KV quedan huérfanos (inofensivos; se pueden borrar). El email personal sale del código, de `.dev.vars.example` y de las docs vigentes, aunque sigue en el historial de git. Guía: [24-guia-administrador](./24-guia-administrador.md) §1; alta y operación: [19-deployment](./19-deployment.md) §12.
 
 **Estado.** Aceptada (2026-11-23).
+
+## ADR-026 — El editor gestiona el blog (sin fotos) y no ve textos técnicos en el panel
+
+**Fecha:** 2026-11-24 · **Estado:** aceptada
+
+**Contexto.** William (rol editor) lleva la tienda y no tiene que saber de código. Tras entrar por primera vez en producción, el panel le mostraba nombres de variables (`ADMIN_USERS`/`EDITOR_USERS`), la rama de GitHub, los slugs, "commit" o "build" y enlaces a Cloudflare. Además, Diego decidió que William también escriba en el blog: lo único que no puede hacer es poner fotos. ADR-023 dejaba el blog solo al administrador.
+
+**Decisión.**
+- `adminPolicy`: la operación `blog` (listar, leer, crear, editar y borrar artículos) pasa a ser de los dos roles. La nueva operación `blogImage` (poner, cambiar o quitar `image` del frontmatter) es solo del administrador. `putPost` compara la foto enviada con la guardada (o con ninguna, al crear) y responde 403 si el editor la cambia. `upload` (PDF), `put`/`delete` del catálogo y `users` siguen siendo solo del administrador.
+- Interfaz del editor en lenguaje de tienda:
+  - No ve la sección Accesos, la insignia de rama ni los slugs de las tablas.
+  - El aviso de publicación queda sin "commit", "build" ni enlaces.
+  - Los errores `upstream`/`config` le llegan en llano ("No se pudo guardar ahora mismo…", "avisa al administrador"). Al administrador se le añade el detalle técnico.
+  - El bloque de la foto del artículo se muestra solo como información.
+  - La pantalla "configuración incompleta" pliega el detalle técnico en un `<details>`.
+- Los mensajes de `blogRules` pasan a lenguaje llano ("El título es obligatorio", "La dirección…", "Habla de España o del euro…"). El campo "Slug (URL)" pasa a llamarse "Dirección del artículo" y la búsqueda, "Buscar por nombre".
+- En modo local (solo desarrollo) Accesos sigue visible al simular el editor, porque ahí está el selector para volver.
+
+**Consecuencias.** Un artículo escrito por William es un commit `chore(blog): … por william`. El riesgo de que el editor escriba Markdown malicioso se cubre igual que con el admin: `blogRules` rechaza HTML crudo y enlaces `javascript:`/`data:` en el servidor, y la CSP sigue activa. La guía (`docs/24`, `/admin/ayuda`) explica el flujo de fotos para el editor: se envían al administrador con el título del artículo.
+

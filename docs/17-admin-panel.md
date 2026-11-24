@@ -16,11 +16,12 @@ Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018 y ADR-023, [1
 | Editar cualquier otro campo (categoría, variantes, colores, specs, manual, ficha técnica, video…) | ✓ | ✗ (403) |
 | Crear (duplicando una ficha) | ✓ | ✗ (403) |
 | Borrar | ✓ | ✗ (403) |
-| Blog: listar, leer, crear, editar y borrar artículos (ADR-023) | ✓ | ✗ (403; la pestaña no se muestra) |
+| Blog: listar, leer, crear, editar y borrar artículos (ADR-023, ADR-026) | ✓ | ✓ |
+| Blog: poner, cambiar o quitar la foto de un artículo (ADR-026) | ✓ | ✗ (403; el bloque de la foto es solo informativo) |
 | Subir PDF de manual/ficha a `public/docs` (ADR-023) | ✓ | ✗ (403) |
 | Ver la guía `/admin/ayuda` | ✓ | ✓ |
 | Cambiar su propia contraseña (ADR-024) | ✓ | ✓ |
-| Gestionar quién es admin/editor y asignar contraseñas temporales | En Cloudflare (variables `ADMIN_USERS`/`EDITOR_USERS`, `ADMIN_INITIAL_PASSWORDS`); el panel lo muestra | Solo ve su propio usuario |
+| Gestionar quién es admin/editor y asignar contraseñas temporales | En Cloudflare (variables `ADMIN_USERS`/`EDITOR_USERS`, `ADMIN_INITIAL_PASSWORDS`); el panel lo muestra en Accesos | No ve la sección Accesos (ADR-026) |
 | Restablecer la contraseña de otro usuario (ADR-025) | ✓ desde Accesos (temporal que se muestra una vez); la suya, con una entrada nueva en `ADMIN_INITIAL_PASSWORDS` | ✗ (403) |
 
 Fuera del panel (siguen por git): **todas las imágenes** (productos, repuestos, blog: se convierten a webp y se colocan en `src/assets/`; el panel solo escribe su ruta), FAQ, testimonios, categorías y textos de `src/config/site.ts`.
@@ -36,7 +37,7 @@ Navegador ───────────────────────�
                                                           │    [opcional: además JWT de Cloudflare Access]
                                                           │ 2. rol = ADMIN_USERS / EDITOR_USERS (servidor)  
                                                           │ 3. valida con src/content/schemas.ts + catalogRules
-                                                          │ 4. aplica adminPolicy (editor: solo precio/hidden)
+                                                          │ 4. aplica adminPolicy (editor: precio/hidden y blog sin fotos)
                                                           ▼
                                                    GitHub Contents API (rama main, token del bot)
                                                           │ commit "chore(catalog): … por <email>"
@@ -51,7 +52,7 @@ Navegador ───────────────────────�
 | Acceso | `functions/api/admin/_lib/auth.ts` + `src/domain/adminAuth.ts` | PBKDF2, cookie HMAC, usuarios y contadores en KV `ADMIN_KV`, política de contraseñas (≥ 10 caracteres, sin email ni secuencias); `_lib/access.ts` solo para el JWT opcional de Access |
 | Cliente HTTP | `src/services/admin/AdminApiClient.ts` | Único punto de `fetch`; sin lógica de negocio |
 | Contrato del API | `src/domain/admin.ts` | Tipos compartidos por islas y Functions (catálogo, blog, subidas) |
-| Política de roles | `src/domain/adminPolicy.ts` | Pura; `applyProductPatch`/`applyPartPatch` solo tocan precio y `hidden`; operaciones `blog` y `upload` solo admin |
+| Política de roles | `src/domain/adminPolicy.ts` | Pura; `applyProductPatch`/`applyPartPatch` solo tocan precio y `hidden`; `blog` para los dos roles; `blogImage`, `upload` y `users` solo admin (ADR-026) |
 | Reglas de catálogo | `src/domain/catalogRules.ts` | Una variante por defecto, Premium ≥ Estándar, PEN, batería, referencias |
 | Reglas del blog | `src/domain/blogRules.ts` | Slug, campos obligatorios, fechas ISO, foto `~/assets/blog/*.webp` con alt, `relatedProducts` existentes, sin €/EUR/carnet/IVA (lo mismo que `validate:content`) |
 | Frontmatter | `src/domain/frontmatter.ts` | Lector/escritor determinista del subconjunto YAML de los artículos (sin dependencias) |
@@ -76,10 +77,10 @@ Navegador ───────────────────────�
 | `PUT /api/admin/products/:slug` · `/repuestos/:slug` | admin | `{ sha?, data, reason? }` (sin `sha` = crear) | ficha + commit |
 | `DELETE …/:slug` | admin | `{ sha, reason? }` | commit; 409 si otra ficha lo referencia |
 | `GET /api/admin/deploy` | ambos | — | estado del último build de Pages o `available: false` |
-| `GET /api/admin/blog` | admin | — | `BlogList`: `{ posts: [{ slug, title, category, publishedAt, updatedAt?, author, hasImage, sha, path }], branch }`, más reciente primero |
-| `GET /api/admin/blog/:slug` | admin | — | `BlogEntry`: `{ slug, frontmatter, body, sha, path }` (frontmatter ya validado con `blogSchema`) |
-| `PUT /api/admin/blog/:slug` | admin | `{ sha?, reason?, frontmatter, body }` (sin `sha` = crear) | `BlogWriteResult` = `BlogEntry` + `commit`; escribe `src/content/blog/<slug>.md` con frontmatter determinista |
-| `DELETE /api/admin/blog/:slug` | admin | `{ sha, reason? }` | `{ path, commit }` (sin comprobación de referencias: nadie apunta a un artículo) |
+| `GET /api/admin/blog` | admin, editor | — | `BlogList`: `{ posts: [{ slug, title, category, publishedAt, updatedAt?, author, hasImage, sha, path }], branch }`, más reciente primero |
+| `GET /api/admin/blog/:slug` | admin, editor | — | `BlogEntry`: `{ slug, frontmatter, body, sha, path }` (frontmatter ya validado con `blogSchema`) |
+| `PUT /api/admin/blog/:slug` | admin, editor (403 si el editor cambia `image`) | `{ sha?, reason?, frontmatter, body }` (sin `sha` = crear) | `BlogWriteResult` = `BlogEntry` + `commit`; escribe `src/content/blog/<slug>.md` con frontmatter determinista |
+| `DELETE /api/admin/blog/:slug` | admin, editor | `{ sha, reason? }` | `{ path, commit }` (sin comprobación de referencias: nadie apunta a un artículo) |
 | `POST /api/admin/uploads` | admin | `{ path, contentBase64, reason? }` · `path` = `public/docs/<kebab>.pdf` (solo PDF) | `UploadResult`: `{ path, ref ("/docs/x.pdf"), bytes, sha, replaced, commit }`; si el fichero existe lo sustituye |
 
 Errores en JSON `{ code, error, details? }`: 401 sin identidad, 403 fuera de rol, 404, 409 conflicto de `sha` o referencias, 413 cuerpo demasiado grande, 422 validación (lista de errores legibles; en uploads: ruta fuera de `public/docs`, cabecera que no es `%PDF-`, tamaño), 502 fallo de GitHub o fichero del repo que no pasa el esquema.

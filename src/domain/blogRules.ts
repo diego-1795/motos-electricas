@@ -44,27 +44,29 @@ export function slugify(text: string): string {
 
 const isIsoDate = (s: string): boolean => /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})?)?$/.test(s) && !Number.isNaN(Date.parse(s));
 
+const REQUIRED = { title: 'El título es obligatorio', description: 'La descripción es obligatoria', author: 'El autor es obligatorio' } as const;
+
 export function blogRules(slug: string, fm: BlogFrontmatter, body: string, ctx: BlogContext = {}): string[] {
   const errs: string[] = [];
-  if (!isValidSlug(slug)) errs.push(`slug "${slug}" debe ser kebab-case (a-z, 0-9 y guiones)`);
-  for (const k of ['title', 'description', 'author'] as const) if (!fm[k].trim()) errs.push(`${k} es obligatorio`);
-  if (!isIsoDate(fm.publishedAt)) errs.push(`publishedAt "${fm.publishedAt}" no es una fecha válida (AAAA-MM-DD o ISO)`);
-  if (fm.updatedAt !== undefined && !isIsoDate(fm.updatedAt)) errs.push(`updatedAt "${fm.updatedAt}" no es una fecha válida (AAAA-MM-DD o ISO)`);
+  if (!isValidSlug(slug)) errs.push(`La dirección "${slug}" solo puede llevar minúsculas sin tildes, números y guiones (kebab-case)`);
+  for (const k of ['title', 'description', 'author'] as const) if (!fm[k].trim()) errs.push(REQUIRED[k]);
+  if (!isIsoDate(fm.publishedAt)) errs.push(`La fecha de publicación "${fm.publishedAt}" no es válida`);
+  if (fm.updatedAt !== undefined && !isIsoDate(fm.updatedAt)) errs.push(`La fecha de actualización "${fm.updatedAt}" no es válida`);
   if (fm.image) {
-    if (!BLOG_IMAGE_RE.test(fm.image.src)) errs.push(`image.src debe ser ~/assets/blog/<nombre>.webp (es "${fm.image.src}")`);
-    if (!fm.image.alt.trim()) errs.push('image.alt es obligatorio (texto alternativo de la foto)');
+    if (!BLOG_IMAGE_RE.test(fm.image.src)) errs.push(`La ruta de la foto debe ser ~/assets/blog/<nombre>.webp (es "${fm.image.src}")`);
+    if (!fm.image.alt.trim()) errs.push('La foto necesita un texto alternativo (describe lo que se ve)');
   }
   const seen = new Set<string>();
   for (const r of fm.relatedProducts) {
-    if (seen.has(r)) errs.push(`relatedProducts repetido: ${r}`);
+    if (seen.has(r)) errs.push(`Modelo relacionado repetido: ${r}`);
     seen.add(r);
-    if (ctx.productSlugs && !ctx.productSlugs.includes(r)) errs.push(`relatedProducts desconocido: ${r}`);
+    if (ctx.productSlugs && !ctx.productSlugs.includes(r)) errs.push(`El modelo relacionado ${r} ya no está en el catálogo`);
   }
-  if (!body.trim()) errs.push('el cuerpo del artículo está vacío');
-  if (body.length > MAX_BODY_CHARS) errs.push(`el cuerpo supera los ${MAX_BODY_CHARS} caracteres`);
-  if (RAW_HTML_RE.test(body)) errs.push('el cuerpo no puede contener etiquetas HTML (<script>, <iframe>, <meta>, <style>, <form>…): usa solo Markdown');
-  if (/\]\(\s*(javascript|data|vbscript):/i.test(body)) errs.push('los enlaces del artículo solo pueden ser http(s), rutas del sitio o mailto:');
+  if (!body.trim()) errs.push('El texto del artículo está vacío');
+  if (body.length > MAX_BODY_CHARS) errs.push(`El texto supera los ${MAX_BODY_CHARS} caracteres`);
+  if (RAW_HTML_RE.test(body)) errs.push('El texto no puede llevar código HTML (<script>, <iframe>, <style>…): usa solo el formato indicado (## títulos, **negrita**, listas, enlaces)');
+  if (/\]\(\s*(javascript|data|vbscript):/i.test(body)) errs.push('Los enlaces solo pueden ir a una web (https://…), a una página de la tienda (/repuestos…) o a un email (mailto:)');
   const text = `${fm.title}\n${fm.description}\n${body}`;
-  if (FOREIGN_MARKET_RE.test(text)) errs.push('contiene referencias a España/EUR (€, EUR, carnet, IVA): usar S/, IGV, licencia');
+  if (FOREIGN_MARKET_RE.test(text)) errs.push('Habla de España o del euro (€, EUR, carnet, IVA): para Perú usa S/, IGV y licencia');
   return errs;
 }

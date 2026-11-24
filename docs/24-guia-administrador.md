@@ -25,23 +25,23 @@ En la esquina superior derecha del panel hay un enlace **Ayuda** que abre esta g
 
 ## 2. Qué puede hacer cada persona
 
-| Acción | Administrador (Diego) | Editor (Wiliam) |
+| Acción | Administrador (Diego) | Editor (William) |
 |---|---|---|
 | Ver todos los productos y repuestos, incluidos los ocultos | Sí | Sí |
 | Cambiar precios | Sí | Sí |
 | Ocultar o mostrar un producto o repuesto | Sí | Sí |
 | Editar la ficha completa (nombre, descripción, versiones, colores, manual, ficha técnica, video…) | Sí | No |
 | Agregar o borrar productos y repuestos | Sí | No |
-| Escribir, editar o borrar artículos del blog | Sí | No |
+| Escribir, editar o borrar artículos del blog | Sí | Sí, salvo la foto del artículo (la pone el administrador) |
 | Subir el PDF del manual o de la ficha técnica | Sí | No |
 | Subir fotos | Nadie desde el panel: se envían a Diego, que las coloca por git (sección 6) | — |
 | Cambiar su propia contraseña | Sí | Sí |
 
-El editor no ve los botones ni la pestaña de las acciones que no puede hacer; y aunque los viera, el servidor las rechaza.
+El editor no ve los botones de las acciones que no puede hacer, ni los datos técnicos del panel (sección Accesos, direcciones internas); y aunque intentara una acción no permitida, el servidor la rechaza.
 
 ## 3. Cambiar un precio (administrador y editor)
 
-1. En la pestaña **Productos** (o **Repuestos**) busca la fila del modelo. Puedes escribir en el cuadro "Buscar por nombre o slug".
+1. En la pestaña **Productos** (o **Repuestos**) busca la fila del modelo. Puedes escribir en el cuadro "Buscar por nombre".
 2. Cada producto tiene un campo de precio por versión: **Estándar** y **Premium** (la Titan Rhino solo una). Escribe el nuevo importe **en soles**, por ejemplo `1250`, `1,250` o `1250.50`.
 3. Al cambiar el número aparecen "Motivo (opcional)", **Guardar** y **Cancelar**. El motivo (por ejemplo "nueva lista del proveedor") queda en el historial.
 4. Pulsa **Guardar**. Aparece el aviso "Publicando… los cambios tardan unos 3 minutos en verse en la web". No hay que hacer nada más.
@@ -98,7 +98,7 @@ El flujo es siempre el mismo:
    - Artículo → bloque **Foto del artículo (opcional)**: "Añadir foto (por ruta)" y los mismos campos.
 4. Pulsa **Guardar**.
 
-Reglas que el panel comprueba: la ruta debe empezar por `~/assets/` (o por `/` o `https://` si es un enlace externo); el texto alternativo es obligatorio; ancho y alto deben ser números mayores que 0. Lo que el panel **no puede** comprobar es que la foto exista ya en la web: si guardas una ruta de una foto que Diego aún no ha colocado, la publicación falla y la web se queda con la versión anterior (el aviso dirá "El build ha fallado"). Por eso, **mientras no existan las fotos, guarda el producto como Oculto** y muéstralo cuando Diego confirme que están; en el blog, deja el artículo sin foto hasta entonces (es opcional).
+Reglas que el panel comprueba: la ruta debe empezar por `~/assets/` (o por `/` o `https://` si es un enlace externo); el texto alternativo es obligatorio; ancho y alto deben ser números mayores que 0. Lo que el panel **no puede** comprobar es que la foto exista ya en la web: si guardas una ruta de una foto que Diego aún no ha colocado, la publicación falla y la web se queda con la versión anterior (el aviso dirá "No se ha podido publicar"). Por eso, **mientras no existan las fotos, guarda el producto como Oculto** y muéstralo cuando Diego confirme que están; en el blog, deja el artículo sin foto hasta entonces (es opcional).
 
 *[Captura: bloque "Fotos del producto" con una foto y sus cuatro campos]*
 
@@ -134,7 +134,9 @@ Si subes otra vez un PDF con el mismo nombre (mismo producto y mismo tipo), sust
 
 Si el campo queda vacío, la pestaña Video muestra el aviso de lanzamiento en el canal de YouTube. Un enlace que no sea de YouTube se rechaza con el mensaje "Video de YouTube: pega un enlace de youtube.com/watch?v=…".
 
-## 9. El blog (solo administrador)
+## 9. El blog (administrador y editor)
+
+El editor puede hacer todo lo de esta sección **salvo poner, cambiar o quitar la foto** de un artículo (9.2): en su lugar, el bloque de la foto le recuerda que la pone el administrador. Si quieres una foto en un artículo, envíasela con el título del artículo.
 
 La pestaña **Blog** muestra la lista de artículos con su título, categoría, fecha y si tienen foto, y los botones **Editar**, **Ver** (abre el artículo en la web) y **Borrar**.
 
@@ -143,11 +145,11 @@ La pestaña **Blog** muestra la lista de artículos con su título, categoría, 
 1. Pulsa **Editar** en la fila del artículo. Se abre "Editar artículo: <título>".
 2. Campos:
    - **Título** y **Descripción** (el resumen que sale en Google y en la lista del blog).
-   - **Slug (URL)**: no se puede cambiar en un artículo existente.
+   - **Dirección del artículo**: la parte final de su dirección web (`/blog/…`); no se puede cambiar en un artículo existente.
    - **Categoría**, **Autor**, **Fecha de publicación** y **Fecha de actualización (opcional)**: si retocas un artículo antiguo, pon la fecha de hoy en "actualización".
    - **Modelos relacionados**: marca los productos que se mostrarán al final del artículo.
    - **Foto del artículo (opcional)**: ver 9.2.
-   - **Texto del artículo (Markdown)**: el cuerpo. Es texto normal con unas marcas sencillas:
+   - **Texto del artículo**: el cuerpo. Es texto normal con unas marcas sencillas:
      - Título de sección: una línea que empiece por `## ` (por ejemplo `## Cuándo cargar la batería`).
      - **Negrita**: `**texto**`. *Cursiva*: `*texto*`.
      - Lista con viñetas: líneas que empiecen por `- `. Lista numerada: `1. `, `2. `…
@@ -160,7 +162,7 @@ Reglas que el panel comprueba antes de guardar: título, descripción y autor no
 
 *[Captura: editor de artículo con los campos y el cuadro de texto Markdown]*
 
-### 9.2 La foto del artículo
+### 9.2 La foto del artículo (solo administrador)
 
 Como en los productos, la foto **no se sube desde el panel** (sección 6): se la envías a Diego, que la coloca como `~/assets/blog/<slug-del-artículo>.webp` y te confirma el ancho y alto.
 
@@ -173,21 +175,21 @@ Como en los productos, la foto **no se sube desde el panel** (sección 6): se la
 ### 9.3 Crear un artículo nuevo
 
 1. Pulsa **Nuevo artículo**.
-2. Escribe el **Título**: el **Slug (URL)** se propone solo (por ejemplo "¿Cómo elegir una bicimoto eléctrica?" → `como-elegir-una-bicimoto-electrica`). Puedes cambiarlo antes de guardar; después ya no.
+2. Escribe el **Título**: la **Dirección del artículo** se propone sola (por ejemplo "¿Cómo elegir una bicimoto eléctrica?" → `como-elegir-una-bicimoto-electrica`). Puedes cambiarlo antes de guardar; después ya no.
 3. Rellena descripción, categoría, fechas, modelos relacionados, la foto (opcional) y el texto.
-4. Pulsa **Publicar artículo**. En unos minutos estará en `https://<dominio>/blog/<slug>` y en la lista del blog.
+4. Pulsa **Publicar artículo**. En unos minutos estará en `https://raiden.com.pe/blog/<dirección>` y en la lista del blog.
 
 ### 9.4 Borrar un artículo
 
-**Borrar** → escribe el slug para confirmar → **Borrar**. El artículo desaparece de la web en la siguiente publicación. El historial de cambios permite recuperarlo si fue un error (pídeselo a Diego).
+**Borrar** → escribe la dirección del artículo para confirmar → **Borrar**. El artículo desaparece de la web en la siguiente publicación. El historial de cambios permite recuperarlo si fue un error (pídeselo a Diego).
 
 ## 10. Qué pasa cuando guardas
 
 Cada vez que pulsas **Guardar**, **Publicar artículo**, **Subir PDF** o **Borrar**:
 
 1. El panel envía el cambio al servidor, que lo revisa (campos obligatorios, precios, enlaces seguros, etc.). Si algo está mal, lo verás en rojo y **no se publica nada**.
-2. Si está bien, el cambio se guarda en el **historial de la web (GitHub)** con tu correo, qué cambiaste y el motivo que escribiste. Nada se pierde: siempre se puede volver atrás.
-3. Automáticamente se **reconstruye y publica la web**. Arriba del panel aparece el aviso **"Publicando… los cambios tardan unos 3 minutos en verse en la web"** con un contador (o "En cola" → "Construyendo el sitio" → "Publicado" cuando el estado real está conectado).
+2. Si está bien, el cambio se guarda en el **historial de la web (GitHub)** con tu usuario, qué cambiaste y el motivo que escribiste. Nada se pierde: siempre se puede volver atrás.
+3. Automáticamente se **reconstruye y publica la web**. Arriba del panel aparece el aviso **"Publicando… los cambios tardan unos 3 minutos en verse en la web"** con un contador (o "En cola" → "Preparando la web" → "Publicado" cuando el estado real está conectado).
 4. Pasados esos minutos, recarga la página pública para ver el cambio. Si en 10 minutos no se ve, avisa a Diego.
 
 No hace falta esperar a que termine para seguir editando otras cosas; cada guardado es una publicación.
@@ -197,7 +199,7 @@ No hace falta esperar a que termine para seguir editando otras cosas; cada guard
 | Mensaje | Qué significa | Qué hacer |
 |---|---|---|
 | "Sin acceso" | Tu usuario no está autorizado en el panel | Pedir al administrador que lo añada |
-| "La sesión de Cloudflare Access ha caducado" | Pasaron 24 horas desde el código | Recargar la página y pedir un código nuevo |
+| "La sesión ha caducado" | Pasó demasiado tiempo desde que entraste | Volver a entrar con tu usuario y contraseña |
 | "Importe no válido" | El precio tiene letras o un formato raro | Escribir solo números: `1250` o `1250.50` |
 | "La versión Premium no puede ser más barata que la Estándar" | Regla de la tienda | Cambiar primero la otra versión |
 | "Alguien modificó esta ficha; se ha recargado" | Otra persona guardó la misma ficha antes que tú | Repetir tu cambio sobre los datos recargados |
@@ -206,10 +208,11 @@ No hace falta esperar a que termine para seguir editando otras cosas; cada guard
 | "Ruta de destino no permitida" / "el fichero no es un PDF" | El archivo no es un PDF | Elegir un PDF real |
 | "El PDF pesa … el máximo es 10 MB" | Archivo demasiado grande | Comprimir el PDF (por ejemplo con "Guardar como tamaño reducido") |
 | "foto 1: la ruta debe empezar por ~/assets/…" | La ruta de la foto está mal escrita | Copiar la ruta exacta que dio Diego (sección 6) |
-| "image.src debe ser ~/assets/blog/<nombre>.webp" | La foto del artículo apunta fuera de la carpeta del blog | Usar `~/assets/blog/<slug>.webp` |
-| "Fallo de GitHub o Cloudflare (reintenta en unos minutos)" | Problema temporal del servicio | Esperar unos minutos y repetir |
-| "Configuración incompleta del panel (avisar a Diego)" | Falta una configuración en el servidor | Avisar a Diego |
-| "El build ha fallado" | La web no pudo reconstruirse; sigue la versión anterior | Avisar a Diego; normalmente es una foto referenciada que no existe |
+| "La ruta de la foto debe ser ~/assets/blog/<nombre>.webp" | La foto del artículo apunta fuera de la carpeta del blog (administrador) | Usar `~/assets/blog/<dirección>.webp` |
+| "Las fotos del blog las pone el administrador…" | Con el usuario de editor se intentó cambiar la foto de un artículo | Enviar la foto al administrador |
+| "No se pudo guardar ahora mismo: reintenta en unos minutos" | Problema temporal del servicio | Esperar unos minutos y repetir |
+| "Error de configuración del panel" / "El panel no está disponible" | Falta una configuración en el servidor | Avisar a Diego |
+| "No se ha podido publicar" | La web no pudo reconstruirse; sigue la versión anterior | Avisar a Diego; normalmente es una foto referenciada que no existe |
 
 ## 12. Cosas que siguen haciéndose fuera del panel
 

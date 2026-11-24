@@ -83,7 +83,9 @@ function fromForm(f: Form, entry: BlogEntry | undefined): { frontmatter: BlogFro
  * servidor (blogRules) se comprueban antes de enviar.
  */
 export default function BlogEditor({ entry, onClose, onSaved }: Props) {
-  const { api, catalog, handleError } = useAdmin();
+  const { api, catalog, handleError, user } = useAdmin();
+  /** ADR-026: el editor escribe artículos, pero las fotos las pone el administrador */
+  const canEditImage = user.role === 'admin';
   const creating = !entry;
   const [form, setForm] = useState<Form>(() => toForm(entry));
   const [reason, setReason] = useState('');
@@ -110,7 +112,7 @@ export default function BlogEditor({ entry, onClose, onSaved }: Props) {
     if (saving || stale) return;
     const slug = form.slug.trim();
     const local: string[] = [];
-    if (creating && !isValidSlug(slug)) local.push('El slug debe ir en minúsculas, números y guiones (p. ej. como-elegir-una-bicimoto)');
+    if (creating && !isValidSlug(slug)) local.push('La dirección solo puede llevar minúsculas sin tildes, números y guiones (p. ej. como-elegir-una-bicimoto)');
     const built = fromForm(form, entry);
     local.push(...blogRules(slug, built.frontmatter, built.body, { productSlugs: catalog.products.map((p) => p.data.slug) }));
     if (local.length) return setErrors(local);
@@ -147,7 +149,7 @@ export default function BlogEditor({ entry, onClose, onSaved }: Props) {
             <input class="input" value={form.title} onInput={(e) => setTitle((e.target as HTMLInputElement).value)} required />
           </label>
           <label class="field adm-form__full">
-            <span class="label">Slug (URL)</span>
+            <span class="label">Dirección del artículo</span>
             <input
               class="input"
               value={form.slug}
@@ -158,7 +160,7 @@ export default function BlogEditor({ entry, onClose, onSaved }: Props) {
               spellcheck={false}
             />
             <span id={`${uid}-slug`} class="hint">
-              /blog/{form.slug || '<slug>'}
+              /blog/{form.slug || '…'}
               {creating ? ' · se propone a partir del título; minúsculas, números y guiones. Después no se puede cambiar.' : ''}
             </span>
           </label>
@@ -202,11 +204,18 @@ export default function BlogEditor({ entry, onClose, onSaved }: Props) {
 
         <fieldset class="adm-fieldset" data-admin-post-image>
           <legend class="label">Foto del artículo (opcional)</legend>
-          <p class="hint">
-            Las fotos no se suben desde el panel: se envían a Diego, que las convierte a webp y las coloca en <code>src/assets/blog/</code>. Aquí solo se escribe su ruta, p. ej.{' '}
-            <code>~/assets/blog/{form.slug || '<slug>'}.webp</code>, con el ancho y alto reales en píxeles.
-          </p>
-          {form.image ? (
+          {!canEditImage ? (
+            <p class="hint" data-admin-image-locked>
+              {form.image ? `Este artículo tiene foto («${form.image.alt}»). ` : 'Este artículo no tiene foto. '}
+              Las fotos las pone el administrador: si quieres añadir o cambiar una, envíasela y dile en qué artículo va.
+            </p>
+          ) : (
+            <p class="hint">
+              Las fotos no se suben desde el panel: se convierten a webp y se colocan en <code>src/assets/blog/</code> por git. Aquí solo se escribe su ruta, p. ej.{' '}
+              <code>~/assets/blog/{form.slug || '<slug>'}.webp</code>, con el ancho y alto reales en píxeles.
+            </p>
+          )}
+          {!canEditImage ? null : form.image ? (
             <>
               <ImageFields value={form.image} onChange={(image) => set('image', image)} label="Foto" placeholder={`~/assets/blog/${form.slug || '<slug>'}.webp`} />
               <div>
@@ -225,9 +234,9 @@ export default function BlogEditor({ entry, onClose, onSaved }: Props) {
         </fieldset>
 
         <label class="field">
-          <span class="label">Texto del artículo (Markdown)</span>
+          <span class="label">Texto del artículo</span>
           <span class="hint" id={`${uid}-md`}>
-            <code>## Título de sección</code> · <code>**negrita**</code> · <code>*cursiva*</code> · listas con <code>- </code> o <code>1. </code> · enlaces <code>[texto](/repuestos)</code> · línea en blanco entre párrafos.
+            Formato: <code>## Título de sección</code> · <code>**negrita**</code> · <code>*cursiva*</code> · listas con <code>- </code> o <code>1. </code> · enlaces <code>[texto](/repuestos)</code> · línea en blanco entre párrafos.
             Precios en soles (S/), nunca € ni IVA.
           </span>
           <textarea class="textarea adm-body" value={form.body} onInput={(e) => set('body', (e.target as HTMLTextAreaElement).value)} aria-describedby={`${uid}-md`} spellcheck required />
