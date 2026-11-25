@@ -200,6 +200,8 @@ Reglas que el panel comprueba antes de guardar: título, descripción y autor no
 
 *[Captura: editor de artículo con los campos y el cuadro de texto Markdown]*
 
+**Vista previa:** el botón **Vista previa** (abajo, junto a los de guardar) muestra la página completa tal como se verá en la web: categoría, título, resumen, fecha, minutos de lectura, autor, el texto con su formato y los modelos relacionados. La foto no se puede mostrar antes de publicar: aparece un recuadro en su sitio con su texto alternativo (las fotos las pone el administrador). **Volver a editar** regresa al formulario sin perder nada; la vista previa no guarda nada.
+
 ### 9.2 La foto del artículo (solo administrador)
 
 Como en los productos, la foto **no se sube desde el panel** (sección 6): se la envías a Diego, que la coloca como `~/assets/blog/<slug-del-artículo>.webp` y te confirma el ancho y alto.

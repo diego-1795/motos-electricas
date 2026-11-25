@@ -23,6 +23,7 @@ Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018 y ADR-023, [1
 | Blog: ver y elegir la dirección (slug) de un artículo nuevo (ADR-027) | ✓ | — (sale sola del título; `-2`, `-3`… si ya existe) |
 | Blog: guardar como borrador, pasar a borrador y publicar (ADR-029) | ✓ | ✓ |
 | Blog: editor visual (títulos, colores de la marca, listas, tablas, avisos, enlaces, vídeo de YouTube; ADR-031) | ✓ | ✓ |
+| Blog: vista previa de la página completa antes de guardar (ADR-036) | ✓ | ✓ |
 | Subir PDF de manual/ficha a `public/docs` (ADR-023) | ✓ | ✗ (403) |
 
 Las promociones son productos con `category: "promociones"`; el panel las muestra en su propia pestaña **Promociones** (ADR-033), con "Nueva promoción" que copia una promoción y deja esa categoría. El PATCH acepta además `specs` y `variantSpecs` (productos), `specs` (repuestos) y `stock` (ambos); tras un PATCH con especificaciones el servidor valida la ficha resultante con el mismo esquema y reglas que un PUT.

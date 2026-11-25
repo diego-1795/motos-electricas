@@ -11,6 +11,7 @@ import { AdminApiError } from '../../services/admin/AdminApiClient';
 import { STALE_EDITOR_MESSAGE, useAdmin } from './context';
 import ImageFields from './ImageFields';
 import Modal from './Modal';
+import ArticlePreview from './ArticlePreview';
 
 interface Props {
   /** Edición: artículo cargado del repositorio (PUT con sha). Sin él: artículo nuevo (PUT sin sha). */
@@ -132,6 +133,9 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
   const creating = !entry;
   // El editor visual (Tiptap, ~100 KB) se carga solo al abrir un artículo: el resto del panel no lo paga
   const [editorKey, setEditorKey] = useState(0);
+  /** Vista previa de la página completa (ADR-036). El formulario se oculta, no se desmonta: el editor conserva texto y deshacer */
+  const [preview, setPreview] = useState(false);
+  const previewTop = useRef<HTMLDivElement>(null);
   const [Visual, setVisual] = useState<typeof import('./editor/VisualEditor').default | null>(null);
   useEffect(() => {
     let alive = true;
@@ -255,6 +259,21 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
             </div>
           </div>
         )}
+        <div ref={previewTop} />
+        {preview && (
+          <ArticlePreview
+            title={form.title}
+            description={form.description}
+            categoryLabel={blogCategoryLabel[form.category]}
+            publishedAt={form.publishedAt}
+            author={form.author}
+            minutes={minutes}
+            image={form.image}
+            body={form.body}
+            related={catalog.products.filter((p) => form.relatedProducts.includes(p.data.slug)).map((p) => p.data.name)}
+          />
+        )}
+        <div hidden={preview} class="adm-blog-fields" data-admin-blog-fields>
         <div class="adm-form__grid">
           <label class="field adm-form__full">
             <span class="label">Título</span>
@@ -362,6 +381,7 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
             {words} palabras · {minutes} min de lectura (se calcula solo)
           </span>
         </div>
+        </div>
 
 
         {errors.length > 0 && (
@@ -384,6 +404,20 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
         <div class="adm-form__actions">
           <button type="button" class="btn btn--ghost" onClick={onClose} disabled={saving}>
             Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn--secondary"
+            aria-pressed={preview}
+            onClick={() => {
+              setPreview((p) => !p);
+              // Que se vea el principio de la vista previa (o del formulario al volver)
+              requestAnimationFrame(() => previewTop.current?.scrollIntoView({ block: 'start' }));
+            }}
+            disabled={saving}
+            data-admin-preview-toggle
+          >
+            {preview ? 'Volver a editar' : 'Vista previa'}
           </button>
           <button type="button" class="btn btn--secondary" onClick={() => void save(true)} disabled={saving} aria-disabled={stale || undefined} data-admin-save-draft>
             {wasDraft ? 'Guardar borrador' : 'Pasar a borrador'}

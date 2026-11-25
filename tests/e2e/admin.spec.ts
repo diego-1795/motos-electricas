@@ -1340,6 +1340,45 @@ test.describe('Panel de administración', () => {
     expect(patch.body).toEqual({ sha: 'sha-motor-1', specs: [{ label: 'Voltaje', value: '48 V' }, { label: 'Potencia', value: '350 W' }] });
   });
 
+  test('vista previa de la página completa: cabecera, foto, texto con formato y modelos; al volver no se pierde nada (ADR-036)', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await page.getByRole('tab', { name: 'Blog' }).click();
+    await page.getByRole('button', { name: 'Editar artículo Cómo cuidar la batería' }).click();
+    const dialog = page.getByRole('dialog');
+    const ve = dialog.getByLabel('Texto del artículo');
+    await expect(ve).toBeVisible();
+    await selectText(ve, 'Nunca la dejes vacía', 'end');
+    await page.keyboard.type(' ni al sol');
+    await dialog.locator('[data-admin-preview-toggle]').click();
+    const preview = dialog.locator('[data-admin-preview]');
+    await expect(preview).toBeVisible();
+    await expect(dialog.locator('[data-admin-blog-fields]')).toBeHidden();
+    await expect(preview.getByRole('heading', { level: 1 })).toHaveText('Cómo cuidar la batería');
+    await expect(preview.locator('.eyebrow')).toHaveText('Baterías');
+    await expect(preview).toContainText('Guía práctica.');
+    await expect(preview).toContainText(/27 de octubre de 2026 · \d+ min de lectura · Equipo Raiden/);
+    await expect(preview.locator('.prose h2')).toHaveText('Resumen');
+    await expect(preview.locator('.prose')).toContainText('Nunca la dejes vacía ni al sol');
+    await expect(preview.locator('.adm-preview__related')).toContainText('Águila Test');
+    // Sin foto en este artículo; nada se ha guardado
+    await expect(preview.locator('[data-admin-preview-photo]')).toHaveCount(0);
+    expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(0);
+    // Volver a editar: el texto y la posibilidad de deshacer siguen ahí
+    await dialog.locator('[data-admin-preview-toggle]').click();
+    await expect(preview).toHaveCount(0);
+    await expect(ve).toContainText('Nunca la dejes vacía ni al sol');
+    await ve.click();
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(ve).not.toContainText('ni al sol');
+    // Con foto: se indica su sitio (las fotos las pone el administrador)
+    await dialog.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(dialog).toBeHidden();
+    await page.getByRole('button', { name: 'Editar artículo ¿Necesito licencia?' }).click();
+    await page.getByRole('dialog').locator('[data-admin-preview-toggle]').click();
+    await expect(page.getByRole('dialog').locator('[data-admin-preview-photo]')).toContainText('«Bicimoto»');
+  });
+
   test('borrador: se guarda sin publicar, se marca en la lista y luego se publica; un publicado puede pasar a borrador (ADR-029)', async ({ page }) => {
     const { calls } = await mockApi(page, { role: 'editor' });
     await openAdmin(page);
@@ -1554,5 +1593,9 @@ test.describe('Panel de administración', () => {
     await page.locator('[data-ve="link"]').click();
     await expect(page.locator('[data-ve-panel="link"]')).toBeVisible();
     await audit('editor visual con tabla y enlace');
+    await page.keyboard.press('Escape');
+    await page.locator('[data-admin-preview-toggle]').click();
+    await expect(page.locator('[data-admin-preview]')).toBeVisible();
+    await audit('vista previa del artículo');
   });
 });

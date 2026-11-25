@@ -596,3 +596,18 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 
 **Consecuencias.** Como las ventas cierran por WhatsApp, el stock no baja solo: el editor lo actualiza y cada cambio es un commit y un build (unos 3 minutos), igual que un precio. Si algún día hay pedidos con backend (Supabase), el stock podrá descontarse al confirmar.
 
+## ADR-036 — Vista previa de la página completa del artículo en el panel
+
+**Fecha:** 2026-11-25 · **Estado:** aceptada
+
+**Contexto.** El editor visual (ADR-031) enseña el formato del texto, pero no cómo queda la página entera (cabecera, foto y modelos relacionados). Diego pidió una vista previa completa.
+
+**Decisión.**
+- Botón **Vista previa / Volver a editar** junto a los de guardar. `ArticlePreview` pinta la cabecera como `/blog/[slug]`: categoría, título, entradilla, fecha, minutos de lectura y autor. Después vienen el texto con los mismos estilos `.prose` de la web y los modelos relacionados.
+- El formulario se oculta (`hidden`) en vez de desmontarse, así el editor conserva el texto y el historial de deshacer.
+- La vista previa no guarda nada.
+- **Foto.** Las fotos solo las pone el administrador o se colocan por código (ADR-023/026). Además, Astro las procesa al publicar, así que no tienen dirección en el panel: la vista previa muestra un recuadro en su sitio con el texto alternativo.
+- **Seguridad.** El cuerpo se pinta con `dangerouslySetInnerHTML` solo si pasa `validateBlogHtml`, la misma lista blanca que el servidor. Si no la pasa, se muestra un aviso.
+
+**Consecuencias.** Es una aproximación fiel: no incluye la cabecera ni el pie de la web, ni el bloque de contacto final. El vídeo aparece como su enlace, igual que en la web antes de pulsar. Tests: e2e de la vista previa (sin guardar nada, volver sin perder texto ni deshacer, recuadro de la foto) y axe con la vista previa abierta.
+
