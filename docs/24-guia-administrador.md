@@ -27,11 +27,13 @@ En la esquina superior derecha del panel hay un enlace **Ayuda** que abre esta g
 
 ## 2. Qué puede hacer cada persona
 
-| Acción | Administrador (Diego) | Editor (William) |
+| Acción | Administrador (`admin`) | Editor (p. ej. `william`) |
 |---|---|---|
 | Ver todos los productos y repuestos, incluidos los ocultos | Sí | Sí |
 | Cambiar precios | Sí | Sí |
 | Ocultar o mostrar un producto o repuesto | Sí | Sí |
+| Cambiar las especificaciones de motos y repuestos (sección 4b) | Sí | Sí |
+| Poner el stock (unidades) de cada versión y repuesto (sección 4c) | Sí | Sí |
 | Editar la ficha completa (nombre, descripción, versiones, colores, manual, ficha técnica, video…) | Sí | No |
 | Agregar o borrar productos y repuestos | Sí | No |
 | Escribir, editar o borrar artículos del blog | Sí | Sí, salvo la foto del artículo (la pone el administrador) |
@@ -43,7 +45,7 @@ El editor no ve los botones de las acciones que no puede hacer, ni los datos té
 
 ## 3. Cambiar un precio (administrador y editor)
 
-1. En la pestaña **Productos** (o **Repuestos**) busca la fila del modelo. Puedes escribir en el cuadro "Buscar por nombre".
+1. En la pestaña **Productos**, **Promociones** o **Repuestos** busca la fila. Las promociones tienen su propia pestaña, separada de los demás productos. Puedes escribir en el cuadro "Buscar por nombre".
 2. Cada producto tiene un campo de precio por versión: **Estándar** y **Premium** (la Titan Rhino solo una). Escribe el nuevo importe **en soles**, por ejemplo `1250`, `1,250` o `1250.50`.
 3. Al cambiar el número aparecen **Guardar** y **Cancelar**. El historial de cambios ya guarda quién cambió el precio y de cuánto a cuánto.
 4. Pulsa **Guardar**. Aparece el aviso "Publicando… los cambios tardan unos 3 minutos en verse en la web". No hay que hacer nada más.
@@ -62,11 +64,34 @@ En cada fila hay un interruptor **Oculto**. Al activarlo, el producto desaparece
 
 Úsalo para modelos sin stock por mucho tiempo o descatalogados temporalmente. Si solo es falta de stock por unos días, es mejor cambiar la disponibilidad a **Agotado** desde "Editar ficha" (lo hace el administrador): el producto se sigue viendo, pero no se puede pedir.
 
+## 4b. Especificaciones de motos y repuestos (administrador y editor)
+
+En cada fila hay un botón **Especificaciones**.
+
+- **Motos:** se abre un formulario por bloques: *Rendimiento* (autonomía, velocidad, potencia), *Batería* (voltaje, Ah, tipo, horas de carga…; los kWh se calculan solos), *Medidas y capacidad*, *Equipamiento* (motor, frenos, luces, modos de conducción…), *Licencia y garantía* y *Características* (una por línea). Los campos con * son obligatorios. Si la moto tiene versión Estándar y Premium, al final hay un bloque por versión con **lo que cambia**: deja vacío lo que sea igual que en la ficha.
+- **Repuestos:** una lista libre de **nombre / valor** (por ejemplo *Voltaje → 48 V*, *Capacidad → 12 Ah*). **Añadir especificación** agrega una fila; las flechas las ordenan y **Quitar** las borra. En la web salen como tabla en la página del repuesto.
+
+Pulsa **Guardar especificaciones**. Si falta algo o un número está mal escrito, el panel lo dice en rojo y no guarda.
+
+## 4c. Stock y "¡Últimas unidades!" (administrador y editor)
+
+En la columna **Stock** de la tabla escribe cuántas unidades hay de cada versión (o del repuesto) y pulsa **Guardar**. Vacío = sin control de stock: manda la disponibilidad que tenga la ficha.
+
+Con un número, la web decide sola:
+
+| Unidades | Motos | Repuestos |
+|---|---|---|
+| 0 | Agotado (no se puede añadir al carrito) | Agotado |
+| Pocas | 1 o 2 → **¡Últimas unidades!** | de 1 a 5 → **¡Últimas unidades!** |
+| Más | En stock | En stock |
+
+Si la ficha está en "Bajo pedido" o "Próximamente", con 0 unidades se mantiene eso (se puede seguir pidiendo). La web **nunca muestra el número**, solo el aviso. Como las ventas cierran por WhatsApp, el stock **no baja solo**: actualízalo cuando vendas o recibas mercadería (cada cambio se publica en unos minutos, como un precio).
+
 ## 5. Agregar un producto nuevo (solo administrador)
 
 Un producto nuevo se crea **copiando uno parecido** y cambiando lo que haga falta.
 
-1. En la pestaña **Productos** pulsa **Nuevo producto** (en Repuestos, **Nuevo repuesto**).
+1. En la pestaña **Productos** pulsa **Nuevo producto** (en Promociones, **Nueva promoción**, que copia una promoción y la deja en esa categoría; en Repuestos, **Nuevo repuesto**).
 2. En el diálogo, elige la "Plantilla (ficha parecida)", escribe el "Slug nuevo" y el "Nombre", y pulsa **Continuar al editor**.
    - El *slug* es el nombre que irá en la dirección web: `/bicimotos/storm-x2`. Solo minúsculas, números y guiones, sin espacios ni tildes (ejemplo: `storm-x2`). Después de guardar no se puede cambiar.
 3. Se abre "Nuevo producto: <nombre>" con todos los datos copiados. Revisa:
@@ -154,7 +179,7 @@ La pestaña **Blog** muestra la lista de artículos con su título, categoría, 
    - **Texto del artículo**: se escribe **como en Word**: lo que ves es lo que saldrá en la web, sin símbolos. Encima hay una barra con:
      - **Tipo de texto**: *Texto normal*, *Título* o *Subtítulo* para la línea donde está el cursor.
      - **N**, **K**, **S**, **T**: negrita, cursiva, subrayado y tachado (también Ctrl+B, Ctrl+I, Ctrl+U; en Mac, Cmd). Pulsar otra vez lo quita.
-     - **Color**: azul RAIDEN, rojo, verde o gris para el texto seleccionado (solo colores de la marca, para que todo se lea bien). **Resaltar** lo marca en amarillo.
+     - **Color**: azul (el de la marca), rojo, verde o gris para el texto seleccionado (solo colores de la marca, para que todo se lea bien). **Resaltar** lo marca en amarillo.
      - **• Lista** y **1. Lista**: al pulsar Enter, la lista sigue sola (2., 3.…). Dos Enter seguidos salen de la lista. Tab dentro de una lista crea una sublista.
      - **Centrar**: centra el párrafo o el título.
      - **Enlace** (Ctrl+K): selecciona el texto, pulsa **Enlace** y escribe la dirección: una página de la tienda (`/repuestos`, `/bicimotos/golden-eagle`) o una web (`https://…`). Con el cursor sobre un enlace puedes cambiarlo o quitarlo.

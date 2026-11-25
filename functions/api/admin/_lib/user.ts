@@ -3,7 +3,7 @@ import { parseUserList, resolveRole } from '../../../../src/domain/adminPolicy';
 import { branchOf, type Env } from './env';
 import { forbidden } from './http';
 
-/** Listas de usuarios de la configuración (ADMIN_USERS / EDITOR_USERS, ADR-025). */
+/** Listas de usuarios de la configuración (ADMIN_USERS / EDITOR_USERS, ADR-025, ADR-034). */
 export function userLists(env: Env): { admins: string[]; editors: string[] } {
   return { admins: parseUserList(env.ADMIN_USERS), editors: parseUserList(env.EDITOR_USERS) };
 }

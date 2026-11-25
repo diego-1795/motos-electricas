@@ -51,7 +51,7 @@ export default function AccessPanel({ onSimulate }: Props) {
         {canReset
           ? ' Si alguien la olvida, pulsa "Restablecer contraseña" y entrégale la temporal; si la olvidas tú, se restablece con una entrada nueva en ADMIN_INITIAL_PASSWORDS.'
           : ' Si la olvidas, pide al administrador una temporal nueva.'}{' '}
-        Quién es administrador o editor se decide en las variables <code>ADMIN_USERS</code> / <code>EDITOR_USERS</code> del proyecto de Cloudflare Pages. Rama de escritura:{' '}
+        Quién es administrador o editor se decide en las variables <code>ADMIN_USERS</code> / <code>EDITOR_USERS</code> (varios usuarios separados por comas) del proyecto de Cloudflare Pages. Rama de escritura:{' '}
         <code>{user.branch}</code>.
       </p>
       {user.localMode && (

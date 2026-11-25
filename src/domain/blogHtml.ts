@@ -12,7 +12,8 @@
 /** Colores de texto permitidos: paleta de la marca (clases tc-*, definidas en base.css) */
 export const TEXT_COLORS = ['azul', 'rojo', 'verde', 'gris'] as const;
 export type TextColor = (typeof TEXT_COLORS)[number];
-export const TEXT_COLOR_LABEL: Record<TextColor, string> = { azul: 'Azul RAIDEN', rojo: 'Rojo', verde: 'Verde', gris: 'Gris' };
+/** "Azul" a secas para quien escribe: es el azul de la marca (--raiden-blue), el mismo del resto de la web */
+export const TEXT_COLOR_LABEL: Record<TextColor, string> = { azul: 'Azul', rojo: 'Rojo', verde: 'Verde', gris: 'Gris' };
 
 /** Cajas de aviso (aside.aviso--*) */
 export const CALLOUTS = ['consejo', 'importante'] as const;

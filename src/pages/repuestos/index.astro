@@ -1,4 +1,6 @@
 ---
+import { site } from '../../config/site';
+import { LOW_STOCK_LABEL, isLowStock } from '../../domain/stock';
 import Pic from '../../components/ui/Pic.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
@@ -63,7 +65,11 @@ const badgeOf = (a: string) => (a === 'en-stock' ? 'badge--stock' : a === 'bajo-
                       {formatMoney(a.price)}
                       {a.unit === 'PAR' && <span class="muted rp__unit"> por par</span>}
                     </strong>
-                    <span class:list={['badge', badgeOf(a.availability)]}>{availabilityLabel[a.availability]}</span>
+                    {isLowStock(a.stock, site.stock.lowParts) ? (
+                      <span class="badge badge--low">{LOW_STOCK_LABEL}</span>
+                    ) : (
+                      <span class:list={['badge', badgeOf(a.availability)]}>{availabilityLabel[a.availability]}</span>
+                    )}
                   </div>
                   <QuickAdd
                     client:visible

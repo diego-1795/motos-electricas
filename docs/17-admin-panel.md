@@ -8,12 +8,14 @@ Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018 y ADR-023, [1
 
 ### Alcance
 
-| | admin (Diego) | editor (Wiliam) |
+| | admin | editor (p. ej. `william`; puede haber varios, ADR-034) |
 |---|---|---|
 | Ver catálogo completo (incluidos ocultos) | ✓ | ✓ |
 | Cambiar precios (`variants[].price.amount`, `price.amount`) | ✓ | ✓ |
 | Ocultar / mostrar (`hidden`) | ✓ | ✓ |
-| Editar cualquier otro campo (categoría, variantes, colores, specs, manual, ficha técnica, video…) | ✓ | ✗ (403) |
+| Especificaciones de motos (y lo que cambia cada versión) y de repuestos, con formulario (ADR-032) | ✓ | ✓ |
+| Stock por versión y por repuesto, con aviso de últimas unidades (ADR-035) | ✓ | ✓ |
+| Editar cualquier otro campo (categoría, variantes, colores, manual, ficha técnica, video…) | ✓ | ✗ (403) |
 | Crear (duplicando una ficha) | ✓ | ✗ (403) |
 | Borrar | ✓ | ✗ (403) |
 | Blog: listar, leer, crear, editar y borrar artículos (ADR-023, ADR-026) | ✓ | ✓ |
@@ -22,6 +24,8 @@ Documentos relacionados: [21-decisions](./21-decisions.md) ADR-018 y ADR-023, [1
 | Blog: guardar como borrador, pasar a borrador y publicar (ADR-029) | ✓ | ✓ |
 | Blog: editor visual (títulos, colores de la marca, listas, tablas, avisos, enlaces, vídeo de YouTube; ADR-031) | ✓ | ✓ |
 | Subir PDF de manual/ficha a `public/docs` (ADR-023) | ✓ | ✗ (403) |
+
+Las promociones son productos con `category: "promociones"`; el panel las muestra en su propia pestaña **Promociones** (ADR-033), con "Nueva promoción" que copia una promoción y deja esa categoría. El PATCH acepta además `specs` y `variantSpecs` (productos), `specs` (repuestos) y `stock` (ambos); tras un PATCH con especificaciones el servidor valida la ficha resultante con el mismo esquema y reglas que un PUT.
 | Ver la guía `/admin/ayuda` | ✓ | ✓ |
 | Cambiar su propia contraseña (ADR-024) | ✓ | ✓ |
 | Gestionar quién es admin/editor y asignar contraseñas temporales | En Cloudflare (variables `ADMIN_USERS`/`EDITOR_USERS`, `ADMIN_INITIAL_PASSWORDS`); el panel lo muestra en Accesos | No ve la sección Accesos (ADR-026) |

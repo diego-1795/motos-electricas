@@ -63,6 +63,12 @@ const products: CatalogEntry<Product>[] = [
     sha: 'sha-tigre-1',
     path: 'src/content/products/tigre-test.json',
   },
+  {
+    // Promoción: va en la pestaña Promociones, no en Productos (ADR-033)
+    data: makeProduct({ slug: 'promo-test', name: 'Promo Test', category: 'promociones', variants: [variant({ isDefault: true, price: { amount: 99000, currency: 'PEN' } })] }),
+    sha: 'sha-promo-1',
+    path: 'src/content/products/promo-test.json',
+  },
 ];
 const repuestos: CatalogEntry<Part>[] = [
   { data: makePart({ slug: 'motor-test', name: 'Motor de prueba', compatibleWith: ['aguila-test'] }), sha: 'sha-motor-1', path: 'src/content/repuestos/motor-test.json' },
@@ -107,8 +113,8 @@ const MOCK_PASSWORD = 'Temporal-1234-abcd';
 const json = (route: Route, status: number, body: unknown) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
 
-const PRODUCT_PATCH_KEYS = new Set(['sha', 'reason', 'hidden', 'prices']);
-const PART_PATCH_KEYS = new Set(['sha', 'reason', 'hidden', 'price']);
+const PRODUCT_PATCH_KEYS = new Set(['sha', 'reason', 'hidden', 'prices', 'specs', 'variantSpecs', 'stock']);
+const PART_PATCH_KEYS = new Set(['sha', 'reason', 'hidden', 'price', 'specs', 'stock']);
 
 async function mockApi(page: Page, opts: MockOptions) {
   const calls: Captured[] = [];
@@ -277,6 +283,33 @@ function applyPatch(data: Product | Part, patch: Record<string, unknown>): Produ
     }
   }
   if (!('variants' in out) && typeof patch.price === 'number') out.price.amount = patch.price;
+  // Stock (ADR-035)
+  if ('variants' in out && patch.stock && typeof patch.stock === 'object') {
+    for (const v of out.variants) {
+      if (!Object.hasOwn(patch.stock, v.id)) continue;
+      const n = (patch.stock as Record<string, number | null>)[v.id];
+      if (n === null || n === undefined) delete v.stock;
+      else v.stock = n;
+    }
+  }
+  if (!('variants' in out) && 'stock' in patch) {
+    if (patch.stock === null) delete out.stock;
+    else if (typeof patch.stock === 'number') out.stock = patch.stock;
+  }
+  // Especificaciones (ADR-032)
+  if ('variants' in out && patch.specs && typeof patch.specs === 'object') out.specs = clone(patch.specs) as Product['specs'];
+  if ('variants' in out && patch.variantSpecs && typeof patch.variantSpecs === 'object') {
+    for (const v of out.variants) {
+      if (!Object.hasOwn(patch.variantSpecs, v.id)) continue;
+      const o = (patch.variantSpecs as Record<string, unknown>)[v.id];
+      if (o) v.specsOverride = clone(o) as NonNullable<typeof v.specsOverride>;
+      else delete v.specsOverride;
+    }
+  }
+  if (!('variants' in out) && Array.isArray(patch.specs)) {
+    if (patch.specs.length) out.specs = clone(patch.specs) as Part['specs'];
+    else delete out.specs;
+  }
   return out;
 }
 
@@ -337,11 +370,13 @@ test.describe('Panel de administración', () => {
     await expect(page.getByRole('button', { name: 'Nuevo producto' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /Editar ficha/ })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^Borrar/ })).toHaveCount(0);
-    // Ni siquiera en el DOM: sin botón "Nuevo", sin columna "Acciones", sin diálogos de administrador ni selector de modo local
-    await expect(page.locator('[data-admin-new], .adm-td-actions, [data-admin-editor], [data-admin-delete], [data-admin-duplicate], [data-admin-simulate]')).toHaveCount(0);
-    await expect(page.locator('[data-admin-table="products"] thead th')).toHaveCount(5);
-    // Con pestaña Blog (ADR-026): Productos, Repuestos y Blog
-    await expect(page.getByRole('tab')).toHaveCount(3);
+    // Ni siquiera en el DOM: sin botón "Nuevo", sin diálogos de administrador ni selector de modo local.
+    // La columna "Acciones" solo trae "Especificaciones" (ADR-032)
+    await expect(page.locator('[data-admin-new], [data-admin-editor], [data-admin-delete], [data-admin-duplicate], [data-admin-simulate]')).toHaveCount(0);
+    await expect(page.locator('[data-admin-table="products"] thead th')).toHaveCount(7);
+    await expect(page.locator('[data-admin-row="aguila-test"] .adm-td-actions').getByRole('button')).toHaveText(['Especificaciones']);
+    // Productos, Promociones (ADR-033), Repuestos y Blog (ADR-026)
+    await expect(page.getByRole('tab')).toHaveText([/Productos/, /Promociones/, /Repuestos/, 'Blog']);
     await expect(page.getByRole('tab', { name: 'Blog' })).toHaveCount(1);
     // La ficha oculta lleva la insignia y el interruptor marcado
     const hiddenRow = page.locator('[data-admin-row="tigre-test"]');
@@ -813,11 +848,13 @@ test.describe('Panel de administración', () => {
     await openAdmin(page);
     await page.getByRole('tab', { name: /Productos/ }).focus();
     await page.keyboard.press('ArrowRight');
+    await expect(page.getByRole('tab', { name: /Promociones/ })).toBeFocused();
+    await page.keyboard.press('ArrowRight');
     const partsTab = page.getByRole('tab', { name: /Repuestos/ });
     await expect(partsTab).toBeFocused();
     await expect(partsTab).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('[data-admin-table="repuestos"]')).toBeVisible();
-    await page.keyboard.press('ArrowRight'); // admin: tercera pestaña Blog
+    await page.keyboard.press('ArrowRight'); // cuarta pestaña: Blog
     await expect(page.getByRole('tab', { name: 'Blog' })).toBeFocused();
     await page.keyboard.press('ArrowRight'); // circular
     await expect(page.getByRole('tab', { name: /Productos/ })).toBeFocused();
@@ -1192,6 +1229,115 @@ test.describe('Panel de administración', () => {
     expect(sent.body).toMatch(/<ol><li><p>/);
     expect(sent.body).toMatch(/<table><tbody><tr><th><p>Modelo<\/p><\/th>/);
     expect(sent.body).not.toMatch(/style=|colgroup/);
+  });
+
+  test('promociones en su propia pestaña: fuera de Productos, con su contador y "Nueva promoción" (ADR-033)', async ({ page }) => {
+    await mockApi(page, { role: 'admin' });
+    await openAdmin(page);
+    await expect(page.getByRole('tab', { name: /Productos/ }).locator('.adm-tab__count')).toHaveText('2');
+    await expect(page.getByRole('tab', { name: /Promociones/ }).locator('.adm-tab__count')).toHaveText('1');
+    await expect(page.locator('[data-admin-row="promo-test"]')).toHaveCount(0);
+    await page.getByRole('tab', { name: /Promociones/ }).click();
+    await expect(page.locator('[data-admin-row]')).toHaveCount(1);
+    await expect(page.locator('[data-admin-row="promo-test"]')).toBeVisible();
+    // El precio se edita igual que en Productos
+    await expect(page.locator('[data-price-input="promo-test:estandar"]')).toHaveValue('990');
+    await page.getByRole('button', { name: 'Nueva promoción' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Nueva promoción');
+    // Solo promociones como plantilla
+    await expect(dialog.getByRole('combobox').locator('option')).toHaveText(['Promo Test (promo-test)']);
+  });
+
+  test('stock: el editor fija unidades por versión y por repuesto; la disponibilidad y el aviso de últimas unidades se recalculan (ADR-035)', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    const input = page.locator('[data-stock-input="aguila-test:estandar"]');
+    await expect(input).toHaveValue('');
+    await input.fill('dos');
+    await page.locator('[data-stock-save="aguila-test:estandar"]').click();
+    await expect(page.locator('[data-stock-cell="aguila-test:estandar"]').getByRole('alert')).toContainText('número entero');
+    await input.fill('2');
+    await page.locator('[data-stock-save="aguila-test:estandar"]').click();
+    await expect.poll(() => calls.filter((c) => c.method === 'PATCH').length).toBe(1);
+    expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ sha: 'sha-aguila-1', stock: { estandar: 2 } });
+    await expect(page.locator('[data-admin-availability="aguila-test"]')).toContainText('¡Últimas unidades!');
+    // Repuesto a 0 → Agotado
+    await page.getByRole('tab', { name: /Repuestos/ }).click();
+    await page.locator('[data-stock-input="motor-test"]').fill('0');
+    await page.locator('[data-stock-save="motor-test"]').click();
+    await expect.poll(() => calls.filter((c) => c.method === 'PATCH').length).toBe(2);
+    expect(calls.filter((c) => c.method === 'PATCH')[1]!.body).toEqual({ sha: 'sha-motor-1', stock: 0 });
+    await expect(page.locator('[data-admin-availability="motor-test"]')).toHaveText('Agotado');
+    // Vacío = sin control de stock (null)
+    await page.locator('[data-stock-input="motor-test"]').fill('');
+    await page.locator('[data-stock-save="motor-test"]').click();
+    await expect.poll(() => calls.filter((c) => c.method === 'PATCH').length).toBe(3);
+    expect(calls.filter((c) => c.method === 'PATCH')[2]!.body).toEqual({ sha: 'sha-motor-1-new', stock: null });
+  });
+
+  test('especificaciones de una moto: el editor las edita con un formulario y viaja solo el PATCH de especificaciones (ADR-032)', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await page.locator('[data-admin-specs-open="aguila-test"]').click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Especificaciones: Águila Test');
+    const field = (k: string) => dialog.locator(`[data-spec="${k}"]`);
+    const before = products[0]!.data;
+    await expect(field('rangeKm')).toHaveValue(String(before.specs.rangeKm));
+    // Errores en llano antes de enviar nada
+    await field('rangeKm').fill('');
+    await field('topSpeedKmh').fill('rápida');
+    await dialog.getByRole('button', { name: 'Guardar especificaciones' }).click();
+    const errs = dialog.locator('[data-admin-specs-errors]');
+    await expect(errs).toContainText('Autonomía máxima (km): es obligatorio');
+    await expect(errs).toContainText('Velocidad máxima (km/h): escribe solo un número');
+    expect(calls.filter((c) => c.method === 'PATCH')).toHaveLength(0);
+    // Cambios válidos: autonomía, batería (el kWh se recalcula solo), una característica y una versión
+    await field('rangeKm').fill('75');
+    await field('topSpeedKmh').fill(String(before.specs.topSpeedKmh));
+    await field('battery.capacityAh').fill('20');
+    await expect(dialog.locator('[data-spec-kwh=""]')).toContainText(String(Math.round(before.specs.battery.voltage * 20 / 10) / 100));
+    await field('features').fill('Frenos de disco\nAlarma');
+    const premium = before.variants.find((v) => v.tier === 'premium')!;
+    await field(`${premium.id}.rangeKm`).fill('90');
+    await dialog.getByRole('button', { name: 'Guardar especificaciones' }).click();
+    await expect(dialog).toBeHidden();
+    const patch = calls.find((c) => c.method === 'PATCH')!;
+    expect(patch.path).toBe('/products/aguila-test');
+    const body = patch.body as { sha: string; specs: Product['specs']; variantSpecs: Record<string, unknown> };
+    expect(Object.keys(body).sort()).toEqual(['sha', 'specs', 'variantSpecs']);
+    expect(body.specs.rangeKm).toBe(75);
+    expect(body.specs.battery.capacityAh).toBe(20);
+    expect(body.specs.battery.capacityKwh).toBe(Math.round(before.specs.battery.voltage * 20 / 10) / 100);
+    expect(body.specs.features).toEqual(['Frenos de disco', 'Alarma']);
+    expect(body.variantSpecs[premium.id]).toMatchObject({ rangeKm: 90 });
+    await expect(page.locator('[data-deploy-banner]')).toBeVisible();
+  });
+
+  test('especificaciones de un repuesto: lista nombre/valor que se añade, ordena y quita (ADR-032)', async ({ page }) => {
+    const { calls } = await mockApi(page, { role: 'editor' });
+    await openAdmin(page);
+    await page.getByRole('tab', { name: /Repuestos/ }).click();
+    await page.locator('[data-admin-specs-open="motor-test"]').click();
+    const dialog = page.getByRole('dialog');
+    await dialog.locator('[data-part-spec-label="0"]').fill('Potencia');
+    await dialog.locator('[data-part-spec-value="0"]').fill('350 W');
+    await dialog.locator('[data-part-spec-add]').click();
+    await dialog.locator('[data-part-spec-label="1"]').fill('Voltaje');
+    await dialog.locator('[data-part-spec-value="1"]').fill('48 V');
+    await dialog.locator('[data-part-spec-add]').click();
+    await dialog.locator('[data-part-spec-label="2"]').fill('potencia');
+    await dialog.locator('[data-part-spec-value="2"]').fill('500 W');
+    await dialog.getByRole('button', { name: 'Guardar especificaciones' }).click();
+    await expect(dialog.locator('[data-admin-specs-errors]')).toContainText('Especificación repetida: potencia');
+    await dialog.getByRole('button', { name: 'Quitar la especificación 3' }).click();
+    await dialog.getByRole('button', { name: 'Subir la especificación 2' }).click();
+    await dialog.getByRole('button', { name: 'Guardar especificaciones' }).click();
+    await expect(dialog).toBeHidden();
+    const patch = calls.find((c) => c.method === 'PATCH')!;
+    expect(patch.path).toBe('/repuestos/motor-test');
+    expect(patch.body).toEqual({ sha: 'sha-motor-1', specs: [{ label: 'Voltaje', value: '48 V' }, { label: 'Potencia', value: '350 W' }] });
   });
 
   test('borrador: se guarda sin publicar, se marca en la lista y luego se publica; un publicado puede pasar a borrador (ADR-029)', async ({ page }) => {

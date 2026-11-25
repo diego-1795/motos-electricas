@@ -1,7 +1,11 @@
 import { useState } from 'preact/hooks';
 import type { DeleteResult } from '../../domain/admin';
 import { AdminApiError } from '../../services/admin/AdminApiClient';
-import { kindLabel, useAdmin, type AdminTab } from './context';
+import type { AdminKind } from '../../domain/admin';
+import { kindLabel, useAdmin } from './context';
+
+/** Qué se borra: una ficha del catálogo o un artículo del blog */
+type DeleteKind = AdminKind | 'blog';
 import Modal from './Modal';
 
 /** Lo mínimo que hay que saber de lo que se borra (ficha del catálogo o artículo del blog) */
@@ -13,14 +17,14 @@ export interface DeleteTarget {
 }
 
 interface Props {
-  kind: AdminTab;
+  kind: DeleteKind;
   entry: DeleteTarget;
   onClose: () => void;
   /** Blog: el panel del blog recarga su lista y anuncia el commit. Catálogo: lo hace applyDelete. */
   onDeleted?: (result: DeleteResult) => void;
 }
 
-const singular: Record<AdminTab, string> = { products: kindLabel.products.singular, repuestos: kindLabel.repuestos.singular, blog: 'artículo' };
+const singular: Record<DeleteKind, string> = { products: kindLabel.products.singular, repuestos: kindLabel.repuestos.singular, blog: 'artículo' };
 
 /**
  * Borrado. Catálogo (solo admin, ADR-018): escribir el slug para confirmar + motivo opcional.

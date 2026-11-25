@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { AdminCatalog, AdminKind, AdminUser, CatalogEntry, CommitInfo, DeleteResult, WriteResult } from '../../domain/admin';
 import type { Part, Product } from '../../domain/types';
 import { adminApi, AdminApiError, SESSION_EXPIRED_MESSAGE } from '../../services/admin/AdminApiClient';
-import { AdminContext, CONFLICT_MESSAGE, findEntry, kindLabel, normalize, roleLabel, type AdminCtx, type AdminTab, type Tone } from './context';
+import { AdminContext, CONFLICT_MESSAGE, findEntry, isPromo, kindLabel, normalize, roleLabel, type AdminCtx, type AdminTab, type Tone } from './context';
 import CatalogTable from './CatalogTable';
 import DeployBanner from './DeployBanner';
 import AccessPanel from './AccessPanel';
+import SpecsDialog from './SpecsDialog';
 import ProductEditor from './ProductEditor';
 import PartEditor from './PartEditor';
 import DuplicateDialog from './DuplicateDialog';
@@ -34,13 +35,13 @@ type Phase =
 type Dialog =
   | { type: 'edit'; kind: AdminKind; slug: string }
   | { type: 'create'; kind: AdminKind; draft: Product | Part }
-  | { type: 'duplicate'; kind: AdminKind }
+  | { type: 'duplicate'; kind: AdminKind; promo?: boolean }
   | { type: 'delete'; kind: AdminKind; slug: string }
+  | { type: 'specs'; kind: AdminKind; slug: string }
   | { type: 'password' }
   | null;
 
-const CATALOG_TABS: AdminKind[] = ['products', 'repuestos'];
-const tabTitle: Record<AdminTab, string> = { products: kindLabel.products.plural, repuestos: kindLabel.repuestos.plural, blog: 'Blog' };
+const tabTitle: Record<AdminTab, string> = { products: kindLabel.products.plural, promociones: 'Promociones', repuestos: kindLabel.repuestos.plural, blog: 'Blog' };
 
 export default function AdminApp() {
   const api = adminApi;
@@ -313,10 +314,13 @@ export default function AdminApp() {
   const { user, catalog } = ctx;
   const isAdmin = user.role === 'admin';
   // El blog es de los dos roles (ADR-026); al editor solo se le bloquean las fotos
-  const tabs: AdminTab[] = [...CATALOG_TABS, 'blog'];
-  const catalogTab: AdminKind = tab === 'blog' ? 'products' : tab;
+  const tabs: AdminTab[] = ['products', 'promociones', 'repuestos', 'blog'];
+  const catalogTab: AdminKind = tab === 'repuestos' ? 'repuestos' : 'products';
+  // Productos y Promociones son la misma colección repartida por categoría (ADR-033)
+  const entriesOf = (k: AdminTab): CatalogEntry<Product | Part>[] =>
+    k === 'repuestos' ? catalog.repuestos : k === 'promociones' ? catalog.products.filter((e) => isPromo(e.data)) : k === 'products' ? catalog.products.filter((e) => !isPromo(e.data)) : [];
   const q = normalize(search.trim());
-  const entries: CatalogEntry<Product | Part>[] = catalogTab === 'products' ? catalog.products : catalog.repuestos;
+  const entries = entriesOf(tab);
   const filtered = q ? entries.filter((e) => normalize(e.data.name).includes(q) || normalize(e.data.slug).includes(q)) : entries;
 
   const onTabKey = (e: KeyboardEvent) => {
@@ -368,7 +372,7 @@ export default function AdminApp() {
         <div class="adm-toolbar">
           <div class="tabs adm-tabs" role="tablist" aria-label="Colecciones" onKeyDown={onTabKey}>
             {tabs.map((k) => {
-              const n = k === 'products' ? catalog.products.length : k === 'repuestos' ? catalog.repuestos.length : null;
+              const n = k === 'blog' ? null : entriesOf(k).length;
               return (
                 <button
                   key={k}
@@ -398,8 +402,8 @@ export default function AdminApp() {
                 onInput={(e) => setSearch((e.target as HTMLInputElement).value)}
               />
               {isAdmin && (
-                <button type="button" class="btn btn--primary" onClick={() => setDialog({ type: 'duplicate', kind: catalogTab })} data-admin-new>
-                  {catalogTab === 'products' ? 'Nuevo producto' : 'Nuevo repuesto'}
+                <button type="button" class="btn btn--primary" onClick={() => setDialog({ type: 'duplicate', kind: catalogTab, promo: tab === 'promociones' })} data-admin-new>
+                  {tab === 'promociones' ? 'Nueva promoción' : catalogTab === 'products' ? 'Nuevo producto' : 'Nuevo repuesto'}
                 </button>
               )}
             </div>
@@ -417,6 +421,7 @@ export default function AdminApp() {
               admin={isAdmin}
               onEdit={(slug) => setDialog({ type: 'edit', kind: catalogTab, slug })}
               onDelete={(slug) => setDialog({ type: 'delete', kind: catalogTab, slug })}
+              onSpecs={(slug) => setDialog({ type: 'specs', kind: catalogTab, slug })}
             />
           )}
         </section>
@@ -424,6 +429,9 @@ export default function AdminApp() {
         {/* Accesos habla de variables y ramas: solo para el administrador. En modo local (desarrollo) sigue visible
             al simular el editor, porque ahí está el selector para volver. */}
         {(isAdmin || user.localMode) && <AccessPanel onSimulate={simulate} />}
+
+        {/* Especificaciones: admin y editor (ADR-032) */}
+        {dialog?.type === 'specs' && <SpecsDialog kind={dialog.kind} slug={dialog.slug} onClose={() => setDialog(null)} />}
 
         {dialog?.type === 'password' && (
           <Modal title="Cambiar contraseña" onClose={() => setDialog(null)}>
@@ -437,7 +445,7 @@ export default function AdminApp() {
             />
           </Modal>
         )}
-        {dialog?.type === 'duplicate' && isAdmin && <DuplicateDialog kind={dialog.kind} onClose={() => setDialog(null)} onContinue={(draft) => openCreate(dialog.kind, draft)} />}
+        {dialog?.type === 'duplicate' && isAdmin && <DuplicateDialog kind={dialog.kind} promo={dialog.promo} onClose={() => setDialog(null)} onContinue={(draft) => openCreate(dialog.kind, draft)} />}
         {dialog?.type === 'edit' && isAdmin && (() => {
           const entry = findEntry(catalog, dialog.kind, dialog.slug);
           if (!entry) return null;

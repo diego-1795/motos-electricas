@@ -4,6 +4,7 @@ import type { Testimonial } from '../domain/testimonials';
 import { readingMinutes } from '../domain/reading';
 import { blogHtmlToText } from '../domain/blogHtml';
 import { visibleOnly } from '../domain/catalog';
+import { partWithStock, productWithStock } from '../domain/stock';
 import type { Repositories } from './repositories';
 
 /**
@@ -12,12 +13,13 @@ import type { Repositories } from './repositories';
  * src/data/supabase.ts con la misma interfaz y cambiar el export de index.ts.
  * Los elementos con `hidden: true` (panel de administración, ADR-018) se filtran en `all()`,
  * de modo que ninguna ruta, listado, sitemap ni JSON-LD los ve.
+ * La disponibilidad se recalcula aquí con el stock (ADR-035): toda la web la lee ya resuelta.
  */
 
 const products = {
   async all(): Promise<Product[]> {
     const entries = await getCollection('products');
-    return visibleOnly(entries.map((e) => e.data as Product)).sort((a, b) => b.featured - a.featured);
+    return visibleOnly(entries.map((e) => productWithStock(e.data as Product))).sort((a, b) => b.featured - a.featured);
   },
   async bySlug(slug: string) {
     return (await this.all()).find((p) => p.slug === slug);
@@ -40,7 +42,7 @@ const products = {
 
 const parts = {
   async all(): Promise<Part[]> {
-    return visibleOnly((await getCollection('repuestos')).map((e) => e.data as Part));
+    return visibleOnly((await getCollection('repuestos')).map((e) => partWithStock(e.data as Part)));
   },
   async bySlug(slug: string) {
     return (await this.all()).find((a) => a.slug === slug);

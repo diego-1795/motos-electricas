@@ -36,6 +36,11 @@ export const site = {
    */
   warrantyMonths: 6,
   /**
+   * Umbrales de "¡Últimas unidades!" (ADR-035). Motos: caras y de poca rotación, 2 ya es poco.
+   * Repuestos: baratos y de más rotación, 5 o menos. 0 unidades = Agotado.
+   */
+  stock: { lowProducts: 2, lowParts: 5 },
+  /**
    * Fecha (ISO) del lanzamiento del canal de video anunciado por el cliente. Las fichas sin `videoUrl`
    * la muestran como "Lanzamiento oficial el …" hasta ese día y "Próximamente" después (sin fechas caducadas a mano).
    */

@@ -10,13 +10,17 @@ interface Props {
   onClose: () => void;
   /** Abre el editor con la ficha duplicada */
   onContinue: (draft: Product | Part) => void;
+  /** Desde la pestaña Promociones: plantillas de promociones y la copia queda en esa categoría (ADR-033) */
+  promo?: boolean;
 }
 
 /** "Nuevo producto / repuesto": elegir una ficha como plantilla y darle slug y nombre nuevos. */
-export default function DuplicateDialog({ kind, onClose, onContinue }: Props) {
+export default function DuplicateDialog({ kind, onClose, onContinue, promo = false }: Props) {
   const { catalog } = useAdmin();
   const uid = useId();
-  const list = kind === 'products' ? catalog.products : catalog.repuestos;
+  // Plantillas de la misma pestaña; si aún no hay ninguna promoción, sirve cualquier producto
+  const sameTab = catalog.products.filter((e) => (e.data.category === 'promociones') === promo);
+  const list = kind === 'products' ? (sameTab.length ? sameTab : catalog.products) : catalog.repuestos;
   const [template, setTemplate] = useState(list[0]?.data.slug ?? '');
   const [slug, setSlug] = useState('');
   const [name, setName] = useState('');
@@ -35,11 +39,12 @@ export default function DuplicateDialog({ kind, onClose, onContinue }: Props) {
     const prefix = src.data.id.split('-')[0] || (kind === 'products' ? 'rd' : 'rp');
     const draft = { ...copy, id: `${prefix}-${s}`, slug: s, name: name.trim() } as Product | Part;
     if ('isHero' in draft) delete (draft as Product).isHero;
+    if (promo && 'category' in draft) (draft as Product).category = 'promociones';
     onContinue(draft);
   };
 
   return (
-    <Modal title={kind === 'products' ? 'Nuevo producto' : 'Nuevo repuesto'} onClose={onClose}>
+    <Modal title={promo ? 'Nueva promoción' : kind === 'products' ? 'Nuevo producto' : 'Nuevo repuesto'} onClose={onClose}>
       <form class="adm-form" onSubmit={submit} data-admin-duplicate noValidate>
         <p class="muted">
           Se crea copiando una ficha existente; después podrás revisar todos los datos antes de guardar.

@@ -1,4 +1,5 @@
 import type { Part, Product } from './types';
+import { partSpecsErrors } from './specsEdit';
 
 /**
  * Reglas de integridad del catálogo que el esquema (tipos) no expresa. Puras y sin
@@ -59,7 +60,7 @@ export function productRules(p: Product, ctx: CatalogContext = {}): string[] {
   const b = p.specs.battery;
   const kwh = (b.voltage * b.capacityAh) / 1000;
   if (Math.abs(kwh - b.capacityKwh) > 0.05) errs.push(`specs.battery.capacityKwh ${b.capacityKwh} ≠ V·Ah/1000 (${kwh.toFixed(2)})`);
-  if (p.specs.license === 'sin-licencia' && p.specs.topSpeedKmh > 32) errs.push(`"sin-licencia" con ${p.specs.topSpeedKmh} km/h: revisar con el asesor legal (MTC)`);
+  if (p.specs.license === 'sin-licencia' && p.specs.topSpeedKmh > 32) errs.push(`Licencia "sin licencia" con ${p.specs.topSpeedKmh} km/h: por encima de 32 km/h hace falta licencia (revisar con el asesor legal, MTC)`);
 
   if (p.related.includes(p.slug)) errs.push('related no puede incluir el propio producto');
   if (ctx.productSlugs) for (const r of p.related) if (!ctx.productSlugs.includes(r)) errs.push(`related desconocido: ${r}`);
@@ -73,5 +74,6 @@ export function partRules(a: Part, ctx: CatalogContext = {}): string[] {
   errs.push(...moneyErrors(a.price, 'price'));
   if (a.price.amount <= 0) errs.push('price: el precio debe ser mayor que 0');
   if (ctx.productSlugs) for (const c of a.compatibleWith) if (!ctx.productSlugs.includes(c)) errs.push(`compatibleWith desconocido: ${c}`);
+  errs.push(...partSpecsErrors(a.specs));
   return errs;
 }

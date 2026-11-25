@@ -9,7 +9,9 @@ import type { AdminUser } from '../../../../src/domain/admin';
 export interface Env {
   /** Usuarios con rol admin (coma, punto y coma o espacio como separador), p. ej. `admin` (ADR-025) */
   ADMIN_USERS?: string;
-  /** Usuarios con rol editor, p. ej. `william` */
+  /**
+   * Usuarios con rol editor, p. ej. `william`; varios separados por comas (ADR-034).
+   */
   EDITOR_USERS?: string;
   /** KV con usuarios (`user:<usuario>`) y contadores de intentos fallidos (ADR-024) */
   ADMIN_KV?: KVNamespace;

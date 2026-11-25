@@ -3,6 +3,7 @@ import type { ImageRef, ProductColor, ProductVariant } from '../domain/types';
 import { formatMoney } from '../domain/money';
 import { add, pen } from '../domain/money';
 import { availabilityLabel, tierLabel } from '../domain/product';
+import { LOW_STOCK_LABEL, isLowStock } from '../domain/stock';
 import { addToCart } from '../stores/cart';
 import { toast } from '../stores/toast';
 import { site } from '../config/site';
@@ -117,7 +118,11 @@ export default function ProductConfigurator({ slug, name, variants, colors, imag
         <span class="cfg__amount" data-price>
           {formatMoney(unit)}
         </span>
-        <span class={badgeClass[variant.availability]}>{availabilityLabel[variant.availability]}</span>
+        {isLowStock(variant.stock, site.stock.lowProducts) ? (
+          <span class="badge badge--low">{LOW_STOCK_LABEL}</span>
+        ) : (
+          <span class={badgeClass[variant.availability]}>{availabilityLabel[variant.availability]}</span>
+        )}
         {variants.length > 1 && <span class="muted" style="font-size:var(--fs-sm)">Versión {tierLabel[variant.tier]}</span>}
       </div>
 

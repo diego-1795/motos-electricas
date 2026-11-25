@@ -1,4 +1,5 @@
-import type { Part, Product } from './types';
+import type { Part, PartSpec, Product, Specs } from './types';
+import type { SpecsOverride } from './specsEdit';
 
 /**
  * Contrato del panel de administración (ADR-018) entre las Pages Functions
@@ -34,6 +35,7 @@ import type { ChangePasswordBody, LoginBody } from './adminAuth';
 
 export type { BlogFrontmatter, ChangePasswordBody, LoginBody };
 
+/** Roles del panel (ADR-034): el permiso va con el rol, no con la persona; cada lista puede tener varios usuarios */
 export type AdminRole = 'admin' | 'editor';
 
 /** Colecciones gestionables desde el panel (carpetas de src/content) */
@@ -71,7 +73,7 @@ export interface AdminCatalog {
   branch: string;
 }
 
-/** Lo ÚNICO que puede cambiar un editor: precios por variante (céntimos) y visibilidad. */
+/** Lo ÚNICO que puede cambiar un editor en una ficha: precios por variante (céntimos), visibilidad y especificaciones (ADR-032). */
 export interface ProductPatch {
   /** sha actual del fichero; 409 si ya no coincide */
   sha: string;
@@ -80,6 +82,12 @@ export interface ProductPatch {
   hidden?: boolean;
   /** variantId → importe en céntimos de sol */
   prices?: Record<string, number>;
+  /** Especificaciones completas de la ficha (ADR-032); el servidor valida la ficha resultante */
+  specs?: Specs;
+  /** variantId → lo que esa versión cambia respecto a la ficha; null = nada (ADR-032) */
+  variantSpecs?: Record<string, SpecsOverride | null>;
+  /** variantId → unidades en stock; null = sin control de stock (ADR-035) */
+  stock?: Record<string, number | null>;
 }
 
 export interface PartPatch {
@@ -88,6 +96,10 @@ export interface PartPatch {
   hidden?: boolean;
   /** Importe en céntimos de sol */
   price?: number;
+  /** Lista completa de especificaciones; [] las quita (ADR-032) */
+  specs?: PartSpec[];
+  /** Unidades en stock; null = sin control de stock (ADR-035) */
+  stock?: number | null;
 }
 
 /** Ficha completa (solo admin). Sin sha = crear; con sha = sustituir. */

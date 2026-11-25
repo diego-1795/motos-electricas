@@ -953,3 +953,52 @@
     font-size: var(--fs-xl);
   }
 }
+
+/* Especificaciones de un repuesto: filas nombre / valor (ADR-032) */
+.adm-partspecs {
+  display: grid;
+  gap: var(--s-3);
+  padding: 0;
+  margin: 0;
+}
+.adm-partspecs__row {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(10rem, 1.4fr) auto;
+  gap: var(--s-2);
+  align-items: end;
+}
+.adm-partspecs__actions {
+  display: flex;
+  gap: var(--s-1);
+}
+@media (max-width: 40rem) {
+  .adm-partspecs__row {
+    grid-template-columns: 1fr;
+    padding-bottom: var(--s-3);
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/* Stock en la tabla (ADR-035) */
+.adm-stock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.adm-stock + .adm-stock {
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px dashed var(--border);
+}
+.adm-stock__input {
+  width: 5rem;
+  min-height: 2.75rem;
+  text-align: right;
+}
+.adm-stock__unit {
+  font-size: var(--fs-sm);
+}
+.adm-badge-low {
+  display: inline-block;
+  margin-top: var(--s-1);
+}

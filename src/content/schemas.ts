@@ -85,6 +85,8 @@ export const variant = z.object({
     .extend({ features: z.array(z.string()).min(1).optional() })
     .optional(),
   availability,
+  /** Unidades en stock (ADR-035) */
+  stock: z.number().int().min(0).max(9999).optional(),
   sku: z.string().optional(),
   isDefault: z.boolean().optional(),
 });
@@ -141,10 +143,14 @@ export const partSchema = z.object({
   price: money,
   image: image.optional(),
   availability,
+  /** Unidades en stock (ADR-035) */
+  stock: z.number().int().min(0).max(9999).optional(),
   kind: partKind,
   unit: z.enum(['UND', 'PAR']).default('UND'),
   code: z.string().optional(),
   compatibleWith: z.array(z.string()),
+  /** Especificaciones libres nombre/valor (ADR-032); las reglas de longitud y repetidos están en specsEdit.ts */
+  specs: z.array(z.object({ label: z.string(), value: z.string() }).strict()).optional(),
   hidden: z.boolean().optional(),
 });
 

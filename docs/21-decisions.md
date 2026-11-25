@@ -535,3 +535,64 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
   - e2e del editor: formato, listas que continúan, tabla, color, aviso, enlace, vídeo, pegado de Word y Docs, y deshacer.
   - axe con el editor, la tabla y el panel de enlace abiertos.
 
+## ADR-032 — Especificaciones de motos y repuestos editables desde el panel (admin y editor)
+
+**Fecha:** 2026-11-25 · **Estado:** aceptada
+
+**Contexto.** Las especificaciones de las motos solo se podían cambiar en el "JSON avanzado" del editor de ficha, que solo usa el admin y que no es para alguien sin conocimientos técnicos. Los repuestos no tenían especificaciones. Diego decidió que admin y editor puedan editarlas, y que los repuestos lleven una lista libre nombre/valor.
+
+**Decisión.**
+- Botón **Especificaciones** en cada fila de Productos, Promociones y Repuestos, para los dos roles.
+- **Motos (`SpecsDialog`).** El formulario va por bloques: rendimiento, batería, medidas, equipamiento, licencia y garantía, y características (una por línea).
+  - Los kWh se calculan de voltaje × Ah. Si voltaje y Ah no cambian, se conserva el kWh guardado.
+  - Por cada versión hay un bloque "lo que cambia" (`specsOverride`): lo vacío usa la ficha.
+  - La lógica pura está en `src/domain/specsEdit.ts`: parseo de números (admite `1,200` y `1,5`), errores en llano y `specsChanges`, que describe en el commit qué cambió.
+  - Un test comprueba que abrir y guardar cada moto real sin tocar nada devuelve exactamente sus datos.
+- **Repuestos.** `Part.specs?: { label, value }[]` (`partSchema`, máximo 30, nombre ≤ 60 y valor ≤ 120 caracteres, sin repetidos). Se muestran como tabla "Especificaciones" en la página pública del repuesto.
+- **Servidor.** El PATCH acepta `specs` y `variantSpecs` (productos) y `specs` (repuestos). Cuando el PATCH lleva especificaciones, la ficha resultante pasa por el mismo esquema estricto y las mismas reglas que un PUT completo. Hasta ahora el PATCH no revalidaba porque solo tocaba precio y visibilidad.
+- La regla de licencia sin carnet por encima de 32 km/h tiene ahora un mensaje en llano.
+
+**Consecuencias.** El editor puede cambiar datos técnicos que se publican y afectan al comparador y al buscador guiado. El esquema y las reglas lo acotan, y cada cambio queda en el historial con su descripción. El "JSON avanzado" del admin sigue existiendo para lo demás.
+
+## ADR-033 — Promociones en su propia pestaña del panel
+
+**Fecha:** 2026-11-25 · **Estado:** aceptada
+
+**Contexto.** Las promociones son productos con `category: "promociones"` y salían mezcladas en la pestaña Productos. Diego eligió separarlas solo en el panel; la web ya tiene `/promociones`.
+
+**Decisión.** El panel tiene las pestañas Productos · Promociones · Repuestos · Blog. Productos muestra lo que no es promoción y Promociones el resto, cada una con su contador. Es la misma colección, sin cambios de datos ni de API. En Promociones, el botón es "Nueva promoción": copia una promoción existente (o cualquier producto si aún no hay ninguna) y deja la categoría en promociones.
+
+**Consecuencias.** Si el admin cambia la categoría de un producto, pasa a la otra pestaña. La web no cambia.
+
+## ADR-034 — Roles del panel: admin y editor; los permisos van por rol, no por persona
+
+**Fecha:** 2026-11-25 · **Estado:** aceptada
+
+**Contexto.** Diego aclaró que solo hay dos roles, **admin** y **editor**. William es *un* editor, no un rol propio, y en el futuro puede haber más usuarios de cada rol. Se valoró renombrar "editor" a "gestor", pero se descartó: obligaba a cambiar la variable en Cloudflare y "Editor" ya se entiende bien en el panel.
+
+**Decisión.** Se mantienen `AdminRole = 'admin' | 'editor'` y las variables `ADMIN_USERS` / `EDITOR_USERS`, ambas con varios usuarios separados por comas. La documentación y los textos hablan del rol ("el editor"), no de la persona; "William" solo aparece como ejemplo de editor.
+
+**Consecuencias.** Sin cambios en Cloudflare. Un editor nuevo se da de alta añadiéndolo a `EDITOR_USERS` con su contraseña temporal en `ADMIN_INITIAL_PASSWORDS` (19-deployment §12).
+
+## ADR-035 — Stock por versión y por repuesto, con aviso de últimas unidades
+
+**Fecha:** 2026-11-25 · **Estado:** aceptada
+
+**Contexto.** La disponibilidad se ponía a mano (en stock, bajo pedido, próximamente o agotado). Diego pidió llevar el stock y que yo propusiera el umbral.
+
+**Decisión.**
+- `stock?: number` (entero de 0 a 9999) en cada versión (`ProductVariant`) y en cada repuesto (`Part`). Es opcional: sin número, manda la disponibilidad puesta a mano, como antes.
+- Funciones puras en `src/domain/stock.ts`:
+  - 0 unidades → "Agotado", salvo que la ficha diga "Bajo pedido" o "Próximamente";
+  - más de 0 → "En stock";
+  - del 1 al umbral → aviso **"¡Últimas unidades!"**.
+- Umbrales en `src/config/site.ts` (`site.stock`):
+  - **motos 2**: son caras y rotan poco;
+  - **repuestos 5**: son baratos y rotan más.
+- Un producto muestra el aviso si todas sus versiones disponibles llevan número y entre todas no pasan del umbral.
+- La capa de datos (`src/data/json.ts`) aplica la disponibilidad real al cargar el catálogo. Así la web entera la usa ya resuelta: tarjetas, ficha, configurador, carrito (agotado no se puede añadir), comparador, filtros y JSON-LD.
+- La web nunca muestra el número de unidades, solo el aviso.
+- **Panel.** Columna **Stock** editable por admin y editor (`StockCell`); vacío = sin control. La columna Disponibilidad muestra la que verá la web, con el aviso. El PATCH acepta `stock` (`{ variantId: n | null }` en productos, `n | null` en repuestos).
+
+**Consecuencias.** Como las ventas cierran por WhatsApp, el stock no baja solo: el editor lo actualiza y cada cambio es un commit y un build (unos 3 minutos), igual que un precio. Si algún día hay pedidos con backend (Supabase), el stock podrá descontarse al confirmar.
+

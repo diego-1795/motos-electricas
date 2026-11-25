@@ -52,8 +52,13 @@ export const kindLabel: Record<AdminKind, { singular: string; plural: string }> 
   repuestos: { singular: 'repuesto', plural: 'Repuestos' },
 };
 
-/** Pestañas del panel: colecciones del catálogo + blog (solo admin, ADR-023) */
-export type AdminTab = AdminKind | 'blog';
+/**
+ * Pestañas del panel: productos, promociones, repuestos y blog. "Promociones" no es otra colección: son los
+ * productos con categoría promociones, separados de los demás en su propia pestaña (ADR-033).
+ */
+export type AdminTab = 'products' | 'promociones' | 'repuestos' | 'blog';
+
+export const isPromo = (p: Product): boolean => p.category === 'promociones';
 
 /** Fichero (PDF) → base64 (sin el prefijo data:) para UploadBody.contentBase64 */
 export async function fileToBase64(blob: Blob): Promise<string> {

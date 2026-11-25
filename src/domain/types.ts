@@ -136,6 +136,8 @@ export interface ProductVariant {
   /** `features` sustituye la lista completa para esa versión (pestaña Especificaciones por versión) */
   specsOverride?: Partial<Pick<Specs, 'rangeKm' | 'rangeMinKm' | 'topSpeedKmh' | 'powerW' | 'battery' | 'weightKg' | 'controller' | 'features'>>;
   availability: Availability;
+  /** Unidades en stock (ADR-035); sin número, manda `availability` puesta a mano */
+  stock?: number;
   sku?: string;
   isDefault?: boolean;
 }
@@ -209,6 +211,12 @@ export type PartKind =
   | 'llantas'
   | 'otro';
 
+/** Especificación de un repuesto: nombre y valor libres, p. ej. { label: 'Voltaje', value: '48 V' } (ADR-032) */
+export interface PartSpec {
+  label: string;
+  value: string;
+}
+
 /** Repuesto (antes "Accessory"). Se vende por unidad o por par. */
 export interface Part {
   id: string;
@@ -218,12 +226,16 @@ export interface Part {
   price: Money;
   image?: ImageRef;
   availability: Availability;
+  /** Unidades en stock (ADR-035); sin número, manda `availability` puesta a mano */
+  stock?: number;
   kind: PartKind;
   unit: 'UND' | 'PAR';
   /** Código interno/SKU */
   code?: string;
   /** Slugs de productos compatibles; vacío = universal */
   compatibleWith: string[];
+  /** Especificaciones (ADR-032), en el orden en que se muestran */
+  specs?: PartSpec[];
   /** Oculto por el panel de administración (ADR-018); mismo efecto que en Product */
   hidden?: boolean;
 }

@@ -1,10 +1,12 @@
 import type { AdminRole, PartPatch, ProductPatch } from './admin';
 import { isUsername, normalizeUsername } from './adminAuth';
 import type { Part, Product } from './types';
+import { partSpecsChanges, partSpecsErrors, specsChanges } from './specsEdit';
+import { stockErrors } from './stock';
 
 /**
  * Política de roles del panel (ADR-018, ADR-025, ADR-026). Pura: la aplican las Pages Functions
- * (nunca solo la interfaz). El editor (`william`) cambia precios, oculta/muestra y gestiona el
+ * (nunca solo la interfaz). El editor (p. ej. `william`; puede haber varios, ADR-034) cambia precios, oculta/muestra y gestiona el
  * blog sin tocar sus fotos; el admin (`admin`) puede todo, incluido restablecer la contraseña de otros.
  */
 
@@ -19,6 +21,8 @@ const PERMISSIONS: Record<AdminRole, readonly Operation[]> = {
   admin: ['read', 'patch', 'put', 'delete', 'blog', 'blogImage', 'upload', 'users'],
   editor: ['read', 'patch', 'blog'],
 };
+
+const isPlainObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 export function canPerform(role: AdminRole, op: Operation): boolean {
   return PERMISSIONS[role].includes(op);
@@ -43,8 +47,10 @@ export function resolveRole(username: string | undefined | null, lists: { admins
 
 export type PatchResult<T> = { ok: true; value: T; changes: string[] } | { ok: false; errors: string[] };
 
-const PRODUCT_PATCH_KEYS = new Set(['sha', 'reason', 'hidden', 'prices']);
-const PART_PATCH_KEYS = new Set(['sha', 'reason', 'hidden', 'price']);
+// specs / variantSpecs / specs (repuestos): especificaciones, también para el editor (ADR-032)
+// stock: unidades (ADR-035), también para el editor
+const PRODUCT_PATCH_KEYS = new Set(['sha', 'reason', 'hidden', 'prices', 'specs', 'variantSpecs', 'stock']);
+const PART_PATCH_KEYS = new Set(['sha', 'reason', 'hidden', 'price', 'specs', 'stock']);
 
 function unknownKeys(body: object, allowed: Set<string>): string[] {
   return Object.keys(body).filter((k) => !allowed.has(k)).map((k) => `campo no permitido en PATCH: ${k}`);
@@ -86,6 +92,53 @@ export function applyProductPatch(original: Product, patch: ProductPatch): Patch
   if (patch.hidden === true) value.hidden = true;
   else if (patch.hidden === false) delete value.hidden;
 
+  // Stock por versión (ADR-035): número entero ≥ 0, o null para dejar de controlarlo
+  if (patch.stock !== undefined) {
+    if (!isPlainObject(patch.stock)) return { ok: false, errors: ['stock debe ser un objeto variantId → unidades'] };
+    const st = patch.stock;
+    const errs: string[] = [];
+    for (const [id, n] of Object.entries(st)) {
+      if (!original.variants.some((v) => v.id === id)) errs.push(`variante desconocida: ${id}`);
+      errs.push(...stockErrors(n, `variante ${id}`));
+    }
+    if (errs.length) return { ok: false, errors: errs };
+    value.variants = value.variants.map((v) => {
+      if (!Object.hasOwn(st, v.id)) return v;
+      const n = st[v.id];
+      if ((n ?? undefined) === v.stock) return v;
+      changes.push(`stock ${v.name}: ${v.stock ?? 'sin control'} → ${n ?? 'sin control'}`);
+      const { stock: _old, ...rest } = v;
+      return n === null || n === undefined ? rest : { ...rest, stock: n };
+    });
+  }
+
+  // Especificaciones (ADR-032): aquí solo la forma; el servidor valida después la ficha completa (esquema + reglas)
+  if (patch.specs !== undefined) {
+    if (!isPlainObject(patch.specs)) return { ok: false, errors: ['specs debe ser un objeto'] };
+    const c = specsChanges(original.specs, patch.specs);
+    if (c.length) {
+      changes.push(`especificaciones: ${c.join(', ')}`);
+      value.specs = patch.specs;
+    }
+  }
+  if (patch.variantSpecs !== undefined) {
+    if (!isPlainObject(patch.variantSpecs)) return { ok: false, errors: ['variantSpecs debe ser un objeto variantId → cambios'] };
+    const vs = patch.variantSpecs;
+    const unknown = Object.keys(vs).filter((id) => !original.variants.some((v) => v.id === id));
+    if (unknown.length) return { ok: false, errors: unknown.map((id) => `variante desconocida: ${id}`) };
+    value.variants = value.variants.map((v) => {
+      if (!Object.hasOwn(vs, v.id)) return v;
+      const next = vs[v.id];
+      if (next !== null && !isPlainObject(next)) return v;
+      const c = specsChanges(v.specsOverride, next ?? undefined);
+      if (!c.length) return v;
+      changes.push(`especificaciones de ${v.name}: ${c.join(', ')}`);
+      const { specsOverride: _old, ...rest } = v;
+      return next ? { ...rest, specsOverride: next } : rest;
+    });
+    if (Object.values(vs).some((o) => o !== null && !isPlainObject(o))) return { ok: false, errors: ['variantSpecs: cada versión debe ser un objeto o null'] };
+  }
+
   // La Premium nunca más barata que la Estándar (ADR-017), también desde el panel.
   const est = value.variants.find((v) => v.tier === 'estandar');
   const prem = value.variants.find((v) => v.tier === 'premium');
@@ -110,6 +163,30 @@ export function applyPartPatch(original: Part, patch: PartPatch): PatchResult<Pa
   if (patch.hidden !== undefined && patch.hidden !== (original.hidden ?? false)) changes.push(patch.hidden ? 'ocultar' : 'mostrar');
   if (patch.hidden === true) value.hidden = true;
   else if (patch.hidden === false) delete value.hidden;
+  // Stock (ADR-035): número entero ≥ 0, o null para dejar de controlarlo
+  if (patch.stock !== undefined) {
+    const errs = stockErrors(patch.stock, 'stock');
+    if (errs.length) return { ok: false, errors: errs };
+    const n = patch.stock ?? undefined;
+    if (n !== original.stock) {
+      changes.push(`stock: ${original.stock ?? 'sin control'} → ${n ?? 'sin control'}`);
+      if (n === undefined) delete value.stock;
+      else value.stock = n;
+    }
+  }
+  // Especificaciones (ADR-032): lista completa; [] las quita
+  if (patch.specs !== undefined) {
+    if (!Array.isArray(patch.specs) || !patch.specs.every((s) => isPlainObject(s) && typeof s.label === 'string' && typeof s.value === 'string' && Object.keys(s).length === 2)) {
+      return { ok: false, errors: ['specs debe ser una lista de { label, value }'] };
+    }
+    const errs = partSpecsErrors(patch.specs);
+    if (errs.length) return { ok: false, errors: errs };
+    if (partSpecsChanges(original.specs, patch.specs).length) {
+      changes.push('especificaciones');
+      if (patch.specs.length) value.specs = patch.specs;
+      else delete value.specs;
+    }
+  }
   return { ok: true, value, changes };
 }
 

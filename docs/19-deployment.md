@@ -152,7 +152,7 @@ El panel necesita Pages Functions, un KV y las variables de abajo (ADR-024/025: 
 | Variable | Valor | Secreto |
 |---|---|---|
 | `ADMIN_USERS` | `admin` (varios separados por coma) | No |
-| `EDITOR_USERS` | `william` | No |
+| `EDITOR_USERS` | `william` (varios separados por coma; ADR-034) | No |
 | `ADMIN_KV` (binding KV, no variable) | namespace `raiden-admin` (§12.2) | — |
 | `SESSION_SECRET` | ≥ 32 caracteres aleatorios (`npm run admin:password -- --secret`) | **Sí** |
 | `ADMIN_INITIAL_PASSWORDS` | `usuario:pbkdf2-sha256:…` por persona, separadas por coma (§12.2) | **Sí** (son hashes, pero no hace falta exponerlos) |
@@ -164,6 +164,8 @@ El panel necesita Pages Functions, un KV y las variables de abajo (ADR-024/025: 
 | `CF_API_TOKEN` (opcional) | token de API con *Account → Cloudflare Pages: Read* | **Sí** |
 | `CF_ACCOUNT_ID` (opcional) | ID de la cuenta | No |
 | `CF_PAGES_PROJECT` (opcional) | `motos-electricas` (nombre del proyecto de Pages) | No |
+
+> Los permisos van por rol, no por persona (ADR-034): `ADMIN_USERS` y `EDITOR_USERS` admiten varios usuarios separados por comas. Un editor nuevo se da de alta añadiéndolo a `EDITOR_USERS` con su contraseña temporal en `ADMIN_INITIAL_PASSWORDS`.
 
 Las tres opcionales permiten que el panel muestre el estado real del último build; sin ellas muestra "Publicando… ~3 min". Tras guardar las variables, **Retry deployment** para que las Functions las reciban. **No definir nunca `ADMIN_LOCAL_USER` en Pages**: el runtime de Pages no define `NODE_ENV`, así que la garantía real en producción es que esa variable no exista (la comprobación de host `localhost` es la segunda barrera). En *Preview* dejar todo vacío salvo que se quiera probar el panel contra una rama (`GITHUB_BRANCH` = esa rama).
 

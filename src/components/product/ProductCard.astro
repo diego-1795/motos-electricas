@@ -1,4 +1,6 @@
 ---
+import { site } from '../../config/site';
+import { LOW_STOCK_LABEL, productLowStock } from '../../domain/stock';
 import Pic from '../ui/Pic.astro';
 import type { Product, VariantTier } from '../../domain/types';
 import { defaultVariant, effectiveSpecs, fromPrice, maxRange, powerLabel, productAvailability, availabilityLabel, tierLabel } from '../../domain/product';
@@ -25,7 +27,9 @@ const img = p.images[0]!;
 const href = productPath(p);
 const variant = defaultVariant(p);
 const avail = productAvailability(p);
-const badge = avail === 'en-stock' ? 'badge--stock' : avail === 'bajo-pedido' ? 'badge--order' : avail === 'proximamente' ? 'badge--soon' : '';
+// Pocas unidades (ADR-035): mismo hueco que la disponibilidad, con aviso
+const low = productLowStock(p, site.stock.lowProducts);
+const badge = low ? 'badge--low' : avail === 'en-stock' ? 'badge--stock' : avail === 'bajo-pedido' ? 'badge--order' : avail === 'proximamente' ? 'badge--soon' : '';
 const tiers = (['estandar', 'premium'] as VariantTier[]).filter((t) => p.variants.some((v) => v.tier === t));
 const minRange = Math.min(...p.variants.map((v) => effectiveSpecs(p, v).rangeMinKm ?? effectiveSpecs(p, v).rangeKm));
 const range = minRange !== maxRange(p) ? `${minRange}-${maxRange(p)} km` : `${maxRange(p)} km`;
@@ -57,7 +61,7 @@ const catLabel = categoryLabel ?? p.category.charAt(0).toUpperCase() + p.categor
     }
     <div class="pc__price">
       <span>Desde <strong>{formatMoney(fromPrice(p))}</strong></span>
-      <span class:list={['badge', badge]}>{availabilityLabel[avail]}</span>
+      <span class:list={['badge', badge]}>{low ? LOW_STOCK_LABEL : availabilityLabel[avail]}</span>
     </div>
     <div class="pc__actions">
       <a href={href} class="btn btn--secondary btn--sm">Saber más</a>

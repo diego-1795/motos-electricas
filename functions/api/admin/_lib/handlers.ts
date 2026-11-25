@@ -112,6 +112,12 @@ export async function patchEntry<K extends AdminKind>(ctx: HandlerContext, kind:
   if (!result.ok) throw validation(`El cambio sobre ${slug} no es válido`, result.errors);
   if (!result.changes.length) return { sha: current.sha, path, data: current.data, commit: null };
 
+  // Especificaciones (ADR-032): la ficha resultante pasa por el mismo esquema y reglas que un PUT completo
+  if ('specs' in body || 'variantSpecs' in body) {
+    const checked = kind === 'products' ? parseProduct(result.value, {}) : parsePart(result.value, {});
+    if (!checked.ok) throw validation(`Las especificaciones de ${slug} no son válidas`, checked.errors);
+  }
+
   const message = commitMessage('actualizar', slug, ctx.user.username, { changes: result.changes, reason: body.reason as string | undefined });
   const written = await ctx.store.write(path, serializeJson(result.value), message, current.sha);
   return { sha: written.sha, path, data: result.value as Entity<K>, commit: written.commit };

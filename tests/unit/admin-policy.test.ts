@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { applyPartPatch, applyProductPatch, canPerform, commitMessage, parseUserList, resolveRole } from '../../src/domain/adminPolicy';
 import { isVisible, visibleOnly } from '../../src/domain/catalog';
+import { userLists } from '../../functions/api/admin/_lib/user';
+import type { Env } from '../../functions/api/admin/_lib/env';
 import { makePart, makeProduct, premiumVariant, variant } from './fixtures';
 
 /** Política del panel de administración (ADR-018): puro, lo aplica el servidor. */
@@ -25,6 +27,13 @@ describe('roles', () => {
     expect(canPerform('editor', 'put')).toBe(false);
     expect(canPerform('editor', 'delete')).toBe(false);
     for (const op of ['read', 'patch', 'put', 'delete'] as const) expect(canPerform('admin', op)).toBe(true);
+  });
+});
+
+describe('rol editor (ADR-034)', () => {
+  it('EDITOR_USERS es la lista de editores (nombre conservado por Cloudflare) y admite varios usuarios', () => {
+    expect(userLists({ ADMIN_USERS: 'admin', EDITOR_USERS: 'william, ana' } as Env)).toEqual({ admins: ['admin'], editors: ['william', 'ana'] });
+    expect(resolveRole('ana', { admins: ['admin'], editors: ['william', 'ana'] })).toBe('editor');
   });
 });
 

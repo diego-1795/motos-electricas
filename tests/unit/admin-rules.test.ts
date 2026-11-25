@@ -39,7 +39,7 @@ describe('catalogRules', () => {
     expect(productRules(badBattery).some((e) => e.includes('capacityKwh'))).toBe(true);
     const fast = makeProduct({ variants: [variant({ isDefault: true })] });
     fast.specs = { ...fast.specs, topSpeedKmh: 45 };
-    expect(productRules(fast).some((e) => e.includes('sin-licencia'))).toBe(true);
+    expect(productRules(fast).some((e) => e.includes('sin licencia'))).toBe(true);
     expect(productRules(makeProduct({ category: 'repuestos', variants: [variant({ isDefault: true })] }))).toContain('un producto no puede tener la categoría "repuestos"');
     const refs = productRules(makeProduct({ slug: 'a', related: ['a', 'zz'], accessories: ['no-existe'], variants: [variant({ isDefault: true })] }), { productSlugs: ['a', 'b'], partSlugs: ['motor-350w'] });
     expect(refs).toContain('related no puede incluir el propio producto');

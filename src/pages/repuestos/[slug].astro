@@ -1,4 +1,6 @@
 ---
+import { site } from '../../config/site';
+import { LOW_STOCK_LABEL, isLowStock } from '../../domain/stock';
 import Pic from '../../components/ui/Pic.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
@@ -26,7 +28,8 @@ const path = partPath(a);
 const url = canonical(path);
 const imageSrc = a.image ? publicSrc(a.image) : undefined;
 const imageUrl = imageSrc ? absolute(imageSrc) : undefined;
-const badge = a.availability === 'en-stock' ? 'badge--stock' : a.availability === 'bajo-pedido' ? 'badge--order' : a.availability === 'proximamente' ? 'badge--soon' : '';
+const low = isLowStock(a.stock, site.stock.lowParts);
+const badge = low ? 'badge--low' : a.availability === 'en-stock' ? 'badge--stock' : a.availability === 'bajo-pedido' ? 'badge--order' : a.availability === 'proximamente' ? 'badge--soon' : '';
 const crumbs = [
   { name: 'Inicio', url: '/' },
   { name: 'Repuestos', url: PARTS_PATH },
@@ -59,7 +62,7 @@ const crumbs = [
         <div class="rpd__price">
           <strong>{formatMoney(a.price)}</strong>
           <span class="muted rpd__unit">{a.unit === 'PAR' ? 'por par' : 'por unidad'}</span>
-          <span class:list={['badge', badge]}>{availabilityLabel[a.availability]}</span>
+          <span class:list={['badge', badge]}>{low ? LOW_STOCK_LABEL : availabilityLabel[a.availability]}</span>
         </div>
         <p class="muted rpd__iva">IGV incluido. Se añade a tu solicitud de compra; no se realizan pagos online.</p>
 
@@ -77,6 +80,24 @@ const crumbs = [
           />
           <WhatsAppLink source="product" slug={a.slug} productName={a.name} class="btn btn--secondary">Consultar por WhatsApp</WhatsAppLink>
         </div>
+
+        {
+          a.specs && a.specs.length > 0 && (
+            <section class="rpd__specs" aria-labelledby="specs-h">
+              <h2 id="specs-h">Especificaciones</h2>
+              <table class="table rpd__specstable">
+                <tbody>
+                  {a.specs.map((s) => (
+                    <tr>
+                      <th scope="row">{s.label}</th>
+                      <td>{s.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )
+        }
 
         <section class="rpd__compat" aria-labelledby="compat-h">
           <h2 id="compat-h">Compatible con</h2>
@@ -171,6 +192,18 @@ const crumbs = [
     display: flex;
     gap: var(--s-3);
     flex-wrap: wrap;
+  }
+  .rpd__specs {
+    margin-top: var(--s-6);
+  }
+  .rpd__specs h2 {
+    font-size: var(--fs-lg);
+    margin-bottom: var(--s-3);
+  }
+  .rpd__specstable th {
+    width: 40%;
+    text-align: left;
+    font-weight: var(--fw-semibold);
   }
   .rpd__compat {
     padding-top: var(--s-4);
