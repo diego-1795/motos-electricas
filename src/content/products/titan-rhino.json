@@ -101,6 +101,7 @@
         "currency": "PEN"
       },
       "availability": "en-stock",
+      "stock": 5,
       "sku": "RD-TITANRHINO-800",
       "isDefault": true
     }

@@ -132,6 +132,7 @@
         "rangeMinKm": 30
       },
       "availability": "en-stock",
+      "stock": 5,
       "sku": "RD-GOLDENEAGLE-350",
       "isDefault": true
     },
@@ -189,6 +190,7 @@
         ]
       },
       "availability": "en-stock",
+      "stock": 5,
       "sku": "RD-GOLDENEAGLE-500"
     }
   ],

@@ -126,6 +126,7 @@
         "rangeMinKm": 30
       },
       "availability": "en-stock",
+      "stock": 5,
       "sku": "RD-ROYALTIGER-350",
       "isDefault": true
     },
@@ -183,6 +184,7 @@
         ]
       },
       "availability": "en-stock",
+      "stock": 5,
       "sku": "RD-ROYALTIGER-500"
     }
   ],

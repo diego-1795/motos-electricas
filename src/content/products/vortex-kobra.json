@@ -120,6 +120,7 @@
         "rangeMinKm": 30
       },
       "availability": "en-stock",
+      "stock": 5,
       "sku": "RD-VORTEXKOBRA-350",
       "isDefault": true
     },
@@ -177,6 +178,7 @@
         ]
       },
       "availability": "en-stock",
+      "stock": 5,
       "sku": "RD-VORTEXKOBRA-500"
     }
   ],

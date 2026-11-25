@@ -14,6 +14,7 @@
     "height": 2537
   },
   "availability": "en-stock",
+  "stock": 10,
   "kind": "bateria",
   "unit": "UND",
   "code": "RP-002",

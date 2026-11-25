@@ -108,6 +108,7 @@
         "rangeMinKm": 30
       },
       "availability": "en-stock",
+      "stock": 5,
       "sku": "EG-GOLDENEAGLE-350",
       "isDefault": true
     },
@@ -165,6 +166,7 @@
         ]
       },
       "availability": "en-stock",
+      "stock": 5,
       "sku": "EG-GOLDENEAGLE-500"
     }
   ],
