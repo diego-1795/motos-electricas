@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'preact/hooks';
 import type { BlogEntry, BlogFrontmatter, BlogWriteResult } from '../../domain/admin';
 import type { BlogPost, ImageRef } from '../../domain/types';
-import { blogRules, slugify, uniqueSlug } from '../../domain/blogRules';
+import { blogRules, descriptionLength, DESCRIPTION_MAX, slugify, uniqueSlug } from '../../domain/blogRules';
 import { isValidSlug } from '../../domain/catalogRules';
 import { countWords, readingMinutes } from '../../domain/reading';
 import { blogHtmlToText } from '../../domain/blogHtml';
@@ -299,7 +299,25 @@ export default function BlogEditor({ entry, takenSlugs = [], onClose, onSaved }:
           )}
           <label class="field adm-form__full">
             <span class="label">Descripción (resumen para Google y la lista del blog)</span>
-            <textarea class="textarea adm-textarea--short" value={form.description} onInput={(e) => set('description', (e.target as HTMLTextAreaElement).value)} required />
+            <textarea
+              class="textarea adm-textarea--short"
+              value={form.description}
+              onInput={(e) => set('description', (e.target as HTMLTextAreaElement).value)}
+              aria-describedby={`${uid}-desc`}
+              required
+            />
+            {(() => {
+              // Contador (ADR-037): orienta, no bloquea. No es aria-live para no anunciar cada tecla.
+              const d = descriptionLength(form.description);
+              return (
+                <span id={`${uid}-desc`} class={`hint adm-count adm-count--${d.status}`} data-admin-desc-count={d.status}>
+                  <strong>
+                    {d.length}/{DESCRIPTION_MAX}
+                  </strong>{' '}
+                  caracteres · {d.message}
+                </span>
+              );
+            })()}
           </label>
           <label class="field">
             <span class="label">Categoría</span>

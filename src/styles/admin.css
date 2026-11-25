@@ -1066,3 +1066,15 @@
 .adm-preview__related li {
   padding: var(--s-3) var(--s-4);
 }
+
+/* Contador de la descripción del artículo (ADR-037) */
+.adm-count--buena strong {
+  color: var(--success);
+}
+.adm-count--larga,
+.adm-count--larga strong {
+  color: var(--danger);
+}
+.adm-count--corta strong {
+  color: var(--warning);
+}

@@ -92,3 +92,23 @@ export function blogRules(slug: string, fm: BlogFrontmatter, body: string, ctx: 
   if (FOREIGN_MARKET_RE.test(text)) errs.push('Habla de España o del euro (€, EUR, carnet, IVA): para Perú usa S/, IGV y licencia');
   return errs;
 }
+
+/** Longitud recomendada de la descripción: Google muestra unos 155-160 caracteres en sus resultados (ADR-037) */
+export const DESCRIPTION_MIN = 120;
+export const DESCRIPTION_MAX = 160;
+
+export interface DescriptionLength {
+  length: number;
+  status: 'vacia' | 'corta' | 'buena' | 'larga';
+  message: string;
+}
+
+/** Aviso para el contador de la descripción. Solo orienta: no impide guardar. */
+export function descriptionLength(text: string): DescriptionLength {
+  const length = text.trim().length;
+  if (!length) return { length, status: 'vacia', message: `Lo ideal: entre ${DESCRIPTION_MIN} y ${DESCRIPTION_MAX} caracteres` };
+  if (length < DESCRIPTION_MIN) return { length, status: 'corta', message: `Un poco corta: lo ideal son ${DESCRIPTION_MIN}-${DESCRIPTION_MAX} caracteres` };
+  if (length <= DESCRIPTION_MAX) return { length, status: 'buena', message: 'Buena longitud para Google' };
+  return { length, status: 'larga', message: `Google cortará el final: pasa de ${DESCRIPTION_MAX} caracteres` };
+}
+

@@ -987,7 +987,14 @@ test.describe('Panel de administración', () => {
     await expect(dialog.locator('input[type="file"]')).toHaveCount(0);
     await dialog.getByLabel('Título', { exact: true }).fill('¿Cómo elegir una bicimoto eléctrica?');
     await expect(dialog.getByLabel('Dirección del artículo')).toHaveValue('como-elegir-una-bicimoto-electrica');
+    const count = dialog.locator('[data-admin-desc-count]');
+    await expect(count).toHaveAttribute('data-admin-desc-count', 'vacia');
+    await dialog.getByLabel(/Descripción/).fill('x'.repeat(170));
+    await expect(count).toContainText('170/160');
+    await expect(count).toContainText('Google cortará el final');
     await dialog.getByLabel(/Descripción/).fill('Factores a considerar.');
+    await expect(count).toContainText('22/160');
+    await expect(count).toHaveAttribute('data-admin-desc-count', 'corta');
     await dialog.getByLabel('Categoría').selectOption('compra');
     await dialog.getByLabel('Texto del artículo').fill('Mira la batería y el motor.');
 

@@ -171,7 +171,7 @@ La pestaña **Blog** muestra la lista de artículos con su título, categoría, 
 
 1. Pulsa **Editar** en la fila del artículo. Se abre "Editar artículo: <título>".
 2. Campos:
-   - **Título** y **Descripción** (el resumen que sale en Google y en la lista del blog).
+   - **Título** y **Descripción** (el resumen que sale en Google y en la lista del blog). Debajo de la descripción, un contador indica los caracteres: lo ideal son **entre 120 y 160**; con más, Google corta el final. Es solo un aviso, no impide guardar.
    - **Dirección del artículo** (solo la ve el administrador): la parte final de su dirección web (`/blog/…`); no se puede cambiar en un artículo existente. El editor no la ve: sale sola del título.
    - **Categoría**, **Autor**, **Fecha de publicación** y **Fecha de actualización (opcional)**: si retocas un artículo antiguo, pon la fecha de hoy en "actualización".
    - **Modelos relacionados**: marca los productos que se mostrarán al final del artículo.

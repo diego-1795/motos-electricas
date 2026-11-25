@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isSafeHref, parseBlocks, parseInline } from '../../src/domain/markdownLite';
-import { blogRules, uniqueSlug } from '../../src/domain/blogRules';
+import { blogRules, descriptionLength, uniqueSlug } from '../../src/domain/blogRules';
 
 /** Lectura del Markdown de los artículos anteriores al editor visual (ADR-031) y utilidades del editor. */
 describe('parseBlocks / parseInline', () => {
@@ -63,5 +63,15 @@ describe('uniqueSlug', () => {
     const long = 'a'.repeat(80);
     expect(uniqueSlug(long, [long])).toHaveLength(80);
     expect(uniqueSlug('', ['x'])).toBe('');
+  });
+});
+
+describe('descriptionLength (ADR-037)', () => {
+  it('vacía, corta, buena (120-160) y larga; cuenta sin espacios de los bordes', () => {
+    expect(descriptionLength('   ').status).toBe('vacia');
+    expect(descriptionLength('a'.repeat(80))).toMatchObject({ length: 80, status: 'corta' });
+    expect(descriptionLength(` ${'a'.repeat(120)} `)).toMatchObject({ length: 120, status: 'buena' });
+    expect(descriptionLength('a'.repeat(160)).status).toBe('buena');
+    expect(descriptionLength('a'.repeat(161))).toMatchObject({ status: 'larga', message: 'Google cortará el final: pasa de 160 caracteres' });
   });
 });

@@ -611,3 +611,9 @@ En el Excel, Royal Tiger (350 W S/ 1,800 / 500 W S/ 1,400), Vortex Kobra (S/ 1,5
 
 **Consecuencias.** Es una aproximación fiel: no incluye la cabecera ni el pie de la web, ni el bloque de contacto final. El vídeo aparece como su enlace, igual que en la web antes de pulsar. Tests: e2e de la vista previa (sin guardar nada, volver sin perder texto ni deshacer, recuadro de la foto) y axe con la vista previa abierta.
 
+## ADR-037 — Contador de caracteres en la descripción del artículo
+
+**Fecha:** 2026-11-25 · **Estado:** aceptada
+
+**Decisión.** Bajo la descripción del artículo, un contador "N/160 caracteres" con un aviso: vacía, un poco corta (menos de 120), buena longitud (120-160) o "Google cortará el final" (más de 160). Está en `descriptionLength` (`blogRules.ts`, puro, con test) y los umbrales son `DESCRIPTION_MIN` y `DESCRIPTION_MAX`. Solo orienta: no bloquea el guardado, porque la descripción también se usa en la lista del blog y a veces conviene otra longitud. No es `aria-live`, para no anunciar cada tecla; está enlazado al campo con `aria-describedby`.
+
