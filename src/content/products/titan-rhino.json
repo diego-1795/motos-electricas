@@ -31,7 +31,7 @@
     "rangeKm": 40,
     "rangeMinKm": 35,
     "topSpeedKmh": 25,
-    "powerW": 800,
+    "powerW": 1000,
     "battery": {
       "voltage": 60,
       "capacityAh": 20,
@@ -66,7 +66,7 @@
     "warrantyMonths": 6,
     "batteryWarrantyMonths": 6,
     "features": [
-      "Motor sin escobillas con potencia de 800 W",
+      "Motor sin escobillas con potencia de 1,000 W",
       "Controlador de 12 tubos - SineWave Technology",
       "Velocidad máxima: 25 km/h",
       "Batería Chilwee de plomo-ácido de 60V 20Ah (no extraíble)",
