@@ -61,7 +61,7 @@
       "Velocidad 3",
       "Reversa"
     ],
-    "motorType": "Motor sin escobillas (brushless) de 800 W",
+    "motorType": "Motor sin escobillas (brushless) de 1,000 W",
     "controller": "12 tubos SineWave",
     "warrantyMonths": 6,
     "batteryWarrantyMonths": 6,
